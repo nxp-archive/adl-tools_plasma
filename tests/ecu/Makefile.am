@@ -2,7 +2,7 @@
 # ECU build.
 #
 
-#TESTS = regress
+TESTS = regress
 
 check_PROGRAMS = \
 	ecu
