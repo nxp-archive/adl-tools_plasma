@@ -1,3 +1,5 @@
+        ====== plasma release 0.8.17 (v0_8_17) on Linux (cde-tx32-ldt189) ======
+
 2005-03-16  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added a Ptree::Reify function to handle booleans and added to
