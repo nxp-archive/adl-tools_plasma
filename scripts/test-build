@@ -9,16 +9,17 @@
 ## to edit the version in CVS, not the copy that is
 ## run.
 ##
-rm -rf plasma bin lib share include && \
-cvs checkout plasma && \
-cd plasma && \
-./autogen.sh --enable-opt --prefix=$proj && \
-make check &&
-make install
+rm -rf plasma bin lib share include
 
+( cvs checkout plasma && \
+    cd plasma && \
+    ./autogen.sh --enable-opt --prefix=$proj && \
+    make check &&
+    make install )
+ 
 if [ ! -f include/gc_cpp.h ] ; then
-    echo "Error:  GC C++ headers not installed."
+    echo "!!!"
+    echo "!!! Error:  GC C++ headers not installed."
+    echo "!!! "
     exit 1
 fi
-
-
