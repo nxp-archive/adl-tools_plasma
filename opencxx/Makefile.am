@@ -134,6 +134,8 @@ pkginclude_HEADERS = \
 
 INCLUDES = -I$(top_builddir) -I$(GC_INCLUDEDIR) $(INCLTDL)
 
+EXTRA_DIST = parser/ptree-gen
+
 #
 # we are building exactly one executable, namely 'occ'
 # (the definition bellow means, that it will also be installed
