@@ -4,162 +4,10 @@
 #include <vector>
 #include "opencxx/mop.h"
 #include "opencxx/ptree-core.h"
-#include "opencxx/walker.h"
 
-# include <ext/hash_set>
-using namespace __gnu_cxx;
-
-struct str_equal {
-  size_t operator()(const char*x,const char *y) const { return !strcmp(x,y); }
-};
-
-typedef hash_set<const char *,hash<const char *>,str_equal > StrHash;
+#include "VarWalker.h"
 
 using namespace std;
-
-struct ArgPair {
-  Ptree *_arg;
-  bool   _ref; // true -> value or reference parm, false -> pointer.
-  ArgPair(Ptree *a,bool r) : _arg(a), _ref(r) {};
-};
-
-typedef vector<ArgPair> ArgVect;
-
-// This walks over an expression.  For each variable declaration, if it's
-// not declared in any scope under the parent scope, it's recorded as a
-// needed argument.
-class VarWalker : public Walker {
-public:
-  VarWalker(Parser *p,Environment *e) : 
-    Walker(p,e),
-    _tsname(0),
-    _tstype(0),
-    _penv(e->GetOuterEnvironment()), 
-    _benv(e->GetBottom()),
-    _args(0),
-    _inguard(false)
-  {}
-
-  virtual Ptree* TranslateVariable(Ptree*);
-
-  void handleGuard(bool hg) { _inguard = hg; };
-  void setnames(Ptree *tst,Ptree *tsn) { 
-    _tsname = tsn; 
-    _tstype = tst;
-  };
-  void reset() { 
-    _inguard = false;
-    _args = nil; 
-    _argnames.clear(); 
-    _vhash.clear();
-  };
-
-  Ptree   *args() const { return _args; };
-  const ArgVect &argnames() const { return _argnames; };
-
-  void saveGuardEnv() { _genv = env; };
-
-  bool guardEnvEmpty() const { return _genv->IsEmpty(); };
-
-private:
-  Ptree *recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_inguard);
-
-  Ptree       *_tsname;  // Name of thread structure.
-  Ptree       *_tstype;  // Type of thread structure.
-
-  Environment *_penv;    // Parent scope.
-  Environment *_benv;    // Bottom (global) scope.
-  Environment *_genv;    // Guard scope (declarations in the condition).
-  Ptree       *_args;
-  ArgVect      _argnames;
-  StrHash      _vhash;
-  bool         _inguard;
-};
-
-// Look for the variable in all environments from the current up to,
-// but not including, the parent environment.  If not found, we consider
-// this to be a needed argument and add it to the _args list.  Note:  We
-// ignore things which are declared in the outermost scope.  This eliminates
-// globals and functions.
-Ptree *VarWalker::TranslateVariable(Ptree *exp)
-{
-  if (!_inguard) {
-    //    cout << "Examining variable:  ";
-    //    exp->Display2(cout);
-    //    cout << endl;
-
-    Environment *e = env;
-    Bind *b;
-    bool found = false;
-    bool found_inguard = false;
-
-    // This searches for a variable up to, but not including, the parent scope.
-    while (e != _penv) {
-      if (!e->LookupTop(exp,b)) {
-        e = e->GetOuterEnvironment();
-      } else {
-        if (_genv && _genv->LookupTop(exp,b)) {
-          // Special case- was the variable declared in the guard environment?
-          // If so, then we make it a value parameter.
-          found_inguard = true;
-        }
-        found = true;
-        break;
-      }
-    }
-
-    if (!found || found_inguard) {
-
-      // Not found, so search up to, but not including, the global scope.
-      if (!found_inguard) {
-        while (e != _benv) {
-          if (!e->LookupTop(exp,b)) {
-            e = e->GetOuterEnvironment();
-          } else {
-            found = true;
-            break;
-          }
-        }
-      }
-            
-      if (found && !b->IsType()) {
-        return recordVariable(exp,e,b,found_inguard);
-      }
-    }
-  }
-  return exp;
-}
-
-Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_inguard)
-{
-  TypeInfo t;
-  b->GetType(t,e);
-  const char *name = exp->ToString();
-  //cout << "Found variable " << name << ", type:  " << b->GetEncodedType() << endl;
-  // You can't have pointers to references, so if it's a reference, we treat it
-  // as is.  We also want to treat any loop variables as copy-by-value so that
-  // we won't clobber it.
-  if (t.IsReferenceType() || t.IsArray() || found_inguard) {
-    if (!_vhash.count(name)) {
-      _vhash.insert(name);
-      _argnames.push_back(ArgPair(exp,true));
-      if (t.IsArray()) {
-        t.Dereference();
-        _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
-      } else {
-        _args = Ptree::Cons(t.MakePtree(Ptree::qMake("`exp`")),_args);
-      }
-    }
-    return Ptree::qMake("(((`_tstype`*)`_tsname`)->`exp`)");
-  } else {
-    if (!_vhash.count(name)) {
-      _vhash.insert(name);
-      _argnames.push_back(ArgPair(exp,false));
-      _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
-    }
-    return Ptree::qMake("(*(((`_tstype`*)`_tsname`)->`exp`))");
-  }
-}
 
 struct Port {
   Ptree *chan;
@@ -179,9 +27,13 @@ private:
   Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree* TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree *generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *iname,
+                         const PortVect &pv,Ptree *defaultblock);
   void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
   void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                        Environment *env,bool heapalloc);
+  bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
   bool parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock);
 };
 
@@ -191,6 +43,7 @@ bool Plasma::Initialize()
   RegisterNewBlockStatement("par");
   RegisterNewForStatement("pfor");
   RegisterNewBlockStatement("alt");
+  RegisterNewForStatement("afor");
   RegisterNewForStatement("port");
   return TRUE;
 }
@@ -212,14 +65,9 @@ string argList(const ArgVect &av)
   return s;
 }
 
-Ptree *lappend(Ptree *l,Ptree *x)
+inline Ptree *lappend(Ptree *l,Ptree *x)
 {
-  if (!l) {
-    return Ptree::List(x);
-  } else {
-    l->SetCdr(Ptree::List(x));
-    return l->Cdr();
-  }
+  return Ptree::Last(Ptree::Snoc(l,x));
 }
 
 inline bool compare(Ptree *p,const char *s)
@@ -239,6 +87,9 @@ Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
   }
   else if (compare(keyword,"alt")) {
     return TranslateAlt(env,keyword,rest);
+  }
+  else if (compare(keyword,"afor")) {
+    return TranslateAfor(env,keyword,rest);
   }
 
   ErrorMessage(env, "unknown user statement encountered",nil,keyword);
@@ -414,17 +265,23 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
 
   Ptree *iname = Ptree::GenSym();  
   Ptree *label = Ptree::GenSym();
-  Ptree *start = Ptree::List(Ptree::qMake("{\n"
-                                     "plasma::pLock();\n"
-                                     "int `iname`;\n"));
+
+  // We put this inside of a try block if we don't have a default block,
+  // since we want to clear the notifications if an exception occurs.
+  Ptree *start = (!defaultblock) ? 
+    Ptree::List(Ptree::Make("try {\n")) :
+    Ptree::List(Ptree::Make("{\n"));
   Ptree *cur = start;
+
+  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
+                                 "int `iname`;\n"));
 
   // The first part of the alt block queries each channel to see
   // if it has any data ready.
   for (int index = 0; index != (int)pv.size(); ++index) {
     const Port &port = pv[index];
     cur = lappend(cur,Ptree::qMake("`iname` = `index`;\n"
-                               "if ( (`port.chan`).ready() ) { goto `label`; }\n"));
+                                   "if ( (`port.chan`).ready() ) { goto `label`; }\n"));
   }
 
   // If we have a default block, this becomes the last index in our
@@ -442,7 +299,7 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
     }
 
     // Next, we sleep.  When we wake up, we get the handle of the channel
-    // which woke us.
+    // which awoke us.
     cur = lappend(cur,Ptree::qMake("`iname` = plasma::pSleep();\n"
                                    "plasma::pLock();\n"));
 
@@ -454,9 +311,164 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
 
   }
 
+  if ( (cur = generateAltBody(env,cur,label,iname,pv,defaultblock)) == nil) {
+    return nil;
+  }
+
+  // Finish try block with exception cleanup code.
+  cur = lappend(cur,Ptree::Make("}\n"));
+
+  // Exception cleanup code if no default block.
+  if (!defaultblock) {
+    cur = lappend(cur,Ptree::Make("catch (...) {\n"));
+    for (unsigned index = 0; index != pv.size(); ++index) {
+      const Port &port = pv[index];
+      cur = lappend(cur,Ptree::qMake("(`port.chan`).clear_notify();\n"));
+    }
+    cur = lappend(cur,Ptree::Make("}\n"));
+  }
+
+  return start;
+}
+
+// Translate an afor block.  This is similar to an alt block, except that
+// we loop over the port statements.
+Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  Ptree *s1, *s2, *s3, *body;
+
+  if(!Ptree::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
+    ErrorMessage(env, "invalid afor statement", nil, keyword);
+    return nil;
+  }
+
+  // Ignore the braces.
+  body = body->Cadr();
+  
+  PortVect pv;
+  Ptree *defaultblock = nil;
+
+  if (!parseAltBlock(env,body,pv,defaultblock)) {
+    return nil;
+  }
+
+  if (pv.size() > 1) {
+    ErrorMessage(env,"more than one port statement in an afor block is currently not supported",nil,keyword);
+    return nil;
+  }
+
+  // We have to extract the iterator from the first statement in the afor loop.
+  // This means that it somewhat limits the generality of the for-loop style statement.
+  // We may have to address this issue later.
+  VarWalker *vw = new VarWalker(env->GetWalker()->GetParser(),env);
+  if (!parseAforCondition(vw,env,s1,s3)) {
+    return nil;
+  }
+
+  const ArgVect &argnames = vw->argnames();
+  // We just take the first declaration and assume that's the index variable for afor.
+  Ptree *index = argnames.front()._arg;
+  TypeInfo indextype = argnames.front()._type;
+  // This controls whether we can put the value into the channel's handle or if
+  // we need an auxiliary stack.
+  bool needstack = true;
+  if (int bt = indextype.IsBuiltInType()) {
+    if (bt & (CharType | IntType | ShortType | LongType | BooleanType)) {
+      needstack = false;
+    }
+  }
+
+  Ptree *iname  = Ptree::GenSym();
+  Ptree *sindex = Ptree::GenSym();
+  Ptree *stack  = Ptree::GenSym();
+  Ptree *label  = Ptree::GenSym();
+  Ptree *empty  = nil;
+
+  const Port &port = pv.front();
+
+  // The first part of the afor block queries each channel to see
+  // if it has any data ready.  It's placed within the general afor
+  // for-loop.
+  Ptree *start = (!defaultblock) ? 
+    Ptree::List(Ptree::Make("try {\n")) :
+    Ptree::List(Ptree::Make("{\n"));
+  Ptree *cur = start;
+  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
+                                 "int `iname` = 0;\n"
+                                 "`s1`\n"));
+
+  // Create a stack of target types, and store indices to those values,
+  // only if we don't have a built-in type as an index variable.
+  if (needstack && !defaultblock) {
+    cur = lappend(cur,Ptree::qMake("std::vector<`indextype.MakePtree(empty)`> `stack`;\n"
+                                   "int `sindex` = 0;\n"));
+  }
+
+  cur = lappend(cur,Ptree::qMake("for ( ; `s2` ; `s3`) {\n"
+                                 "if ( (`port.chan`).ready() ) { goto `label`; }\n"
+                                 "}\n"));
+  
+  // If we have a default block, we'll reach it if nothing is ready.
+  // We'll then jump past the sleep logic.
+  if (defaultblock) {
+    cur = lappend(cur,Ptree::qMake("`iname` = 1;\n"
+                                   "goto `label`;\n"));
+  } else {
+    // This generated code is only reached if no ports were ready.
+    // In that case, we set each channel to notify us when it has data.
+    // Next, we sleep.  When we wake up, we get the handle of the channel
+    // which woke us.
+    // If we have a non-builtin type as an index variable, we store each index
+    // variable in a vector and store the corresponding index.  When we wake up,
+    // we fetch that value and then use it.
+    if (needstack) {
+      cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
+                                     "(`port.chan`).set_notify(plasma::pCurThread(),`sindex`++);\n"
+                                     "`stack`.push_back(`index`);\n"
+                                     "}\n"
+                                     "`index` = `stack`[plasma::pSleep()];\n"
+                                     "plasma::pLock();\n"));
+    } else {
+      cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
+                                     "(`port.chan`).set_notify(plasma::pCurThread(),`index`);\n"
+                                     "}\n"
+                                     "`index` = ((`indextype.MakePtree(empty)`) plasma::pSleep());\n"
+                                     "plasma::pLock();\n"));
+    }
+
+    // Clear all notification, since we have a value.
+    cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
+                                   "(`port.chan`).clear_notify();\n"
+                                   "}\n"));
+  }
+
+  if ( (cur = generateAltBody(env,cur,label,iname,pv,defaultblock)) == nil) {
+    return nil;
+  }
+
+  cur = lappend(cur,Ptree::Make("}\n"));
+
+  // Exception cleanup code if no default block.
+  if (!defaultblock) {
+    cur = lappend(cur,Ptree::qMake("catch (...) {\n"
+                                   "for (`s1` `s2` ; `s3`) {\n"
+                                   "(`port.chan`).clear_notify();\n"
+                                   "}\n"
+                                   "}\n"));
+  }
+
+  return start;
+}
+
+Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *iname,
+                               const PortVect &pv,Ptree *defaultblock)
+{
+  // Unlock processors- may be redundant for some cases, but is needed
+  // for default blocks and non-standard channels.
   // Jump to the code for the relevant handle.
   cur = lappend(cur,Ptree::qMake("`label`:\n"
-                             "switch(`iname`) {\n"));
+                                 "plasma::pUnlock();\n"
+                                 "switch(`iname`) {\n"));
 
   // Handling code.  Each value should be a valid declaration.
   // The second statement represents the channel to be queried.
@@ -491,9 +503,33 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
                                     "} break;\n"));
   }
 
-  cur = lappend(cur,Ptree::Make("}\n}\n"));
+  // End of switch statement.
+  cur = lappend(cur,Ptree::Make("}\n"));
 
-  return start;
+  return cur;
+}
+
+// This first parses the first expression in the afor statement, recording
+// any declarations.  It then parses the second statement- any variables used
+// there are recorded.  The first variable used in the third statement is
+// then considered to be the loop index that we use in the afor block.
+bool Plasma::parseAforCondition(VarWalker *vw,Environment *env,Ptree *s1,Ptree *s3)
+{
+  vw->handleGuard(true);
+  vw->Translate(s1);
+  vw->saveGuardEnv();
+  if (vw->guardEnvEmpty()) {
+    ErrorMessage(env,"afor statement declares no loop variables.",nil,s1);
+    return nil;
+  }
+  vw->handleGuard(false);
+  vw->Translate(s3);
+
+  if (vw->argnames().empty()) {
+    ErrorMessage(env,"afor statement does not use its iterator variable in its condition expression.",nil,s3);
+    return false;
+  }
+  return true;
 }
 
 bool Plasma::parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock)

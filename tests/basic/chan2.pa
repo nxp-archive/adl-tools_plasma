@@ -1,3 +1,8 @@
+//
+// Simple channel test using several producers all writing
+// to a single consumer.  It demoonstrates the alt block w/o
+// a default case.
+//
 
 #include <assert.h>
 #include <stdio.h>

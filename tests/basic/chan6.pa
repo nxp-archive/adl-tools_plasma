@@ -1,0 +1,63 @@
+//
+// Simple afor test using an integer iterator and
+// a default block.
+//
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+typedef plasma::Channel<int> IntChan;
+
+typedef std::vector<IntChan> ChanVect;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+    for (int j = 0; j != 100000; ++j) {
+      int x = x + 1;
+    }
+  }
+  chan.write(-1);
+  printf ("Producer done.\n");
+}
+
+void consumer(ChanVect &channels)
+{
+  int donecount = 0;
+  while (donecount < (int)channels.size()) {
+    afor (int i = 0; i != (int)channels.size(); ++i) {
+      port (int v; channels[i];) {
+        printf ("Got a value from port %d:  %d\n",i,v);
+        if (v < 0) ++donecount;
+      }
+      {
+        for (int j = 0; j != 1000000; ++j) {
+          int x = 1;
+        }
+        printf ("No value present.\n");
+      }
+    }
+  }
+  printf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  const int NumChan = 2;
+  ChanVect channels(NumChan);
+
+  // First thread is the consumer, so producers are
+  // offset by one.
+  pfor(int i = 0,x = 2; i != NumChan+1; ++i, x *= 10) {
+    if (!i) {
+      consumer(channels);
+    } else {
+      producer(x,channels[i-1]);
+    }
+  }
+
+  printf ("Done.\n");
+  return 0;
+}

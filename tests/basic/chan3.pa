@@ -1,0 +1,50 @@
+//
+// Test of alt block with a default case.
+//
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+typedef plasma::Channel<int> IntChan;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+  }
+  chan.write(-1);
+  printf ("Producer done.\n");
+}
+
+void consumer(IntChan &c0)
+{
+  int donecount = 0;
+  while (donecount < 1) {
+    alt {
+      port (int v;c0;) {
+        printf ("Got a value from port c0:  %d\n",v);
+        if (v < 0) ++donecount;
+      }
+      {
+        for (int j = 0; j != 1000000; ++j) {
+          int x = 1;
+        }
+        printf ("No value present.\n");
+      }
+    }
+  }
+  printf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan channel;
+
+  par {
+    producer(10,channel);
+    consumer(channel);
+  }
+  printf ("Done.\n");
+  return 0;
+}

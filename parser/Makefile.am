@@ -2,9 +2,18 @@
 pkglib_PROGRAMS = Plasma.so
 
 Plasma_so_SOURCES = \
-	plasma.mc
+	plasma.mc \
+	VarWalker.mc
+
+noinst_HEADERS = \
+	VarWalker.h
 
 CLEANFILES= *.ii *-init.cc *.so
 
-Plasma.so: plasma.mc
-	$(OCC) -m$@ $(OCCFLAGS) $< -- -Wall -g
+CXXLINK = $(CXX) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
+
+.mc.o:
+	$(OCC) -m$@ $(OCCFLAGS) $< -c -- -Wall -g
+
+Plasma.so: $(Plasma_so_OBJECTS)
+	$(CXXLINK) -shared -o $@ $(Plasma_so_OBJECTS) $(Plasma_so_LDFLAGS) $(Plasma_so_LDADD)

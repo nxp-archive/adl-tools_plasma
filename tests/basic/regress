@@ -38,6 +38,31 @@ my @Tests = (
 	      cmd     => "./chan2",
 	      checker => \&check_chan2,
 	     },
+	     # Channel test using alt with a default block.
+	     {
+	      cmd     => "./chan3",
+	      checker => \&check_chan3,
+	     },
+	     # Channel test using afor.
+	     {
+	      cmd     => "./chan4",
+	      checker => \&check_chan4,
+	     },
+	     # Channel test using afor and a non-integer iterator.
+	     {
+	      cmd     => "./chan5",
+	      checker => \&check_chan5,
+	     },
+	     # Channel test using afor and a default block.
+	     {
+	      cmd     => "./chan6",
+	      checker => \&check_chan6,
+	     },
+	     # Channel test using afor, non-integer iterator, and a default block.
+	     {
+	      cmd     => "./chan7",
+	      checker => \&check_chan7,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -149,10 +174,39 @@ sub check_chan2 {
   check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
 }
 
+sub check_chan3 {
+  my @data = ([10,10]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,2,[ "No value present."]);
+}
+
+sub check_chan4 {
+  my @data = ([20,10],[200,10],[2000,10],[20000,10],[200000,10],[2000000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan5 {
+  my @data = ([30,10],[300,10],[3000,10],[30000,10],[300000,10],[3000000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan6 {
+  my @data = ([20,10],[200,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,3,[ "No value present."]);
+}
+
+sub check_chan7 {
+  my @data = ([30,10],[300,10],[3000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,4,[ "No value present."]);
+}
+
 # Make sure that all expected integers are received.  These should
 # be four sets of ten integers starting at 10, 100, 1000, and 10000.
 sub check_channel {
-  my ($input,$regex,$data,$expNumFinish) = (shift,shift,shift,shift);
+  my ($input,$regex,$data,$expNumFinish,$expstr) = (shift,shift,shift,shift,shift);
+  my %exphash = ();
+  for my $i ( @{ $expstr } ) {
+    $exphash{$i} = 0;
+  }
   my @lines = split /\n/,$input;
   my $max = 10;
   my $numFinish = 0;
@@ -173,6 +227,11 @@ sub check_channel {
     } elsif ( /(Producer|Consumer) done./ ) {
       ++$numFinish;
     }
+    for my $k (keys %exphash ) {
+      if ( /$k/ ) {
+	++$exphash{$k};
+      }
+    }
   }
   if ($numFinish != $expNumFinish) {
     print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
@@ -184,5 +243,10 @@ sub check_channel {
       die;
     }
   }
+  for my $i (keys %exphash) {
+    if (!$exphash{$i}) {
+      print "Expected to find an occurrance of \"$i\" but did not.\n";
+      die;
+    }
+  }
 }
-

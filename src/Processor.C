@@ -85,7 +85,7 @@ namespace plasma {
     _main(),
     _cur(0),
     _kernel(true),
-    _handle(-1)
+    _handle(0)
   {
     static bool dummy = init();
 

@@ -14,20 +14,23 @@ namespace plasma {
   template <class Data>
   class Channel {
   public:
-    Channel() : _ready(false), _t(0) {};
+    Channel() : _ready(false), _readt(0), _writet(0) {};
     void write(const Data &d);
-    void set_notify(Thread *t,int h) { assert(!_t); _t = t; _h = h; };
-    Thread *clear_notify() { Thread *t = _t; _t = 0; return t; };
+    void set_notify(Thread *t,int h) { assert(!_readt); _readt = t; _h = h; };
+    Thread *clear_notify() { Thread *t = _readt; _readt = 0; return t; };
+    void set_writenotify(Thread *t,int h) { assert(!_writet); _writet = t; _h = h; };
+    Thread *clear_writenotify() { Thread *t = _writet; _writet = 0; return t; };
     bool ready() const { return _ready; };
     void clear_ready() { _ready = false; };
     Data read() { return read_internal(false); };
-    int get() { return read_internal(true); };
+    Data get() { return read_internal(true); };
   private:
     Data read_internal(bool clear_ready);
 
-    Data       _data;
+    Data    _data;
     bool    _ready;
-    Thread *_t;
+    Thread *_readt;
+    Thread *_writet;
     int     _h;
   };
 
@@ -39,10 +42,10 @@ namespace plasma {
       set_notify(pCurThread(),0);
       pSleep();
     }
-    if (_t) {
-      pAddReady(clear_notify());
+    if (_writet) {
+      pAddReady(clear_writenotify());
     }
-    int temp = _data;
+    Data temp = _data;
     if (clearready) {
       clear_ready();
     }
@@ -55,12 +58,12 @@ namespace plasma {
   { 
     pLock();
     if (_ready) {
-      set_notify(pCurThread(),0);
+      set_writenotify(pCurThread(),0);
       pSleep();
     }
     _data = d;
     _ready = true;
-    if (_t) {
+    if (_readt) {
       pWake(clear_notify(),_h);
     }
     pUnlock();

@@ -63,20 +63,19 @@ void consumer(void *a)
 {
   IntChan *channels = ((IntChan*)a);
   for (int negcount = 0; negcount < NumChan; ) {
-    int j = 0, end = 0;
+    int j = 0;
     pLock();
     for ( ; j != NumChan; ++j) {
       if (channels[j].ready()) {
         goto DataReady;
       } else {
         channels[j].set_notify(pCurThread(),j);
-        end = j+1;
       }
     }
     j = pSleep();
     pLock();
   DataReady:
-    for ( int i = 0; i != end; ++i) {
+    for ( int i = 0; i != NumChan; ++i) {
       channels[i].clear_notify();
     }
     int v = channels[j].get();

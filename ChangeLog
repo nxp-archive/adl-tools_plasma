@@ -1,3 +1,15 @@
+2004-05-12  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Broke plasma.mc into multiple files.
+
+	* Finished alt work- added exception cleanup code.
+
+	* Modified looping alt so that if the loop index variable
+	is not a simple built-in type (integer compatible), we'll create
+	an auxiliary vector and store index values there.  The handle we
+	store in each channel is the index of the corresponding entry in
+	the vector.
+
 2004-05-11  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Changed alt/port block to a new synax.  Now, it's:
