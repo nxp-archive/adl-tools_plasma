@@ -1,5 +1,6 @@
 
 #include "Wrapper.h"
+#include "LdLeaf.h"
 
 using namespace std;
 
@@ -21,12 +22,24 @@ void Wrapper::TranslateClass(Environment* env)
           AppendMember(vwrapper, Class::Public);
         }
         // Normal creation code.
-        Member wrapper = member;        member.SetName(org_name);
+        Member wrapper = member;
+        setupOrigMember(env,member,org_name);
         ChangeMember(member);
         makeWrapper(env, wrapper, org_name, nil);
         AppendMember(wrapper, Class::Public);
       }
     }
+}
+
+void Wrapper::setupOrigMember(Environment *env,Member &member,Ptree *org_name)
+{
+  Ptree *ofb = member.FunctionBody();
+  member.SetName(org_name);
+  // We only insert the line directive if there is a function body- there might
+  // not be one if we're processing a declaration and this isn't an inlined function.
+  if (ofb) {
+    member.SetFunctionBody(Ptree::List(lineDirective(env,ofb),ofb));
+  }
 }
 
 // If the function is variadic (has ...) then we can't handle it and
@@ -77,7 +90,7 @@ bool Wrapper::wrapMember(Environment *env,Member &member) const
 void Wrapper::TranslateMemberFunction(Environment* env, Member& member)
 {
   if(wrapMember(env,member)) {
-    member.SetName(newMemberName(member.Name()));
+    setupOrigMember(env,member,newMemberName(member.Name()));
   }
 }
 

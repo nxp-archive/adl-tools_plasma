@@ -34,6 +34,7 @@ protected:
   virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* org_name,Ptree *variadic);
 
 private:
+  void setupOrigMember(Environment *env,Member &member,Ptree *name);
   void makeWrapper(Environment *env,Member& member, Ptree* org_name,Ptree *variadic);
   Ptree *exprToCallOriginal(Environment *env,Member& member, Ptree* org_name);
   Ptree *isVariadic(Environment *env,Member &member);

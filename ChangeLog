@@ -1,5 +1,9 @@
 2004-07-19  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added line directives to the original methods for pMutex
+	classes.  This should allow the user to place breakpoints within
+	these methods and have gdb work correctly.
+
 	* Further fixes to the plasma wrapper:  Added the ability to just
 	link with it, using the required libraries.  This happens if we
 	don't find a .pa file or there isn't a --plasma or --p option.

@@ -16,7 +16,6 @@ int LdLeaf::Write(ostream &out, int indent)
 {
   char* ptr = data.leaf.position;
   int len = data.leaf.length;
-
   out << '\n';
   out.write(ptr,len);
   return 1;
