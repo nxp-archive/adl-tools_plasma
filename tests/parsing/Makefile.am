@@ -3,7 +3,7 @@ TESTS = regress
 
 check_PROGRAMS = parse-test
 
-EXTRA_DIST = regress
+EXTRA_DIST = regress $(wildcard in*.*)
 
 OccBuildDir = $(top_builddir)/opencxx
 GcBuildDir = $(top_builddir)/gc
