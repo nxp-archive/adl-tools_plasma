@@ -5,7 +5,7 @@
 
 (document :title [The Plasma Language]
    :author (list (author :name "Brian Kahne" :email (mailto "bkahne@freescale.com"))
-		 (author :name "Pete Wilson" :email (mailto "Pete.Wilson@freescale.com")))
+		 (author :name "Peter Wilson" :email (mailto "Peter.Wilson@freescale.com")))
 
    (p [,(b[Plasma]), (,(b[P])arallel ,(b[LA])nguage for ,(b[S])ystem
    ,(b[M])odelling and ,(b[A])nalysis) is a parallel language for system
