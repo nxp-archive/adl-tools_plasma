@@ -42,7 +42,7 @@ fi
 
 ## Check for web directory (documentation destination).
 AC_MSG_CHECKING([for web destination directory])
-ac_web_default=/proj/ppctools/tlv/system-modelling/www
+ac_web_default=/proj/ppctools/GSTM/www/plasma
 WEBHOME=
 DOCDIR=doc
 AC_ARG_WITH([web],AC_HELP_STRING([--with-web],[specify a web destination directory.  The default is $ac_web_default.]),WEBHOME=$withval,WEBHOME=$ac_web_default)

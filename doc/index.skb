@@ -216,13 +216,23 @@
       
       )
    
-   (section :title "Future Work"
-   
-      [A description of proposed future enhancements may be found ,(ref
-      :chapter "Future Work" :text "here").]
+   (section :title "Additional Documentation"
+      
+      [A Twiki page, containing additional background information, can be found
+      ,(ref :url
+      "http://twiki.sps.mot.com/bin/view.cgi/Projects/SystemsModelling" :text
+      "here").]
       
       )
    
+   
+   (section :title "Future Work"
+   
+      [A description of proposed future enhancements can be found ,(ref
+      :chapter "Future Work" :text "here").]
+      
+      )
+      
    (include "user-guide.skb")
       
    (include "examples.skb")
