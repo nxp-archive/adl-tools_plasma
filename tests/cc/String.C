@@ -6,6 +6,8 @@
 
 #include <iostream>
 
+#include "gc.h"
+
 #include "String.h"
 #include "Tokens.h"
 
@@ -21,4 +23,12 @@ ostream &operator<< (ostream &o,const String &s)
 {
   o.write(s._ptr,s._len);
   return o;
+}
+
+String String::append(String x) const
+{
+  char *s = (char*)GC_malloc(_len+x._len);
+  memcpy(s,_ptr,_len);
+  memcpy(s+_len,x._ptr,x._len);
+  return String(s,_len+x._len);
 }

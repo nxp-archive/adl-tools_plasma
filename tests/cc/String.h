@@ -22,6 +22,11 @@ public:
   // using the garbage collector.
   String(int n);
 
+  // This will allocate a new string, containing contents
+  // + the argument string.  The original contents are
+  // not modified.
+  String append(String x) const; 
+
   bool empty() const { return !_len; };
   unsigned size() const { return _len; };
   const char *data() const { return _ptr; };

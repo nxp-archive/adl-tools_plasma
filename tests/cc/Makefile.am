@@ -2,6 +2,7 @@ check_PROGRAMS = mytest
 
 mytest_SOURCES = \
 	String.C \
+	Node.C \
 	main.pa \
 	CParser.pa \
 	cparse.yy \
@@ -16,7 +17,8 @@ DEP_FILES=\
 	./$(DEPDIR)/CLexer.Po \
 	./$(DEPDIR)/CParser.Po \
 	./$(DEPDIR)/cparse.Po \
-	./$(DEPDIR)/clex.Po
+	./$(DEPDIR)/clex.Po \
+	./$(DEPDIR)/Node.Po
 
 include ./$(DEPDIR)/main.Po
 include ./$(DEPDIR)/CLexer.Po
@@ -26,7 +28,7 @@ BUILT_SOURCES = clex.cc
 
 LEMON = ../lemon/lemon
 
-mytest_CPPFLAGS = -I$(top_srcdir)/gc/include
+AM_CXXFLAGS = -I$(top_srcdir)/gc/include
 
 mytest_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 
