@@ -25,7 +25,15 @@ namespace Opencxx {
 
   class ErrorLog;
 
+  // Add in all valid extensions.
   void setupValidExtensions();
+  // Add a new valid extension.  This should include the ".".
+  // Returns true if added, false it not added b/c it already existed.
+  bool addValidExtension(const std::string &str);
+  // Remove an extension.
+  void removeValidExtension(const std::string &str);
+  // Remove all valid extensions.
+  void removeAllValidExtensions();
 
   class OpencxxConfiguration : public MetacompilerConfiguration
   {
@@ -64,31 +72,7 @@ namespace Opencxx {
     };
     
   public:
-    OpencxxConfiguration(Opencxx::ErrorLog& errorLog)
-      : errorLog_(errorLog)
-      , verboseMode_(false)
-      , libtoolPlugins_(false)
-      , doPreprocess_(true)
-      , preprocessTwice_(false)
-      , makeExecutable_(true)
-        , makeSharedLibrary_(false)
-      , recognizeOccExtensions_(true)
-      , wcharSupport_(false)
-      , staticInitialization_(true)
-      , doCompile_(true)
-      , showProgram_(false)
-      , externalDriver_(false)
-      , doTranslate_(true)
-      , showVersion_(false)
-      , printMetaclasses_(false)
-      , numOfObjectFiles_(0)
-      , sharedLibraryName_()
-      , compilerCommand_("g++")
-      , preprocessorCommand_("g++")
-      , linkerCommand_("g++")
-    {
-      setupValidExtensions();
-    }
+    OpencxxConfiguration(Opencxx::ErrorLog& errorLog);
 
     virtual ~OpencxxConfiguration() {}
 

@@ -14,6 +14,8 @@
 //
 //@endlicenses@
 
+#include <set>
+
 #include <opencxx/OpencxxConfiguration.h>
 #include <cassert>
 #include <cstdlib>
@@ -27,6 +29,32 @@
 
 namespace Opencxx
 {
+
+  OpencxxConfiguration::OpencxxConfiguration(Opencxx::ErrorLog& errorLog)
+    : errorLog_(errorLog)
+    , verboseMode_(false)
+    , libtoolPlugins_(false)
+    , doPreprocess_(true)
+    , preprocessTwice_(false)
+    , makeExecutable_(true)
+    , makeSharedLibrary_(false)
+    , recognizeOccExtensions_(true)
+    , wcharSupport_(false)
+    , staticInitialization_(true)
+    , doCompile_(true)
+    , showProgram_(false)
+    , externalDriver_(false)
+    , doTranslate_(true)
+    , showVersion_(false)
+    , printMetaclasses_(false)
+    , numOfObjectFiles_(0)
+    , sharedLibraryName_()
+    , compilerCommand_("g++")
+    , preprocessorCommand_("g++")
+    , linkerCommand_("g++")
+  {
+    setupValidExtensions();
+  }
 
   /**
      @todo Figure out who owns the <code>option</code> c-string
@@ -58,7 +86,7 @@ namespace Opencxx
     return strncmp(prefix, text, strlen(prefix)) == 0;
   }
 
-  static std::vector<std::string> ValidExtensions;
+  static std::set<std::string> ValidExtensions;
 
   /*
     File Naming convention
@@ -70,18 +98,38 @@ namespace Opencxx
   void setupValidExtensions()
   {
     if (ValidExtensions.empty()) {
-      ValidExtensions.push_back(".cc");
-      ValidExtensions.push_back(".C");
-      ValidExtensions.push_back(".c");
-      ValidExtensions.push_back(".mc");
-      ValidExtensions.push_back(".cxx");
-      ValidExtensions.push_back(".cpp");
-      ValidExtensions.push_back(".ii");
-      ValidExtensions.push_back(".i");
-      ValidExtensions.push_back(".occ");
+      ValidExtensions.insert(".cc");
+      ValidExtensions.insert(".C");
+      ValidExtensions.insert(".c");
+      ValidExtensions.insert(".mc");
+      ValidExtensions.insert(".cxx");
+      ValidExtensions.insert(".cpp");
+      ValidExtensions.insert(".ii");
+      ValidExtensions.insert(".i");
+      ValidExtensions.insert(".occ");
     }
   }
 
+  // Add a new valid extension.  This should include the ".".
+  // Returns true if added, false it not added b/c it already existed.
+  bool addValidExtension(const std::string &str)
+  {
+    return ValidExtensions.insert(str).second;
+  }
+
+  // Remove an extension.  Returns true if removed, false if it didn't exist.
+  void removeValidExtension(const std::string &str)
+  {
+    ValidExtensions.erase(ValidExtensions.find(str));
+  }
+
+  // Remove all valid extensions.
+  void removeAllValidExtensions()
+  {
+    ValidExtensions.clear();
+  }
+
+  // Returns true if the file name matches a valid extension.
   static bool IsCxxSource(const char* fname)
   {
     using namespace std;
@@ -90,13 +138,7 @@ namespace Opencxx
     if(ext == 0)
       return false;
 
-    for (vector<string>::const_iterator i = ValidExtensions.begin(); i != ValidExtensions.end(); ++i) {
-      if (ext == *i) {
-        return true;
-      }
-    }
-
-    return false;
+    return ValidExtensions.count(ext);
   }
 
   void ParseCcOptions(
@@ -173,7 +215,7 @@ namespace Opencxx
       }
       else if(strncmp("-u", argv[i],2) == 0 && argv[i][2] != '\0') {
         // User-specified file extension to be recognized as OpenC++ source.
-        ValidExtensions.push_back(&argv[i][2]);
+        addValidExtension(&argv[i][2]);
       }
       else if (streq("-g", argv[i])) config.AddCcOption(argv[i]);
       else if (streq("-n", argv[i])) config.SetDoPreprocess(false);
