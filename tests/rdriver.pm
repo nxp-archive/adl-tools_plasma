@@ -109,9 +109,10 @@ the test output as its argument and should die if an error occurs.
 
 =item B<fail>
 
-If this is 1 then the cmd run is expected to have a non-zero return value. The
-test will fail if 0 is returned.  The checking commands will still be executed
-if they are present.
+If this is non-zero then the cmd run is expected to have a non-zero return
+value. The test will fail if 0 is returned.  The checking commands will still be
+executed if they are present.  The value of fail should match the error code
+returned by the program, or should be 999 to represent a don't-care condition.
 
 =item B<temps>
 
@@ -171,6 +172,7 @@ $seed = 0;
 $cmd = "";
 $fails = 0;
 $keepoutput = 0;
+$DontCare = 999;
 
 sub error {
   print shift;
@@ -181,7 +183,7 @@ sub error {
 
 use strict;
 
-use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $keepoutput $debug);
+use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $keepoutput $debug $DontCare);
 
 # Main test code:  For each test, execute it, then scan the output for
 # the tags we look for.  After that, check everything.
@@ -209,10 +211,16 @@ sub doTest($) {
     my $failokay = ($t->{fail});
     #print "Output:\n\n$output\n\n";
     eval {
-      if (($? >> 8)) {
+	  my $fc = ($? >> 8);
+      if ($fc) {
 		if (!($failokay)) {
 		  error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
 		} else {
+		  if ($failokay != $DontCare) {
+			if ($fc != $failokay) {
+			  error (" Test failed with a value of $fc, but $failokay was expected.");
+			}
+		  }
 		  print "  ...expected fail found.\n";
 		}
       } elsif ($failokay) {

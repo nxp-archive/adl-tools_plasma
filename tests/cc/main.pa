@@ -97,29 +97,34 @@ void tokenize(TokChan &tc)
 
 void parse(TokChan &tc)
 {
-  CParser cp(options._debug);
-  while(!cp.error()) {
+  Compiler compiler;
+  CParser parser(options._debug);
+  Results results;
+  while(!parser.error()) {
     Tokens tk = tc.get();
     if (tk._tok < 0) break;
-    cp.parse(tk._tok,tk);
+    parser.parse(tk._tok,tk);
     if (!tk._tok) {
-      cp.reset();
+      // End of file reached- spawn off a compile job for this translation
+      // unit and reset the parser for the next file.
+      results.push_back(spawn(compiler.compileUnit(parser.lastUnit(),options._ast,options._check)));
+      parser.reset();
     }
   }
   // If we have a parsing error, exit.
-  if (cp.error()) {
+  if (parser.error()) {
     pExit(1);
   }
-  // Do the compilation:  Give each translation unit
-  // to the compiler and tell it to go to work.
-  Compiler compiler(cp.translationUnits());
-  compiler.compileUnits(options._ast,options._check);
-  if (compiler.error()) {
-    pExit(2);
+  // Synchronize by making sure all compile threads are done.
+  // Exit w/error if any report an error.
+  for (Results::iterator i = results.begin(); i != results.end(); ++i) {
+    if ( !i->value() ) {
+      pExit(2);
+    }
   }
   // Print ASTs, if so requested.
   if (options._ast) {
-    compiler.print_ast_list(cout,options._syms);
+    parser.print_ast_list(cout,options._syms);
   }
 }
 

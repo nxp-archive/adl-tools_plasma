@@ -9,70 +9,70 @@ use strict;
 use Data::Dumper;
 
 my @Tests = (
-			 # Basic check of multiple .c files.
+			 # 1. Basic check of multiple .c files.
 			 {
 			  cmd     => "./minicc -ast tests/in1.c tests/in2.c",
 			  diff    => "tests/test1.out",
 			 },
-			 # Checks that a parsing error will be reported.
+			 # 2. Checks that a parsing error will be reported.
 			 {
 			  cmd     => "./minicc -ast tests/in3.c",
 			  diff    => "tests/test2.out",
 			  stderr  => 1,
 			  fail    => 1,
 			 },
-			 # Large test of all supported features.
+			 # 3. Large test of all supported features.
 			 {
 			  cmd     => "./minicc -ast tests/in4.c",
 			  diff    => "tests/test3.out",
 			 },
-			 # Simple symbol-table parsing.
+			 # 4. Simple symbol-table parsing.
 			 {
 			  cmd     => "./minicc -syms tests/in5.c",
 			  diff    => "tests/test4.out",
 			 },
-			 # Simple symbol-table parsing.
+			 # 5. Simple symbol-table parsing.
 			 {
 			  cmd     => "./minicc -syms tests/in6.c",
 			  diff    => "tests/test5.out",
 			  stderr  => 1,
-			  fail    => 1,
+			  fail    => 2,
 			 },
-			 # Simple symbol-table parsing.
+			 # 6. Simple symbol-table parsing.
 			 {
 			  cmd     => "./minicc -syms tests/in7.c",
 			  diff    => "tests/test6.out",
 			  stderr  => 1,
-			  fail    => 1,
+			  fail    => 2,
 			 },
-			 # Symbol table for big input file.
+			 # 7. Symbol table for big input file.
 			 {
 			  cmd     => "./minicc -syms tests/in4.c",
 			  diff    => "tests/test10.out",
 			 },
-			 # Type-checking test.
+			 # 8. Type-checking test.
 			 {
 			  cmd     => "./minicc -check tests/in8.c",
 			  diff    => "tests/test7.out",
 			  stderr  => 1,
-			  fail    => 1,
+			  fail    => 2,
 			 },			 
-			 # Type-checking test.
+			 # 9. Type-checking test.
 			 {
 			  cmd     => "./minicc -check tests/in9.c",
 			  diff    => "tests/test8.out",
 			  stderr  => 1,
-			  fail    => 1,
+			  fail    => 2,
 			 },
-			 # Flow control test.
+			 # 10. Flow control test.
 			 {
 			  cmd     => "./minicc -check tests/in10.c",
 			  diff    => "tests/test9.out",
 			  stderr  => 1,
 			 },
-			 # Full check on big input file (test should just not fail).
+			 # 11. Full check on multiple big input files (test should just not fail).
 			 {
-			  cmd     => "./minicc -check tests/in4.c",
+			  cmd     => "./minicc -check tests/in4.c tests/in4.c tests/in4.c tests/in4.c ",
 			 },
 	    );
 

@@ -12,26 +12,12 @@
 using namespace std;
 using namespace plasma;
 
-Compiler::Compiler( Nodes &asts) :
-  _asts(asts)
+Compiler::Compiler( )
 {
 }
 
-// Each thread returns a boolean- false means that an error
-// was encountered.
-typedef Result<bool> CompRes;
-typedef vector<CompRes,traceable_allocator<CompRes> > Results;
-
-// Spawn off each translation-unit compilation phase as a separate thread.
-void Compiler::compileUnits(bool sym_only,bool check_only)
-{
-  pfor (Nodes::iterator i = _asts.begin(); i != _asts.end(); ++i) {
-    compileUnit(*i,sym_only,check_only);
-  }
-}
-
-// For each translation unit, compile it.
-void Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
+// Compile a translation unit.
+bool Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
 {
   // First, we generate the symbol table.  This has to be done serially b/c of
   // the sequential nature of C, i.e. symbols are visible in the order in which
@@ -41,10 +27,10 @@ void Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
   }
   catch (exception &err) {
     cerr << err.what() << endl;
-    _error = true;
+    return false;
   }
   if (sym_only) {
-    return;
+    return true;
   }
   // Now we spawn off threads to do the rest of the work.
   TranslationUnit &turef = ncastr<TranslationUnit>(tu);
@@ -55,9 +41,10 @@ void Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
   // If any of the results are false, we've got an error.
   for (Results::iterator i = results.begin(); i != results.end(); ++i) {
     if ( !i->value() ) {
-      _error = true;
+      return false;
     }
   }
+  return true;
 }
 
 bool Compiler::compile(Node *n,bool check_only)
@@ -78,15 +65,3 @@ bool Compiler::compile(Node *n,bool check_only)
   return true;
 }
 
-void Compiler::print_ast_list(ostream &o,bool ps)
-{
-  if (ps) {
-    o << printsyms;
-  }
-  for (Nodes::const_iterator i = _asts.begin(); i != _asts.end(); ++i) {
-    o << "\nTranslation Unit\n"
-      << "================\n"
-      << (*i)
-      << endl;
-  }
-}

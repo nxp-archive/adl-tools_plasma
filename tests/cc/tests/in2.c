@@ -5,5 +5,5 @@ extern int c;
 
 int main() {
   a = b = c = 20;
-  return;
+  return 100;
 }

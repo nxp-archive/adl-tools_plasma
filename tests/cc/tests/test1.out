@@ -78,4 +78,6 @@ Translation Unit
                                 Value:  20
                   + 15ReturnStatement
                     Expr:  
-                      + 8NullNode
+                      + 5Const
+                        Type-string:  int
+                        Value:  100

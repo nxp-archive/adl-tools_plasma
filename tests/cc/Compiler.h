@@ -9,28 +9,19 @@
 
 #include "Types.h"
 
+class Node;
+
 class Compiler {
 public:
-  Compiler( Nodes &);
-  // Query error condition.
-  bool error() const { return _error; };
+  Compiler();
 
-  // Main entry point.
   // sym_only:    Stop after symbol table creation.
   // check_only:  Stop after type-checking and flow control analysis.
-  void compileUnits(bool sym_only,bool check_only);
-
-  // Print all ASTs.
-  void print_ast_list(std::ostream &,bool printsyms);
+  // return:      False:  An error occurred.
+  bool compileUnit(Node *,bool sym_only,bool check_only);
 
   // Used internally.
-  void compileUnit(Node *,bool,bool);
   bool compile(Node *,bool);
-private:
-
-  Nodes &_asts;
-
-  bool   _error;  // Notes that we're in an error condition.
 };
 
 #endif

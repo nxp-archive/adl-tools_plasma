@@ -1,5 +1,9 @@
 2004-08-20  Brian Kahne  <bkahne@ibmoto.com>
 
+	* minicc: Modified main parser/compiler routine so that we spawn
+	off a compile job after each file is done.  We then synchronize at
+	the end.
+
 	* minicc: Added type-checking and flow-control analysis passes.
 	These are done in parallel across all top-level items in a
 	translation unit.
