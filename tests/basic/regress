@@ -140,6 +140,11 @@ my @Tests = (
 	      cmd     => "./chan16",
 	      checker => \&check_chan16,
 	     },
+	     # Channel test w/multiple producers using a simple channel.
+	     {
+	      cmd     => "./chan17",
+	      checker => \&check_chan17,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -568,6 +573,24 @@ sub check_chan16 {
 		   "Producer 1 wrote 9.",
 		   ]);
 
+}
+
+sub check_chan17 {
+  # Verify consumer gets its data.
+  my @data1 = (
+	       [1..50],
+	      );
+  check_channel (@_[0],"Comm (\\d+):\\s+Chan Num=\\d+,\\s+item \\d+\\s+Rcvd msg num=(\\d+)",\@data1,6);
+
+  # Verify producers wrote data.
+  my @data2 = (
+	      [1..10],
+	      [1..10],
+	      [1..10],
+	      [1..10],
+	      [1..10],
+	     );
+  check_channel (@_[0],"Producer (\\d+):\\s+Sending msg num=(\\d+)",\@data2);
 }
 
 sub check_spawn1 {

@@ -1,5 +1,10 @@
 2004-07-02  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Modified the basic Channel template to support multiple
+	producers.  Added chan17 to test this.  This simply meant
+	converting over to having a vector of waiting writers, just like
+	the queued channel class.
+
 	* Changed how we go about setting a priority.  We used to always
 	yield, but this was wrong b/c if we change to a higher priority,
 	that thread should execute, since the highest priority thread

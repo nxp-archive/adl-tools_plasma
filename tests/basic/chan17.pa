@@ -1,0 +1,70 @@
+//
+// Simple channel test- demonstrates multiple producers using
+// a single channel to send to a single consumer.
+//
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+using namespace plasma;
+
+const int num_terms = 5;
+const int count     = 10;  // number of messages to be sent on each channel.
+
+struct Msg {
+  int cnt;
+  int snd;
+};
+
+typedef plasma::Channel<Msg> Chan;
+
+void producer(Chan &out, int index, int count) 
+{
+  int msgcnt = 0;
+
+  printf ("Producer %d started.\n",index);
+  while(msgcnt < count) {
+    msgcnt = msgcnt + 1;
+    printf("Producer %d:  Sending msg num=%d\n", index, msgcnt);
+    Msg data;
+    data.cnt = msgcnt;
+    data.snd = index;
+    out.write(data);
+  }
+  printf ("Producer done.\n",index);
+}
+
+void consumer(Chan &in) 
+{
+  int cnt2 = 0;        // number of messages received.
+  printf("Consumer started.\n");
+  while(1) {
+    Msg data = in.get();
+    printf("Comm 0:  Chan Num=%ld, item %ld  ", data.snd,data.cnt);
+    cnt2 = cnt2 + 1;
+    printf(" Rcvd msg num=%ld\n", cnt2);
+    if (cnt2 >= (count * num_terms)) {
+      printf ("Consumer done.\n");
+      printf ("Done.\n");
+      plasma::pExit(0);
+    }
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  Chan chan;
+  par {
+    consumer(chan);
+    pfor (int i = 0; i != num_terms; ++i) {
+      producer(chan, i, count);
+    }
+  }
+  return 0;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}

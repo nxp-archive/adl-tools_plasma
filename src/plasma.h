@@ -20,12 +20,14 @@ namespace plasma {
   int mvfprintf(FILE *,const char *format,va_list ap);
 
   // Basic channel class:  Stores only a single piece of data, so 
-  // a second write before a read will block.  This is designed
-  // for a single producer to feed data to a single consumer.
+  // a second write before a read will block.  This is generally
+  // used bya single producer to go to a single consumer, but it is
+  // possible to have multiple producers.
   template <class Data>
   pTMutex class Channel {
+    typedef std::vector<THandle> Writers;
   public:
-    Channel() : _ready(false), _readt(0), _writet(0) {};
+    Channel() : _ready(false), _readt(0) {};
     void write(const Data &d);
     bool ready() const { return _ready; };
     void clear_ready() { _ready = false; };
@@ -37,14 +39,15 @@ namespace plasma {
     pNoMutex void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
     pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
-    void set_writenotify(THandle t) { assert(!_writet); _writet = t; };
-    THandle clear_writenotify() { THandle t = _writet; _writet = 0; return t; };
+    void set_writenotify(THandle t) { _writers.push_back(t); };
+    bool have_writers() const { return !_writers.empty(); };
+    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
 
     Data       _data;
     bool       _ready;
     THandle    _readt;
-    THandle    _writet;
+    Writers    _writers;
     HandleType _h;
   };
 
@@ -70,6 +73,7 @@ namespace plasma {
     pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
     void set_writenotify(THandle t) { _writers.push_back(t); };
+    bool have_writers() const { return !_writers.empty(); };
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
 
@@ -119,8 +123,8 @@ namespace plasma {
   {
     // We'll be consuming data, so if we have a waiting
     // writer, it's valid to wake it up.
-    if (_writet) {
-      pAddReady(clear_writenotify());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }
     if (!_ready) {
       // We don't have data, so the reader must
@@ -132,8 +136,8 @@ namespace plasma {
       clear_ready();
     }
     // Reactivate a waiting writer if one appeared while we were asleep.
-    if (_writet) {
-      pAddReady(clear_writenotify());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }    
     return _data;
   }
@@ -145,7 +149,7 @@ namespace plasma {
     if (_readt) {
       pWake(clear_notify(),_h);
     }
-    if (_ready) {
+    while (_ready) {
       // We already have data, so the write must block
       // until the reader consumes the data.
       set_writenotify(pCurThread());
@@ -165,19 +169,22 @@ namespace plasma {
   template <class Data>
   Data QueueChan<Data>::read_internal(bool clearready)
   {
+    // If there's a waiting writer (queue is full) and we're
+    // going to remove an item, then unblock the next writer here.
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
+    }
     // If no data- sleep until we get some.
     if (!ready()) {
       set_notify(pCurThread(),HandleType());
       pSleep();
     }
-    // If there's a waiting writer (queue is full) and we're
-    // going to remove an item, then unblock the next writer here.
-    if (_writers.size() && clearready) {
-      pAddReady(next_writer());
-    }
     Data temp = _store.back();
     if (clearready) {
       clear_ready();
+    }
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }
     return temp;
   }
@@ -185,6 +192,10 @@ namespace plasma {
   template <class Data>
   void QueueChan<Data>::write(const Data &d) 
   { 
+    // If we have a waiting reader, wake it up.
+    if (_readt) {
+      pWake(clear_notify(),_h);
+    }
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
     // data to again fill the queue, the thread will again sleep.
@@ -195,7 +206,7 @@ namespace plasma {
     _store.push_front(d);
     ++_size;
     assert(_maxsize < 0 || _size <= _maxsize);
-    // Wake a sleeping reader.
+    // Reactivate a reader if one appeared while we were asleep.
     if (_readt) {
       pWake(clear_notify(),_h);
     }

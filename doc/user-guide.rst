@@ -289,12 +289,13 @@ Currently, Plasma contains the following channels.  These are declared in ``plas
 
 1. ``Channel<class Data>``:  This is a typed channel which reads and writes an
    object of type *Data*.  It contains only a single copy of this object; a
-   second write will block if the first write's data has not been read.
+   second write will block if the first write's data has not been read.  It may
+   be used with multiple producers, but only a single consumer is allowed.
 
-2. ``QueueChan<class Data>``:  This is a typed queued channel:  It allows for
-   multiple producers but still requires a single consumer.  By default, the
-   queue size is not fixed, but the user may set a maximum size by specifying it
-   as the constructor argument.
+2. ``QueueChan<class Data>``: This is a typed queued channel: It allows for
+   multiple producers and requires a single consumer.  By default, the queue
+   size is not fixed, but the user may set a maximum size by specifying it as
+   the constructor argument.
 
 3. ``Timeout``:  Use this to break out of an alt block after a specified amount
    of simulation time.  It uses ``pDelay()`` to block for a given amount of
