@@ -52,6 +52,23 @@ spawn4_SOURCES = spawn4.pa
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
+DEP_FILES=\
+	./$(DEPDIR)/par1.Po \
+	./$(DEPDIR)/par2.Po \
+	./$(DEPDIR)/par3.Po \
+	./$(DEPDIR)/qsort.Po \
+	./$(DEPDIR)/chan1.Po \
+	./$(DEPDIR)/chan2.Po \
+	./$(DEPDIR)/chan3.Po \
+	./$(DEPDIR)/chan4.Po \
+	./$(DEPDIR)/chan5.Po \
+	./$(DEPDIR)/chan6.Po \
+	./$(DEPDIR)/chan7.Po \
+	./$(DEPDIR)/spawn1.Po \
+	./$(DEPDIR)/spawn2.Po \
+	./$(DEPDIR)/spawn3.Po \
+	./$(DEPDIR)/spawn4.Po
+
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
 include ./$(DEPDIR)/par3.Po
