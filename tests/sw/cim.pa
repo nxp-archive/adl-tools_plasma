@@ -88,7 +88,7 @@ typedef Channel<Msg> MsgChan;
 MsgChan appl_out, appl_in, Hclock, Uintpt, Hreqst;
 MsgChan srvr_out, srvr_in, drvr_in, drvr_out, need_uint;
 
-Random Random(1);
+Random<> Rand(1);
 
 //  work delay - cumul time by job and go busy
 
@@ -278,7 +278,7 @@ void Hintr(MsgChan &appl_out, MsgChan &Hclock, MsgChan &Hreqst,
   need.cmd = 0;
   uint.cmd = Clock_cmd;
   no_reqs = 0;
-  intn = Random.uniform(0, Hmiss_avg-(Hmiss_delta/2), Hmiss_avg+(Hmiss_delta/2));
+  intn = Rand.uniform(0, Hmiss_avg-(Hmiss_delta/2), Hmiss_avg+(Hmiss_delta/2));
   while(true) {
     if (mesg.cmd) {
       // if holding prior mesg, don't read appl_out
@@ -351,7 +351,7 @@ void Hintr(MsgChan &appl_out, MsgChan &Hclock, MsgChan &Hreqst,
         srvr_in.write(mesg);
         mesg.cmd = 0;  // clear this only when handled
       } else {
-        intn = Random.uniform(0, Hmiss_avg-(Hmiss_delta/2),
+        intn = Rand.uniform(0, Hmiss_avg-(Hmiss_delta/2),
                               Hmiss_avg+(Hmiss_delta/2));
       }   
     }

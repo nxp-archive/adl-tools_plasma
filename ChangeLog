@@ -1,3 +1,27 @@
+2004-07-09  Brian Kahne  <bkahne@ibmoto.com>
+
+	* We now support uniform, triangular, exponential, and normal
+	distributions.  The latter two, however, appear to be somewhat
+	broken- we'll fix it later.
+
+	* Added the Random template class for random number generation.
+	The template takes a generator as a parameter and lets the user
+	have n number of independent generation streams.  The currently
+	supported generators are:  
+
+	1.  LCG:  2^31 period, reversible, 1 state word.
+
+	2.  KISS:  2^127 period, not reversible, 5 state words.
+
+	3.  Mersenne Twist:  2^19337 period, reversible, 625 state words.
+
+	The Random class lets the user generate numbers, load/save state
+	to a stream, and generate numbers in reverse (if supported).  To
+	do:  Add various distributions.
+
+	* Removed the Random class from the regress directories and
+	modified necessary tests to use the new Random class.
+
 2004-07-07  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added the ability to name Processor objects.  The memory is

@@ -57,7 +57,9 @@ check_PROGRAMS = \
 	time2 \
 	time3 \
 	time4 \
-	time5
+	time5 \
+	rand1 \
+	rand2
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
@@ -205,6 +207,12 @@ time4_DEPENDENCIES = $(DEPENDENCIES)
 time5_SOURCES = time5.pa
 time5_DEPENDENCIES = $(DEPENDENCIES)
 
+rand1_SOURCES = rand1.C
+rand1_DEPENDENCIES = $(DEPENDENCIES)
+
+rand2_SOURCES = rand2.C
+rand2_DEPENDENCIES = $(DEPENDENCIES)
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
 DEP_FILES=\
@@ -255,7 +263,9 @@ DEP_FILES=\
 	./$(DEPDIR)/time2.Po \
 	./$(DEPDIR)/time3.Po \
 	./$(DEPDIR)/time4.Po \
-	./$(DEPDIR)/time5.Po
+	./$(DEPDIR)/time5.Po \
+	./$(DEPDIR)/rand1.Po \
+	./$(DEPDIR)/rand2.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po

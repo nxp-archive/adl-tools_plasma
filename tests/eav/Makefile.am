@@ -9,14 +9,13 @@ check_PROGRAMS = \
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
-eav_SOURCES = Random.C eav.pa 
+eav_SOURCES = eav.pa 
 eav_DEPENDENCIES = $(DEPENDENCIES)
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
 DEP_FILES=\
-	./$(DEPDIR)/eav.Po \
-	./$(DEPDIR)/Random.Po
+	./$(DEPDIR)/eav.Po
 
 include ./$(DEPDIR)/eav.Po
 

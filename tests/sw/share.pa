@@ -18,7 +18,7 @@ using namespace plasma;
 const int MaxPos = 0x7fffffff;
 const int num_transfers = 5;    
 
-Random Random(1);
+Random<> Rand(1);
 
 typedef Channel<bool> Chan;  
 
@@ -222,11 +222,11 @@ void user(TranChan &request, int id, int num_requests)
   Transfer my_req;
   my_req.response = &my_chan;
   my_req.id = id;
-  my_req.speed = Random.uniform(0, 100, 1000);
+  my_req.speed = Rand.uniform(0, 100, 1000);
   
   for (int i = 0; i != num_requests; ++i) {
-    pDelay(Random.uniform(0, 0, 100));
-    my_req.length = Random.uniform(0, 500, 5000);
+    pDelay(Rand.uniform(0, 0, 100));
+    my_req.length = Rand.uniform(0, 500, 5000);
     printf("\nUser %ld requesting at %lld (length %d, speed %f).", id, pTime(),my_req.length,my_req.speed);
     flush();
     request.write(my_req);

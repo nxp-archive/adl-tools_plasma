@@ -79,7 +79,7 @@ Processor mainframe;
 Processors diskdrives(num_drives);
 
 // Random number generation.
-Random Random(1);
+Random<> Rand(1);
 
 //
 // Miscellaneous output routines to mirror those of sw.
@@ -152,7 +152,7 @@ void user(Chan &in, Chan &out, int32 usernum, int32 max_in,
 {
   int32 sigma_t = 0, dt;
   int32 count = 0;
-  pDelay(Random.uniform(0, 0, ThinkTime * msec)); //stagger the start-ups of the users
+  pDelay(Rand.uniform(0, 0, ThinkTime * msec)); //stagger the start-ups of the users
   ptime_t now, max = max_in;
   while ((now = pTime()) < max) {
     int32 dummy, t;
@@ -166,7 +166,7 @@ void user(Chan &in, Chan &out, int32 usernum, int32 max_in,
     sigma_t = sigma_t + dt;			// total response time
     transactions1 = transactions1 + 1;		// global transaction sigma
     times1 = times1 + dt;					// global response time sigma
-    pDelay(Random.uniform(0, (ThinkTime - ThinkVar) * msec, 
+    pDelay(Rand.uniform(0, (ThinkTime - ThinkVar) * msec, 
                  (ThinkTime + ThinkVar) * msec));
     dprintf ("user %d:  Total transactions %d at time %lld\n",usernum,transactions1,now);
   }
@@ -413,20 +413,20 @@ public:
     int32 newtrack = 0;
     int32 dtrack;
 	
-    pDelay(Random.uniform(0, 10 * msec, 20 * msec));
+    pDelay(Rand.uniform(0, 10 * msec, 20 * msec));
     while(1) {
       int32 wait_time;
       
       cmnd = in.get();		       // get the composite command
       agent = cmnd >> 16;	       // resolve into agent number
       cmnd = cmnd & 255;	       // ..and command
-      newtrack = Random.uniform(0, 0, num_tracks);
+      newtrack = Rand.uniform(0, 0, num_tracks);
       if (newtrack < track) {
 	dtrack = track - newtrack;
       } else {
         dtrack = newtrack - track;
       }
-      wait_time = Random.uniform(0, 0, rotation_time) + // rotate latency
+      wait_time = Rand.uniform(0, 0, rotation_time) + // rotate latency
         (dtrack * seek_time) +		// seek latency
         settling_time;
       pDelay(wait_time);
@@ -455,7 +455,7 @@ public:
         }
       }
       // got a request from a tp agent; assign it to a drive
-      drivenum = Random.uniform(0, 0, disks);	// chooses rv in 0..disks-1
+      drivenum = Rand.uniform(0, 0, disks);	// chooses rv in 0..disks-1
       composite = cmnd + (agent << 16);
       think(mips, DiskCmndPath);		// IO-issuing path length
       to_drives[drivenum].write(composite);
@@ -544,7 +544,7 @@ void disk_write_synch(Chan &to_disks, Chan &from_disks)
 void mem_read(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
 {
   dprintf ("mem_read:  starting.\n");
-  if (Random.uniform(0, 0, 1000) > hit_rate) {
+  if (Rand.uniform(0, 0, 1000) > hit_rate) {
     dprintf ("mem_read:  disk write asynch start.\n");
     // hit_rate is an integer in 0..999; if our rv is larger than hitrate
     //then we have a MISS	
@@ -562,7 +562,7 @@ void mem_read(Chan &to_disks, Chan &from_disks, int32 hit_rate)
 void mem_write_synch(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
 {
   // gives stuff to the memory system and waits for write to finish
-  if (Random.uniform(0, 0, 1000) > hit_rate) {
+  if (Rand.uniform(0, 0, 1000) > hit_rate) {
     // hit_rate is an integer in 0..999; if our rv is larger than hitrate
     // then we have a MISS
     disk_write_synch(to_disks, from_disks);
@@ -576,7 +576,7 @@ void mem_write_asynch(Chan &to_disks, Chan &from_disks, int32 hit_rate)
 {
   dprintf ("mem_write_asynch:  starting.\n");
   // gives stuff to the memory system
-  if (Random.uniform(0, 0, 1000) > hit_rate) {
+  if (Rand.uniform(0, 0, 1000) > hit_rate) {
     dprintf ("mem_write_asynch:  disk write asynch start.\n");
     disk_write_asynch(to_disks, from_disks);
     dprintf ("mem_write_asynch:  disk write asynch finish.\n");

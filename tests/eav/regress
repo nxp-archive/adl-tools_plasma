@@ -40,8 +40,21 @@ sub check_eav {
 
   str_rdiff(@_[0],[
 		   "The users have all finished.",
-		   "Total of 1890 in",
 		   ]);
+
+  # We allow some variable for the number of transactions.
+  my $exp_nt = 1899;
+  my $var = 30;
+  my @lines = split /\n/,@_[0];
+  for (@lines) {
+    if (/Total of (\d+) in/) {
+      my $nt = eval $1;
+      if (($nt > ($exp_nt+$var)) || ($nt < ($exp_nt-$var))) {
+	print "Incorrect # of transactions- expected $exp_nt with variable of $var, found $nt.\n";
+	die;
+      }
+    }
+  }
 }
 
 ##

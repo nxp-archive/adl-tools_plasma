@@ -37,16 +37,16 @@ ptimeout_DEPENDENCIES = $(DEPENDENCIES)
 queues_SOURCES = queues.pa
 queues_DEPENDENCIES = $(DEPENDENCIES)
 
-share_SOURCES = share.pa Random.C
+share_SOURCES = share.pa
 share_DEPENDENCIES = $(DEPENDENCIES)
 
-fhr_SOURCES = fhr.pa Random.C
+fhr_SOURCES = fhr.pa
 fhr_DEPENDENCIES = $(DEPENDENCIES)
 
-example_SOURCES = example.pa Random.C
+example_SOURCES = example.pa
 example_DEPENDENCIES = $(DEPENDENCIES)
 
-cim_SOURCES = cim.pa Random.C
+cim_SOURCES = cim.pa
 cim_DEPENDENCIES = $(DEPENDENCIES)
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
@@ -57,7 +57,6 @@ DEP_FILES=\
 	./$(DEPDIR)/nalt.Po \
 	./$(DEPDIR)/ptimeout.Po \
 	./$(DEPDIR)/queues.Po \
-	./$(DEPDIR)/Random.Po \
 	./$(DEPDIR)/fhr.Po \
 	./$(DEPDIR)/example.Po \
 	./$(DEPDIR)/cim.Po

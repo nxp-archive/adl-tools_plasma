@@ -21,7 +21,7 @@ Processor comms(m68030);
 Processors terminals(max_terms,s6502);
 Processor watcher(s6502);
 
-Random Random(1);
+Random<> Rand(1);
 
 int cpu_mips = 0, frontend_mips = 0;
 
@@ -64,10 +64,10 @@ void user(MsgChan &out, MsgChan &in, int index, int &sigma_t, int &n)
 {
   Message data;
   data.source = index;
-  pDelay(Random.uniform(0, 0, 80 * msec));
+  pDelay(Rand.uniform(0, 0, 80 * msec));
   while(1) {
-    data.length = Random.uniform(0, 10, 30);
-    pDelay(Random.uniform(0, 100 * msec, 200 * msec));
+    data.length = Rand.uniform(0, 10, 30);
+    pDelay(Rand.uniform(0, 100 * msec, 200 * msec));
     data.time_start = pTime();
     out.write(data);
     data = in.get();
@@ -116,8 +116,8 @@ void application(MsgChan &in, MsgChan &out, IntChan &notify, int n)
   notify.write(1);
   while(1) {
     Message data = in.get();
-    think(Random.uniform(0, 100000, 150000));
-    data.length = Random.uniform(0, 1000, 2000);
+    think(Rand.uniform(0, 100000, 150000));
+    data.length = Rand.uniform(0, 1000, 2000);
     par {
       out.write(data);
       notify.write(1);

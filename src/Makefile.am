@@ -10,12 +10,20 @@ libplasma_a_SOURCES = \
 	System.C \
 	Queue.C \
 	ProcQ.C \
-	Thread.C
+	Thread.C \
+	Random.C \
+	LcgRand.C \
+	KissRand.C \
+	MtRand.C
 
 pkginclude_HEADERS = \
-	Interface.h \
 	plasma-interface.h \
-	plasma.h
+	plasma.h \
+	Interface.h \
+	Random.h \
+	LcgRand.h \
+	KissRand.h \
+	MtRand.h
 
 noinst_HEADERS = \
 	Machine.h  \

@@ -3,8 +3,8 @@
 // must be explicitly included in a user's program.
 //
 
-#ifndef _PLSMAA_H_
-#define _PLSMAA_H_
+#ifndef _PLASMA_H_
+#define _PLASMA_H_
 
 #include <stdarg.h>
 #include <assert.h>

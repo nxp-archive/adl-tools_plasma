@@ -18,7 +18,7 @@ Processors Comms(25);
 typedef Channel<int> Chan;
 typedef vector<Chan,traceable_allocator<Chan> > Chans;
 
-Random Random(5);
+Random<> Rand(5);
 
 void give(int n)
 {
@@ -39,7 +39,7 @@ int user(Chan &to_system, Chan &from_system,
   ptime_t total_time = 0;
       
   printf("\nUser %d has started:  %d transactions.\n",user_num,limit);
-  pDelay(Random.uniform(1, 1, 100));
+  pDelay(Rand.uniform(1, 1, 100));
 
   for (int i = 0; i != limit; ++i) {
     ptime_t this_time = pTime();
@@ -49,7 +49,7 @@ int user(Chan &to_system, Chan &from_system,
     got(user_num);
     this_time = pTime() - this_time;
     total_time += this_time;
-    pDelay(Random.uniform(2, 0, 100));        //think time independed random stream.
+    pDelay(Rand.uniform(2, 0, 100));        //think time independed random stream.
     if (i && ((i % 100) == 0)) {
       printf("\nUser %d:  Transaction %d  %lld tps.\n",user_num,i,total_time/i);
     } 
@@ -67,7 +67,7 @@ void tpri(Chans &in, Chan &oracle, Chan &rdb)
 {
   int looping = 1, chooser = 0;
   printf("\nTPRI has started");
-  pDelay(Random.uniform(1, 5, 30));
+  pDelay(Rand.uniform(1, 5, 30));
   while (1) {
     //printf("\nTpri waiting for input");
     
@@ -77,7 +77,7 @@ void tpri(Chans &in, Chan &oracle, Chan &rdb)
       }
     }
     //printf("\nTpri got input on %d.\n",looping);
-    pBusy(Random.uniform(4, 10, 20));
+    pBusy(Rand.uniform(4, 10, 20));
     //printf("\nTpri thought");
     chooser = chooser + 1;
     if (chooser & 3 == 0) {
@@ -99,12 +99,12 @@ void oracle(Chan &in, Chan &out )
   int looping = 1;
   
   printf("\nOracle starting");
-  pDelay(Random.uniform(1, 5, 17));
+  pDelay(Rand.uniform(1, 5, 17));
   while (1) {
     //printf("\nOracle waiting for input");
     looping = in.get();
     //printf("\n oracle got it");
-    pBusy(Random.uniform(4, 20, 30));
+    pBusy(Rand.uniform(4, 20, 30));
     //printf("\noracle thought");
     out.write(looping);
     //printf("\n oracle responded");
@@ -116,14 +116,14 @@ void oracle(Chan &in, Chan &out )
 void tpro(Chan &oracle, Chan &rdb, Chans &terminal) 
 {
   printf("\nTPRO has started");
-  pDelay(Random.uniform(1, 7, 23));
+  pDelay(Rand.uniform(1, 7, 23));
   while (1) {
     //printf("\nTpro waiting on input");
     alt {
       oracle.port(int looping) {
         // got stuff from oracle
         //printf("\nTpro gotit from oracle");
-        pBusy(Random.uniform(1, 20, 55));
+        pBusy(Rand.uniform(1, 20, 55));
         //printf("\nTpro thought");
         terminal[looping].write(looping);
        	printf("\nTpro output to terminal");
@@ -131,7 +131,7 @@ void tpro(Chan &oracle, Chan &rdb, Chans &terminal)
       rdb.port(int looping) {
         // got stuff from rdb
         //printf("\nTpro gotit from rdb");
-        pBusy(Random.uniform(1, 20, 55));
+        pBusy(Rand.uniform(1, 20, 55));
         //printf("\nTpro thought");
         terminal[looping].write(looping);
         //printf("\nTpro output to terminal");
@@ -146,7 +146,7 @@ void tpro(Chan &oracle, Chan &rdb, Chans &terminal)
 void rdb(Chan &in, Chan &out) 
 {
   printf("\nRdb started..");
-  pDelay(Random.uniform(3, 10, 33));
+  pDelay(Rand.uniform(3, 10, 33));
   while (1) {
     //printf("\nRdb waiting");
     int looping = in.get();

@@ -250,6 +250,14 @@ my @Tests = (
 	      cmd     => "./time5",
 	      checker => \&check_time5,
 	     },
+	     # Test multiple random streams.
+	     {
+	      cmd     => "./rand1",
+	     },
+	     # Test distributions.
+	     {
+	      cmd     => "./rand2",
+	     }
 	    );
 
 doTest(\@Tests);
