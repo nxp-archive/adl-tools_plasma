@@ -39,6 +39,10 @@ namespace plasma {
     // Terminate the current thread and switch to the next ready thread.
     void terminate();
 
+    // Terminate a thread.  Will remove from ready queue if it's in it and
+    // will mark as done.
+    void terminate(Thread *t);
+
     // Current thread sleeps.  When awakened, gets handle value sent by
     // wake command.  Note:  You *must* have some other storage of this thread,
     // since it's removed from the ready queue.

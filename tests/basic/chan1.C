@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <iostream>
 
-#include "plasma-interface.h"
+#include "Interface.h"
 #include "plasma.h"
 
 using namespace std;

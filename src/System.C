@@ -2,8 +2,9 @@
 // Main system class.  Only one of these ever exists.
 //
 
-#include "plasma-interface.h"
+#include "Interface.h"
 #include "System.h"
+#include "Thread.h"
 
 namespace plasma {
 
@@ -46,6 +47,16 @@ namespace plasma {
   {
     *(void**)st = _stacks;
     _stacks = st;
+  }
+
+  // Place thread into ready queue.  If the
+  // thread is marked as donee, this operation
+  // will not do anything.
+  void System::add_ready(Thread *next)
+  {
+    if (!next->done()) {
+      _ready.add(next);
+    }
   }
 
 }

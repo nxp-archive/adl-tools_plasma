@@ -3,7 +3,7 @@
 // Miscellaneous user routines. 
 //
 
-#include "plasma-interface.h"
+#include "Interface.h"
 #include "Processor.h"
 #include "System.h"
 
@@ -58,6 +58,11 @@ namespace plasma {
   void pTerminate()
   {
     processor.terminate();
+  }
+
+  void pTerminate(THandle t)
+  {
+    processor.terminate(t);
   }
 
   int pSleep()

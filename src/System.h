@@ -23,6 +23,7 @@ namespace plasma {
     unsigned size_ready() const;       // Number of ready threads- O(n) operation.
     void add_ready(Thread *next);      // Place thread into ready queue.
     Thread *get_ready(void);           // Removes thread from ready queue and returns it.
+    Thread *get_ready(Thread *t);      // Removes thread from ready queue if it's in it.
     void print_ready(std::ostream &) const;
 
     void *newstack();                  // return appropriate thread stack
@@ -68,17 +69,16 @@ namespace plasma {
     return _wantshutdown;
   }
 
-  // Place thread into ready queue.
-  inline void System::add_ready(Thread *next)
-  {
-    _ready.add(next);
-  }
-
   // Get thread from ready queue.  Returns 0 if 
   // no threads are ready.
   inline Thread *System::get_ready(void)
   {
     return _ready.get();
+  }
+
+  inline Thread *System::get_ready(Thread *t)
+  {
+    return _ready.get(t);
   }
 
   inline void System::print_ready(std::ostream &o) const

@@ -31,6 +31,24 @@ namespace plasma {
     return(next);                 // return thread
   }
 
+  Thread *ThreadQ::get(Thread *t)
+  {
+    if (!_head || !t) return 0;   // Empty or null query.
+    if (_head == t) {             // Same as normal get.
+      return get();
+    }
+    Thread *cur = _head;
+    while(cur) {                 // Query next pointer- remove if found.
+      Thread *next = cur->getnext();
+      if (next == t) {
+        cur->setnext(t->getnext());
+        return t;
+      }
+      cur = next;
+    }
+    return 0;                     // Not found.
+  }
+
   unsigned ThreadQ::size() const
   {
     unsigned size = 0;

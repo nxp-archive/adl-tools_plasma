@@ -158,12 +158,21 @@ namespace plasma {
     return t;
   }
 
-  // Create a thread and add to ready queue.
+  // Create a thread and add to ready queue.  This allocates extra space at the
+  // end of the thread object for use by the caller.  Nbytes of data pointed
+  // to by args is copied over to this free space and the thread will receive a
+  // pointer to this extra space.
   pair<Thread *,void *> Processor::create(UserFunc *f,int nbytes,void  *args)
   {
     lock();
-    Thread *t = new Thread;
-    void *d = t->realize(f,nbytes);
+    // Allocate thread object + nbytes.
+    void *tmp = Thread::operator new(sizeof(Thread)+nbytes);
+    // Construct object at this space.
+    Thread *t = new (tmp) Thread;
+    // Argument to thread is pointer to free space.
+    void *d = t->endspace();
+    t->realize(f,d);
+    // Copy over data to free space.
     memcpy(d,args,nbytes);
     thesystem.add_ready(t);
     unlock();
@@ -237,6 +246,33 @@ namespace plasma {
     Thread *old = _cur;
     _cur = ready;
     QT_ABORT(switch_term, old, 0, ready->thread());
+  }
+
+  // Terminate a thread.  Remove from ready queue if it's in there and mark as done.
+  void Processor::terminate(Thread *t)
+  {
+    if (!t) return;
+
+    lock();
+
+    // If the thread is already finished, we're done.
+    if (t->done()) {
+      unlock();
+      return;
+    }
+
+    // If we're killing the current thread, use the other terminate.
+    if (t == _cur) {
+      terminate();
+      return;
+    }
+
+    // Remove from ready queue if it's in there.
+    thesystem.get_ready(t);
+    // Mark as done.
+    t->destroy();
+
+    unlock();
   }
 
   // This terminates a thread, returning the stack to the

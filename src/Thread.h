@@ -4,7 +4,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#include "plasma-interface.h"
+#include "Interface.h"
 #include "ThreadQ.h"
 
 typedef struct qt_t qt_t;
@@ -20,11 +20,6 @@ namespace plasma {
     // Allocate a stack for this thread.  The thread will execute f(arg).
     void realize(UserFunc *f,void *arg);
  
-    // Same as above, except nbytes allocated at front of stack.  The
-    // pointer to f will be a pointer to this space.  Returns the pointer
-    // to the data section.
-    void *realize(UserFunc *f,int nbytes);
-
     // Destroy real thread i.e. deallocate its stack
     void destroy(void);
 
@@ -43,12 +38,18 @@ namespace plasma {
     Thread *getnext() const;
     void setnext(Thread *);
 
+    void *endspace() const { return (void*)&_extraspace[0]; };
+
+    static void *operator new(size_t sz) { return ::operator new(sz); };
+    static void *operator new(size_t sz,void *p) { return ::operator new(sz,p); };
+
   private:
     bool    _done;             // True when thread is done executing.
     ThreadQ _waiters;          // Threads waiting on this thread.
     qt_t   *_thread;           // Thread handle.
     void   *_stack;            // Stack pointer.
     Thread *_next;             // Next thread in queue.
+    char    _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
   inline Thread::Thread() :

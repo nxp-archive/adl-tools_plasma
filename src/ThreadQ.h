@@ -17,7 +17,12 @@ namespace plasma {
     ThreadQ() : _head(0), _tail(0) {};
 
     void add(Thread *t);
+
+    // Get from head- removes item from queue.
     Thread *get();
+    // Get if it exists in queue.  Removes it.
+    // Returns 0 if not in queue.
+    Thread *get(Thread *t);
 
     bool empty() const { return !_head; };
 

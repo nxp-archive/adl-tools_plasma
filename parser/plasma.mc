@@ -43,6 +43,9 @@ private:
                        Environment *env,bool heapalloc);
   bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
   bool parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock);
+
+  bool makeSpawnStruct(Environment *env,TypeInfo &,Ptree *);
+  bool makeSpawnFunc(Environment *env,TypeInfo &,Ptree *,Ptree *,Ptree *,Ptree *);
 };
 
 bool Plasma::Initialize()
@@ -391,7 +394,6 @@ Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
   Ptree *sindex = Ptree::GenSym();
   Ptree *stack  = Ptree::GenSym();
   Ptree *label  = Ptree::GenSym();
-  Ptree *empty  = nil;
 
   const Port &port = pv.front();
 
@@ -409,7 +411,7 @@ Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
   // Create a stack of target types, and store indices to those values,
   // only if we don't have a built-in type as an index variable.
   if (needstack && !defaultblock) {
-    cur = lappend(cur,Ptree::qMake("std::vector<`indextype.MakePtree(empty)`> `stack`;\n"
+    cur = lappend(cur,Ptree::qMake("std::vector<`indextype.MakePtree(0)`> `stack`;\n"
                                    "int `sindex` = 0;\n"));
   }
 
@@ -441,7 +443,7 @@ Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
       cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
                                      "(`port.chan`).set_notify(plasma::pCurThread(),`index`);\n"
                                      "}\n"
-                                     "`index` = ((`indextype.MakePtree(empty)`) plasma::pSleep());\n"
+                                     "`index` = ((`indextype.MakePtree(0)`) plasma::pSleep());\n"
                                      "plasma::pLock();\n"));
     }
 
@@ -581,18 +583,15 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* prea
 
   Ptree *args = TranslateArguments(env,preargs)->Cadr();
 
-  cout << "Args:  (" << args->Length() << "):  ";
-  args->Display2(cout);
-
   if (args->Length() > 1) {
     ErrorMessage(env,"The spawn operator accepts only one argument.",nil,object);
     return nil;
   }
 
-  Ptree *func,*fargs;
+  Ptree *ufunc,*uargs;
 
   // Try to extract a function call.
-  if (!Ptree::Match(args,"[[ %? ( %? ) ]]",&func,&fargs)) {
+  if (!Ptree::Match(args,"[[ %? ( %? ) ]]",&ufunc,&uargs)) {
     ErrorMessage(env,"Invalid spawn call- argument must be a function call.",nil,args);
     return nil;
   }
@@ -600,19 +599,119 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* prea
   // The argument type must be a function call.  Its return type will indicate
   // the type of the result channel object.
   TypeInfo t;
-  if (!env->Lookup(func,t)) {
-    ErrorMessage(env,"Could not lookup spawn argument.",nil,func);
+  if (!env->Lookup(ufunc,t)) {
+    ErrorMessage(env,"Could not lookup spawn argument.",nil,ufunc);
     return nil;
   }
 
   if (!t.IsFunction()) {
-    ErrorMessage(env,"Spawn argument must be a function call.",nil,func);
+    ErrorMessage(env,"Spawn argument must be a function call.",nil,ufunc);
     return nil;
   }
 
-  // Remove function call aspect- just want return type.
-  t.Dereference();
-  cout << "Spawn's result is:  " << t.MakePtree(nil)->ToString() << endl;
+  Ptree *targs  = Ptree::GenSym();
+  Ptree *sfunc  = Ptree::GenSym();
+  Ptree *lfunc  = Ptree::GenSym();
 
-  return Ptree::Make("1");
+  // Create temporary argument storage structure.
+  if (!makeSpawnStruct(env,t,targs)) {
+    return nil;
+  }
+
+  // Create spawn function- this will take the function and its arguments
+  // and launch a thread, returning a result structure w/a pointer to the
+  // result data.
+  if (!makeSpawnFunc(env,t,targs,ufunc,lfunc,sfunc)) {
+    return nil;
+  }
+
+  // Finally, replace spawn operator w/call to spawn function.
+  return Ptree::qMake("`sfunc`(`uargs`)");
+}
+
+Ptree *resultName()
+{
+  return Ptree::Make("_result");
+}
+
+Ptree *argName(int i)
+{
+  char buf[10];
+  sprintf(buf,"_arg%d",i);
+  return Ptree::Make(buf);
+}
+
+// Creates a structure for storing a spawned thread's result and arguments.
+bool Plasma::makeSpawnStruct(Environment *env,TypeInfo &t,Ptree *targs)
+{
+  Ptree *start = Ptree::qMake("struct `targs` {\n");
+  Ptree *cur = start;
+
+  TypeInfo rt;
+  t.Dereference(rt);
+  cur = lappend(cur,Ptree::qMake("`rt.MakePtree(resultName())`;\n"));
+
+  TypeInfo at;
+  for (int i = 0; i != t.NumOfArguments(); ++i) {
+    t.NthArgument(i,at);
+    cur = lappend(cur,Ptree::qMake("`at.MakePtree(argName(i))`;\n"));
+  }
+  
+  cur = lappend(cur,Ptree::Make("};\n"));
+  InsertBeforeToplevel(env,start);
+  return true;
+}
+
+// Creates the launcher function and spawn function for a spawn operator.
+bool Plasma::makeSpawnFunc(Environment *env,TypeInfo &t,Ptree *targs,Ptree *ufunc,Ptree *lfunc,Ptree *sfunc)
+{
+  // Create the launcher function which calls the user function w/proper args.
+  Ptree *start = Ptree::qMake("inline void `lfunc`(void *args)\n"
+                              "{\n"
+                              "  ((`targs`*)args)->`resultName()` = `ufunc`(");
+  Ptree *cur = start;
+
+  int numargs = t.NumOfArguments();
+
+  for (int i = 0; i != numargs; ++i) {
+    if (i) {
+      cur = lappend(cur,Ptree::Make(","));
+    }
+    cur = lappend(cur,Ptree::qMake("((`targs`*)args)->`argName(i)`"));
+  };
+  
+  cur = lappend(cur,Ptree::Make(");\n}\n"));
+  InsertBeforeToplevel(env,start);
+
+  TypeInfo rt;
+  t.Dereference(rt);
+
+  // Create the spawn function which launches the thread and returns
+  // the result template.
+  Ptree *rtemplate = Ptree::qMake("Result<`rt.MakePtree(0)`>");
+  start = Ptree::qMake("inline `rtemplate` `sfunc`(");
+  cur = start;
+
+  TypeInfo at;
+  for (int i = 0; i != numargs; ++i) {
+    if (i) {
+      cur = lappend(cur,Ptree::Make(","));
+    }
+    t.NthArgument(i,at);
+    cur = lappend(cur,Ptree::qMake("`at.MakePtree(argName(i))`"));
+  }
+
+  Ptree *emptyarg = Ptree::Make("()");
+  cur = lappend(cur,Ptree::qMake(")\n{\n"
+                                 "`targs` args = {`rt.MakePtree(emptyarg)`"));
+  for (int i = 0; i != numargs; ++i) {
+    cur = lappend(cur,Ptree::qMake(",`argName(i)`"));
+  }
+  
+  cur = lappend(cur,Ptree::qMake("};\n"
+                                 "return `rtemplate`(pSpawn(`lfunc`,sizeof(`targs`),&args));\n}\n"));
+  
+  InsertBeforeToplevel(env,start);
+
+  return true;
 }
