@@ -18,11 +18,11 @@ ecu_SOURCES = \
 ecu_DEPENDENCIES = $(DEPENDENCIES)
 
 DEP_FILES=\
-	./$(DEPDIR)/ecu.Po
-	./$(DEPDIR)/configuation.Po
-	./$(DEPDIR)/engine.Po
-	./$(DEPDIR)/car.Po
-	./$(DEPDIR)/utilities.Po
+	./$(DEPDIR)/ecu.Po \
+	./$(DEPDIR)/configuation.Po \
+	./$(DEPDIR)/engine.Po \
+	./$(DEPDIR)/car.Po \
+	./$(DEPDIR)/utilities.Po \
 	./$(DEPDIR)/angle.Po
 
 include ./$(DEPDIR)/ecu.Po
