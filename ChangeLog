@@ -1,3 +1,5 @@
+        ======= plasma release 0.8.1 (v0_8_1) on Linux (cde-tx32-ldt189) =======
+
 2004-11-02  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed a bug with clocked channels: If you wrote to a clocked
