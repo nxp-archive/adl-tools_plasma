@@ -43,10 +43,13 @@ CLexer::~CLexer()
   closefile();
 }
 
+// We never unmap b/c then any string pointing 
+// at the file's data would become invalid.  We just
+// close the file in order to reclaim file buffers.
 void CLexer::closefile()
 {
   if (_fd >= 0) {
-    munmap((void*)_base,_size);
+    //munmap((void*)_base,_size);
     close(_fd);
   }
 }
@@ -146,14 +149,14 @@ void CLexer::send_float()
   _chan.write(tk);
 }
 
-// Sends a character constant.  Error checking is not done here.
+// Sends a character constant.  We only allow single-character constants
+// and we return the value in the integer portion (_int) of the structure.
 void CLexer::send_char()
 {
   pair<const char *,int> p = convert_string(yystr()+1,YYLeng()-2);
   Tokens tk;
   tksetup(tk,CHARCONST);
-  tk._str.p = p.first;
-  tk._str.l = p.second;
+  tk._int = p.first[0];
   _chan.write(tk);
 }
 

@@ -7,6 +7,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <assert.h>
 
 #include "Node.h"
 #include "cparse.h"
@@ -14,20 +15,36 @@
 using namespace std;
 
 // Per-indent amount of whitespace.
-static int Incr = 2;
+static const int Incr = 2;
 
-// Helper class for indenting by a given amount of
-// white space.
-struct Indent {
-  Indent(int n) : _n(n) {};
-  int _n;
-};
+static int IndentIndex = ostream::xalloc();
 
-ostream &operator<<(ostream &o,Indent indent)
+int curindent(ostream &o)
 {
-  for (int i = 0; i != indent._n; ++i) {
-    o << " ";
+  return o.iword(IndentIndex);
+}
+
+// Indentation manipulator- supply correct indentation.
+ostream &indent(ostream &o)
+{
+  o << '\n';
+  for (int i = 0; i < o.iword(IndentIndex); ++i) {
+    o << ' ';
   }
+  return o;
+}
+
+// Modify indentation.
+ostream &incrindent(ostream &o)
+{
+  o.iword(IndentIndex) += Incr;
+  return o;
+}
+
+// Modify indentation.
+ostream &decrindent(ostream &o)
+{
+  o.iword(IndentIndex) -= Incr;
   return o;
 }
 
@@ -47,17 +64,42 @@ pair<int,bool> Node::calculate() const
   return make_pair(0,false); 
 };
 
-NullNode::NullNode() : Node(new VoidType) 
-{}
-
-void NullNode::print(ostream &o,int) const
-{
-  o << "null";
+void Node::add(Node *n) 
+{ 
+  assert(0); 
 }
 
-void ArrayExpression::print(ostream &o,int) const
+void Node::print(ostream &o) const
 {
-  o << _expr << "[" << _index << "]";
+  o << incrindent << indent << "+ " << typeid(*this).name() << incrindent;
+  if (_type) {
+    o << indent << "Type-string:  " << _type;
+  }
+  printdata(o);
+  o << decrindent << decrindent;
+}
+
+void Node::printdata(std::ostream &) const
+{
+}
+
+std::ostream &operator<<(std::ostream &o,const Node *n)
+{
+  if (n) {
+    n->print(o);
+  } else {
+    o << incrindent << indent << "null" << decrindent;
+  }
+  return o;
+}
+
+NullNode::NullNode() : Node(0) 
+{}
+
+void ArrayExpression::printdata(ostream &o) const
+{
+  o << indent << "Expr : " << _expr
+    << indent << "Index: " << _index;
 }
 
 StringLiteral::StringLiteral(String s) : 
@@ -71,19 +113,19 @@ void StringLiteral::append(String s)
   _s = _s.append(s);
 }
 
-void StringLiteral::print(ostream &o,int) const
+void StringLiteral::printdata(ostream &o) const
 {
-  o << _s;
+  o << indent << "Data:  \"" << _s << "\"";
 }
 
-void Id::print(ostream &o,int) const
+void Id::printdata(ostream &o) const
 {
-  o << _id;
+  o << indent << "Name:  " << _id;
 }
 
-void Const::print(ostream &o,int) const
+void Const::printdata(ostream &o) const
 {
-  o << _value;
+  o << indent << "Value:  " << _value;
 }
 
 Node *get_calculated(Node *node)
@@ -96,6 +138,12 @@ Node *get_calculated(Node *node)
   }
 }
 
+void Unaryop::printdata(ostream &o) const
+{
+  o << indent << "Expr:  " << _expr;
+}
+
+
 Node::Calc Negative::calculate() const
 {
   Calc cr = _expr->calculate();
@@ -104,21 +152,6 @@ Node::Calc Negative::calculate() const
   } else {
     return cr;
   }
-}
-
-void Negative::print(ostream &o,int) const
-{
-  o << "-" << _expr;
-}
-
-void Pointer::print(ostream &o,int) const
-{
-  o << "*(" << _expr << ")";
-}
-
-void AddrOf::print(ostream &o,int) const
-{
-  o << "&(" << _expr << ")";
 }
 
 Node::Calc Binop::calculate() const
@@ -182,9 +215,10 @@ Node::Calc Binop::calculate() const
   return Calc(res,true);
 }
 
-void Binop::print(ostream &o,int) const
+void Binop::printdata(ostream &o) const
 {
-  o << "(" << _left << " ";
+  o << indent << "Left:  " << _left
+    << indent << "Op  :  ";
   switch (_op) {
   case PLUS:
     o << "+";
@@ -202,10 +236,10 @@ void Binop::print(ostream &o,int) const
     o << "%";
     break;
   case ADD_ASSIGN:
-    o << "+";
+    o << "+=";
     break;
   case SUB_ASSIGN:
-    o << "-";
+    o << "-=";
     break;
   case EQ:
     o << "==";
@@ -225,106 +259,56 @@ void Binop::print(ostream &o,int) const
   case GREATER_EQ:
     o << ">=";
     break;
+  case ASSIGN:
+    o << "=";
+    break;
   default: {
     ostringstream ss;
     ss << "Unknown binary operator " << _op;
     throw runtime_error(ss.str());
   }
-  } 
-  o << " " << _right << ")";
+  }
+  o << indent << "Right:  " << _right;
 }
 
-void IfStatement::print(ostream &o,int indent) const
+void IfStatement::printdata(ostream &o) const
 {
-  o << Indent(indent) << "if (" << _expr << ") {\n";
-  _then->print(o,indent+Incr);
-  o << Indent(indent) << "} else {\n";
-  _else->print(o,indent+Incr);
-  o << Indent(indent) << "}\n";
+  o << indent << "Expr:  " << _expr
+    << indent << "Then:  " << _then
+    << indent << "Else:  " << _else;
 }
 
-void BreakStatement::print(ostream &o,int indent) const
+void ForLoop::printdata(ostream &o) const
 {
-  o << Indent(indent) << "break;\n";
+  o << indent << "Begin:  " << _begin
+    << indent << "Expr :  " << _expr
+    << indent << "End  :  " << _end
+    << indent << "Stmt :  " << _stmt;
 }
 
-void ContinueStatement::print(ostream &o,int indent) const
+void WhileLoop::printdata(ostream &o) const
 {
-  o << Indent(indent) << "continue;\n";
+  o << indent << "Expr:" << _expr
+    << indent << "Stmt:" << _stmt;
 }
 
-void ReturnStatement::print(ostream &o,int indent) const
+void NodeList::printdata(ostream &o) const
 {
-  o << Indent(indent) << "return;\n";
-}
-
-void ForLoop::print(ostream &o,int indent) const
-{
-  o << Indent(indent) << "for (" << _begin << "; " << _expr << "; " << _end << ")\n";
-  _stmt->print(o,indent+Incr);
-}
-
-void WhileLoop::print(ostream &o,int indent) const
-{
-  o << Indent(indent) << "while (" << _expr << ")\n";
-  _stmt->print(o,indent+Incr);
-}
-
-void NodeList::print_list(ostream &o,const char *sep,int indent) const
-{
-  bool first = true;
   for (const_iterator i = begin(); i != end(); ++i) {
-    if (indent) {
-      o << Indent(indent);
-    }
-    if (!first) o << sep;
-    first = false;
     o << *i;
-    if (indent) {
-      o << "\n";
-    }
   }
 }
 
-void ArgumentList::print(ostream &o,int indent) const
+void FunctionExpression::printdata(ostream &o) const
 {
-  print_list(o,", ");
+  o << indent << "Name:" << _function
+    << indent << "Args:" << _arglist;
 }
 
-void ParamList::print(ostream &o,int indent) const
+void CompoundStatement::printdata(ostream &o) const
 {
-  print_list(o,", ");
-  if (_hasellipsis) {
-    o << ", ...";
-  }
-}
-
-void StatementList::print(ostream &o,int indent) const
-{
-  print_list(o,";",indent);
-}
-
-void TranslationUnit::print(ostream &o,int indent) const
-{
-  print_list(o,"\n",indent);
-}
-
-void DeclarationList::print(ostream &o,int indent) const
-{
-  print_list(o,"\n",indent);
-}
-
-void FunctionExpression::print(ostream &o,int indent) const
-{
-  o << _function << "(" << _arglist << ")";
-}
-
-void CompoundStatement::print(ostream &o,int indent) const
-{
-  o << Indent(indent) << "{\n";
-  _declaration_list->print(o,indent+Incr);
-  _statement_list->print(o,indent+Incr);
-  o << "}\n";
+  o << indent << "Decls:" << _declaration_list
+    << indent << "Stmts:" << _statement_list;
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -337,20 +321,20 @@ FunctionDefn::FunctionDefn(Node *decl,Node *body) :
   _static = d.is_static();
 }
 
-void FunctionDefn::print(ostream &o,int indent) const
+void FunctionDefn::printdata(ostream &o) const
 {
-  o << Indent(indent);
-  if (_extern) {
-    o << "extern ";
-  }
-  if (_static) {
-    o << "static ";
-  }
-  o << _name << endl;
-  _body->print(o,indent+Incr);
+  o << indent << "Extern:  " << _extern
+    << indent << "Static:  " << _static
+    << indent << "Name  :  " << _name
+    << indent << "Body  :" << _body;
 }
 
-Declaration::Declaration (Node *n,Type *t) :
+void ReturnStatement::printdata(ostream &o) const
+{
+  o << indent << "Expr:  " << _expr;
+}
+
+Declaration::Declaration (String n,Type *t) :
   Node(t), _name(n),
   _extern(false), _static(false), _is_used(false)
 {
@@ -359,7 +343,7 @@ Declaration::Declaration (Node *n,Type *t) :
 void Declaration::set_base_type(Type *t)
 {
   assert(t);
-  if (!t) {
+  if (!_type) {
     _type = t;
   } else {
     _type->set_base_type(t);
@@ -372,20 +356,25 @@ void Declaration::add_type(Type *t)
   _type = t;
 }
 
-void Declaration::print(ostream &o,int indent) const
+void Declaration::printdata(ostream &o) const
 {
-  o << Indent(indent);
-  if (_extern) {
-    o << "extern ";
-  }
-  if (_static) {
-    o << "static ";
-  }
-  o << _name << endl;
-  _body->print(o,indent+Incr);
+  o << indent << "Extern:  " << _extern
+    << indent << "Static:  " << _static
+    << indent << "Used  :  " << _is_used
+    << indent << "Name  :  " << _name;
 }
 
-Type::Type() : _child(new VoidType)
+ostream &operator<<(ostream &o,const Type *t)
+{
+  if (!t) {
+    o << "void";
+  } else {
+    t->print(o);
+  }
+  return o;
+}
+
+Type::Type() : _child(0)
 {
 }
 
@@ -398,18 +387,6 @@ void Type::set_base_type(Type *t)
   }
 }
 
-ostream &VoidType::print(std::ostream &o) const
-{
-  o << "void";
-  return o;
-}
-    
-ostream &VoidType::print_outer(std::ostream &o) const
-{
-  o << "void";
-  return o;
-}
-
 ostream &BaseType::print(ostream &o) const
 {
   switch (_type) {
@@ -418,6 +395,9 @@ ostream &BaseType::print(ostream &o) const
     break;
   case Char:
     o << "char";
+    break;
+  case Double:
+    o << "double";
     break;
   }
   return o;
@@ -439,8 +419,7 @@ ostream &FunctionType::print(ostream &o) const
     (*i)->type()->print(o);
     first = false;
   }
-  o << ")->";
-  _child->print(o);
+  o << ")->" << _child;
   return o;
 }
 

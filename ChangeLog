@@ -1,3 +1,12 @@
+2004-08-18  Brian Kahne  <bkahne@ibmoto.com>
+
+	* AST generation seems to be working; added regressions to test
+	this.
+
+2004-08-11  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Initial AST code done.
+
 2004-08-10  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Modified lemon so that its suffix is .cc

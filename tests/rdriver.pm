@@ -84,9 +84,9 @@ Command-line to execute.  If the token &seed is found, it will be replaced with
 a numerical seed.  This value will either be the value specified by the seed
 command-line parameter, or the current result of time().
 
-=item B<cmts>
+=item B<nocmts>
 
-Preserve comments in diff.  Default is 0 (do not preserve).
+Remove comments from diff.  Default is 0 (preserve).
 
 =item B<stderr>
 
@@ -220,7 +220,7 @@ sub doTest($) {
       }
 
       if ( $t->{diff} ) {
-		error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{cmts}));
+		error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{nocmts}));
       }
       if ($t->{checker}) {
 		# Call the check function.
@@ -261,7 +261,7 @@ sub doDiff {
   my $output = shift;
   my $rfile = shift;
   my $dpfx = shift;
-  my $cmts = shift;
+  my $nocmts = shift;
 
   unlink $tmpfile;
   open OUT,">$tmpfile" or die "Could not open $tmpfile for writing.";
@@ -270,10 +270,10 @@ sub doDiff {
     my @lines = split '\n',$output;
     for my $l (@lines) {
       if ($l =~ $dpfx) {
-	print OUT $l,"\n";
+		print OUT $l,"\n";
       }
     }
-  } elsif (!$cmts) {
+  } elsif ($nocmts) {
     # We do not want to preserve comments, so strip all blank lines and
     # comment lines.
     my @lines = split '\n',$output;

@@ -1,6 +1,9 @@
-check_PROGRAMS = mytest
 
-mytest_SOURCES = \
+TESTS = regress
+
+check_PROGRAMS = minicc
+
+minicc_SOURCES = \
 	String.C \
 	Node.C \
 	main.pa \
@@ -9,7 +12,7 @@ mytest_SOURCES = \
 	CLexer.pa \
 	clex.ll
 
-mytest_DEPENDENCIES = $(DEPENDENCIES)
+minicc_DEPENDENCIES = $(DEPENDENCIES)
 
 DEP_FILES=\
 	./$(DEPDIR)/main.Po \
@@ -30,9 +33,9 @@ LEMON = ../lemon/lemon
 
 AM_CXXFLAGS = -I$(top_srcdir)/gc/include
 
-mytest_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
+minicc_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 
-mytest_LDADD =  -lgc -ldl
+minicc_LDADD =  -lgc -ldl
 
 clex_lflag = -Cfe
 
@@ -42,7 +45,7 @@ clex_lflag = -Cfe
 %.cc : %.yy ;
 	$(LEMON) $<
 
-cparse.h: cparse.yy
+cparse.h: cparse.cc
 CLexer.o: cparse.h
 clex.o: cparse.h
 

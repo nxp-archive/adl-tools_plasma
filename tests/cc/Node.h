@@ -32,6 +32,9 @@ struct Node : public gc {
   virtual void set_has_address() { _has_addr = true; };
   // Returns the node's type.
   Type *type() const { return _type; };
+  // This will just assert- a collection class should overload
+  // this to store multiple items.
+  virtual void add(Node *n);
   // Calculates a constant integer if the node represents
   // a constant expression, e.g. returns a node storing
   // 30 if the node represents an expression of 3*10.
@@ -41,7 +44,7 @@ struct Node : public gc {
   virtual Calc calculate() const;
   // Print to the specified stream.  Argument is number of 
   // characters to indent.
-  virtual void print(std::ostream &,int) const = 0;
+  void print(std::ostream &) const;
   // Visitor double-dispatch main entry point.
   virtual void walk(Visitor &) = 0;
 
@@ -49,6 +52,9 @@ struct Node : public gc {
   int linenumber() const { return _linenumber; };
   const char *filename() const { return _filename; };
 protected:
+  // This prints class-specific information.
+  virtual void printdata(std::ostream &) const;
+
   bool        _has_addr;
   int         _output_addr;
   Type       *_type;
@@ -56,27 +62,23 @@ protected:
   int         _linenumber;
 };
 
-inline std::ostream &operator<<(std::ostream &o,const Node *n)
-{
-  n->print(o,0);
-  return o;
-}
+std::ostream &operator<<(std::ostream &o,const Node *n);
 
 // Null-terminator node in an AST.
 struct NullNode : public Node {
   NullNode();
   virtual bool is_null() const { return true; };
   virtual void walk(Visitor &);
-  virtual void print(std::ostream &,int) const;
 };
 
 // Expression w/array notation, e.g. a[5+4].
 struct ArrayExpression : public Node {
   ArrayExpression(Node *expr, Node *index) :
     _expr(expr), _index(index) {}
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 protected:
+  virtual void printdata(std::ostream &) const;
+
   Node *_expr;
   Node *_index;
 };
@@ -86,8 +88,10 @@ struct StringLiteral : public Node {
   StringLiteral(String s);
   void append(String s);
   String get() const { return _s; };
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
+
 private:
   String _s;
 };
@@ -97,8 +101,10 @@ struct Id : public Node {
   Id(String id) : _id(id) {};
 
   String id() const { return _id; };
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
+
 private:
   String _id;
 };
@@ -107,8 +113,10 @@ private:
 struct Const : public Node {
   Const(int value,Type *type) : Node(type), _value(value) {};
   int value() const { return _value; };
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
+
 private:
   int _value;
 };
@@ -124,6 +132,8 @@ struct Unaryop : public Node {
   Node *expr() const { return _expr; };
   virtual void walk(Visitor &);
 protected:
+  virtual void printdata(std::ostream &) const;  
+
   Node *_expr;
 };
 
@@ -131,21 +141,18 @@ protected:
 struct Negative : public Unaryop {
   Negative(Node *expr) : Unaryop(expr) {};
   Calc calculate() const;
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
 // A pointer dereference, e.g. *a.
 struct Pointer : public Unaryop {
   Pointer(Node *expr) : Unaryop(expr) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
 // An address-of operator, e.g. &a.
 struct AddrOf : public Unaryop {
   AddrOf(Node *expr) : Unaryop(expr) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
@@ -155,8 +162,9 @@ struct AddrOf : public Unaryop {
 struct Binop : public Node {
   Binop(Node *l,int op,Node *r) : _left(l), _right(r), _op(op) {};
   Calc calculate() const;
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_left;
   Node *_right;
@@ -167,8 +175,9 @@ private:
 struct IfStatement : public Node {
   IfStatement(Node *e,Node *t,Node *el = 0) :
     _expr(e), _then(t), _else(el) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_expr;
   Node *_then;
@@ -177,21 +186,20 @@ private:
 
 // A break statement.
 struct BreakStatement : public Node {
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
 // A continue statement.
 struct ContinueStatement : public Node {
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
 // A return statement.
 struct ReturnStatement : public Node {
   ReturnStatement(Node *expr = 0) : _expr(expr) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_expr;
 };
@@ -200,8 +208,9 @@ private:
 struct ForLoop : public Node {
   ForLoop(Node *b,Node *expr,Node *e,Node *s) :
     _begin(b), _expr(expr), _end(e), _stmt(s) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_begin;
   Node *_expr;
@@ -213,8 +222,9 @@ private:
 struct WhileLoop : public Node {
   WhileLoop(Node *expr,Node *stmt) :
     _expr(expr), _stmt(stmt) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_expr;
   Node *_stmt;
@@ -224,10 +234,10 @@ private:
 struct NodeList : public Node, public std::vector<Node *,traceable_allocator<Node *> > {
   NodeList() {};
   NodeList (Node *n) { push_back(n); };
-  void add(Node *n) { push_back(n); };
+  virtual void add(Node *n) { push_back(n); };
 
 protected:
-  void print_list(std::ostream &,const char *sep,int indent = 0) const;
+  void printdata(std::ostream &) const;
 };
 
 // A list of arguments for a function expression., e.g.
@@ -235,7 +245,6 @@ protected:
 struct ArgumentList : public NodeList {
   ArgumentList() {};
   ArgumentList(Node *n) : NodeList(n) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
@@ -244,9 +253,8 @@ struct ArgumentList : public NodeList {
 struct ParamList : public NodeList {
   ParamList() {};
   ParamList(Node *n) : NodeList(n) {};
-  bool hasellipsis() const { return _hasellipsis; };
-  void setHasellipsis() { _hasellipsis = true; };
-  virtual void print(std::ostream &,int) const;
+  bool has_ellipsis() const { return _hasellipsis; };
+  void set_has_ellipsis() { _hasellipsis = true; };
   virtual void walk(Visitor &);
 private:
   bool _hasellipsis;
@@ -257,7 +265,6 @@ private:
 struct StatementList : public NodeList {
   StatementList() {};
   StatementList(Node *n) : NodeList(n) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
@@ -265,7 +272,6 @@ struct StatementList : public NodeList {
 struct TranslationUnit : public NodeList {
   TranslationUnit() {};
   TranslationUnit(Node *n) : NodeList(n) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
@@ -274,7 +280,6 @@ struct TranslationUnit : public NodeList {
 struct DeclarationList : public NodeList {
   DeclarationList() {};
   DeclarationList(Node *n) : NodeList(n) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
 };
 
@@ -282,8 +287,9 @@ struct DeclarationList : public NodeList {
 struct FunctionExpression : public Node {
   FunctionExpression(Node *f,Node *a) :
     _function(f), _arglist(a) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_function;
   Node *_arglist;
@@ -293,8 +299,9 @@ private:
 struct CompoundStatement : public Node {
   CompoundStatement(Node *d,Node *s) :
     _declaration_list(d), _statement_list(s) {};
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
   Node *_declaration_list;
   Node *_statement_list;
@@ -304,13 +311,17 @@ private:
 struct FunctionDefn : public Node {
   FunctionDefn(Node *decl,Node *body);
 
+  String name() const { return _name; };
+  Node *body() const { return _body; };
+
   bool is_extern() const { return _extern; };
   bool is_static() const { return _static; };
 
-  virtual void print(std::ostream &,int) const;
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
-  Node *_name;
+  String _name;
   Node *_body;
   bool  _extern;
   bool  _static;
@@ -319,10 +330,9 @@ private:
 // A node representing a declaration of a function or
 // variable.
 struct Declaration : public Node {
-  Declaration (Node *n,Type *t = 0);
+  Declaration (String n,Type *t = 0);
 
-  Node *name() const { return _name; };
-  Node *body() const { return _body; };
+  String name() const { return _name; };
 
   void set_base_type(Type *t);
   void add_type(Type *t);
@@ -330,14 +340,17 @@ struct Declaration : public Node {
   bool is_extern() const { return _extern; };
   bool is_static() const { return _static; };
 
-  virtual void print(std::ostream &,int) const;
+  void set_extern() { _extern = true; };
+  void set_static() { _static = true; };
+
   virtual void walk(Visitor &);
+protected:
+  virtual void printdata(std::ostream &) const;
 private:
-  Node *_name;
-  Node *_body;
-  bool  _extern;
-  bool  _static;
-  bool  _is_used;
+  String  _name;
+  bool    _extern;
+  bool    _static;
+  bool    _is_used;
 };
 
 //
@@ -362,19 +375,16 @@ struct Type {
   // Prints only the outer most type.
   virtual std::ostream &print_outer(std::ostream &o) const = 0;
 protected:
+
   Type *_child;
 };
 
-// A void type- used to represent empty types.
-struct VoidType : public Type {
-  VoidType() {};
-  virtual std::ostream &print(std::ostream &o) const;
-  virtual std::ostream &print_outer(std::ostream &o) const;  
-};
+// Use this to print the Type pointer, as it supports nulls.
+std::ostream &operator<<(std::ostream &o,const Type *);
 
 // Represents intrinsic types, e.g. int, char.
 struct BaseType : public Type {
-  enum Type { Int, Char };
+  enum Type { Int, Char, Double };
   BaseType(Type t) : _type(t) {};
   Type type() const { return _type; };
   virtual std::ostream &print(std::ostream &o) const;

@@ -46,7 +46,7 @@ void parse(TokChan &tc)
   while(!cp.error()) {
     Tokens tk = tc.get();
     if (tk._tok < 0) break;
-    cp.parse(tk._tok,&tk);
+    cp.parse(tk._tok,tk);
     if (!tk._tok) {
       cp.reset();
     }
@@ -55,4 +55,5 @@ void parse(TokChan &tc)
     // If we have a parsing error, exit.
     pExit(1);
   }
+  cp.print_ast_list(cout);
 }

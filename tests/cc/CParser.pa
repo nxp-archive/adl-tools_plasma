@@ -7,12 +7,13 @@
 
 #include "Tokens.h"
 #include "CParser.h"
+#include "Node.h"
 
 using namespace std;
 
 void *ParseAlloc(void *(*mallocProc)(size_t));
 void ParseFree(void *,void (*freeProc)(void*));
-void Parse(void *,int,Tokens *,CParser *);
+void Parse(void *,int,Tokens,CParser *);
 void ParseTrace(FILE *, char *);
 
 CParser::CParser() : 
@@ -22,15 +23,41 @@ CParser::CParser() :
   //  ParseTrace(stdout,"lemon:  ");
 }
 
-void CParser::parse(int t,Tokens *tk) 
+void CParser::parse(int t,Tokens tk) 
 { 
   //cout << "Token:  " << t << endl;
-  _linenumber = tk->_ln;
-  _filename = tk->_fn;
+  _linenumber = tk._ln;
+  _filename = tk._fn;
   Parse(_parser,t,tk,this); 
+}
+
+void CParser::setinfo(Node *n) const
+{
+  n->setFileData(_filename,_linenumber);
 }
 
 void CParser::reset()
 {
   _error = false;
+}
+
+void CParser::reset_all()
+{
+  reset();
+  _asts.clear();
+}
+
+void CParser::add_translation_unit(Node *n)
+{
+  _asts.push_back(n);
+}
+
+void CParser::print_ast_list(ostream &o)
+{
+  for (Nodes::const_iterator i = _asts.begin(); i != _asts.end(); ++i) {
+    o << "\nTranslation Unit\n"
+      << "================\n"
+      << (*i)
+      << endl;
+  }
 }

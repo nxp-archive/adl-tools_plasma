@@ -1,0 +1,81 @@
+
+Translation Unit
+================
+
+  + 15TranslationUnit
+      + 11Declaration
+        Type-string:  int
+        Extern:  0
+        Static:  0
+        Used  :  0
+        Name  :  a
+      + 11Declaration
+        Type-string:  int
+        Extern:  0
+        Static:  0
+        Used  :  0
+        Name  :  b
+      + 11Declaration
+        Type-string:  int
+        Extern:  0
+        Static:  0
+        Used  :  0
+        Name  :  c
+
+Translation Unit
+================
+
+  + 15TranslationUnit
+      + 11Declaration
+        Type-string:  int
+        Extern:  1
+        Static:  0
+        Used  :  0
+        Name  :  a
+      + 11Declaration
+        Type-string:  int
+        Extern:  1
+        Static:  0
+        Used  :  0
+        Name  :  b
+      + 11Declaration
+        Type-string:  int
+        Extern:  1
+        Static:  0
+        Used  :  0
+        Name  :  c
+      + 12FunctionDefn
+        Type-string:  function()->int
+        Extern:  0
+        Static:  0
+        Name  :  main
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 8NullNode
+            Stmts:
+              + 13StatementList
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  a
+                    Op  :  =
+                    Right:  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  b
+                        Op  :  =
+                        Right:  
+                          + 5Binop
+                            Left:  
+                              + 2Id
+                                Name:  c
+                            Op  :  =
+                            Right:  
+                              + 5Const
+                                Type-string:  int
+                                Value:  20
+                  + 15ReturnStatement
+                    Expr:  
+                      null
