@@ -497,6 +497,10 @@ namespace plasma {
   {
     _store.clear();
     Base::set_size(0);
+    // Queue up any writers that were blocked.
+    if (have_writers()) {
+      pAddReady(next_writer());
+    }
   }
 
   //

@@ -409,6 +409,11 @@ my @Tests = (
 			  cmd     => "./clock13",
 			  checker => \&check_clock13,
 			 },
+			 # Test of zero-sized clocked channel w/clear.
+			 {
+			  cmd     => "./clock14",
+			  checker => \&check_clock14,
+			 },
 			 # Simple test of the quantity class.
 			 {
 			  cmd     => "./quantity1",
@@ -1489,18 +1494,6 @@ DATA:    4:  -1
 EOD
 }
 
-sub check_quantity1 {
-  str_rdiff(@_[0],<<'EOD');
-0:  thread 0 starting
-0:  thread 1 starting
-0:  thread 2 starting
-160:  thread 2 done
-170:  thread 0 done
-180:  thread 1 done
-Done.
-EOD
-}
-
 # Test of a zero-sized clock channel w/flush
 sub check_clock13 {
   str_rdiff(@_[0],<<'EOD');
@@ -1654,6 +1647,31 @@ DATA:    1:  0
 DATA:    2:  0
 DATA:    3:  0
 DATA:    4:  -1
+EOD
+}
+
+# Test of a zero-sized clear to make sure that a waiting
+# writer is requeued.
+sub check_clock14 {
+  str_rdiff(@_[0],<<'EOD');
+TEST 1:  0:  Done with writes.
+TEST 1:  Wrote 100
+TEST 1:  10:  Before the clear.
+TEST 1:  10:  After the clear.
+TEST 1:  Wrote 100
+TEST 1:  20:  Result:  200
+EOD
+}
+
+sub check_quantity1 {
+  str_rdiff(@_[0],<<'EOD');
+0:  thread 0 starting
+0:  thread 1 starting
+0:  thread 2 starting
+160:  thread 2 done
+170:  thread 0 done
+180:  thread 1 done
+Done.
 EOD
 }
 

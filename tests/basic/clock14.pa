@@ -1,0 +1,63 @@
+//
+// Tests to make sure that we can clear a clocked channel
+// of zero size and that a waiting writer will be re-queued.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+const int Clock = 10;
+
+typedef ClockChan<int> ClkIntChan;
+
+void producer(int id,ClkIntChan &c,int val)
+{
+  cout << "TEST " << id << ":  Wrote " << val << endl;
+  c.write(val);
+  cout << "TEST " << id << ":  Wrote " << val << endl;
+  c.write(val*2);
+}
+
+void test(int id,ClkIntChan &c)
+{
+  // Create a bunch of processes trying to write to the channel.
+  spawn(producer(id,c,100));
+
+  cout << "TEST " << id << ":  " << pTime() << ":  Done with writes." << endl;
+
+  // Delay in order to make sure that they all get scheduled.
+  pDelay(Clock);
+
+  cout << "TEST " << id << ":  " << pTime() << ":  Before the clear." << endl;
+
+  // Now clear the channel.  This should eliminate the writers.
+  // but not advance time.
+  c.clear();
+
+  cout << "TEST " << id << ":  " << pTime() << ":  After the clear." << endl;
+
+  // Now print out anything in the channel.
+  while (true) {
+    int r = c.get();
+    cout << "TEST " << id << ":  " << pTime() << ":  Result:  " << r << endl;
+  }
+
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  ClkIntChan c1(Clock);
+
+  test(1,c1);
+
+  return 0;
+}

@@ -1,5 +1,9 @@
 2005-01-20  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Fixed bug w/clearing 0-sized clocked channels:  We used to not
+	re-queue a waiting writer, so it would stay blocked.  Fixed this
+	with a tail clause in clear().
+
 	* Removed the handle from threads.  I still have a valid flag for
 	use by busysleep/busywake, but that's it.  Removed HandleType from
 	all channels.
