@@ -52,7 +52,7 @@ do
     echo "Processing $directory"
     macrodirs=`sed -n -e 's,AM_ACLOCAL_INCLUDE(\(.*\)),\1,gp' < $configure_ac`
     ( cd $directory
-      aclocalinclude="-I ./macros $ACLOCAL_FLAGS"
+      aclocalinclude="-I ./macros"
       for k in $macrodirs; do
   	if test -d $k; then
           aclocalinclude="$aclocalinclude -I $k"

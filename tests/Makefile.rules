@@ -1,7 +1,7 @@
 
 CLEANFILES= *.ii
 
-PLASMA = $(top_srcdir)/scripts/plasma
+PLASMA = $(top_srcdir)/scripts/plasma --devel=$(top_srcdir)
 
 AM_LDFLAGS = -L$(top_srcdir)/src/.libs -Wl,-R$(top_srcdir)/src/.libs \
 	-L$(top_srcdir)/qt/.libs -Wl,-R$(top_srcdir)/qt/.libs \
@@ -21,8 +21,7 @@ DEPENDENCIES = $(top_srcdir)/src/.libs/libplasma.a
 
 .pa.o:
 	if LD_LIBRARY_PATH=$(top_srcdir)/parser \
-	$(PLASMA) --devel=$(top_srcdir) $(INCLUDES) \
-	-MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo $(CXXFLAGS) -c -o $@ $< ; \
+	$(PLASMA) $(INCLUDES) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo $(CXXFLAGS) -c -o $@ $< ; \
 	then mv "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po" ; \
 	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
 	fi
