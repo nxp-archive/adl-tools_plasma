@@ -13,6 +13,8 @@ SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")"
 
 DOCCLEANFILES = *.sui *.html
 
+INFO = info.xml
+
 install:
 	@echo "***"
 	@echo "*** Documentation is not installed by default."
@@ -30,6 +32,8 @@ docinstall: all-am
 	  echo " $(install_sh_DATA) $$d$$p $(DESTDIR)$(webdir)/$$f"; \
 	  $(install_sh_DATA) $$d$$p $(DESTDIR)$(webdir)/$$f; \
 	done
+	echo " $(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO)";
+	$(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO);
 
 index.html: $(skribe_src) source-code.html
 

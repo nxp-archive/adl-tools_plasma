@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+<?xml-stylesheet type="text/css" href="http://w3.somerset.sps.mot.com/resource/style/cadtool.css"?>
+
+<!DOCTYPE cadtool SYSTEM "http://w3.somerset.sps.mot.com/resource/style/cadtool.dtd">
+
+<cadtool>
+  <name>
+    Plasma
+  </name>
+  <general>
+    <description>
+    Plasma is a prototype implementation of a parallel modeling and applications
+    development language.  It is based upon C++, with concurrency extensions
+    based upon Occam.
+    </description>
+    <keywords>
+    frontend systems modeling language
+    </keywords>
+    <customers>
+    Plasma is a prototype and thus does not yet have any official customers.
+    However, if someone is interested in using it, feel free to contact the
+    developer for more information.
+    </customers>
+    <support>
+      <table bgcolor="#f0f0f0" fgcolor="#f0f0f0" cellpadding="5" cellspacing="0">
+        <tr><td>Brian Kahne</td><td><a href="mailto:Brian.Kahne@freescale.com">bkahne@freescale.com</a></td><td>512-996-4873</td></tr>
+      </table>    
+    </support>
+    <extrainfo>
+    </extrainfo>
+  </general>
+  <swprocess>
+    <requirements>
+    The initial requirements document is listed <a
+    href="http://twiki.sps.mot.com/bin/view.cgi/Projects/SystemsModelling">here</a>.
+    </requirements>
+    <design>
+    Design information and an implementation schedule can be found <a
+    href="http://www.somerset.sps.mot.com/projects/tools/plasma/index-3.html#Plasma-Development-Schedule">here</a>.
+    </design>
+    <implementation>
+      <structure>
+      Refer to the <a
+      href="http://www.somerset.sps.mot.com/projects/tools/plasma/index-3.html#Plasma-Development-Schedule">design</a>
+      schedule for more project information.
+      </structure>
+      <revisioncontrol>
+        <p>
+          Plasma uses CVS for revision control.
+        </p>
+        <p>
+          CVSROOT:  /nfs/ibmoto/tools/CVS_root
+        </p>
+        <p>
+          Project name:  plasma
+        </p>
+      </revisioncontrol>
+      <buildenv>
+        The build environment uses autoconf and automake.  The general process
+        for building from CVS is (assuming that the user has checked out the
+        project and changed to that directory):
+        <ol>
+          <li>./autogen.sh</li>
+          <li>make</li>
+        </ol>
+        Normal configuration options may be specified on the ./autogen.sh
+        command line, such as <b>--enable-opt</b> to build with optimization.
+      </buildenv>
+    </implementation>
+    <test>
+      <testplan>
+        The test plan is:
+        <ul>
+          <li>Add a test in <b>plasma/tests/basic</b> whenever a new feature is added.</li>
+          <li>Add larger tests to <b>plasma/tests</b> in their own directories
+              to test overall Plasma functionality.</li>
+        </ul>
+      </testplan>
+      <regression>
+        <p>
+        To run the regression, type <b>make check</b>.  This should be done
+        before a commit to CVS.</p>
+        <p>
+        At regular intervals, the correctness of the current head of CVS should
+        be checked.  To do this, copy the file <b>plasma/scripts/test-build</b>
+        to a directory, then execute it.  It checks Plasma out of CVS, builds it
+        with optimizations, runs the regression, installs it into the directory
+        that the script is located in, and makes various checks to ensure that
+        the intallation worked.  Note that you do not need to delete the
+        directory and re-copy <b>test-build</b> each time you run this test, as it does
+        its own clean up.</p>
+      </regression>
+    </test>
+    <documentation>
+       Plasma's documentation is located <a
+       href="http://www.somerset.sps.mot.com/projects/tools/plasma/index.html">here</a>.
+    </documentation>
+    <release>
+      <location>
+         Plasma is released into <b>/_TOOLS_/fs-plasma-</b> on GAIN.  Use the
+         policy <b>fs-plasma-/latest-gcc_3.4.1</b> to obtain the latest release.
+      </location>
+      <dependencies>
+         Plasma depends upon:
+         <ul>
+
+           <li>gcc 3.x</li>
+
+           <li>flex</li>
+
+           <li>OpenC++.  This is a metaobject compiler for C++.  Plasma uses a
+           slightly modified version which is kept under revision control in the
+           same CVSROOT location as Plasma, with a module name of
+           <b>opencxx-bk</b>.  It is installed in GAIN with a policy of
+           <b>opencxx-bk-/2.7.7</b></li>
+
+         </ul>
+      </dependencies>
+      <releaseprocess>
+         <p>
+         To make a release of Plasma, use the <b>cadinstall</b> tool (installed
+         on GAIN with the policy of <b>fs-cadinstall-/latest</b>):
+         </p>
+         <p>
+         cadinstall plasma
+         </p>
+         <p>
+         This will check the project out of CVS and build it in the appropriate
+         location in GAIN.
+         </p>
+        
+      </releaseprocess>
+      <bugreporting>
+         Since Plasma is not currently an official project with customers, no
+         formal bug reporting method exists.  Please contact the developer if you
+         encounter problems.
+      </bugreporting>
+    </release>
+  </swprocess>
+</cadtool>
