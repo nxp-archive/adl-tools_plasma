@@ -1,3 +1,5 @@
+        ====== plasma release 0.8.11 (v0_8_11) on Linux (cde-tx32-ldt189) ======
+
 2005-01-25  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed a minor issue with alt code generation- we don't create a
