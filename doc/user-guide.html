@@ -29,51 +29,79 @@ of simulation time for discrete, and various safety features.</p>
 <div class="contents topic" id="contents">
 <p class="topic-title"><a name="contents">Contents</a></p>
 <ul class="simple">
-<li><a class="reference" href="#concurrency" id="id1" name="id1">Concurrency</a><ul class="simple">
-<li><a class="reference" href="#thread-creation" id="id2" name="id2">Thread Creation</a><ul class="simple">
-<li><a class="reference" href="#par-block" id="id3" name="id3">Par Block</a></li>
-<li><a class="reference" href="#pfor-loop" id="id4" name="id4">PFor Loop</a></li>
-<li><a class="reference" href="#spawn-operator" id="id5" name="id5">Spawn Operator</a></li>
+<li><a class="reference" href="#usage" id="id1" name="id1">Usage</a></li>
+<li><a class="reference" href="#concurrency" id="id2" name="id2">Concurrency</a><ul class="simple">
+<li><a class="reference" href="#thread-creation" id="id3" name="id3">Thread Creation</a><ul class="simple">
+<li><a class="reference" href="#par-block" id="id4" name="id4">Par Block</a></li>
+<li><a class="reference" href="#pfor-loop" id="id5" name="id5">PFor Loop</a></li>
+<li><a class="reference" href="#spawn-operator" id="id6" name="id6">Spawn Operator</a></li>
 </ul>
 </li>
-<li><a class="reference" href="#thread-control" id="id6" name="id6">Thread Control</a></li>
-<li><a class="reference" href="#the-time-model" id="id7" name="id7">The Time Model</a></li>
-<li><a class="reference" href="#priorities" id="id8" name="id8">Priorities</a></li>
-<li><a class="reference" href="#thread-communication" id="id9" name="id9">Thread Communication</a><ul class="simple">
-<li><a class="reference" href="#channels" id="id10" name="id10">Channels</a></li>
-<li><a class="reference" href="#alt-blocks" id="id11" name="id11">Alt Blocks</a></li>
-<li><a class="reference" href="#afor-blocks" id="id12" name="id12">Afor Blocks</a></li>
-<li><a class="reference" href="#shared-data-structures" id="id13" name="id13">Shared Data Structures</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a class="reference" href="#garbage-collection" id="id14" name="id14">Garbage Collection</a></li>
-<li><a class="reference" href="#library-features" id="id15" name="id15">Library Features</a><ul class="simple">
-<li><a class="reference" href="#io-routines" id="id16" name="id16">I/O Routines</a><ul class="simple">
-<li><a class="reference" href="#string-routines" id="id17" name="id17">String Routines</a></li>
-<li><a class="reference" href="#random-number-generation" id="id18" name="id18">Random Number Generation</a></li>
+<li><a class="reference" href="#thread-control" id="id7" name="id7">Thread Control</a></li>
+<li><a class="reference" href="#the-time-model" id="id8" name="id8">The Time Model</a></li>
+<li><a class="reference" href="#priorities" id="id9" name="id9">Priorities</a></li>
+<li><a class="reference" href="#thread-communication" id="id10" name="id10">Thread Communication</a><ul class="simple">
+<li><a class="reference" href="#channels" id="id11" name="id11">Channels</a></li>
+<li><a class="reference" href="#alt-blocks" id="id12" name="id12">Alt Blocks</a></li>
+<li><a class="reference" href="#afor-blocks" id="id13" name="id13">Afor Blocks</a></li>
+<li><a class="reference" href="#shared-data-structures" id="id14" name="id14">Shared Data Structures</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference" href="#additional-language-constructs" id="id19" name="id19">Additional Language Constructs</a><ul class="simple">
-<li><a class="reference" href="#let-blocks" id="id20" name="id20">Let Blocks</a></li>
-<li><a class="reference" href="#lambda-functions" id="id21" name="id21">Lambda Functions</a></li>
+<li><a class="reference" href="#garbage-collection" id="id15" name="id15">Garbage Collection</a></li>
+<li><a class="reference" href="#library-features" id="id16" name="id16">Library Features</a><ul class="simple">
+<li><a class="reference" href="#io-routines" id="id17" name="id17">I/O Routines</a><ul class="simple">
+<li><a class="reference" href="#string-routines" id="id18" name="id18">String Routines</a></li>
+<li><a class="reference" href="#random-number-generation" id="id19" name="id19">Random Number Generation</a></li>
 </ul>
 </li>
-<li><a class="reference" href="#future-work" id="id22" name="id22">Future Work</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#additional-language-constructs" id="id20" name="id20">Additional Language Constructs</a><ul class="simple">
+<li><a class="reference" href="#let-blocks" id="id21" name="id21">Let Blocks</a></li>
+<li><a class="reference" href="#lambda-functions" id="id22" name="id22">Lambda Functions</a></li>
+</ul>
+</li>
+<li><a class="reference" href="#future-work" id="id23" name="id23">Future Work</a></li>
 </ul>
 </div>
+<div class="section" id="usage">
+<h1><a class="toc-backref" href="#id1" name="usage">Usage</a></h1>
+<p>Plasma is currently implemented as a front-end which converts a PLASMA program
+into C++, then invokes g++ to compile this into either an executable or into an
+object file.  As such, its options are basically those of g++.  General usage
+is:</p>
+<pre class="literal-block">
+plasma &lt;options&gt; &lt;input file&gt;
+</pre>
+<p>An input file has an extension of <tt class="literal"><span class="pre">.pa</span></tt>.</p>
+<p>For example, to create an executable from a single Plasma file:</p>
+<pre class="literal-block">
+plasma -g -Wall -O3 foo.pa -o foo
+</pre>
+<p>To create an object file, use the <tt class="literal"><span class="pre">-c</span></tt> option:</p>
+<pre class="literal-block">
+plasma -g -Wall -O3 -c foo.pa -o foo.o
+</pre>
+<p>To link, use <em>ld</em> or <em>g++</em>.  The script <strong>plasma-config</strong> exists to supply the
+required link line.  For example:</p>
+<pre class="literal-block">
+plasma -c -o a.o a.pa
+plasma -c -o b.o b.pa
+g++ -o prog a.o b.o `plasma-config --libs`
+</pre>
+<p>Within a <em>makefile</em>, use <tt class="literal"><span class="pre">$(shell</span> <span class="pre">plasma-config</span> <span class="pre">--libs)</span></tt> to generate the link line.</p>
+</div>
 <div class="section" id="concurrency">
-<h1><a class="toc-backref" href="#id1" name="concurrency">Concurrency</a></h1>
+<h1><a class="toc-backref" href="#id2" name="concurrency">Concurrency</a></h1>
 <p>This section discusses the new language features added in order to support
 concurrency.  These fall into two main categories: Thread creation and thread
 communication.</p>
 <div class="section" id="thread-creation">
-<h2><a class="toc-backref" href="#id2" name="thread-creation">Thread Creation</a></h2>
+<h2><a class="toc-backref" href="#id3" name="thread-creation">Thread Creation</a></h2>
 <div class="section" id="par-block">
-<h3><a class="toc-backref" href="#id3" name="par-block">Par Block</a></h3>
+<h3><a class="toc-backref" href="#id4" name="par-block">Par Block</a></h3>
 <p>The <strong>par</strong> block executes each statement in parallel, waiting until all child
 threads are finished before proceeding.  For example:</p>
 <pre class="literal-block">
@@ -100,7 +128,7 @@ par {
 </pre>
 </div>
 <div class="section" id="pfor-loop">
-<h3><a class="toc-backref" href="#id4" name="pfor-loop">PFor Loop</a></h3>
+<h3><a class="toc-backref" href="#id5" name="pfor-loop">PFor Loop</a></h3>
 <p>The <strong>pfor</strong> loop acts like a for-loop, except that for each loop iteration, its
 body is launched as a separate thread.  All threads must then complete before
 execution continues past the loop.  For example:</p>
@@ -119,7 +147,7 @@ passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable <strong>i</strong> but may directly modify <strong>results</strong>.</p>
 </div>
 <div class="section" id="spawn-operator">
-<h3><a class="toc-backref" href="#id5" name="spawn-operator">Spawn Operator</a></h3>
+<h3><a class="toc-backref" href="#id6" name="spawn-operator">Spawn Operator</a></h3>
 <p>The <strong>spawn</strong> operator creates a thread and returns a handle object which allows
 the result of the thread to be retrieved.  <strong>spawn</strong> takes a single argument
 which must be some sort of function invocation.  This might be an actual
@@ -165,7 +193,7 @@ int pMain(int argc,const char *argv[])
 </div>
 </div>
 <div class="section" id="thread-control">
-<h2><a class="toc-backref" href="#id6" name="thread-control">Thread Control</a></h2>
+<h2><a class="toc-backref" href="#id7" name="thread-control">Thread Control</a></h2>
 <p>The following functions provide control over threads.  These are declared in
 <tt class="literal"><span class="pre">plasma-interface.h</span></tt> which is implicitly included in all plasma (.pa) files.</p>
 <ol class="arabic simple">
@@ -190,7 +218,7 @@ return exit code -1.</p>
 </ol>
 </div>
 <div class="section" id="the-time-model">
-<h2><a class="toc-backref" href="#id7" name="the-time-model">The Time Model</a></h2>
+<h2><a class="toc-backref" href="#id8" name="the-time-model">The Time Model</a></h2>
 <p>Plasma implements a time model so that users may experiment with mapping an
 algorithm to a possible hardware configuration.  The model works along the lines
 of a discrete event simulator:  A thread may delay itself, in which case it
@@ -251,7 +279,7 @@ constructor or the <strong>setName</strong> method.  This pointer is unmanaged b
 against another pointer for quick identification purposes.</p>
 </div>
 <div class="section" id="priorities">
-<h2><a class="toc-backref" href="#id8" name="priorities">Priorities</a></h2>
+<h2><a class="toc-backref" href="#id9" name="priorities">Priorities</a></h2>
 <p>Threads in Plasma have priorities.  By default, a thread's priority is the same
 as its parent's priority, with <tt class="literal"><span class="pre">pMain()</span></tt> starting at the lowest priority.
 Priorities are specified as an integer, where 0 is the highest.  The number of
@@ -289,9 +317,9 @@ to execute on the current processor, you must call <tt class="literal"><span cla
 current processor.</p>
 </div>
 <div class="section" id="thread-communication">
-<h2><a class="toc-backref" href="#id9" name="thread-communication">Thread Communication</a></h2>
+<h2><a class="toc-backref" href="#id10" name="thread-communication">Thread Communication</a></h2>
 <div class="section" id="channels">
-<h3><a class="toc-backref" href="#id10" name="channels">Channels</a></h3>
+<h3><a class="toc-backref" href="#id11" name="channels">Channels</a></h3>
 <p>One method for threads to communicate among themselves is to use a channel.
 This is simply a data structure which allows one thread to write a value to it
 and another thread to read this value.  It is up to the channel to make sure
@@ -391,7 +419,7 @@ int pMain(int argc,const char *argv[])
 </ol>
 </div>
 <div class="section" id="alt-blocks">
-<h3><a class="toc-backref" href="#id11" name="alt-blocks">Alt Blocks</a></h3>
+<h3><a class="toc-backref" href="#id12" name="alt-blocks">Alt Blocks</a></h3>
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p>
 <pre class="literal-block">
@@ -420,7 +448,7 @@ blocks.  This allows the user to block on multiple collections of channels, or a
 collection of channels plus one or more single channels, etc.</p>
 </div>
 <div class="section" id="afor-blocks">
-<h3><a class="toc-backref" href="#id12" name="afor-blocks">Afor Blocks</a></h3>
+<h3><a class="toc-backref" href="#id13" name="afor-blocks">Afor Blocks</a></h3>
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p>
 <pre class="literal-block">
@@ -488,7 +516,7 @@ alt {
 </pre>
 </div>
 <div class="section" id="shared-data-structures">
-<h3><a class="toc-backref" href="#id13" name="shared-data-structures">Shared Data Structures</a></h3>
+<h3><a class="toc-backref" href="#id14" name="shared-data-structures">Shared Data Structures</a></h3>
 <p>Threads may also communicate using shared data structures whose access methods
 are protected by special synchronization primitives.  There are two means to do
 this.  The easiest is to declare a class as being a mutex class:</p>
@@ -534,7 +562,7 @@ void msg(const char *fmt, ...) {
 </div>
 </div>
 <div class="section" id="garbage-collection">
-<h1><a class="toc-backref" href="#id14" name="garbage-collection">Garbage Collection</a></h1>
+<h1><a class="toc-backref" href="#id15" name="garbage-collection">Garbage Collection</a></h1>
 <p>Plasma is equipped with a garbage collector.  This means that heap-allocated
 objects do not need to be explicitly freed; they will be collected when no more
 pointers to the object remain.  This implicitly managed memory (referred to as
@@ -558,11 +586,11 @@ int *x = new (GC) int[1000];
 the collector will collect it when it is safe to do so.</p>
 </div>
 <div class="section" id="library-features">
-<h1><a class="toc-backref" href="#id15" name="library-features">Library Features</a></h1>
+<h1><a class="toc-backref" href="#id16" name="library-features">Library Features</a></h1>
 <p>This section describes functions and classes provided by the Plasma standard
 library, <tt class="literal"><span class="pre">plasma.h</span></tt>.</p>
 <div class="section" id="io-routines">
-<h2><a class="toc-backref" href="#id16" name="io-routines">I/O Routines</a></h2>
+<h2><a class="toc-backref" href="#id17" name="io-routines">I/O Routines</a></h2>
 <p>A series of <strong>printf</strong>-style routines are provided which implement
 mutex-protected I/O routines.  These are:</p>
 <ul class="simple">
@@ -574,7 +602,7 @@ mutex-protected I/O routines.  These are:</p>
 <p>These behave just like the standard routines, except that they are protected
 from preemption while they are executing.</p>
 <div class="section" id="string-routines">
-<h3><a class="toc-backref" href="#id17" name="string-routines">String Routines</a></h3>
+<h3><a class="toc-backref" href="#id18" name="string-routines">String Routines</a></h3>
 <p>Strings, such as <strong>Processor</strong> names, are garbage collected in Plasma.  This may
 interfere with using the C++ string class, since it generally manages its own
 memory.  Thus, when passing a string to a <strong>Processor</strong> via <tt class="literal"><span class="pre">setName()</span></tt> or a
@@ -587,7 +615,7 @@ constructor, if the string is not a constant, you should duplicate it using
 <p>Both of the above routines duplicate their argument using GC-allocated memory.</p>
 </div>
 <div class="section" id="random-number-generation">
-<h3><a class="toc-backref" href="#id18" name="random-number-generation">Random Number Generation</a></h3>
+<h3><a class="toc-backref" href="#id19" name="random-number-generation">Random Number Generation</a></h3>
 <p>The template <tt class="literal"><span class="pre">Random&lt;Gen&gt;</span></tt> is provided for random number generation.  It takes
 as a parameter a generator class, which does the actual work of generating
 pseudo-random numbers.  The <em>Random</em> class wraps this generator and provides
@@ -672,25 +700,25 @@ fall-off rate.</dd>
 </div>
 </div>
 <div class="section" id="additional-language-constructs">
-<h1><a class="toc-backref" href="#id19" name="additional-language-constructs">Additional Language Constructs</a></h1>
+<h1><a class="toc-backref" href="#id20" name="additional-language-constructs">Additional Language Constructs</a></h1>
 <div class="section" id="let-blocks">
-<h2><a class="toc-backref" href="#id20" name="let-blocks">Let Blocks</a></h2>
+<h2><a class="toc-backref" href="#id21" name="let-blocks">Let Blocks</a></h2>
 <p>TBD</p>
 </div>
 <div class="section" id="lambda-functions">
-<h2><a class="toc-backref" href="#id21" name="lambda-functions">Lambda Functions</a></h2>
+<h2><a class="toc-backref" href="#id22" name="lambda-functions">Lambda Functions</a></h2>
 <p>TBD</p>
 </div>
 </div>
 <div class="section" id="future-work">
-<h1><a class="toc-backref" href="#id22" name="future-work">Future Work</a></h1>
+<h1><a class="toc-backref" href="#id23" name="future-work">Future Work</a></h1>
 <p>TBD</p>
 </div>
 </div>
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="user-guide.rst">View document source</a>.
-Generated on: 2004/07/14 17:40:08 CDT.
+Generated on: 2004/07/15 17:42:55 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

@@ -12,6 +12,36 @@ of simulation time for discrete, and various safety features.
 
 .. contents::
 
+-----
+Usage
+-----
+
+Plasma is currently implemented as a front-end which converts a PLASMA program
+into C++, then invokes g++ to compile this into either an executable or into an
+object file.  As such, its options are basically those of g++.  General usage
+is::
+
+  plasma <options> <input file>
+
+An input file has an extension of ``.pa``.
+
+For example, to create an executable from a single Plasma file::
+
+  plasma -g -Wall -O3 foo.pa -o foo
+
+To create an object file, use the ``-c`` option::
+
+  plasma -g -Wall -O3 -c foo.pa -o foo.o
+
+To link, use *ld* or *g++*.  The script **plasma-config** exists to supply the
+required link line.  For example::
+
+         plasma -c -o a.o a.pa
+         plasma -c -o b.o b.pa
+         g++ -o prog a.o b.o `plasma-config --libs`
+
+Within a *makefile*, use ``$(shell plasma-config --libs)`` to generate the link line.
+
 -----------
 Concurrency
 -----------
