@@ -17,24 +17,29 @@
 //
 //@endlicenses@
 
-namespace Opencxx
-{
+namespace Opencxx {
 
-class Ptree;
-class Msg;
+  class Ptree;
+  class Msg;
 
-class TooManyErrorsException {};
-class FatalErrorException {};
+  class TooManyErrorsException {};
+  class FatalErrorException {};
 
-class ErrorLog
-{
-public:
+  class ErrorLog
+  {
+  public:
+    ErrorLog() : errorCount_(0) {};
+
+    unsigned errorCount() const { return errorCount_; };
+
     virtual void Report(const Msg&) = 0;
-        /* throws TooManyErrorsException, FatalErrorException */
+    /* throws TooManyErrorsException, FatalErrorException */
         
     virtual ~ErrorLog() {}
-};
-
+  protected:
+    unsigned errorCount_;
+  };
+  
 }
 
 #endif /* ! guard_opencxx_ErrorLog_h */

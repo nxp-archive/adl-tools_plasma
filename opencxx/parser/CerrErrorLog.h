@@ -20,25 +20,23 @@
 #include <iostream>
 #include <opencxx/parser/ErrorLog.h>
 
-namespace Opencxx
-{
+namespace Opencxx {
 
-class Ptree;
-class Msg;
+  class Ptree;
+  class Msg;
 
-class CerrErrorLog : public ErrorLog
-{
-public:
-    CerrErrorLog()
-        : errorCount_(0)
+  class CerrErrorLog : public ErrorLog
+  {
+  public:
+    CerrErrorLog(unsigned maxErrorCount = 10)
+      : maxErrorCount_(maxErrorCount)
     {
     }
    
     void Report(const Msg& msg); /* throws FatalErrorException */
-private:
-    int errorCount_;
-    int maxErrorCount_;
-};
+  private:
+    unsigned maxErrorCount_;
+  };
 
 }
 

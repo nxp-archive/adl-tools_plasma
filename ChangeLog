@@ -1,3 +1,9 @@
+2005-03-10  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Additional minor changes, such as better source location support
+	for error messages:  Given a ptree, if it's not a leaf, we attempt
+	to find a leaf item.
+
 2005-03-09  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Enhanced the parser to accept several new things:

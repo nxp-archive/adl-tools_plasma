@@ -31,7 +31,7 @@ void CerrErrorLog::Report(const Msg& msg) /* throws FatalErrorException */
     {
         case Msg::Error: 
             ++errorCount_; 
-            if (errorCount_ >= 10)
+            if (errorCount_ >= maxErrorCount_)
             {
                 throw TooManyErrorsException();
             }
