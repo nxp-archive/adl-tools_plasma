@@ -175,11 +175,7 @@ Dependencies:
 
 Regressions:
 
-    1.  basic/chan1.pa
-
-    2.  basic/chan2.pa
-
-    3.  basic/chan3.pa
+    chan1 - chan9.
 
 Looping Alt Block
 -----------------

@@ -197,7 +197,12 @@ Currently, Plasma contains the following channels.  These are declared in ``plas
    object of type *Data*.  It contains only a single copy of this object; a
    second write will block if the first write's data has not been read.
 
-2. ``ResChan<class Data>``: The **spawn** operator may be interfaced to an
+2. ``QueueChan<class Data>``:  This is a typed queued channel:  It allows for
+   multiple producers but still requires a single consumer.  By default, the
+   queue size is not fixed, but the user may set a maximum size by specifying it
+   as the constructor argument.
+
+3. ``ResChan<class Data>``: The **spawn** operator may be interfaced to an
    **alt** construct by using this class.  This is a read-only channel which
    will return the result value of the spawned thread.  For example::
 

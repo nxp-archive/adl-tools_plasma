@@ -1,3 +1,11 @@
+#
+# Adding new Plasma tests is more complicated than it should be because
+# Automake doesn't know that Plasma's dependencies can be handled like those
+# of C++.  To add a new test, add an entry to check_PROGRAMS (call it <test> for
+# our purposes).  Then create a variable called <test>_SOURCES and list source
+# files.  If adding a plasma test, add a new entry to DEP_FILES and include the
+# relevant dependency file (.Po).
+#
 
 TESTS = regress
 
@@ -13,6 +21,8 @@ check_PROGRAMS = \
 	chan5 \
 	chan6 \
 	chan7 \
+	chan8 \
+	chan9 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -42,6 +52,10 @@ chan6_SOURCES = chan6.pa
 
 chan7_SOURCES = chan7.pa
 
+chan8_SOURCES = chan8.pa
+
+chan9_SOURCES = chan9.pa
+
 spawn1_SOURCES = spawn1.C
 
 spawn2_SOURCES = spawn2.pa
@@ -64,6 +78,8 @@ DEP_FILES=\
 	./$(DEPDIR)/chan5.Po \
 	./$(DEPDIR)/chan6.Po \
 	./$(DEPDIR)/chan7.Po \
+	./$(DEPDIR)/chan8.Po \
+	./$(DEPDIR)/chan9.Po \
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
@@ -79,6 +95,8 @@ include ./$(DEPDIR)/chan4.Po
 include ./$(DEPDIR)/chan5.Po
 include ./$(DEPDIR)/chan6.Po
 include ./$(DEPDIR)/chan7.Po
+include ./$(DEPDIR)/chan8.Po
+include ./$(DEPDIR)/chan9.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po

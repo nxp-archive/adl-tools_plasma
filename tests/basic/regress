@@ -63,6 +63,16 @@ my @Tests = (
 	      cmd     => "./chan7",
 	      checker => \&check_chan7,
 	     },
+	     # Channel test using a queued channel.
+	     {
+	      cmd     => "./chan8",
+	      checker => \&check_chan8,
+	     },
+	     # Channel test using a queued channel with a fixed size.
+	     {
+	      cmd     => "./chan9",
+	      checker => \&check_chan9,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -184,43 +194,7 @@ sub check_qsort {
   }
 }
 
-sub check_chan1 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
-  check_channel (@_[0],"Data read from channel (\\d+):\\s+(\\d+)",\@data,5);
-}
-
-sub check_chan2 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
-  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
-}
-
-sub check_chan3 {
-  my @data = ([10,10]);
-  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,2,[ "No value present."]);
-}
-
-sub check_chan4 {
-  my @data = ([20,10],[200,10],[2000,10],[20000,10],[200000,10],[2000000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
-}
-
-sub check_chan5 {
-  my @data = ([30,10],[300,10],[3000,10],[30000,10],[300000,10],[3000000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
-}
-
-sub check_chan6 {
-  my @data = ([20,10],[200,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,3,[ "No value present."]);
-}
-
-sub check_chan7 {
-  my @data = ([30,10],[300,10],[3000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,4,[ "No value present."]);
-}
-
-# Make sure that all expected integers are received.  These should
-# be four sets of ten integers starting at 10, 100, 1000, and 10000.
+# Make sure that all expected integers are received.
 sub check_channel {
   my ($input,$regex,$data,$expNumFinish,$expstr) = (shift,shift,shift,shift,shift);
   my %exphash = ();
@@ -271,6 +245,99 @@ sub check_channel {
       die;
     }
   }
+}
+
+sub check_chan1 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_channel (@_[0],"Data read from channel (\\d+):\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan2 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan3 {
+  my @data = ([10,10]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,2,[ "No value present."]);
+}
+
+sub check_chan4 {
+  my @data = ([20,10],[200,10],[2000,10],[20000,10],[200000,10],[2000000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan5 {
+  my @data = ([30,10],[300,10],[3000,10],[30000,10],[300000,10],[3000000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan6 {
+  my @data = ([20,10],[200,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,3,[ "No value present."]);
+}
+
+sub check_chan7 {
+  my @data = ([30,10],[300,10],[3000,10]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,4,[ "No value present."]);
+}
+
+# Make sure that all expected integers are received.
+sub check_qchannel {
+  my ($input,$regex,$data,$expNumFinish,$expregex,$expmax) = (shift,shift,shift,shift,shift,shift);
+
+  my %alldata = ();
+  foreach (@{$data}) {
+    for (my $i = 0; $i != $_->[1]; ++$i) {
+      $alldata{$_->[0] + $i} = 1;
+    }
+  }
+
+  my @lines = split /\n/,$input;
+  my $max = 10;
+  my $numFinish = 0;
+  my $exprcount = 0;
+  dprint "Regex:  $regex\n";
+  dprint "Check regex:  $expregex\n";
+  dprint "Expected data:  ",join(' ',keys %alldata),"\n";
+  for (@lines) {
+    dprint "Line:  $_\n";
+    if ( /$regex/ ) {
+      my $val = $1;
+      dprint "Read $val from channel.\n";
+      delete $alldata{$val};
+    } elsif ( /(Producer|Consumer) done./ ) {
+      ++$numFinish;
+    } elsif ( $expregex && /$expregex/ ) {
+      ++$exprcount;
+      if ($1 > $expmax) {
+	print "Exceeeded maximum check count of $expmax.\n";
+	die;
+      }
+    }
+  }
+  if ($expNumFinish) {
+    if ($numFinish != $expNumFinish) {
+      print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
+      die;
+    }
+  }
+  if (scalar(keys %alldata)) {
+    die "Did not find all required data:  ",join(' ',keys %alldata),"\n";
+  }
+  if ($expregex && !$exprcount) {
+    die "Found no occurrance of required check expression.\n";
+  }
+}
+
+sub check_chan8 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_qchannel (@_[0],"Read a value:\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan9 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_qchannel (@_[0],"Read a value:\\s+(\\d+)",\@data,5,"Queue size:\\s+(\\d+)",3);
 }
 
 # Makes sure expected results are found.

@@ -1,3 +1,9 @@
+2004-05-19  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added QueueChan, a queued channel classs.  This allows multiple
+	producers to write to a single consumer.  You can set the maximum
+	size of the queue, or just let it float.
+
 2004-05-18  Brian Kahne  <bkahne@ibmoto.com>
 
 	* A Result<T> object can now interface with an alt block by using
