@@ -1,3 +1,31 @@
+2004-04-29  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added support for the "pfor" construct.  Originally, this was to
+	be called "par" too, but OpenC++ does not allow the same keyword
+	to be used for multiple constructs.
+
+	The usage is:
+
+		pfor (<for-style condition>) {
+		  <body>
+		}
+
+	<body> is launched as a thread for each iteration of the loop.
+	Execution waits at the end of the loop until all threads
+	complete.  A pfor loop currently requires that there be at least
+	one declaration in the condition of the loop, e.g.
+
+		pfor (int i = 0; i != 10; ++i) { ... }
+
+	The reason for this is that anything declared in the loop
+	condition is passed by value to the thread, while everything else
+	is passed by reference in order to allow for side effects.
+	Without the pass-by-value, the loop would complete (most likely)
+	before any thread got scheduled, so every thread would see the
+	same final value for the loop variable, rather than the value with
+	which the thread was launched.  This seemed the best way to get
+	around that undesirable behavior.
+
 2004-04-27  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added a parallel quicksort to the regression.

@@ -7,4 +7,4 @@ Plasma_so_SOURCES = \
 CLEANFILES= *.ii *-init.cc *.so
 
 Plasma.so: plasma.mc
-	$(OCC) -m$@ $(OCCFLAGS) $<
+	$(OCC) -m$@ $(OCCFLAGS) $< -- -Wall -g

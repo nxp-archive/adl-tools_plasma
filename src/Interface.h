@@ -5,7 +5,11 @@
 #ifndef _INTERFACE_H_
 #define _INTERFACE_H_
 
+#include <vector>
+
 class Thread;
+
+typedef std::vector<Thread *> TVect;
 
 //
 // This defines parameters that are adjustable by the user.

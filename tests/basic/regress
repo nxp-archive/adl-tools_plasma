@@ -3,11 +3,20 @@
 #
 # Tests used in this regression.
 
-@Tests = (
+use lib "..";
+use rdriver;
+use strict;
+
+my @Tests = (
 	  # Basic par block test.
 	  {
 	   cmd     => "par1",
 	   checker => \&check_par1,
+	  },
+	  # Looping par block test.
+	  {
+	   cmd     => "par2",
+	   checker => \&check_par2,
 	  },
 	  # Quicksort with parallel sorting of split elements.
 	  {
@@ -15,9 +24,6 @@
 	   checker => \&check_qsort,
 	  },
 	 );
-
-use lib "..";
-use rdriver;
 
 doTest(\@Tests);
 
@@ -35,7 +41,7 @@ sub check_par1 {
       ($r1,$r2,$r3) = ($1,$2,$3);
     } elsif ( /^In block 1./ ) {
       ++$cb1;
-      if ($cb1 >= 10) {
+      if ($cb1 >= 8) {
 	die "Expected to find interleaved block statements but did not.\n";
       }
     } elsif ( /^In block 2./ ) {
@@ -53,11 +59,46 @@ sub check_par1 {
   }
 }
 
+# Pretty much the same as check_par1, except slightly different data is expected.
+sub check_par2 {
+  my @lines = split /\n/,@_[0];
+  my @exp = (2000,1999,1998,1997,1996);
+  my $expnb = 5;
+  my @cb = (0) x 10;
+  my $lb = -1;
+  for (@lines) {
+    if ( /^In block (\d+)./ ) {
+      my $b = $1;
+      if ($b != $lb) {
+	$cb[$b] = 0;
+      } else {
+	$cb[$b]++;
+      }
+      if ($cb[$b] >= 8) {
+	die "Expected to find interleaved block statements but did not.\n";
+      }
+      $lb = $b;
+    } elsif ( /Num blocks:\s+(\d+)/) {
+      if ($1 != $expnb) {
+	die "Expected number of blocks answer to be $expnb.\n";
+      }
+    } elsif ( /^Result/ ) {
+      my @res = ( /Result\[\d+\]:\s+(\d+)/g );
+      for my $i (0..$#exp) {
+	if ($res[$i] != $exp[$i]) {
+	  die "Mismatch on result value $i (Found $res[$i], expected $exp[$i]).\n";
+	}
+      }
+    }
+  }
+}
+
 # Just make sure that we got the right number of messages.
 # The checking of the sorting is down by the program itself.
 sub check_qsort {
   my @lines = split /\n/,@_[0];
   my $elc = 25;
+  my $lc = 0;
   for (@lines) {
     ++$lc if ( /^Sorting with size/);
   }
