@@ -1,0 +1,31 @@
+//
+// Test of priority queue operation.  Makes sure that
+// we properly sort what's up next by adding multiple items
+// to a series of processors.
+//
+
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  pSetPriority(0);
+
+  Processors procs(10);
+
+  pfor (unsigned i = 0; i != procs.size(); ++i) {
+    on (procs[i]) {
+      cout << "Block " << i << " start:  " << pTime() << endl;
+      pBusy(10+i*10);
+      cout << "Block " << i << " done:  " << pTime() << endl;      
+    }
+  }
+  return 0;
+}

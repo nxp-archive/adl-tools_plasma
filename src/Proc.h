@@ -21,6 +21,7 @@ namespace plasma {
   public:
     enum State {  Waiting, Running, Busy };
 
+    // Creates a standalone processor.
     Proc(const char *name = 0);
 
     static void init(const ConfigParms &cp);
@@ -72,6 +73,8 @@ namespace plasma {
     static unsigned numPriorities();
 
   private:
+    void init_internal(const char *n);
+
     static unsigned _numpriorities; // Number of allowed priorities.
 
     const char *_name;           // Optional name- memory not managed.

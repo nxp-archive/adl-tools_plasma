@@ -235,6 +235,16 @@ my @Tests = (
 	      cmd     => "./proc5",
 	      checker => \&check_proc5,
 	     },
+	     # Multiple processors w/busy.
+	     {
+	      cmd     => "./proc6",
+	      checker => \&check_proc6,
+	     },
+	     # Multiple processors w/busy.
+	     {
+	      cmd     => "./proc7",
+	      checker => \&check_proc7,
+	     },
 	     # Time w/invalid busy.
 	     {
 	      cmd     => "./time1",
@@ -870,6 +880,35 @@ sub check_proc5 {
  	      7 => [0,140],
  	      8 => [0,160],
  	      9 => [0,180],
+ 	     );
+  check_times($_[0],\%diff);
+}
+
+# Busy w/multiple procs.
+sub check_proc6 {
+  my %diff = (
+ 	      1 => [0,10],
+ 	      2 => [0,20],
+ 	      3 => [0,30],
+ 	      4 => [0,40],
+ 	      5 => [0,50],
+ 	     );
+  check_times($_[0],\%diff);
+}
+
+# Busy w/multiple procs.
+sub check_proc7 {
+  my %diff = (
+ 	      0  => [0,10],
+ 	      1  => [0,20],
+ 	      2  => [0,30],
+ 	      3  => [0,40],
+ 	      4  => [0,50],
+ 	      5  => [0,60],
+ 	      6  => [0,70],
+ 	      7  => [0,80],
+ 	      8  => [0,90],
+ 	      9 => [0,100],
  	     );
   check_times($_[0],\%diff);
 }

@@ -25,7 +25,10 @@ namespace plasma {
 
   // Sorts Threads by descending time- the smallest time value will be first.
   typedef std::priority_queue<Thread*,std::vector<THandle,traceable_allocator<THandle> >,greater_time<Thread,Thread> > TPriQueue;
-  typedef std::priority_queue<Proc*,std::vector<Proc*,traceable_allocator<Proc*> >,greater_time<Proc,Proc> > PPriQueue;
+  struct PPriQueue : public std::priority_queue<Proc*,std::vector<Proc*,traceable_allocator<Proc*> >,greater_time<Proc,Proc> >
+  {
+    void print() const;
+  };
 
   class System                    
   {

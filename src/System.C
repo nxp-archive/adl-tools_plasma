@@ -4,6 +4,7 @@
 
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 #include "gc_cpp.h"
 #include "Interface.h"
@@ -24,6 +25,14 @@ namespace plasma {
   bool greater_time<T1,T2>::operator()(const T1 *x,const T2 *y)
   {
     return x->endtime() > y->endtime();
+  }
+
+  void PPriQueue::print() const
+  {
+    int index = 0;
+    for (container_type::const_iterator i = c.begin(); i != c.end(); ++i, ++index) {
+      cerr << index << ":  End-time:  " << (*i)->endtime() << endl;
+    }
   }
 
   extern "C" void GC_stop_world()

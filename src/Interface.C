@@ -372,6 +372,7 @@ namespace plasma {
 
   Processors::Processors(unsigned n,const char *name)
   {
+    Proc *p = 0;
     for (unsigned i = 0; i != n; ++i) {
       push_back(Processor(name));
     }

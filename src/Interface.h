@@ -62,10 +62,11 @@ namespace plasma {
   private:
     Proc *_proc;
   };
-
+  
   // Vector of processors.  The idea is that you use
   // this, rather than just a standard container, so that
   // you get N unique Processor objects from the constructor.
+  // If share_queue is true, they will all share the same ready queue.
   struct Processors : public std::vector<Processor,traceable_allocator<Processor> >
   {
     Processors() {};

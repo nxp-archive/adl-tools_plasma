@@ -1,3 +1,12 @@
+2004-08-30  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Found bug w/busy:  I added the thread after I pushed the proc
+	onto the priority queue, so the priority queue wasn't correctly
+	sorting things.  Added proc6 to test this.
+
+	* Changed Proc::endtime() to just query the busythread, which is
+	much simpler than the old technique of searching the ready queue.
+
 2004-08-27  Brian Kahne  <bkahne@ibmoto.com>
 
 	* minicc: Moved the parallelism of the compiler out of Compiler.pa

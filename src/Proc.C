@@ -22,12 +22,17 @@ namespace plasma {
   // Processors declared globally in a user program occurring before
   // setup time.
   Proc::Proc(const char *n) :
-    _name(n),
-    _ready(numPriorities()),
-    _busythread(0),
-    _numthreads(0),
-    _state(Waiting)
+    _ready(numPriorities())
   {
+    init_internal(n);
+  }
+
+  inline void Proc::init_internal(const char *n)
+  {
+    _name = n;
+    _busythread = 0;
+    _numthreads = 0;
+    _state = Waiting;
   }
 
   void Proc::init(const ConfigParms &cp)
@@ -139,12 +144,7 @@ namespace plasma {
   // the one that was just added back to the system.
   ptime_t Proc::endtime() const
   {
-    for (int i = _ready.size()-1; i >= 0; --i) {
-      if (Thread *n = _ready[i].back()) {
-        return n->endtime();
-      }
-    }
-    return 0;
+    return (_busythread) ? _busythread->endtime() : 0;
   }
 
   void Proc::print_ready(ostream &o) const

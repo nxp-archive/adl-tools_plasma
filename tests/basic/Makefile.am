@@ -55,6 +55,8 @@ check_PROGRAMS = \
 	proc3 \
 	proc4 \
 	proc5 \
+	proc6 \
+	proc7 \
 	time1 \
 	time2 \
 	time3 \
@@ -204,6 +206,12 @@ proc4_DEPENDENCIES = $(DEPENDENCIES)
 proc5_SOURCES = proc5.pa
 proc5_DEPENDENCIES = $(DEPENDENCIES)
 
+proc6_SOURCES = proc6.pa
+proc6_DEPENDENCIES = $(DEPENDENCIES)
+
+proc7_SOURCES = proc7.pa
+proc7_DEPENDENCIES = $(DEPENDENCIES)
+
 time1_SOURCES = time1.pa
 time1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -284,6 +292,8 @@ DEP_FILES=\
 	./$(DEPDIR)/proc3.Po \
 	./$(DEPDIR)/proc4.Po \
 	./$(DEPDIR)/proc5.Po \
+	./$(DEPDIR)/proc6.Po \
+	./$(DEPDIR)/proc7.Po \
 	./$(DEPDIR)/time1.Po \
 	./$(DEPDIR)/time2.Po \
 	./$(DEPDIR)/time3.Po \
@@ -337,6 +347,8 @@ include ./$(DEPDIR)/proc2.Po
 include ./$(DEPDIR)/proc3.Po
 include ./$(DEPDIR)/proc4.Po
 include ./$(DEPDIR)/proc5.Po
+include ./$(DEPDIR)/proc6.Po
+include ./$(DEPDIR)/proc7.Po
 include ./$(DEPDIR)/time1.Po
 include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po

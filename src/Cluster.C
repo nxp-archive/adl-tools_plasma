@@ -264,9 +264,9 @@ namespace plasma {
       // Add to busy queue.
       // If we're dealing with a time-slice process, only add for the timeslice amount.
       ptime_t requested_time = (_cur->priority() || total_time < _busyts) ? total_time : _busyts;
-      thesystem.add_busy(requested_time,_cur);
       // Add process back to processor.
       _cur->proc()->add_ready(_cur);
+      thesystem.add_busy(requested_time,_cur);
       // Update- we know something is available b/c we just added something.
       // This updates the time.
       get_new_proc();
