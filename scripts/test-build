@@ -2,7 +2,12 @@
 ##
 ## This simple script is used to test that we can
 ## correctly build from CVS.  Generally you would
-## copy this to a test project area and then run it.
+## copy this to a test project area, make it read-only,
+## and then run it.
+##
+## I recommend making it read-only so that you remember
+## to edit the version in CVS, not the copy that is
+## run.
 ##
 rm -rf plasma bin lib share include && \
 cvs checkout plasma && \
