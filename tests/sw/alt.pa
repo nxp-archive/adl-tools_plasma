@@ -1,0 +1,75 @@
+//
+// nasty simple test program for alt
+//
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> Chan;
+
+void send_alt(Chan &the_channel, int value) 
+{
+  // simply outputs a value to the specified channel and dies
+  mprintf("\nAltsend sending %d",value);
+  the_channel.write(value);
+}
+    
+void altreceive(int count, Chan &one, Chan &two, Chan &three, Chan &four, Chan &five, Chan &six, Chan &seven) 
+{
+  while (count > 0) {
+    alt {
+      one.port(int v) {
+        mprintf("\nAlt one caught %d",v);
+      }
+      two.port(int v) {
+        mprintf("\nAlt two caught %d",v);
+      }
+      three.port(int v) {
+        mprintf("\nAlt three caught %d",v);
+      }
+      four.port(int v) {
+        mprintf("\nAlt four caught %d",v);
+      }
+      five.port(int v) {
+        mprintf("\nAlt five caught %d",v);
+      }
+      six.port(int v) {
+        mprintf("\nAlt six caught %d",v);
+      }
+      seven.port(int v) {
+        mprintf("\nAlt seven caught %d",v);
+      }
+    }
+    count = count - 1;
+  }
+}
+
+void work() 
+{
+  Chan alt_one, alt_two, alt_three, alt_four, alt_five, alt_six, alt_seven;
+  mprintf("\nTrying an alt..");
+  par {
+    send_alt(alt_seven, 1007);
+    send_alt(alt_two, 1002);
+    send_alt(alt_four, 1004);
+    send_alt(alt_six, 1006);
+    send_alt(alt_one, 1001);
+    send_alt(alt_five, 1005);
+    send_alt(alt_three, 1003);
+    altreceive(7, alt_one, alt_two, alt_three, alt_four, alt_five, alt_six, alt_seven);
+  }
+  mprintf("\nalt completed OK");
+}
+
+Processor Fred;
+
+int pMain(int,const char *[]) {
+  mprintf("\nAlt.sw pete july 1990");  
+  par {
+    on (Fred) { work(); }
+  }
+  mprintf("\nCompleted OK\n");
+  return 0;
+}

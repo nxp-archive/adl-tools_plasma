@@ -117,6 +117,7 @@ namespace plasma {
     th->setStartTime(_time);
     Proc *p = th->proc();
     p->setState(Proc::Busy);
+    p->setBusyThread(th);
     _busy.push(p);
   }
 

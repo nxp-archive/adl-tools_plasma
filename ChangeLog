@@ -1,3 +1,18 @@
+2004-07-02  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Changed how we go about setting a priority.  We used to always
+	yield, but this was wrong b/c if we change to a higher priority,
+	that thread should execute, since the highest priority thread
+	should always run before anything else.  Modified
+	Cluster::set_priority so that if the new priority is higher, we
+	simply record it and return, i.e. we don't swap.  If it's equal or
+	lower, then we record it and yield.
+
+	* Fixed bug with busy and higher-priority delayed threads.  I
+	wasn't correctly calculating elapsed time and I wasn't correctly
+	tracking what the busy thread was.  Added a busy-thread pointer to
+	Proc to track who is currently the busy-ing thread.
+
 2004-07-01  Brian Kahne  <bkahne@ibmoto.com>
 
 	* EAV regression added.

@@ -23,6 +23,7 @@ namespace plasma {
   // setup time.
   Proc::Proc() : 
     _ready(numPriorities()),
+    _busythread(0),
     _numthreads(0),
     _state(Waiting)
   {

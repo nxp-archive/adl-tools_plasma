@@ -1,0 +1,4 @@
+
+The eav directory contains a model of the Enterprise Attack Vehicle, a model of
+a transaction processing system.  Users (terminals) send requests to one or more
+transaction-processing agents, which then pass requests on to a disk array.

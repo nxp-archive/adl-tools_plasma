@@ -1,0 +1,4 @@
+
+These are simple regressions designed to test specific aspects of Plasma.  Bugs
+and new features should all have tests added to this directory.
+

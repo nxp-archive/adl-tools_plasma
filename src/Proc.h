@@ -47,6 +47,11 @@ namespace plasma {
     State state() const { return _state; };
     void setState(State s) { _state = s; };
 
+    // Access busy thread.
+    Thread *busythread() const { return _busythread; };
+    void setBusyThread(Thread *bt) { _busythread = bt; };
+    void clearBusyThread() { _busythread = 0; };
+
     // Number of threads in object.
     unsigned size() const { return _numthreads; };
     // Returns true if queue is empty.
@@ -67,6 +72,7 @@ namespace plasma {
     static unsigned _numpriorities; // Number of allowed priorities.
 
     QVect    _ready;          // Ready threads, in priority order.
+    Thread  *_busythread;     // Current busy thread, if any.
     int      _numthreads;     // Count of threads in this object.
     State    _state;          // Current processor state.
   };

@@ -1,0 +1,52 @@
+// 
+// This makes sure that a low priority thread that's computing will get
+// interrupted by a higher priority thread.  However, all of the requested
+// computation by the lower thread should eventually be performed.  In the
+// example below, the higher priority consumes two hundred cycles and also delays
+// for 200 cycles, allowing the low priority thread to compute during that time.
+//
+
+using namespace plasma;
+using namespace std;
+
+Processor Fred;
+
+void Low() 
+{
+  printf("Low Starting\n");
+  printf("Low switching to priority 7\n");
+  pSetPriority(7);
+  printf("Low computing at %lld\n",pTime());
+  pBusy(1000);
+  printf("Low completed at %lld\n",pTime());
+}
+
+void High() 
+{
+  printf("High Starting\n");
+  printf("High switching to priority 4\n");
+  pSetPriority(4);
+  for (int i = 0; i != 2; ++i) {
+    printf("High computing at %lld\n",pTime());
+    pBusy(100);
+    printf("High computed until %lld\n",pTime());
+    pDelay(100);
+  }
+  printf("High completed at %lld\n",pTime());
+}
+  
+int pMain(int,const char *[]) 
+{
+  printf("Priorities...\n");
+  par {
+    on (Fred) { High(); }
+    on (Fred) { Low(); }
+  }
+  return 0;
+}
+ 
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+} 
+ 

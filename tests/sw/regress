@@ -1,0 +1,90 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+# Tests used in this regression.
+
+use lib "..";
+use rdriver;
+use regress_utils;
+use strict;
+use Data::Dumper;
+
+my @Tests = (
+	     # Test of alt blocks.
+	     {
+	      cmd     => "./alt",
+	      checker => \&check_alt,
+	     },
+	     # Test of channels w/arrays and big ints.
+	     {
+	      cmd     => "./comm",
+	      checker => \&check_comm,
+	     },
+	     # Test of afor with channels and structures.
+	     {
+	      cmd     => "./nalt",
+	      checker => \&check_nalt,
+	     },
+	    );
+
+doTest(\@Tests);
+
+##
+## <TESTS>
+##
+
+sub check_alt {
+  my @data = ( 1001, 1002, 1003, 1004, 1005, 1006, 1007 );
+  my %dhash;
+  @dhash{@data} = (0) x @data;
+
+  my @lines = split /\n/,$_[0];
+  for (@lines) {
+    if ( /Alt \w+ caught (\d+)/ ) {
+      my $d = $1;
+      dprint "Found $d.\n";
+      ++$dhash{$d};
+    }
+  }
+
+  for (keys %dhash) {
+    if (!$dhash{$_}) {
+      print "Did not find expected data element $_.\n";
+      die;
+    }
+  }
+}
+
+sub check_comm {
+  str_rdiff(@_[0],[
+		   "First result:  35",
+		   "Second result:  ffff0000ffff",
+		   ]);  
+}
+
+sub check_nalt {
+  # Verify consumer gets its data.
+  my @data1 = (
+	      [1..50],
+	     );
+  check_channel (@_[0],"Comm (\\d+):\\s+Chan Num=\\d+\\s+Rcvd msg num=(\\d+)",\@data1);
+
+  # Verify producers wrote data.
+  my @data2 = (
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	      [1..5],
+	     );
+  check_channel (@_[0],"User (\\d+):\\s+Sending msg num=(\\d+)",\@data2);
+}
+
+##
+## </TESTS>
+##

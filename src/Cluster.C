@@ -222,21 +222,18 @@ namespace plasma {
     exec_block();
   }
 
-  void Cluster::busy(ptime_t t)
+  void Cluster::busy(ptime_t total_time)
   {
     if (!thesystem.busyokay()) {
       pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
     }
     // Loop until all time has been used.
     // Processor is not locked b/c preemption is deactivated in busy-okay mode.
-    while (t) {
+    while (total_time) {
       // Add to busy queue.
       // If we're dealing with a time-slice process, only add for the timeslice amount.
-      if (_cur->priority() || t < _busyts) {
-        thesystem.add_busy(t,_cur);
-      } else {
-        thesystem.add_busy(_busyts,_cur);
-      }
+      ptime_t requested_time = (_cur->priority() || total_time < _busyts) ? total_time : _busyts;
+      thesystem.add_busy(requested_time,_cur);
       // Add process back to processor.
       _cur->proc()->add_ready(_cur);
       // Update- we know something is available b/c we just added something.
@@ -260,7 +257,7 @@ namespace plasma {
         _curproc->get_ready();
       }
       // Update time remaining- loop if we still have busy stuff to do.
-      t -= _cur->time();
+      total_time -= _cur->time();
     }
   }
 
@@ -274,8 +271,14 @@ namespace plasma {
   void Cluster::set_priority(unsigned p)
   {
     lock();
+    int op = _cur->priority();
     _cur->setPriority( p );
-    yield();
+    // If the new priority is higher than what we have, we don't
+    // swap, since we will be switching to ourselves again.
+    if (p <= op) {
+      _curproc->add_ready(_cur);
+      exec_block();
+    }
   }
 
   unsigned Cluster::get_priority() const
@@ -370,16 +373,15 @@ namespace plasma {
         Proc *p = t->proc();
         p->add_ready(t);
         // If processor of delayed thread is busy, then only run it if its
-        // priority is higher.  In that case, we decrement the amount of busy
-        // time left.  The processor will block again when we switch to the
+        // priority is higher.  In that case, we record the amount of time
+        // consumed.  The processor will block again when we switch to the
         // thread w/remaining busy time- the busy() routine will see that busy
         // time is left and will add the processor back to the busy queue.
-
         if (p->state() == Proc::Busy) {
-          Thread *bt = p->next_ready();
+          Thread *bt = p->busythread();
           assert(bt);
-          if (t->priority() < bt->priority()) {
-            bt->setTime(bt->time()-(time()-bt->starttime()));
+          if (t->priority() > bt->priority()) {
+            bt->setTime((time()-bt->starttime()));
             add_proc(p);
           }
         } else {
@@ -389,6 +391,7 @@ namespace plasma {
       // Grab stuff from busy queue.
       Proc *p;
       while ( (p = thesystem.get_busy())) {
+        p->clearBusyThread();
         add_proc(p);
       }
       // Update the current processor.

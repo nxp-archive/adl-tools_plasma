@@ -1,0 +1,50 @@
+//
+// This ensures that if a thread switches to a higher priority than
+// anybody else, it will continue to execute and not switch to another thread
+// until complete.
+//
+
+using namespace plasma;
+using namespace std;
+
+Processor Fred;
+
+void Low() 
+{
+  printf("Low Starting\n");
+  printf("Low switching to priority 7\n");
+  pSetPriority(7);
+  printf("Low computing at %lld\n",pTime());
+  pBusy(1000);
+  printf("Low completed at %lld\n",pTime());
+}
+
+void High() 
+{
+  printf("High Starting\n");
+  printf("High switching to priority 4\n");
+  pSetPriority(4);
+  for (int i = 0; i != 2; ++i) {
+    printf("High computing at %lld\n",pTime());
+    pBusy(100);
+    printf("High computed until %lld\n",pTime());
+    pDelay(100);
+  }
+  printf("High completed at %lld\n",pTime());
+}
+  
+int pMain(int,const char *[]) 
+{
+  printf("Priorities...\n");
+  par {
+    on (Fred) { Low(); }
+    on (Fred) { High(); }
+  }
+  return 0;
+}
+ 
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+} 
+ 

@@ -1,0 +1,33 @@
+//
+// Test that we can send/receive arrays and big ints.
+//
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+int pMain(int,const char *[]) 
+{
+  vector<int> jim(10),bob(10);
+
+  Channel<vector<int> > the_wire1;
+
+  jim[5] = 35;
+  par {
+    the_wire1.write(jim);
+    bob = the_wire1.get();
+  }
+  mprintf ("First result:  %d\n",bob[5]);
+
+  Channel<uint64> the_wire2;
+  uint64 foo = 0xFFFF0000FFFFULL, bar;
+  par {
+    the_wire2.write(foo);
+    bar = the_wire2.get();
+  }
+  mprintf("Second result:  %llx\n",bar);
+  return 0;
+}
+
+  
