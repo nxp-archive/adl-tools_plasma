@@ -7,28 +7,35 @@ plasma:  PLASMA (Parallel LAnguage for System Modelling and Analysis) compiler.
 
 =head1 SYNOPSIS
 
-Usage:  plasma <compiler options>
+Usage:  B<plasma> <compiler options>
 
-Arguments must include 1 plasma language file (.pa extension).  Other options 
-are passed to cpp and g++.
+If a source file is found (.pa extension or I<--plasma> or I<--p> option used),
+B<plasma> will compile the file and link it (unless I<-c> option is present).
+If no source file exists, only linking will be performed on the files present
+(.o files, .a files, etc.).  Note that any unrecognized options are passed
+directly to B<g++>, since it has so many different options.
 
-B<-h>     : Display this help message.
+B<-h> : Display this help message.
 
-B<-man>   : Display more documentation using the I<man> format.
+B<-man> : Display more documentation using the I<man> format.
 
-B<-E>     : Stop after conversion to C++.  The resulting file is <source file>.ii.
+B<-v> : Verbose mode: Display commands issued by the wrapper script and by the
+compiler front-end.
 
-B<-c>     : Compile but do not link.  Linking is suppressed; only an object file is
-produced.  Use I<ld> or I<g++> to perform the final link.
+B<-E> : Stop after conversion to C++.  The resulting file is <source file>.ii.
+
+B<-c> : Compile but do not link.  Linking is suppressed and only an object file
+is produced.
 
 =head1 DESCRIPTION
 
 The plasma compiler compiles a PLASMA program by first converting it to C++, then
-calling g++ to perform the compilation to an object file.
+calling B<g++> to perform the compilation to an object file.
 
-For multi-file development, use the I<-c> option to compile each plasma file to an
-object file.  Then use I<ld> or I<g++> to link them together.  When linking, use
-the I<plasma-config> script in order to obtain the proper link line.  For instance:
+For multi-file development, use the I<-c> option to compile each plasma file to
+an object file.  Then use B<plasma>, B<ld> or B<g++> to link them together.
+When linking with a program other than B<plasma>, use the B<plasma-config>
+script in order to obtain the proper link line.  For instance:
 
   plasma -c -o a.o a.pa
   plasma -c -o b.o b.pa
@@ -40,15 +47,17 @@ Within a makefile, use the $(shell <cmd>) function to execute this script.  Type
 
 for more options.
 
+B<Note:> B<Plasma> calls B<g++> without a full path.  Therefore, the version of
+the compiler actually invokes depends upon your current environment.  Therefore,
+make sure that your PATH (or your wrapper policy, if operating in the SUE
+environment with the B<wrapper>) points to a sufficiently modern version of
+B<g++>.  A I<3.x> version is recommended.
+
 =cut
 
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
 use strict;
-
-my $base  = "@prefix@";
-my $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
-my $plibs = "-L$base/lib -Wl,-R$base/lib -lplasma -lgc -lqt -ldl";
 
 if (!@ARGV) {
   printhelp(1,1);
@@ -61,10 +70,13 @@ if (!@ARGV) {
 # of CPP options was taken from GCC's info page.  Anything not recognized is
 # considered to be a GCC option, since there are so many of them.
 
+my $debug = 0; # Uncomment to add more verbosity.
 my $man = 0;
 my $help = 0;
 my $link = 1;
+my $compile = 0;
 my $verbose = 0;
+my $devel;
 
 # OCC options (pre-compile)
 my $occoptions = "";
@@ -75,8 +87,10 @@ my $gccoptions = "";
 
 if (!&GetOptions
     (
-     "help|h|?"        => \$help,
-     "man"           => \$man,     
+     "devel=s"       => \$devel,
+     "help|h|?"      => \$help,
+     "man"           => \$man,
+     "plasma|p=s"    => \&handle_srcfile,
      "I=s"           => \&handle_occ_val,
      "D=s%"          => \&handle_occ_val,
      "V"             => \&handle_occ_noval,
@@ -118,15 +132,56 @@ printhelp(0,1) if $help;
 
 printhelp(0,2) if $man;
 
+my ($base,$pincs,$plibs,$prog);
+my $baselibs = "-lplasma -lgc -lqt -ldl";
+if (!$devel) {
+  # Normal install mode:  Run using installed stuff.
+  $base  = "@prefix@";
+  $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
+  $plibs = "-L$base/lib -Wl,-R$base/lib $baselibs";
+  $prog  = "$base/bin/plasma-comp";
+} else {
+  # Development mode:  Run using development layout.
+  $base  = "$devel";
+  $pincs = "-d-include$base/src/plasma-interface.h -I$base/src -I$base/gc/include";
+  $plibs = "-L$base/src/.libs -Wl,-R$base/src/.libs " .
+           "-L$base/qt/.libs -Wl,-R$base/qt/.libs " .
+           "-L$base/gc/.libs -Wl,-R$base/gc/.libs $baselibs";
+  $prog  = "$base/parser/plasma-comp";
+}
+
+sub dprint {
+  if ($debug) {
+    print @_;
+  }
+}
+
+# Adds a source file to OCC options and makes sure that
+# we only have a single source file.
+sub add_srcfile {
+  if ($compile) {
+    print "Error:  Only one source file is allowed for compiling.\n";
+    die;
+  }
+  $compile = 1;
+  $occoptions .= " $_[0]";
+}
+
+# Source file found:  Turn on compile option.
+sub handle_srcfile {
+  $compile = 1;
+  add_srcfile($_[0]);
+}
+
 # OCC options- no space allowed between option and value.
 sub handle_occ_val {
-  #print "Got occ arg $_[0]$_[1]\n";
+  dprint "Got occ arg $_[0]$_[1]\n";
   $occoptions .= " -$_[0]$_[1]";
 }
 
 sub handle_occ_noval {
   my $a = $_[0];
-  #print "Got occ arg $a\n";
+  dprint "Got occ arg $a\n";
   $occoptions .= " -$a";
   $link = 0 if ($a eq "c");
   $verbose = 1 if ($a eq "v");
@@ -134,25 +189,30 @@ sub handle_occ_noval {
 
 # CPP options- add "-d" so that OCC will pass it to CPP.
 sub handle_cpp_val {
-  #print "Got cpp arg $_[0]$_[1]\n";
-  $cppoptions .= " -d\"$_[0]=$_[1]\"";
+  dprint "Got cpp arg $_[0]$_[1]\n";
+  $cppoptions .= " -d\"-$_[0]$_[1]\"";
 }
 
 sub handle_cpp_noval {
-  #print "Got cpp arg $_[0]\n";
-  $cppoptions .= " -d\"$_[0]\"";
+  dprint "Got cpp arg $_[0]\n";
+  $cppoptions .= " -d\"-$_[0]\"";
 }
 
 # We have to handle -D and -U here b/c of their
 # special format.
 sub handle_gccopts {
   my $a = shift;
-  #print "Got gcc arg of $a, ";
-  if ($a =~ /^-[UDI]/) {
-    #print " adding to occ\n";
+  dprint "Got gcc arg of $a, ";
+  if ($a =~ /\.pa$/) {
+    # Handle bare source file.
+    add_srcfile($a);
+  } elsif ($a =~ /^-[UDI]/) {
+    # Handle macro define/undefine option.
+    dprint " adding to occ\n";
     $occoptions .= " $a";
   } else {
-    #print " adding to gcc\n";
+    # Didn't match- assume gcc options.
+    dprint " adding to gcc\n";
     $gccoptions .= " $a";
   }
 }
@@ -163,16 +223,26 @@ sub printhelp() {
   exit 0;
 }
 
-#print "occ:  $occoptions\n";
-#print "cpp:  $cppoptions\n";
-#print "gcc:  $gccoptions\n";
+print "[occ options:  $occoptions]\n" if $verbose;
+print "[cpp options:  $cppoptions]\n" if $verbose;
+print "[gcc options:  $gccoptions]\n" if $verbose;
 
-my $cmd = "$base/bin/plasma-comp -u.pa $pincs $occoptions $cppoptions -- $gccoptions";
-
-if ($link) {
-  $cmd .= " $plibs";
+my $cmd;
+if ($compile) {
+  # Compile w/optional link.
+  $cmd = "$prog -u.pa $pincs $occoptions $cppoptions -- $gccoptions";
+  if ($link) {
+    $cmd .= " $plibs";
+  }
+} else {
+  # Link only.
+  if (!$link) {
+    print "Error:  Neither compile nor link operation will be performed.\n";
+    die;
+  }
+  $cmd = "g++ $occoptions $cppoptions $gccoptions $plibs";
 }
 
-print "Command:  $cmd\n" if $verbose;
+print "[cmd:  $cmd]\n" if $verbose;
 
 exec $cmd;

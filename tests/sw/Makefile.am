@@ -51,8 +51,6 @@ example_DEPENDENCIES = $(DEPENDENCIES)
 cim_SOURCES = cim.pa
 cim_DEPENDENCIES = $(DEPENDENCIES)
 
-AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
-
 DEP_FILES=\
 	./$(DEPDIR)/alt.Po \
 	./$(DEPDIR)/comm.Po \

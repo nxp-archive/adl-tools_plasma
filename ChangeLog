@@ -1,5 +1,15 @@
 2004-07-19  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Further fixes to the plasma wrapper:  Added the ability to just
+	link with it, using the required libraries.  This happens if we
+	don't find a .pa file or there isn't a --plasma or --p option.
+
+	* Added a --devel option, which takes the top src directory as
+	a parameter.  This switches over to the devel mode, where include
+	and library paths are set for an uninstalled development sandbox,
+	rather than for an installation.  This means that the prefix is
+	not used.  Modified the regression suite to use the wrapper script.
+
 	* Found a bug:  I couldn't use the "waiter" queue, as previously
 	implemented, b/c when we have an alt block and are using ResChans,
 	it means that we might have a situation where a single thread (the
