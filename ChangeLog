@@ -1,3 +1,21 @@
+2004-09-23  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added some support for power modelling.  The basic idea is that
+	the user can annotate a model with calls to 
+
+	void pEnergy(energy_t);
+
+	This adds to the current processor's value representing consumed
+	energy.  You can then call either:
+
+	energy_t pGetEnergy(Processor);
+	energy_t pReadEnergy(Processor);
+
+	The first clears the energy value while the second does not.  To
+	obtain power, just create a thread which regularly samples the
+	energy of the relevant processors and divides by the sample
+	period.
+	
 2004-09-21  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Got skribe to produce a pdf of the main document (not the source

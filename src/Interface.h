@@ -29,6 +29,9 @@ namespace plasma {
   typedef unsigned long long int uint64;
   typedef uint64 ptime_t;
 
+  // Energy is a double.
+  typedef double energy_t;
+
   //
   // This defines parameters that are adjustable by the user.
   //
@@ -172,6 +175,16 @@ namespace plasma {
 
   // Return the current simulation time.
   ptime_t pTime();
+
+  // Specify how much energy is used.  This adds to the current processor's
+  // energy count.
+  void pEnergy(energy_t);
+
+  // Get the energy count for this processor.  Clears the count.
+  energy_t pGetEnergy(Processor p);
+
+  // Same as above but does not clear the count.
+  energy_t pReadEnergy(Processor p);
 
   // Terminate program with return code .
   void pExit(int code);

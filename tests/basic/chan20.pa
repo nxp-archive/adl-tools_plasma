@@ -1,0 +1,72 @@
+//
+// Simple test of a replicating thread.  This is encapsulated within
+// the Tee structure:  You declare one of these objects, giving it
+// an input channel and an output channel:  A thread is spawned which
+// replicates any input data, passing it to each of the output channels.
+//
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> IntChan;
+typedef vector<IntChan> IntChans;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+  }
+  chan.write(-1);
+  plasma::mprintf ("Producer done.\n");
+}
+
+void consumer(int id,IntChan &chan)
+{
+  int v;
+  do {
+    v = chan.get();
+    plasma::mprintf ("Got a value from port %d:  %d\n",id,v);
+  } while (v >= 0);
+  plasma::mprintf ("Consumer done.\n");
+}
+
+struct Tee {
+  Tee(IntChan &in,IntChans &out)
+  {
+    spawn(replicate(in,out));
+  }
+  int replicate(IntChan &in,IntChans &out)
+  {
+    while(1) {
+      int x = in.get();
+      pfor (IntChans::iterator i = out.begin(); i != out.end(); ++i) {
+        (*i).write(x);
+      }
+    }
+    return 0;
+  }
+};
+
+void pSetup(ConfigParms &cp) { cp._busyokay = true; }
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan in;
+
+  IntChans out(5);
+
+  Tee(in,out);
+
+  par {
+    producer(10,in);
+    pfor (unsigned i = 0; i != out.size(); ++i) {
+      consumer(i,out[i]);
+    }
+  }
+  plasma::mprintf ("Done.\n");
+  return 0;
+}

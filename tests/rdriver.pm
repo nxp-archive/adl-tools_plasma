@@ -129,7 +129,7 @@ below.
 
 =back 8
 
-=item file_rdiff(<filename>,<array ref of regular expressions>)
+=item file_rdiff(<filename>,<array ref of regular expressions | string>)
 
 This is a simple function for checking a file.  The second argument is a
 reference to an array of strings.  Each string is considered to be a regular
@@ -137,7 +137,12 @@ expression.  The function must be able to successfully match lines in the file
 against the array elements, proceeding to the end of the array, or else it fails
 and calls die.
 
-=item str_rdiff(<input string>,<array ref of regular expressions>)
+The regular expressions can be either a reference to an array of strings/regular
+expressions or a single string.  If the latter, we'll split the string on
+newlines.  This can be useful when you have a block of data that you want to
+check: Rather than quoting each item, simply use here-document syntax.
+
+=item str_rdiff(<input string>,<array ref of regular expressions | string>)
 
 Same as file_rdiff, except that we take the input, split on newlines, then try
 and match against the regular expressions.
@@ -183,6 +188,7 @@ sub error {
 };
 
 use strict;
+use Data::Dumper;
 
 use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $keepoutput $debug $DontCare);
 
@@ -469,6 +475,14 @@ sub file_rdiff {
 
   open IN,$f or die "Could not open $f for comparing.";
 
+  if (!ref($r)) {
+    # Not a reference, so assume that it's a string that we'll divide into
+    # an array of strings.
+    my @rl = split /\n/,$r;
+    $r = \@rl;
+  }
+  dprint ("Match value:  ",Dumper($r),"\n");
+
   my $i = 0;
   my $max = scalar(@$r);
   while (<IN>) {
@@ -483,6 +497,14 @@ sub file_rdiff {
 sub str_rdiff {
   my @lines = split /\n/,shift;
   my $r = shift;
+
+  if (!ref($r)) {
+    # Not a reference, so assume that it's a string that we'll divide into
+    # an array of strings.
+    my @rl = split /\n/,$r;
+    $r = \@rl;
+  }
+  dprint ("Match value:  ",Dumper($r),"\n");
 
   my $i = 0;
   my $max = scalar(@$r);

@@ -160,6 +160,11 @@ my @Tests = (
 	      cmd     => "./chan19",
 	      checker => \&check_chan19,
 	     },
+	     # Test of channel replication to multiple consumers.
+	     {
+	      cmd     => "./chan20",
+	      checker => \&check_chan20,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -712,6 +717,12 @@ sub check_chan19 {
 		  ]);
 }
 
+# Test of channel replication to multiple consumers.
+sub check_chan20 {
+  my @data = ([10..19],[10..19],[10..19],[10..19],[10..19]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,6);
+}
+
 sub check_spawn1 {
   my @exp = ( 6.05, 103.33, 10103.1 );
   check_spawn($_[0], \@exp);
@@ -1088,75 +1099,93 @@ sub check_clock2 {
 sub check_clock3 {
   # We check that each pipeline stage emits the expected data at the right time.
 
-  str_rdiff(@_[0],[
-		   "producer:  Data is 0,0 at 0.",
-		   "producer:  Data is 10,20 at 10.",
-		   "producer:  Data is 20,40 at 20.",
-		   "producer:  Data is 30,60 at 30.",
-		   "producer:  Data is 40,80 at 40.",
-		   "producer:  Data is 50,100 at 50.",
-		   "producer:  Data is 60,120 at 60.",
-		   "producer:  Data is 70,140 at 70.",
-		   "producer:  Data is 80,160 at 80.",
-		   "producer:  Data is 90,180 at 90.",
-		  ]);
+  str_rdiff(@_[0],<<'EOD');
+producer:  Data is 0,0 at 0.
+producer:  Data is 10,20 at 10.
+producer:  Data is 20,40 at 20.
+producer:  Data is 30,60 at 30.
+producer:  Data is 40,80 at 40.
+producer:  Data is 50,100 at 50.
+producer:  Data is 60,120 at 60.
+producer:  Data is 70,140 at 70.
+producer:  Data is 80,160 at 80.
+producer:  Data is 90,180 at 90.
+EOD
 
-  str_rdiff(@_[0],[
-		   "con1:  Data is 0,0 at 10.",
-		   "con1:  Data is 100,200 at 20.",
-		   "con1:  Data is 200,400 at 30.",
-		   "con1:  Data is 300,600 at 40.",
-		   "con1:  Data is 400,800 at 50.",
-		   "con1:  Data is 500,1000 at 60.",
-		   "con1:  Data is 600,1200 at 70.",
-		   "con1:  Data is 700,1400 at 80.",
-		   "con1:  Data is 800,1600 at 90.",
-		   "con1:  Data is 900,1800 at 100.",
-		   "con1:  Data is -10,-10 at 110.",
-		  ]);
+  str_rdiff(@_[0],<<'EOD');
+con1:  Data is 0,0 at 10.
+con1:  Data is 100,200 at 20.
+con1:  Data is 200,400 at 30.
+con1:  Data is 300,600 at 40.
+con1:  Data is 400,800 at 50.
+con1:  Data is 500,1000 at 60.
+con1:  Data is 600,1200 at 70.
+con1:  Data is 700,1400 at 80.
+con1:  Data is 800,1600 at 90.
+con1:  Data is 900,1800 at 100.
+con1:  Data is -10,-10 at 110.
+EOD
 
-  str_rdiff(@_[0],[
-		   "con2:  Data is 0,0 at 20.",
-		   "con2:  Data is 1000,2000 at 30.",
-		   "con2:  Data is 2000,4000 at 40.",
-		   "con2:  Data is 3000,6000 at 50.",
-		   "con2:  Data is 4000,8000 at 60.",
-		   "con2:  Data is 5000,10000 at 70.",
-		   "con2:  Data is 6000,12000 at 80.",
-		   "con2:  Data is 7000,14000 at 90.",
-		   "con2:  Data is 8000,16000 at 100.",
-		   "con2:  Data is 9000,18000 at 110.",
-		   "con2:  Data is -100,-100 at 120.",
-		  ]);
+  str_rdiff(@_[0],<<'EOD');
+con2:  Data is 0,0 at 20.
+con2:  Data is 1000,2000 at 30.
+con2:  Data is 2000,4000 at 40.
+con2:  Data is 3000,6000 at 50.
+con2:  Data is 4000,8000 at 60.
+con2:  Data is 5000,10000 at 70.
+con2:  Data is 6000,12000 at 80.
+con2:  Data is 7000,14000 at 90.
+con2:  Data is 8000,16000 at 100.
+con2:  Data is 9000,18000 at 110.
+con2:  Data is -100,-100 at 120.
+EOD
 
-  str_rdiff(@_[0],[
-		   "con3:  Data is 0,0 at 30.",
-		   "con3:  Data is 10000,20000 at 40.",
-		   "con3:  Data is 20000,40000 at 50.",
-		   "con3:  Data is 30000,60000 at 60.",
-		   "con3:  Data is 40000,80000 at 70.",
-		   "con3:  Data is 50000,100000 at 80.",
-		   "con3:  Data is 60000,120000 at 90.",
-		   "con3:  Data is 70000,140000 at 100.",
-		   "con3:  Data is 80000,160000 at 110.",
-		   "con3:  Data is 90000,180000 at 120.",
-		   "con3:  Data is -1000,-1000 at 130.",
-		  ]);
+  str_rdiff(@_[0],<<'EOD');
+con3:  Data is 0,0 at 30.
+con3:  Data is 10000,20000 at 40.
+con3:  Data is 20000,40000 at 50.
+con3:  Data is 30000,60000 at 60.
+con3:  Data is 40000,80000 at 70.
+con3:  Data is 50000,100000 at 80.
+con3:  Data is 60000,120000 at 90.
+con3:  Data is 70000,140000 at 100.
+con3:  Data is 80000,160000 at 110.
+con3:  Data is 90000,180000 at 120.
+con3:  Data is -1000,-1000 at 130.
+EOD
 
-  str_rdiff(@_[0],[
-		   "con4:  Data is 0,0 at 40.",
-		   "con4:  Data is 100000,200000 at 50.",
-		   "con4:  Data is 200000,400000 at 60.",
-		   "con4:  Data is 300000,600000 at 70.",
-		   "con4:  Data is 400000,800000 at 80.",
-		   "con4:  Data is 500000,1000000 at 90.",
-		   "con4:  Data is 600000,1200000 at 100.",
-		   "con4:  Data is 700000,1400000 at 110.",
-		   "con4:  Data is 800000,1600000 at 120.",
-		   "con4:  Data is 900000,1800000 at 130.",
-		   "con4:  Data is -10000,-10000 at 140.",
-		   "Done.",
-		  ]);
+  str_rdiff(@_[0],<<'EOD');
+con4:  Data is 0,0 at 40.
+con4:  Data is 100000,200000 at 50.
+con4:  Data is 200000,400000 at 60.
+con4:  Data is 300000,600000 at 70.
+con4:  Data is 400000,800000 at 80.
+con4:  Data is 500000,1000000 at 90.
+con4:  Data is 600000,1200000 at 100.
+con4:  Data is 700000,1400000 at 110.
+con4:  Data is 800000,1600000 at 120.
+con4:  Data is 900000,1800000 at 130.
+con4:  Data is -10000,-10000 at 140.
+Done.
+EOD
+
+  str_rdiff(@_[0],<<'EOD');
+0: current energy:  0, current power:0mW
+10: current energy:  20, current power:2mW
+20: current energy:  20, current power:2mW
+30: current energy:  30, current power:3mW
+40: current energy:  40, current power:4mW
+50: current energy:  50, current power:5mW
+60: current energy:  50, current power:5mW
+70: current energy:  50, current power:5mW
+80: current energy:  50, current power:5mW
+90: current energy:  50, current power:5mW
+100: current energy:  40, current power:4mW
+110: current energy:  40, current power:4mW
+120: current energy:  40, current power:4mW
+130: current energy:  30, current power:3mW
+140: current energy:  20, current power:2mW
+EOD
 
 }
 

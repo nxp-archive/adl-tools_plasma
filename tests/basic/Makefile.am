@@ -40,6 +40,7 @@ check_PROGRAMS = \
 	chan17 \
 	chan18 \
 	chan19 \
+	chan20 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -165,6 +166,9 @@ chan18_DEPENDENCIES = $(DEPENDENCIES)
 
 chan19_SOURCES = chan19.pa
 chan19_DEPENDENCIES = $(DEPENDENCIES)
+
+chan20_SOURCES = chan20.pa
+chan20_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
@@ -305,6 +309,7 @@ DEP_FILES=\
 	./$(DEPDIR)/chan17.Po \
 	./$(DEPDIR)/chan18.Po \
 	./$(DEPDIR)/chan19.Po \
+	./$(DEPDIR)/chan20.Po \
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
@@ -369,6 +374,7 @@ include ./$(DEPDIR)/chan16.Po
 include ./$(DEPDIR)/chan17.Po
 include ./$(DEPDIR)/chan18.Po
 include ./$(DEPDIR)/chan19.Po
+include ./$(DEPDIR)/chan20.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po

@@ -564,9 +564,30 @@ par {
 
 	 )
       
+      (subsection :title "Power Modeling"
+
+	 (p [Plasma supports power modeling by providing some simple hooks for
+	 recording and retrieving energy consumption on a per-processor basis.
+	 The model calls ,(code [pEnergy(energy_t)]) to add to the current processor's
+	 consumed-energy value, where ,(code [energy_t]) is currently defined as
+	 a ,(code [double]).  Calling ,(code [pGetEnergy(Processor)]) retrieves
+	 a processor's consumed energy and clears the value.  Thus, to monitor
+	 power, a thread might regularly query processors for their energy and
+	 then divide this by the sample period.])
+	 
+	 (p [Just as with evaluating compute requirements, a process of
+	 step-wise refinement may be applied: The user might start with a very
+	 course-grained analysis using average power values, then proceed to
+	 refine that by adding different energy consumption statements for
+	 different paths through the code or compute energy by looking at the
+	 hamming distance between consecutive data values read from a channel.
+	 Additionally, a model might wrap all calls to ,(code [pEnergy]) so that
+	 a scaling value, based on clock-frequency, might be applied.])
+	 
+	 )
+	 
       )
       
-   
    (section :title "User's Guide"
       
       [The Plasma user guide is available ,(ref :chapter "Plasma User's Guide"

@@ -161,6 +161,25 @@ namespace plasma {
     return thesystem.time();
   }
 
+  // Specify how much energy is used.  This adds to the current processor's
+  // energy count.
+  void pEnergy(energy_t e)
+  {
+    thecluster.curProc()->add_energy(e);
+  }
+
+  // Get the energy count for this processor.  Clears the count.
+  energy_t pGetEnergy(Processor p)
+  {
+    return p()->get_energy();
+  }
+
+  // Same as above but does not clear the count.
+  energy_t pReadEnergy(Processor p)
+  {
+    return p()->read_energy();
+  }
+
   // Lock thecluster.
   void pLock(void)
   {

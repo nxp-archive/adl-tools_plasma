@@ -46,6 +46,13 @@ namespace plasma {
     // Pointer to next avail thread- does not remove.
     THandle next_ready() const;
 
+    // Add energy to the processor consumption value.
+    void add_energy(energy_t e) { _energy += e; };
+    // Get and clear the processor's consumed energy.
+    energy_t get_energy() { energy_t e = _energy; _energy = 0; return e; };
+    // Return energy consumed; does not clear the value.
+    energy_t read_energy() const { return _energy; };
+
     // Remove thread.  Use with care, as we can't know if
     // the item is actually in the queue.
     void remove_ready(THandle t);
@@ -84,6 +91,7 @@ namespace plasma {
     QVect      *_ready;          // Ready threads, in priority order.
     THandle     _busythread;     // Current busy thread, if any.
     State       _state;          // Current processor state.
+    energy_t    _energy;         // Current energy used by processor.
   };
 
 }

@@ -512,7 +512,7 @@ the behavior of a blocked writing thread.])
 )
 
 (p [Note that ,(code [write()]), ,(code [read()]), and ,(code [clear_ready()])
-are technically not required by ,(b [alt]) and ,(b [afor]).  Thus, it's possible to
+are technically not required by ,(b [alt]) and ,(b [afor]).  Thus, it is possible to
 have a read-only channel.])
 
 (p [Currently, Plasma contains the following channels.  These are declared in
@@ -614,6 +614,55 @@ int pMain(int argc,const char *argv\[\])
 ]))
 
 )
+
+(p [The basic Plasma channels all expect there to be a single consumer of
+data. While it is possible to create a multi-consumer channel, an easy way to
+emulate this behavior is to create a replicating thread.  For instance, the
+following structure, when declared, will replicate input data to all of the
+output channels:])
+
+(cprog [
+
+struct Tee {
+  Tee(IntChan &in,IntChans &out)
+  {
+    spawn(replicate(in,out));
+  }
+  int replicate(IntChan &in,IntChans &out)
+  {
+    while(1) {
+      int x = in.get();
+      pfor (IntChans::iterator i = out.begin(); i != out.end(); ++i) {
+        (*i).write(x);
+      }
+    }
+    return 0;
+  }
+};
+
+])
+
+(p [You might use this in the following way:])
+
+(cprog [
+ 
+IntChan in;
+
+IntChans out(5);
+
+Tee(in,out);
+
+par {
+  producer(10,in);
+  pfor (unsigned i = 0; i != out.size(); ++i) {
+    consumer(i,out\[i\]);
+  }
+}
+ 
+])
+
+(p [The data produced by the ,(code [producer]) function is sent to all of the
+,(code [consumer]) functions via the ,(code [Tee]) structure.])
 
 )
 
@@ -806,6 +855,69 @@ void msg(const char *fmt, ...) {
 )
 
 )
+
+)
+
+(section :title "Power Modeling"
+
+(p [Plasma has some simple hooks for supporting power modeling.  The concept is
+similar to the way in which time is handled:  A user annotates a model with
+explicit energy-consumption information, which is stored on a per-processor
+basis.  To obtain power, a thread can be created which regularly queries a
+processor for its energy consumption and divides by the sample period.])
+
+(p [The power API is:])
+
+(itemize 
+
+(item [,(code [energy_t]): The basic energy type.  Currently defined as a ,(code
+[double])])
+
+(item [,(code [void pEnergy(energy_t)]):  Adds the argument to the current
+processor's energy consumption value.])
+
+(item [,(code [energy_t pGetEnergy(Processor p)]):  Returns the specified
+processor's energy consumption value.  This clears the value.])
+
+(item [,(code [energy_t pReadEnergy(Processor p)]):  Returns the specified
+processor's energy consumption value.  This does not clear the value.])
+
+)
+
+(p [A reporting thread might look something like:])
+
+(cprog [
+ 
+void power(int period)
+{
+  while (1) {
+    cout << pTime() << ":  current power:" 
+         << (pGetEnergy(pCurProc())/period) << "mW" << endl;
+    pDelay(period);
+  }
+}
+ 
+])
+
+(p [Interspersed throughout the code would be calls to record energy usage:])
+
+(cprog [
+ 
+...
+pEnergy(ops * ScaleValue);
+...
+ 
+])
+
+(p [A more sophisticated approach might construct a power-model by scaling
+energy values by the clock frequency.  Thus, the model might not call ,(code
+[pEnergy]) directly but would instead call a helper function, e.g. ,(code
+[myEnergy]), which would scale the energy argument and actually call ,(code
+[pEnergy]).  Other possibilities might include constructing a special channel
+class that remembers a previous value and records energy usage based upon the
+hamming distance between the previous and current value, or have a very
+low-priority thread which adds energy when a processor is idle, attempting to
+model leakage current.])
 
 )
 
