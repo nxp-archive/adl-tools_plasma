@@ -93,6 +93,7 @@ check_PROGRAMS = \
 	clock14 \
 	clock15 \
 	quantity1 \
+	connect1 \
 	gc1
 
 EXTRA_DIST = regress
@@ -351,6 +352,9 @@ clock15_DEPENDENCIES = $(DEPENDENCIES)
 quantity1_SOURCES = quantity1.pa
 quantity1_DEPENDENCIES = $(DEPENDENCIES)
 
+connect1_SOURCES = connect1.pa
+connect1_DEPENDENCIES = $(DEPENDENCIES)
+
 gc1_SOURCES = gc1.pa
 gc1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -433,6 +437,7 @@ include ./$(DEPDIR)/clock13.Po
 include ./$(DEPDIR)/clock14.Po
 include ./$(DEPDIR)/clock15.Po
 include ./$(DEPDIR)/quantity1.Po
+include ./$(DEPDIR)/connect1.Po
 include ./$(DEPDIR)/gc1.Po
 
 include $(top_srcdir)/tests/Makefile.rules

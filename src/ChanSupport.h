@@ -19,6 +19,7 @@ namespace plasma {
     typedef std::deque<THandle,traceable_allocator<THandle> > Writers;
   public:
 
+    bool multiple_producers_allowed() const { return true; };
   protected:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     void push_writer(THandle t) { _writers.push_front(t); };
@@ -39,6 +40,7 @@ namespace plasma {
     void set_notify(THandle t) { assert(!_readt); _readt = t; };
     void clear_notify() { _readt = 0; };
 
+    bool multiple_consumers_allowed() const { return false; };
   protected:
     // Do we have a waiting reader?
     bool have_reader() const { return _readt; };
@@ -69,6 +71,7 @@ namespace plasma {
     // reader threads.
     void clear_notify() { _cons.erase(_cons.find(pCurThread())); };
 
+    bool multiple_consumers_allowed() const { return true; };
   protected:
     // Do we have a waiting reader?
     bool have_reader() const { return !_cons.empty(); };
@@ -79,19 +82,29 @@ namespace plasma {
     ConInfo _cons;
   };
 
-  // Base class for single-data item channels.
+  // Base class for single-data item channels.  This must be first on the list
+  // of inherited classes b/c we want the this pointer to be the same as the
+  // main class's.
   class SingleDataChannelBase : public MultiProducerChannel {
   public:
-    SingleDataChannelBase() : _ready(false) {};
+    SingleDataChannelBase() : _source_channel(this), _ready(false) {};
+    SingleDataChannelBase(const SingleDataChannelBase &x) :
+      _source_channel(this),
+      _ready(x._ready)
+    {}    
     bool ready() const { return _ready; };
     bool full() const { return _ready; };
     void clear_ready() { pLock(); _ready = false; pUnlock(); };
 
+    void *get_source_channel() const { return _source_channel; };
+    void set_source_channel(void *sc) { _source_channel = sc; };
   protected:
     void set_ready(bool r) { _ready = r; };
 
   private:
-    bool       _ready;
+    void      *_source_channel;  // For tracking connectivity.
+
+    bool       _ready;   // Data is ready flag.
   };
 
   //
@@ -113,6 +126,10 @@ namespace plasma {
     void set_notify(THandle t);
     THandle clear_notify();
 
+    bool multiple_producers_allowed() const { return false; };
+    bool multiple_consumers_allowed() const { return false; };    
+    void *get_source_channel() const { return 0; };
+    void set_source_channel(void *) { };
   private:
     friend void timeout(void *a);
     THandle reset();
@@ -128,6 +145,7 @@ namespace plasma {
   class ClockChanImpl {
   public:
     ClockChanImpl(ptime_t p,ptime_t s,unsigned maxsize);
+    ClockChanImpl(const ClockChanImpl &);
 
     bool is_phi() const;
     ptime_t next_phi() const;
@@ -148,7 +166,9 @@ namespace plasma {
     void incr_size() { ++_size; };
     void decr_size() { --_size; };
     void check_size() const { assert(_maxsize <= 0 || _size <= _maxsize); }
-    
+
+    void *get_source_channel() const { return _source_channel; };
+    void set_source_channel(void *sc) { _source_channel = sc; };    
   private:
     unsigned allowed_size() const { return (!_maxsize) ? 1 : _maxsize; };
 
@@ -157,6 +177,8 @@ namespace plasma {
     unsigned   _maxsize;   // Max size.  If -1, no fixed size.  0 means a writer blocks
                            // until a reader consumes the data.
     unsigned   _size;      // Number of items in channel.
+
+    void      *_source_channel;    // For connectivity tracking.
   };
 
   // Base class used for single-consumer clocked channels.
@@ -174,6 +196,7 @@ namespace plasma {
     void cancel_waker();
     int delay() const { return _delay; };
 
+    bool multiple_consumers_allowed() const { return false; };    
   private:
     THandle    _waket;     // Thread which wakes reader at the correct time.
     int        _delay;     // Stores delay time for waker.
@@ -206,6 +229,7 @@ namespace plasma {
     void start_waker(MClkInfo::iterator);
     THandle reset(MClkInfo::iterator);
 
+    bool multiple_consumers_allowed() const { return true; };    
   private:
     bool        _broadcast;
     MClkInfo    _cons;

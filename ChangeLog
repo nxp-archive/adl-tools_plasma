@@ -1,3 +1,29 @@
+
+2005-01-28  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added an API to the channels in order to allow for some
+	reflection/connectivity deduction.  It works like this:  Each
+	channel needs to define the following:
+
+	bool multiple_producers_allowed() const:  Returns true if multiple
+		producers are allowed for this channel.
+
+	bool multiple_consumers_allowed() const:  Returns true if multiple
+		producers are allowed for this channel.
+
+	void *get_source_channel() const:  Return a pointer to the channel
+		that feeds this one.  This pointer should be initialized
+		to the 'this' pointer of the channel at first.  Make sure
+		that if the void pointer is stored in a base class, that
+		the base class occurs first in the list of parent classes.
+
+	void *set_source_channel() const:  Set the source channel.
+
+	The idea with the source channel is that broadcaster objects set
+	the source to the source channel- this allows a program to deduce
+	connectivity information.  Channels which don't have a source,
+	such as timeout and result, don't need a source channel pointer.
+
         ====== plasma release 0.8.12 (v0_8_12) on Linux (cde-tx32-ldt189) ======
 
 2005-01-27  Brian Kahne  <bkahne@ibmoto.com>

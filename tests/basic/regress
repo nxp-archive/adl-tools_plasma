@@ -424,6 +424,11 @@ my @Tests = (
 			  cmd     => "./quantity1",
 			  checker => \&check_quantity1,
 			 },
+			 # Test of connectivity information.
+			 {
+			  cmd     => "./connect1",
+			  checker => \&check_connect1,
+			 },
 			);
 
 doTest(\@Tests);
@@ -1654,6 +1659,93 @@ sub check_quantity1 {
 180:  thread 1 done
 Done.
 EOD
+}
+
+sub check_connect1 {
+  my @expects = (
+				 { mc => 0, mp => 1, this => "a", p => "a" },
+				 { mc => 1, mp => 1, this => "b", p => "b" },
+
+				 { mc => 0, mp => 1, this => "c", p => "c" },
+				 { mc => 1, mp => 1, this => "d", p => "d" },
+
+				 { mc => 0, mp => 1, this => "e", p => "e" },
+				 { mc => 0, mp => 1, p => "e" },
+				 { mc => 0, mp => 1, p => "e" },
+				 { mc => 0, mp => 1, p => "e" },
+
+				 { mc => 0, mp => 1, this => "f", p => "f" },
+				 { mc => 0, mp => 1, p => "f" },
+				 { mc => 0, mp => 1, p => "f" },
+				 { mc => 0, mp => 1, p => "f" },
+
+				);
+
+  my @l = split /\n/,@_[0];
+  
+  my @found;
+  for (@l) {
+	if ( /^INFO/ ) {
+	  if (/mc:\s+(\d+)\s+mp:\s+(\d+)\s+this:\s+(0x[a-fA-F0-9]+)\s+p:\s+(0x[a-fA-F0-9]+)/) {
+		push @found,{ mc => $1, mp => $2, this => $3, p => $4 };
+	  } else {
+		die "Bad info line:  $_\n";
+	  }
+	}
+  }
+
+  #print "Expects:  \n",Dumper(@expects);
+  #print "Found:  \n",Dumper(@found);
+
+  my %tracking;
+
+  sub do_check {
+	my ($key,$e,$f,$index) = (shift,shift,shift,shift);
+	dprint "do_check:  $key:  Expects:  \n",Dumper($e);
+	dprint "do_check:  $key:  Found:  \n",Dumper($f);
+
+	if ( exists $_->{$key} ) {
+	  my $d = $_->{$key};
+	  if ( !exists $tracking{$d} ) {
+		my $df = eval $f->{$key};
+		$tracking{$d} = $df;
+		dprintf "New this entry:  $key = %x\n",$tracking{$d};
+	  } else {
+		my $de = eval ($tracking{$d});
+		my $df = eval ($f->{$key});
+		dprintf "$key:  expect:  %x, found %x\n",$de,$df;
+		if ($de != $df) {
+		  printf "Mismatch of '$key' values at index $index:  Expected 0x%x, found 0x%x\n",$de,$df;
+		  die;
+		}
+	  }
+	}
+  }
+
+  my $i = 0;
+  for (@expects) {
+	my $f = $found[$i];
+
+	dprint "----------------------\n";
+	dprint "Expects:  \n",Dumper($_);
+	dprint "Found:  \n",Dumper($f);
+	
+	if ( exists $_->{mp} ) {
+	  if ( $_->{mp} != $f->{mp} ) {
+		print "Producer mismatch, index $i.\n";
+		die;
+	  }
+	}
+	if ( exists $_->{mc} ) {
+	  if ( $_->{mc} != $f->{mc} ) {
+		print "Consumer mismatch, index $i.\n";
+		die;
+	  }
+	}
+	do_check("this",$_,$f,$i);
+	do_check("p",$_,$f,$i);
+	++$i;
+  }
 }
 
 ##

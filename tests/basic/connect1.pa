@@ -1,0 +1,62 @@
+//
+// Testing of connectivity tracing.
+//
+
+#include <iostream>
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> IntChan;
+typedef Channel<int,MultiConsumerChannel> MultiIntChan;
+typedef ClockChan<int> ClkIntChan;
+typedef ClockChan<int,MultiConsumerClockChannel> MultiClkIntChan;
+
+template <typename C>
+void info(ostream &o,C &c)
+{
+  cout << "INFO: "
+       << "mc: " << c.multiple_consumers_allowed()
+       << " mp: " << c.multiple_producers_allowed()
+       << " this: " << &c
+       << " p: " << c.get_source_channel() << endl;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = false;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  IntChan c1;
+  MultiIntChan c2;
+  ClkIntChan c3;
+  MultiClkIntChan c4;
+  
+  info(cout,c1);
+  info(cout,c2);
+  cout << "--------------------------\n";
+
+  info(cout,c3);
+  info(cout,c4);
+  cout << "--------------------------\n";
+
+  Broadcaster<IntChan,IntChan> b;
+
+  info(cout,b.get_source());
+  info(cout,b.get_sink());
+  info(cout,b.get_sink());
+  info(cout,b.get_sink());
+  cout << "--------------------------\n";
+
+  ClkBroadcaster<int> cb;
+  info(cout,cb.get_source());
+  info(cout,cb.get_sink());
+  info(cout,cb.get_sink());
+  info(cout,cb.get_sink());
+  cout << "--------------------------\n";
+  
+  return 0;
+}

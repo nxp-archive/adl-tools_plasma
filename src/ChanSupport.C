@@ -62,8 +62,17 @@ namespace plasma {
   /////////////// ClockChan ///////////////
 
   ClockChanImpl::ClockChanImpl(ptime_t p,ptime_t s,unsigned ms) : 
-    _period(p), _skew(s), _maxsize(ms), _size(0)
+    _period(p), _skew(s), _maxsize(ms), _size(0), _source_channel(this)
   {}
+
+  ClockChanImpl::ClockChanImpl(const ClockChanImpl &x) :
+    _period(x._period),
+    _skew(x._skew),
+    _maxsize(x._maxsize),
+    _size(x._size),
+    _source_channel(this)
+  {
+  }
 
   // Returns true if we're on a clock edge, given a clock period.
   bool ClockChanImpl::is_phi() const

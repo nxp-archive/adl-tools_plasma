@@ -31,7 +31,7 @@ namespace plasma {
   // used bya single producer to go to a single consumer, but it is
   // possible to have multiple producers.
   template <class Data,class Base = SingleConsumerChannel >
-  pTMutex class Channel : public Base, public SingleDataChannelBase {
+  pTMutex class Channel : public SingleDataChannelBase, public Base {
   public:
     typedef Data value_type;
 
@@ -56,7 +56,7 @@ namespace plasma {
   // Note:  This is not protected by mutex code b/c if we're in busy-okay mode,
   // we don't have preemption.
   template <class Data,class Base = SingleConsumerChannel >
-  class BusyChan : public Base, public SingleDataChannelBase {
+  class BusyChan : public SingleDataChannelBase, public Base {
   public:
     typedef Data value_type;
 
@@ -97,6 +97,8 @@ namespace plasma {
     Data get() { return read_internal(true); };
     void clear() { clear_data(); };
 
+    void *get_source_channel() const { return _source_channel; };
+    void set_source_channel(void *p) { _source_channel = p ; };
   private:
     void check_size() const { assert(!_maxsize || _size <= _maxsize); }
     void clear_data() { _store.clear(); _size = 0; }
@@ -105,6 +107,8 @@ namespace plasma {
     unsigned   _maxsize;   // Max size.  If 0, no fixed size.
     unsigned   _size;      // Current size of queue.
     Store      _store;
+
+    void      *_source_channel;  // For tracking connectivity.
   };
 
   // This channel is used to interface with a spawned thread.  It is a read-only
@@ -130,6 +134,11 @@ namespace plasma {
 
     pNoMutex void set_notify(THandle t);
     pNoMutex THandle clear_notify();
+
+    bool multiple_producers_allowed() const { return false; };
+    bool multiple_consumers_allowed() const { return false; };    
+    void *get_source_channel() const { return 0; };
+    void set_source_channel(void *p) { };
   private:
     THandle _rt;
     bool    _read;
@@ -166,6 +175,9 @@ namespace plasma {
     using Base::empty;
     using Base::clear_notify;
     using Base::set_notify;
+    using Base::get_source_channel;
+    using Base::set_source_channel;
+    using Base::multiple_consumers_allowed;
 
   private:
     bool current_data() const;
@@ -205,7 +217,7 @@ namespace plasma {
     const InChan &get_source() const { return _source; };
 
     // Gain access to the next channel.
-    OutChan &get_sink() { _sinks.push_back(_out); return _sinks.back(); };
+    OutChan &get_sink();
 
   private:
     static void reflect(void *);
@@ -503,6 +515,14 @@ namespace plasma {
   {
     // Start the refector thread.
     pSpawn(reflect,this,0);
+  }
+
+  template <typename InChan,typename OutChan>
+  OutChan &Broadcaster<InChan,OutChan>::get_sink() 
+  { 
+    _sinks.push_back(_out); 
+    _sinks.back().set_source_channel(&_source);
+    return _sinks.back();
   }
 
   // This is the reflector thread- it listens to the input channel and
