@@ -1,3 +1,11 @@
+2004-09-14  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Removed Makefile.in files from gc b/c they were affecting our
+	build order.  Switched over to autoreconf so that we would run
+	automake in all directories (it would skip gc if we just ran it
+	from the top-level directory b/c automake doesn't recurse into
+	child autoconf prejects).
+
         ======= plasma release 0.4.0 (v0_4_0) on Linux (cde-tx32-ldt189) =======
 
 2004-09-08  Brian Kahne  <bkahne@ibmoto.com>

@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT(src/Interface.C)
+AC_INIT([src/Interface.C])
 
 PLASMA_MAJOR_VERSION=0
 PLASMA_MINOR_VERSION=4
@@ -86,10 +86,6 @@ AC_SUBST(WEBHOME)
 AC_SUBST(DOCDIR)
 AC_SUBST(TRIP)
 
-# We always want to enable C++ support.
-export enable_cplusplus=yes
-AC_CONFIG_SUBDIRS(gc)
-
 # If compiling on x86, we can compile test programs generated
 # by the sample compiler in the regression suite.
 if [[ $build_cpu = i686 ]]; then
@@ -122,5 +118,9 @@ AC_CONFIG_FILES([\
 	scripts/plasma-config \
 	tests/cc/compile_check.pm
 ],[chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm ])
+
+# We always want to enable C++ support.
+export enable_cplusplus=yes
+AC_CONFIG_SUBDIRS(gc)
 
 AC_OUTPUT
