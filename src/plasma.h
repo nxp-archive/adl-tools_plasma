@@ -6,11 +6,18 @@
 #ifndef _PLSMAA_H_
 #define _PLSMAA_H_
 
+#include <stdarg.h>
 #include <assert.h>
 #include <vector>
 #include <list>
 
 namespace plasma {
+
+  // Basic mutex I/O routines.  These lock the processor before performing output.
+  int mprintf(const char *format, ... );
+  int mfprintf(FILE *,const char *format, ...);
+  int mvprintf(const char *format, va_list ap);
+  int mvfprintf(FILE *,const char *format,va_list ap);
 
   // Basic channel class:  Stores only a single piece of data, so 
   // a second write before a read will block.  This is designed

@@ -3,6 +3,8 @@
 // Miscellaneous user routines. 
 //
 
+#include <stdarg.h>
+
 #include "Interface.h"
 #include "Proc.h"
 #include "Cluster.h"
@@ -207,6 +209,43 @@ namespace plasma {
     _h = h;
     assert(!_writet);
     _writet = pSpawn(timeout,this,-1);
+  }
+
+  // Mutex I/O routines.
+  int mprintf(const char *format, ... )
+  {
+    pLock();
+    va_list ap;
+    va_start (ap,format);
+    int c = vprintf(format,ap);
+    pUnlock();
+    return c;
+  }
+
+  int mfprintf(FILE *f,const char *format, ...)
+  {
+    pLock();
+    va_list ap;
+    va_start (ap,format);
+    int c = vfprintf(f,format,ap);
+    pUnlock();
+    return c;
+  }
+
+  int mvprintf(const char *format, va_list ap)
+  {
+    pLock();
+    int c = vprintf(format,ap);
+    pUnlock();
+    return c;
+  }
+
+  int mvfprintf(FILE *f,const char *format,va_list ap)
+  {
+    pLock();
+    int c = vfprintf(f,format,ap);
+    pUnlock();
+    return c;
   }
 
 }

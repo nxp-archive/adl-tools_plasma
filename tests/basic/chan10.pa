@@ -20,7 +20,7 @@ int iproducer(int val,IntChan &chan)
     }
   }
   chan.write(-1);
-  printf ("Producer done.\n");
+  plasma::mprintf ("Producer done.\n");
   return 0;
 }
 
@@ -33,7 +33,7 @@ int fproducer(double val,FloatChan &chan)
     }
   }
   chan.write(-1);
-  printf ("Producer done.\n");
+  plasma::mprintf ("Producer done.\n");
   return 0;
 }
 
@@ -47,25 +47,25 @@ int consumer(IntChanVect &ichannels,FloatChanVect &fchannels,IntChan &xc)
     alt {
       afor (int i = 0; i != (int)ichannels.size(); ++i) {
         ichannels[i].port (int v) {
-          printf ("Got a value from port %d:  %d\n",i+ibase,v);
+          plasma::mprintf ("Got a value from port %d:  %d\n",i+ibase,v);
           if (v < 0) ++donecount;
         }
       }
       afor (std::pair<FloatChanVect::iterator,int> j = std::make_pair(fchannels.begin(),0);
             j.first != fchannels.end(); ++j.first,++j.second) {
         j.first->port (double v) {
-          printf ("Got a value from port %d:  %f\n",j.second+fbase,v);
+          plasma::mprintf ("Got a value from port %d:  %f\n",j.second+fbase,v);
           if (v < 0) ++donecount;
         }
       }
       alt {
         xc.port (int v) {
-          printf ("Got a value from port 0:  %d\n",v);
+          plasma::mprintf ("Got a value from port 0:  %d\n",v);
         }
       }
     }
   }
-  printf ("Consumer done.\n");
+  plasma::mprintf ("Consumer done.\n");
   return 0;
 }
 
@@ -94,6 +94,6 @@ int pMain(int argc,const char *argv[])
     i->wait();
   }
 
-  printf ("Done.\n");
+  plasma::mprintf ("Done.\n");
   return 0;
 }

@@ -4,6 +4,8 @@
 #include <iostream>
 #include <stdarg.h>
 
+#include "plasma.h"
+
 using namespace std;
 using namespace plasma;
 
@@ -48,7 +50,7 @@ int pMain(int argc,const char *argv[])
     }
   }
 
-  printf ("Done.\n");
+  mprintf ("Done.\n");
   return 0;
 }
 

@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 
+#include "plasma.h"
+
 struct Foo {
   int i;
   double d;  
@@ -21,13 +23,13 @@ int pMain(int argc,const char *argv[])
         k += 1;
       }
     }
-    printf ("Done with block %d.\n",i);
+    plasma::mprintf ("Done with block %d.\n",i);
     results[i.i] = i.d;
   }
-  printf ("Done with pfor.\n");
+  plasma::mprintf ("Done with pfor.\n");
   for (int i = 0; i != Max; ++i) {
-    printf ("Result[%d]:  %f, ",i,results[i]);
+    plasma::mprintf ("Result[%d]:  %f, ",i,results[i]);
   }
-  printf("\n");
+  plasma::mprintf("\n");
   return 0;
 }

@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include "plasma.h"
+
 int pMain(int argc,const char *argv[])
 {
   int result1 = 0, result2 = 0, result3 = 0;
@@ -14,10 +16,10 @@ int pMain(int argc,const char *argv[])
         for (int i = 0; i != 10000000; ++i) {
           j += 1;
         }
-        printf ("In block 1.\n");
+        plasma::mprintf ("In block 1.\n");
       }
       result1 = 69;
-      printf ("Done with block 1.\n");
+      plasma::mprintf ("Done with block 1.\n");
     }
     {
       for (int j = 0; j != 10; ++j) {
@@ -25,17 +27,17 @@ int pMain(int argc,const char *argv[])
         for (int i = 0; i != 10000000; ++i) {
           j += 1;
         }
-        printf("In block 2.\n");
+        plasma::mprintf("In block 2.\n");
       }
       result2 = 200;
-      printf ("Done with block 2.\n");
+      plasma::mprintf ("Done with block 2.\n");
     }
     {
-      printf("In block 3.\n");
+      plasma::mprintf("In block 3.\n");
       result3 = 1000;
-      printf ("Done with block 3.\n");
+      plasma::mprintf ("Done with block 3.\n");
     }
   }
-  printf ("Result1:  %d,  Result2:  %d,  Result3:  %d\n",result1,result2,result3);
+  plasma::mprintf ("Result1:  %d,  Result2:  %d,  Result3:  %d\n",result1,result2,result3);
   return 0;
 }

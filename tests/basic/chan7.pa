@@ -20,7 +20,7 @@ void producer(int val,int index,IntChan &chan)
     }
   }
   chan.write(std::make_pair(-1,index));
-  printf ("Producer done.\n");
+  plasma::mprintf ("Producer done.\n");
 }
 
 void consumer(ChanVect &channels)
@@ -29,18 +29,18 @@ void consumer(ChanVect &channels)
   while (donecount < (int)channels.size()) {
     afor (ChanVect::iterator i = channels.begin(); i != channels.end(); ++i) {
       i->port (IntPair v) {
-        printf ("Got a value from port %d:  %d\n",v.second,v.first);
+        plasma::mprintf ("Got a value from port %d:  %d\n",v.second,v.first);
         if (v.first < 0) ++donecount;
       }
       {
         for (int j = 0; j != 1000000; ++j) {
           int x = 1;
         }
-        printf ("No value present.\n");
+        plasma::mprintf ("No value present.\n");
       }      
     }
   }
-  printf ("Consumer done.\n");
+  plasma::mprintf ("Consumer done.\n");
 }
 
 int pMain(int argc,const char *argv[])
@@ -56,6 +56,6 @@ int pMain(int argc,const char *argv[])
       producer(x,i-1,chans[i-1]);
     }
   }
-  printf ("Done.\n");
+  plasma::mprintf ("Done.\n");
   return 0;
 }

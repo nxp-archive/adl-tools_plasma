@@ -15,14 +15,14 @@ void consumer(IntChan &c)
   for (int count = 0; count != Done; ++count) {
     alt {
       c.port(int v) {
-        printf ("Got value from channel:  %d at time %ld\n",v,pTime());
+        mprintf ("Got value from channel:  %d at time %ld\n",v,pTime());
       }
       t.port () {
-        printf ("Got timeout at time %d\n",pTime());
+        mprintf ("Got timeout at time %d\n",pTime());
       }
     }
   }
-  printf ("Consumer done.\n");
+  mprintf ("Consumer done.\n");
 }
 
 void producer(IntChan &c)
@@ -33,7 +33,7 @@ void producer(IntChan &c)
   pDelay(25);
   c.write(300);
   c.write(400);
-  printf ("Producer done.\n");
+  mprintf ("Producer done.\n");
 }
 
 int pMain(int argc,const char *argv[])
@@ -43,6 +43,6 @@ int pMain(int argc,const char *argv[])
     producer(c);
     consumer(c);
   }
-  printf ("Done.\n");
+  mprintf ("Done.\n");
   return 0;
 }

@@ -20,7 +20,7 @@ void producer(int val,IntChan &chan)
     }
   }
   chan.write(-1);
-  printf ("Producer done.\n");
+  plasma::mprintf ("Producer done.\n");
 }
 
 void consumer(ChanVect &channels)
@@ -29,18 +29,18 @@ void consumer(ChanVect &channels)
   while (donecount < (int)channels.size()) {
     afor (int i = 0; i != (int)channels.size(); ++i) {
       channels[i].port (int v) {
-        printf ("Got a value from port %d:  %d\n",i,v);
+        plasma::mprintf ("Got a value from port %d:  %d\n",i,v);
         if (v < 0) ++donecount;
       }
       {
         for (int j = 0; j != 1000000; ++j) {
           int x = 1;
         }
-        printf ("No value present.\n");
+        plasma::mprintf ("No value present.\n");
       }
     }
   }
-  printf ("Consumer done.\n");
+  plasma::mprintf ("Consumer done.\n");
 }
 
 int pMain(int argc,const char *argv[])
@@ -58,6 +58,6 @@ int pMain(int argc,const char *argv[])
     }
   }
 
-  printf ("Done.\n");
+  plasma::mprintf ("Done.\n");
   return 0;
 }

@@ -19,7 +19,7 @@ void producer(int val,int delay,IntQChan &chan)
     }
   }
   chan.write(-1);
-  printf ("Producer done.\n");
+  plasma::mprintf ("Producer done.\n");
 }
 
 // We don't use an alt block b/c we have
@@ -30,10 +30,10 @@ void consumer(int numprods,IntQChan &c)
   int donecount = 0;
   while (donecount < numprods) {
     int v = c.get();
-    printf ("Read a value:  %d\n",v);
+    plasma::mprintf ("Read a value:  %d\n",v);
     if (v < 0) ++donecount;
   }
-  printf ("Consumer done.\n");
+  plasma::mprintf ("Consumer done.\n");
 }
 
 int pMain(int argc,const char *argv[])
@@ -47,6 +47,6 @@ int pMain(int argc,const char *argv[])
     producer(10000,10000000,channel);
     consumer(4,channel);
   }
-  printf ("Done.\n");
+  plasma::mprintf ("Done.\n");
   return 0;
 }

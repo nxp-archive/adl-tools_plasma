@@ -1,5 +1,9 @@
 2004-06-18  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added mutex I/O routines which mirror the printf suite.  Still
+	don't have a good solution for cout- probably just need to wrap it
+	in a macro with pLock()/pUnlock() calls.
+
 	* Added the Timeout class.  This is a channel that will deliver a
 	value in an alt block after a specified amount of time (using
 	pDelay).  Example:

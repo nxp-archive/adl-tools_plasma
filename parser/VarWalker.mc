@@ -18,7 +18,7 @@ using namespace std;
 Ptree *VarWalker::TranslateVariable(Ptree *exp)
 {
   if (!_inguard) {
-    //    cout << "Examining variable:  ";
+    //cout << "Examining variable:  " << exp << endl;
     //    exp->Display2(cout);
     //    cout << endl;
 
@@ -26,6 +26,15 @@ Ptree *VarWalker::TranslateVariable(Ptree *exp)
     Bind *b;
     bool found = false;
     bool found_inguard = false;
+
+    TypeInfo t;
+    exp->Typeof(this,t);
+    //cout << "Type:  " << t.MakePtree() << endl;
+    // For some reason, functions in namespaces sometimes get processed here.
+    // This is probably a bug, but we guard against it here.
+    if (t.IsFunction()) {
+      return exp;
+    }
 
     // This searches for a variable up to, but not including, the parent scope.
     while (e != _penv) {
