@@ -227,7 +227,7 @@ Spawn Operator
 
 Status:
 
-    TBD
+    Completed 5/18/2004
 
 Description:
 
@@ -249,19 +249,37 @@ Description:
     result in a block.  Unlike other channels, it will only ever have a single
     value, so calls to clear_ready() will be ignored.
 
+    Spawn should handle all ways to invoke a function:
+
+    1. Literal function call:       spawn(foo());
+
+    2. Function pointer call:       p = foo; spawn(p());
+
+    3. Method call w/reference:     spawn(a.b());
+
+    4. Method call w/pointer:       spawn(a->b());
+
+    5. Static method call:          spawn(A::b());
+
+    6. Method pointer w/reference:  p = &A::b; spawn(a.*p());
+
+    7. Method pointer w/pointer:    p = &A::b; spawn(a->*p());
+
 Implementation:
 
-    * Registered as a while-style statement.
+    * Registered as a function call of a special dummy class.
 
-    * Need to handle void functions (those that don't return a value).
-
-Dependencies:
-
-    TBD
+    * Void functions not handled- everything returns a value.
 
 Regressions:
 
-    TBD
+    1. spawn1
+
+    2. spawn2
+
+    3. spawn3
+
+    4. spawn4
 
 Shared Data Structures
 -----------------------

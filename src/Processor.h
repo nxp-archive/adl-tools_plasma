@@ -87,7 +87,6 @@ namespace plasma {
     Thread     _main;                  // Main thread (the scheduler loop itself).
     Thread    *_cur;                   // Current thread.
     bool       _kernel;                // Set if thread is in kernel mode
-    int        _handle;                // Temporary storage of handle passed by pWake.
 
     static sigset_t _empty_mask;    // empty signal mask
     static sigset_t _alarm_mask;    // mask with SIGALRM

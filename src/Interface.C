@@ -35,6 +35,16 @@ namespace plasma {
     processor.add_ready(t);
   }
 
+  void pAddWaiter(THandle t,THandle waiter)
+  {
+    t->add_waiter(waiter);
+  }
+
+  void pClearWaiter(THandle t,THandle waiter)
+  {
+    t->get_waiter(waiter);
+  }
+
   Thread *pCurThread()
   {
     return processor.getCur();
@@ -70,9 +80,19 @@ namespace plasma {
     return processor.sleep();
   }
 
-  void pWake(Thread *t,int h)
+  void pWake(THandle t,int h)
   {
     processor.wake(t,h);
+  }
+
+  int pHandle(THandle t)
+  {
+    return t->handle();
+  }
+
+  void pSetHandle(THandle t,int h)
+  {
+    t->setHandle(h);
   }
 
   // Lock processor.

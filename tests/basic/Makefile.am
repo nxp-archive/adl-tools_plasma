@@ -15,7 +15,8 @@ check_PROGRAMS = \
 	chan7 \
 	spawn1 \
 	spawn2 \
-	spawn3
+	spawn3 \
+	spawn4
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a $(top_srcdir)/parser/Plasma.so
 
@@ -47,7 +48,23 @@ spawn2_SOURCES = spawn2.pa
 
 spawn3_SOURCES = spawn3.pa
 
+spawn4_SOURCES = spawn4.pa
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
+
+include ./$(DEPDIR)/par1.Po
+include ./$(DEPDIR)/par2.Po
+include ./$(DEPDIR)/par3.Po
+include ./$(DEPDIR)/qsort.Po
+include ./$(DEPDIR)/chan2.Po
+include ./$(DEPDIR)/chan3.Po
+include ./$(DEPDIR)/chan4.Po
+include ./$(DEPDIR)/chan5.Po
+include ./$(DEPDIR)/chan6.Po
+include ./$(DEPDIR)/chan7.Po
+include ./$(DEPDIR)/spawn2.Po
+include ./$(DEPDIR)/spawn3.Po
+include ./$(DEPDIR)/spawn4.Po
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

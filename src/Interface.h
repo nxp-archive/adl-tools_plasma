@@ -44,6 +44,12 @@ namespace plasma {
   // Add a thread to the ready queue, but do not task switch.
   void pAddReady(THandle);
 
+  // Add a waiting thread to the specified thread.
+  void pAddWaiter(THandle,THandle waiter);
+
+  // Clear a waiter- removes a thread from a thread's wait queue.
+  void pClearWaiter(THandle,THandle waiter);
+
   // Return a handle to the current thread.
   THandle pCurThread();
 
@@ -63,6 +69,12 @@ namespace plasma {
   // Wake the specified thread, giving it the handle value.  This switches
   // to this thread.
   void pWake(THandle,int);
+
+  // Return the thread's handle value (same as returned by pSleep()).
+  int pHandle(THandle);
+
+  // Set a thread's handle.
+  void pSetHandle(THandle,int);
 
   // Kill the current thread.
   void pTerminate();
@@ -92,6 +104,8 @@ namespace plasma {
   // wait on a thread (useful if you don't need the value at that point) or
   // kill a thread.  If you kill a thread before it's finished, the result is
   // equal to the value supplied by the default constructor of the return type.
+  //
+  // To use this with an alt block, use ResChan<R> instead.
   template<class R>
   class Result {  
   public:
@@ -99,13 +113,19 @@ namespace plasma {
 
     // Get the thread's result.
     R value() const;
+    // Is the thread done?
+    bool done() const { return pDone(_t); };
     // Wait on the thread.
     void wait() const;
     // Kill the thread.
     void kill();
+
+  protected:
+    THandle thread() { return _t; }
+
   private:
-    R       *_result;
-    THandle  _t;
+    R       *_result; // Pointer to result object.
+    THandle  _t;      // Thread returning a result.
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -133,7 +153,7 @@ namespace plasma {
   void Result<R>::kill()
   {
     if (!pDone(_t)) {
-      pTerminaate(_t);
+      pTerminate(_t);
     }
   }
 

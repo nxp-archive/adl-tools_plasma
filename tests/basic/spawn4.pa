@@ -1,0 +1,49 @@
+//
+// Test of a spawn ResChan object w/alt.
+//
+#include <iostream>
+
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
+  }
+  return a*a + b*b;
+}
+
+int bar(int a)
+{
+  return a * a * a;
+}
+
+void check(ResChan<double> &r0,ResChan<double> &r1,ResChan<int> &r2)
+{
+  for (int i = 0; i != 3; ++i) {
+    alt {
+      port(double x;r0;) {
+        cout << "r0:  " << x << endl;
+      }
+      port (double y;r1;) {
+        cout << "r1:  " << y << endl;        
+      }
+      port (int z;r2;) {
+        cout << "r2:  " << z << endl;        
+      }
+    }
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  ResChan<double> r0 = spawn(foo(1.1,2.2));
+  ResChan<double> r1 = spawn(foo(2.2,3.3));
+  ResChan<int> r2 = spawn(bar(6));
+  check(r0,r1,r2);
+  return 0;
+}

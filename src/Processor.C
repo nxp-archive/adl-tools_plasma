@@ -84,8 +84,7 @@ namespace plasma {
   Processor::Processor() :
     _main(),
     _cur(0),
-    _kernel(true),
-    _handle(0)
+    _kernel(true)
   {
     static bool dummy = init();
 
@@ -203,14 +202,14 @@ namespace plasma {
     lock();
     // Switch to next thread- do not add this thread back to ready queue.
     exec_block();
-    // Return handle, which was set by waking thread.
-    return _handle;
+    // Return current handle of this thread.
+    return _cur->handle();
   }
 
   void Processor::wake(Thread *t,int h)
   {
     lock();
-    _handle = h;
+    t->setHandle(h);
     Thread *old = _cur;
     exec_ready(t,old);
   }
@@ -283,6 +282,7 @@ namespace plasma {
     oldthread->destroy();                     // free stack
     // For every waiting thread, add it back to the ready queue.
     while (Thread *next = oldthread->get_waiter()) {
+      next->setHandle(oldthread->handle());
       thesystem.add_ready(next);
     }
     if (!processor.in_scheduler()) {

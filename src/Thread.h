@@ -31,12 +31,18 @@ namespace plasma {
     void add_waiter(Thread *t);
     // Get a thread from the wait list.
     Thread *get_waiter();
+    // Remove a thread from the wait queue.
+    // Returns 0 if it doesn't exist.
+    Thread *get_waiter(Thread *t);
 
     bool done() const { return _done; };
 
     // Access to queue pointer.
     Thread *getnext() const;
     void setnext(Thread *);
+
+    int handle() const { return _handle; };
+    void setHandle(int h) { _handle = h; };
 
     void *endspace() const { return (void*)&_extraspace[0]; };
 
@@ -49,6 +55,7 @@ namespace plasma {
     qt_t   *_thread;           // Thread handle.
     void   *_stack;            // Stack pointer.
     Thread *_next;             // Next thread in queue.
+    int     _handle;           // Miscellaneous handle value.
     char    _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
@@ -56,7 +63,8 @@ namespace plasma {
     _done(false),
     _thread(0),
     _stack(0),
-    _next(0)
+    _next(0),
+    _handle(0)
   {
   }
 
@@ -83,6 +91,11 @@ namespace plasma {
   inline Thread *Thread::get_waiter()
   {
     return _waiters.get();
+  }
+
+  inline Thread *Thread::get_waiter(Thread *t)
+  {
+    return _waiters.get(t);
   }
 
 }

@@ -33,26 +33,27 @@ of simulation time for discrete, and various safety features.</p>
 <li><a class="reference" href="#thread-creation" id="id2" name="id2">Thread Creation</a><ul class="simple">
 <li><a class="reference" href="#par-block" id="id3" name="id3">Par Block</a></li>
 <li><a class="reference" href="#pfor-loop" id="id4" name="id4">PFor Loop</a></li>
+<li><a class="reference" href="#spawn-operator" id="id5" name="id5">Spawn Operator</a></li>
 </ul>
 </li>
-<li><a class="reference" href="#thread-control" id="id5" name="id5">Thread Control</a></li>
-<li><a class="reference" href="#thread-communication" id="id6" name="id6">Thread Communication</a><ul class="simple">
-<li><a class="reference" href="#channels" id="id7" name="id7">Channels</a></li>
-<li><a class="reference" href="#alt-blocks" id="id8" name="id8">Alt Blocks</a></li>
-<li><a class="reference" href="#afor-blocks" id="id9" name="id9">Afor Blocks</a></li>
-<li><a class="reference" href="#serialized-data-structures" id="id10" name="id10">Serialized Data Structures</a></li>
+<li><a class="reference" href="#thread-control" id="id6" name="id6">Thread Control</a></li>
+<li><a class="reference" href="#thread-communication" id="id7" name="id7">Thread Communication</a><ul class="simple">
+<li><a class="reference" href="#channels" id="id8" name="id8">Channels</a></li>
+<li><a class="reference" href="#alt-blocks" id="id9" name="id9">Alt Blocks</a></li>
+<li><a class="reference" href="#afor-blocks" id="id10" name="id10">Afor Blocks</a></li>
+<li><a class="reference" href="#serialized-data-structures" id="id11" name="id11">Serialized Data Structures</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a class="reference" href="#the-time-model" id="id11" name="id11">The Time Model</a></li>
-<li><a class="reference" href="#additional-language-constructs" id="id12" name="id12">Additional Language Constructs</a><ul class="simple">
-<li><a class="reference" href="#let-blocks" id="id13" name="id13">Let Blocks</a></li>
-<li><a class="reference" href="#lambda-functions" id="id14" name="id14">Lambda Functions</a></li>
-<li><a class="reference" href="#garbage-collection" id="id15" name="id15">Garbage Collection</a></li>
+<li><a class="reference" href="#the-time-model" id="id12" name="id12">The Time Model</a></li>
+<li><a class="reference" href="#additional-language-constructs" id="id13" name="id13">Additional Language Constructs</a><ul class="simple">
+<li><a class="reference" href="#let-blocks" id="id14" name="id14">Let Blocks</a></li>
+<li><a class="reference" href="#lambda-functions" id="id15" name="id15">Lambda Functions</a></li>
+<li><a class="reference" href="#garbage-collection" id="id16" name="id16">Garbage Collection</a></li>
 </ul>
 </li>
-<li><a class="reference" href="#future-work" id="id16" name="id16">Future Work</a></li>
+<li><a class="reference" href="#future-work" id="id17" name="id17">Future Work</a></li>
 </ul>
 </div>
 <div class="section" id="concurrency">
@@ -108,9 +109,54 @@ condition are passed by value to each thread, while all other variables are
 passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable <strong>i</strong> but may directly modify <strong>results</strong>.</p>
 </div>
+<div class="section" id="spawn-operator">
+<h3><a class="toc-backref" href="#id5" name="spawn-operator">Spawn Operator</a></h3>
+<p>The <strong>spawn</strong> operator creates a thread and returns a handle object which allows
+the result of the thread to be retrieved.  <strong>spawn</strong> takes a single argument
+which must be some sort of function invocation.  This might be an actual
+function, a method call, etc.  The list of supported types is:</p>
+<ol class="arabic simple">
+<li>Literal function call: <tt class="literal"><span class="pre">spawn(foo());</span></tt></li>
+<li>Function pointer call: <tt class="literal"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">foo;</span> <span class="pre">spawn(p());</span></tt></li>
+<li>Method call w/reference: <tt class="literal"><span class="pre">spawn(a.b());</span></tt></li>
+<li>Method call w/pointer: <tt class="literal"><span class="pre">spawn(a-&gt;b());</span></tt></li>
+<li>Static method call: <tt class="literal"><span class="pre">spawn(A::b());</span></tt></li>
+<li>Method pointer w/reference: <tt class="literal"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">&amp;A::b;</span> <span class="pre">spawn(a.*p());</span></tt></li>
+<li>Method pointer w/pointer:  <tt class="literal"><span class="pre">p</span> <span class="pre">=</span> <span class="pre">&amp;A::b;</span> <span class="pre">spawn(a-&gt;*p());</span></tt></li>
+</ol>
+<p>The function's arguments are evaluated immediately; a thread is then launched
+of the function with its arguments.  The function itself must return some type
+of value; void functions are not allowed.  In addition, the result type must
+have a default constructor.</p>
+<p>The <strong>spawn</strong> operator returns an object of type <strong>Result&lt;T&gt;</strong>, where <strong>T</strong> is
+the return type of the invoked function.  Calling the <em>value()</em> method returns
+the result of the thread; if the thread is not yet finished, it will block.
+Calling <em>wait()</em> will wait until the thread is finished and calling <em>kill()</em>
+will termminate the thread.  In the latter case, the result of the thread will
+be the default constructor value of the return type.</p>
+<p>A simple example is:</p>
+<pre class="literal-block">
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
+  }
+  return a*a + b*b;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  Result&lt;double&gt; r1 = spawn(foo(1.1,2.2));
+  Result&lt;double&gt; r2 = spawn(foo(2.7,9.8));
+  cout &lt;&lt; &quot;Result is:  &quot; &lt;&lt; r1.value() &lt;&lt; &quot;, &quot; &lt;&lt; r2.value() &lt;&lt; endl;
+  return 0;
+}
+</pre>
+</div>
 </div>
 <div class="section" id="thread-control">
-<h2><a class="toc-backref" href="#id5" name="thread-control">Thread Control</a></h2>
+<h2><a class="toc-backref" href="#id6" name="thread-control">Thread Control</a></h2>
 <p>The following functions provide control over threads.  These are declared in
 <tt class="literal"><span class="pre">plasma-interface.h</span></tt> which is implicitly included in all plasma (.pa) files.</p>
 <ol class="arabic simple">
@@ -135,9 +181,9 @@ return exit code -1.</p>
 </ol>
 </div>
 <div class="section" id="thread-communication">
-<h2><a class="toc-backref" href="#id6" name="thread-communication">Thread Communication</a></h2>
+<h2><a class="toc-backref" href="#id7" name="thread-communication">Thread Communication</a></h2>
 <div class="section" id="channels">
-<h3><a class="toc-backref" href="#id7" name="channels">Channels</a></h3>
+<h3><a class="toc-backref" href="#id8" name="channels">Channels</a></h3>
 <p>One method for threads to communicate among themselves is to use a channel.
 This is simply a data structure which allows one thread to write a value to it
 and another thread to read this value.  It is up to the channel to make sure
@@ -166,14 +212,56 @@ a blocked writing thread.</li>
 <p>Note that write(), read(), and clear_ready() are technically not required by <strong>alt</strong>
 and <strong>afor</strong>.  Thus, it's possible to have a read-only channel.</p>
 <p>Currently, Plasma contains the following channels.  These are declared in <tt class="literal"><span class="pre">plasma.h</span></tt>.</p>
-<ol class="arabic simple">
-<li><tt class="literal"><span class="pre">Channel&lt;class</span> <span class="pre">Data&gt;</span></tt>:  This is a typed channel which reads and writes an
+<ol class="arabic">
+<li><p class="first"><tt class="literal"><span class="pre">Channel&lt;class</span> <span class="pre">Data&gt;</span></tt>:  This is a typed channel which reads and writes an
 object of type <em>Data</em>.  It contains only a single copy of this object; a
-second write will block if the first write's data has not been read.</li>
+second write will block if the first write's data has not been read.</p>
+</li>
+<li><p class="first"><tt class="literal"><span class="pre">ResChan&lt;class</span> <span class="pre">Data&gt;</span></tt>: The <strong>spawn</strong> operator may be interfaced to an
+<strong>alt</strong> construct by using this class.  This is a read-only channel which
+will return the result value of the spawned thread.  For example:</p>
+<pre class="literal-block">
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
+  }
+  return a*a + b*b;
+}
+
+int bar(int a)
+{
+  return a * a * a;
+}
+
+void check(ResChan&lt;double&gt; &amp;a,ResChan&lt;int&gt; &amp;b)
+{
+  for (int i = 0; i != 2; ++i) {
+    alt {
+      port(double x;a;) {
+        cout &lt;&lt; &quot;x:  &quot; &lt;&lt; x &lt;&lt; endl;
+      }
+      port (int y;b;) {
+        cout &lt;&lt; &quot;y:  &quot; &lt;&lt; y &lt;&lt; endl;        
+      }
+    }
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  ResChan&lt;double&gt; r1 = spawn(foo(1.1,2.2));
+  ResChan&lt;int&gt; r2 = spawn(bar(123));
+  check(r1,r2);
+  return 0;
+}
+</pre>
+</li>
 </ol>
 </div>
 <div class="section" id="alt-blocks">
-<h3><a class="toc-backref" href="#id8" name="alt-blocks">Alt Blocks</a></h3>
+<h3><a class="toc-backref" href="#id9" name="alt-blocks">Alt Blocks</a></h3>
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p>
 <pre class="literal-block">
@@ -198,7 +286,7 @@ to sleep.  Instead, if no channels have data, the default block will be
 executed.</p>
 </div>
 <div class="section" id="afor-blocks">
-<h3><a class="toc-backref" href="#id9" name="afor-blocks">Afor Blocks</a></h3>
+<h3><a class="toc-backref" href="#id10" name="afor-blocks">Afor Blocks</a></h3>
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p>
 <pre class="literal-block">
@@ -246,39 +334,39 @@ variables in the first statement or update multiple variables in the third state
 </ol>
 </div>
 <div class="section" id="serialized-data-structures">
-<h3><a class="toc-backref" href="#id10" name="serialized-data-structures">Serialized Data Structures</a></h3>
+<h3><a class="toc-backref" href="#id11" name="serialized-data-structures">Serialized Data Structures</a></h3>
 <p>TBD</p>
 </div>
 </div>
 </div>
 <div class="section" id="the-time-model">
-<h1><a class="toc-backref" href="#id11" name="the-time-model">The Time Model</a></h1>
+<h1><a class="toc-backref" href="#id12" name="the-time-model">The Time Model</a></h1>
 <p>TBD</p>
 </div>
 <div class="section" id="additional-language-constructs">
-<h1><a class="toc-backref" href="#id12" name="additional-language-constructs">Additional Language Constructs</a></h1>
+<h1><a class="toc-backref" href="#id13" name="additional-language-constructs">Additional Language Constructs</a></h1>
 <div class="section" id="let-blocks">
-<h2><a class="toc-backref" href="#id13" name="let-blocks">Let Blocks</a></h2>
+<h2><a class="toc-backref" href="#id14" name="let-blocks">Let Blocks</a></h2>
 <p>TBD</p>
 </div>
 <div class="section" id="lambda-functions">
-<h2><a class="toc-backref" href="#id14" name="lambda-functions">Lambda Functions</a></h2>
+<h2><a class="toc-backref" href="#id15" name="lambda-functions">Lambda Functions</a></h2>
 <p>TBD</p>
 </div>
 <div class="section" id="garbage-collection">
-<h2><a class="toc-backref" href="#id15" name="garbage-collection">Garbage Collection</a></h2>
+<h2><a class="toc-backref" href="#id16" name="garbage-collection">Garbage Collection</a></h2>
 <p>TBD</p>
 </div>
 </div>
 <div class="section" id="future-work">
-<h1><a class="toc-backref" href="#id16" name="future-work">Future Work</a></h1>
+<h1><a class="toc-backref" href="#id17" name="future-work">Future Work</a></h1>
 <p>TBD</p>
 </div>
 </div>
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="user-guide.rst">View document source</a>.
-Generated on: 2004/05/18 11:50:42 CDT.
+Generated on: 2004/05/18 16:17:57 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

@@ -1,5 +1,21 @@
 2004-05-18  Brian Kahne  <bkahne@ibmoto.com>
 
+	* A Result<T> object can now interface with an alt block by using
+	ResChan<T>, which may be constructed directly from Result<T>.
+
+	* I changed the architecture of how handles are returned.  A
+	handle now lives in a thread, rather than as a single instance in
+	a Processor.  When a thread terminates, it will now wake each
+	waiter and set its handle to the terminating thread's handle.
+	pSleep() then returns the current handle and it may be queried by
+	calling pHandle().
+
+	It may be necessary to expand this in the future to where the
+	waiter queue stores a handle and a thread.  Right now, the
+	limitation is that at most one alt block can wait on a channel.
+	This is inline with how other channels work and doesn't apply to
+	using Result directly, but we may want to expand it in the future.
+
 	* Added support to spawn for handling function pointers and method
 	pointers.  Spawn now supports the following ways to call a
 	subroutine:

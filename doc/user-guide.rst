@@ -71,6 +71,59 @@ condition are passed by value to each thread, while all other variables are
 passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable **i** but may directly modify **results**.
 
+Spawn Operator
+--------------
+
+The **spawn** operator creates a thread and returns a handle object which allows
+the result of the thread to be retrieved.  **spawn** takes a single argument
+which must be some sort of function invocation.  This might be an actual
+function, a method call, etc.  The list of supported types is:
+
+1. Literal function call: ``spawn(foo());``
+
+2. Function pointer call: ``p = foo; spawn(p());``
+
+3. Method call w/reference: ``spawn(a.b());``
+
+4. Method call w/pointer: ``spawn(a->b());``
+
+5. Static method call: ``spawn(A::b());``
+
+6. Method pointer w/reference: ``p = &A::b; spawn(a.*p());``
+
+7. Method pointer w/pointer:  ``p = &A::b; spawn(a->*p());``
+
+The function's arguments are evaluated immediately; a thread is then launched
+of the function with its arguments.  The function itself must return some type
+of value; void functions are not allowed.  In addition, the result type must
+have a default constructor.
+
+The **spawn** operator returns an object of type **Result<T>**, where **T** is
+the return type of the invoked function.  Calling the *value()* method returns
+the result of the thread; if the thread is not yet finished, it will block.
+Calling *wait()* will wait until the thread is finished and calling *kill()*
+will termminate the thread.  In the latter case, the result of the thread will
+be the default constructor value of the return type.
+
+A simple example is::
+
+  double foo(double a,double b)
+  {
+    int xx = 0;
+    for (int i = 0; i != 100000000; ++i) {
+      xx += 1;
+    }
+    return a*a + b*b;
+  }
+
+  int pMain(int argc,const char *argv[])
+  { 
+    Result<double> r1 = spawn(foo(1.1,2.2));
+    Result<double> r2 = spawn(foo(2.7,9.8));
+    cout << "Result is:  " << r1.value() << ", " << r2.value() << endl;
+    return 0;
+  }
+
 Thread Control
 ==============
 
@@ -143,6 +196,46 @@ Currently, Plasma contains the following channels.  These are declared in ``plas
 1. ``Channel<class Data>``:  This is a typed channel which reads and writes an
    object of type *Data*.  It contains only a single copy of this object; a
    second write will block if the first write's data has not been read.
+
+2. ``ResChan<class Data>``: The **spawn** operator may be interfaced to an
+   **alt** construct by using this class.  This is a read-only channel which
+   will return the result value of the spawned thread.  For example::
+
+     double foo(double a,double b)
+     {
+       int xx = 0;
+       for (int i = 0; i != 100000000; ++i) {
+         xx += 1;
+       }
+       return a*a + b*b;
+     }
+
+     int bar(int a)
+     {
+       return a * a * a;
+     }
+
+     void check(ResChan<double> &a,ResChan<int> &b)
+     {
+       for (int i = 0; i != 2; ++i) {
+         alt {
+           port(double x;a;) {
+             cout << "x:  " << x << endl;
+           }
+           port (int y;b;) {
+             cout << "y:  " << y << endl;        
+           }
+         }
+       }
+     }
+
+     int pMain(int argc,const char *argv[])
+     { 
+       ResChan<double> r1 = spawn(foo(1.1,2.2));
+       ResChan<int> r2 = spawn(bar(123));
+       check(r1,r2);
+       return 0;
+     }
 
 Alt Blocks
 ----------
