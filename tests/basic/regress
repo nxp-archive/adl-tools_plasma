@@ -329,6 +329,12 @@ my @Tests = (
 	      cmd     => "./clock3",
 	      checker => \&check_clock3,
 	     },
+		 # Test a simple clocked channel w/a delay equal
+		 # to the clock period.
+	     {
+	      cmd     => "./clock4",
+	      checker => \&check_clock1,
+	     },
 	     # Simple test of the quantity class.
 	     {
 	      cmd     => "./quantity1",

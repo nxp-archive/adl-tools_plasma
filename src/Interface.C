@@ -255,12 +255,17 @@ namespace plasma {
     }
   }
 
-  THandle ClockChanImpl::clear_notify()
+  void ClockChanImpl::cancel_waker()
   {
     if (_waket) {
       pTerminate(_waket);
       _waket = 0;
     }
+  }
+
+  THandle ClockChanImpl::clear_notify()
+  {
+    cancel_waker();
     return reset();
   }
 
@@ -285,6 +290,8 @@ namespace plasma {
   {
     if (is_phi() && current_data) {
       // We're on a clock edge- wake up thread.
+      // Cancel a waker thread if it exists.
+      cancel_waker();
       pWake(reset(),_h);
     } else {
       // Not on a clock edge- schedule a thread to

@@ -337,6 +337,7 @@ namespace plasma {
 
     void set_notify(THandle t,HandleType h);
     THandle reset();
+    void cancel_waker();
     THandle clear_notify();
     void delayed_wakeup(bool current_data);
     void delayed_reader_wakeup(bool have_data);

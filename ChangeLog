@@ -1,6 +1,15 @@
+2004-11-02  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed a bug with clocked channels: If you wrote to a clocked
+	channel, then delayed by the clock period, you'd get a segfault
+	because we would have started a delayed waker, then done our own
+	reset (because we're now on a clock boundary) without canceling
+	that waker thread.  Fixed this by canceling the thread if it
+	exists.  Added "clock4" to test this.
+
 2004-10-13  Brian Kahne  <bkahne@ibmoto.com>
 
-	* Added plasm.m4, a macro that can be used by plasma users to
+	* Added plasma.m4, a macro that can be used by plasma users to
 	detect plasma.
 
         ======= plasma release 0.8.0 (v0_8_0) on Linux (cde-tx32-ldt189) =======
