@@ -113,7 +113,7 @@ communication.</p><!-- Thread Creation -->
 </div><div class="subsection">
 <!-- Par Block -->
 <a name="Par-Block"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.1 Par Block</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.3 Par Block</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>par</strong> block executes each statement in parallel, waiting until all
 child threads are finished before proceeding.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -146,7 +146,7 @@ operation, simply use a brace-delineated block, e.g.:</p><table cellspacing="0" 
 </tbody></table></div>
 <!-- PFor Loop -->
 <a name="PFor-Loop"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.2 PFor Loop</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.4 PFor Loop</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>pfor</strong> loop acts like a for-loop, except that for each loop
 iteration, its body is launched as a separate thread.  All threads must then
@@ -168,7 +168,7 @@ passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable <strong>i</strong> but may directly modify <strong>results</strong>.</p></div>
 <!-- Spawn Operator -->
 <a name="Spawn-Operator"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.3 Spawn Operator</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.5 Spawn Operator</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>spawn</strong> operator creates a thread and returns a handle object which allows
 the result of the thread to be retrieved.  <strong>spawn</strong> takes a single argument
@@ -307,7 +307,16 @@ e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table><p>A thread may be started on another processor using two different methods:</p><ul class="itemize"> <li><p>With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+</tbody></table><p>To create a vector of Processors, use the <code>Processors</code> data
+structure:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">  Processors procs(10);
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>New threads will be launched on their parent's processor unless one of the
+following mechanisms is used:</p><ul class="itemize"> <li><p>With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">    par <font color="red"><strong>{</strong></font>
        on (&lt;proc name&gt;) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
@@ -332,7 +341,67 @@ e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 </ul><p>Each <strong>Processor</strong> may be given a name by passing a <code>const char *</code> to the
 constructor or the <strong>setName</strong> method.  This pointer is unmanaged by the
 <strong>Processor</strong> and is simply stored as-is.  This means that you can compare it
-against another pointer for quick identification purposes.</p></div>
+against another pointer for quick identification purposes.</p><p>By default, each processor has its own issue queue and threads must
+be explicitly launched on another processor.  However, Plasma has support for allowing a
+group of processors to share a common issue queue.  This allows for the modeling
+of SMP systems.  To do this, the user either creates a new processor using the
+<code>make_sharedproc()</code> function, or creates an array of processors by
+specifying <em>true</em> for the third argument of the <code>Processors</code>
+constructor:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">  Processor a = make_sharedproc(pCurProc());
+
+  Processors procs(10,&quot;terminals&quot;,true);
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above code, processor <code>a</code> shares its ready queue with the
+current processor and the ten processors declared by <code>procs</code> all share
+the same ready queue.</p><p>In the following example, even though all of the threads are launched on the
+same processor (element 0 of the <code>procs</code> array), they all finish in 50
+time units.  This is because the other nine processors share the same ready
+queue and are able to schedule these threads.</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">  Processors procs(10,&quot;processors&quot;,true);
+
+  pfor (int i = 0; i != 10; ++i) <font color="red"><strong>{</strong></font>
+    on (procs[0]) <font color="red"><strong>{</strong></font>
+      cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; start:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;
+      pBusy(50);
+      cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; done:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;      
+    <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>The output from this program fragment is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">Block 0 start:  0
+Block 1 start:  0
+Block 2 start:  0
+Block 3 start:  0
+Block 4 start:  0
+Block 5 start:  0
+Block 6 start:  0
+Block 7 start:  0
+Block 8 start:  0
+Block 9 start:  0
+Block 0 done:  50
+Block 8 done:  50
+Block 1 done:  50
+Block 9 done:  50
+Block 7 done:  50
+Block 5 done:  50
+Block 2 done:  50
+Block 6 done:  50
+Block 4 done:  50
+Block 3 done:  50
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table></div>
 <!-- Priorities -->
 <a name="Priorities"></a>
 <div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.2.4 Priorities</font>
@@ -376,7 +445,7 @@ current processor.</p></div>
 </div><div class="subsection">
 <!-- Channels -->
 <a name="Channels"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.4 Channels</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.6 Channels</font>
 </h4></div><div class="subsubsection">
 <p>One method for threads to communicate among themselves is to use a channel.
 This is simply a data structure which allows one thread to write a value to it
@@ -489,7 +558,7 @@ channel which will return the result value of the spawned thread.  For example:<
 </ul></div>
 <!-- Alt Blocks -->
 <a name="Alt-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.5 Alt Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.7 Alt Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -519,7 +588,7 @@ blocks.  This allows the user to block on multiple collections of channels, or a
 collection of channels plus one or more single channels, etc.</p></div>
 <!-- Afor Blocks -->
 <a name="Afor-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.6 Afor Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.8 Afor Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -584,7 +653,7 @@ on a collection and an override channel:</p><table cellspacing="0" class="color"
 </tbody></table></div>
 <!-- Shared Data Structures -->
 <a name="Shared-Data-Structures"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.7 Shared Data Structures</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.9 Shared Data Structures</font>
 </h4></div><div class="subsubsection">
 <p>Threads may also communicate using shared data structures whose access methods
 are protected by special synchronization primitives.  There are two means to do
@@ -769,6 +838,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 14 18:42:10 2004</em>.</font></p></div>
+Last update <em>Thu Sep 16 14:23:10 2004</em>.</font></p></div>
 </body>
 </html>

@@ -58,51 +58,156 @@ Pete Wilson</i></font>
 </div></td>
 <td align="left" valign="top" class="skribe-body"><div class="skribe-body">
 <p><strong>Plasma</strong>, (<strong>P</strong>arallel <strong>LA</strong>nguage for <strong>S</strong>ystem
-   <strong>M</strong>odelling and <strong>A</strong>nalysis) is a parallel language implemented as a
-   superset of C++.  The language extensions are based upon those found in <a href="http://www.wotug.org/occam/" class="http">Occam</a>, which is based upon CSP
+   <strong>M</strong>odelling and <strong>A</strong>nalysis) is a parallel language for system
+   modeling and multithreaded application development implemented as a superset
+   of C++.  The language extensions are based upon those found in <a href="http://www.wotug.org/occam/" class="http">Occam</a>, which is based upon CSP
    (Communicating Sequential Processes) by C. A. R. Hoare.  The basic idea is
    that threads are explicitly created by the user and they communicate using
    typed channels.  Plasma adds several additional concepts such as shared data
    structures protected by mutual-exclusion code and the ability to easily wait
-   on the result of a function launched as a separate thread.  Although C++
-   is a difficult language from which to extract formal properties, we believe
-   that the combination of CSP (which does have well-understood semantics) and
-   an identified subset of C++ will make this possible.</p><p>The novel aspect of this work is that the language is suitable for use as
-   both an applications development language and as a modeling language.  For
-   application development, both in the embedded and desktop/server realm, it
-   provides a convenient means for exploiting parallelism provided by a
-   multi-core hardware platform.  For modeling purposes, the parallelism in the
-   language is used to model the parallelism inherent in the design being
-   modeled.  In either case, a production-ready compiler for Plasma will know
-   about this parallelism and be able to create better optimized code than the
-   traditional approach of using a threading library.</p><p>For instance, on an explicit thread switch, the compiler need only
-   generate code to save the live registers of the current function, rather than
-   the entire hardware context.  In some cases, the matter is not just about
-   optimization, but about actual correctness: An optimizer might think that a
-   variable is dead, when in fact it is still being used by another thread.</p><p>Another goal of Plasma is to add to C++ features that make it easier to
-   create robust, correct programs.  C++ already offers good abstraction
-   mechanisms and strong type-checking.  However, it lacks, for instance,
-   garbage collection.  The current Plasma implementation adds garbage
-   collection via the <a href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/" class="http">Boehm Weiser Garbage Collector</a>, a fully-conservative collector.  The
-   interface allows the user to work with explicitly-managed memory or with
-   managed memory, thus allowing for interoperability with existing C++ code.</p><p>In a production-worthy version of Plasma we hope to further investigate
-   what else could be added in order to make life easier for the programmer.
-   For example, we might add default initialization of built-in types so that
-   there is no chance of dangling pointers.  We might also consider the
-   recommendations found within <a href="http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a" class="http">Safe, Efficient Garbage Collection for C++</a>.</p><!-- Introduction -->
-<a name="Introduction"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">1 Introduction</font>
+   on the result of a function launched as a separate thread.  Although C++ is a
+   difficult language from which to extract formal properties, we believe that
+   the combination of CSP (which does have well-understood semantics) and an
+   identified subset of Plasma will make this possible.</p><!-- Purpose of This Work -->
+<a name="Purpose-of-This-Work"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">1 Purpose of This Work</font>
 </h3></td></tr></table>
 </div><div class="section">
-<!-- Parallelism -->
+<p>The goal of the Plasma project is to investigate whether a language with
+      the appropriate constructs might be used to ease the task of system
+      modeling by providing a simple means of representing systems models,
+      increase productivity through clearer representation, and increase
+      productivity and quality through increased compile-time checking of
+      the more difficult-to-get-right aspects of systems models (the
+      concurrency).  In addition to all of this, a language with built-in
+      parallelism would mean that it could be used for actual application
+      development and not just modeling.</p><p>The ability to enhance single-thread performance, such as by
+      increasing clock frequency, is rapidly diminishing: power is becoming a
+      dominating factor and limiting scalability.  Adding additional cores is a
+      scalable way to increase performance, but it requires that customers of
+      our parts have a method for developing multi-threaded applications.  A
+      Plasma compiler would allow customers to develop such programs and do so
+      in a safer manner by providing various compile-time checks for obvious
+      problems.</p><p>A full-blown Plasma system would thus have wide applicability: It
+      could be used by Freescale design teams to model proposed products and
+      perform early architectural and microarchitectural design trade-offs.  In
+      addition, customers could use the product to model their own complete
+      systems, performing their own analysis to determine what should run as
+      software on microprocessors and what should be dedicated hardware.  The
+      portions of the Plasma code which would be implemented as hardware could
+      then serve either as executable specifications or could be synthesized
+      directly into hardware.</p><p>The use of Plasma will make it easier for us to develop products which
+      meet our customers' performance needs, while also meeting their power
+      requirements, by adding extra processor cores rather than developing
+      brand-new cores.  For example, an engine controller consisting of just a
+      single thread might need a new core, at twice the performance of the
+      original, to handle an engine twice the size, thus running into severe
+      power-budget constraints.  On the other hand, the same program implemented
+      in Plasma, where each cylinder is implemented as a separate thread, could
+      simply be run on a system consisting of two cores.</p></div><br>
+<!-- Existing Work -->
+<a name="Existing-Work"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">2 Existing Work</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>There exist a plethora of languages attempting to solve the problem of
+      how to model complex systems.  They generally fall into two main
+      categories: Those originally derived from a hardware description language
+      and those derived from C or C++.  The first approach, typified by <a href="http://www.eda.org/sv/SystemVerilog_3.1a.pdf" class="http">System Verilog</a>, does allow the user to
+      raise the level of abstraction, but it still remains primarily a language
+      for describing hardware at a relatively low level.  For example, it has
+      relatively limited abilities for creating new abstract data structures.
+      It appears unlikely that we could convince customers to develop their
+      software using this language.</p><p>The other approach, deriving a language from C or C++, is typified by
+      <a href="http://www.ics.uci.edu/~specc/" class="http">SpecC</a>, <a href="http://www.celoxica.com/methodology/handelc.asp" class="http">Handel C</a>, and
+      <a href="http://systemc.org" class="http">SystemC</a>.  The first two are
+      languages with true parallelism: Their compiles are able to perform safety
+      checks to guard against common concurrency problems.  However, they are
+      primarily aimed at describing hardware, though in a manner familiar to
+      many programmers.  This means that they tend to implement a subset of C or
+      provide constructs which are very specific to certain types of hardware
+      modeling.  In addition, the fact that they are based upon C means that
+      they are limited in their extensibility, versus the abstraction mechanisms
+      offered by C++.</p><p>SystemC is not a true language in and of itself, but is a class
+      library built on top of C++.  Since it implements parallelism, which is
+      not provided by C++, it can in some ways be thought of as its own
+      language, in so far as a traditional library is usually thought of as
+      building upon existing facilities of a language.  Since SystemC builds
+      upon C++, it does offer powerful abstraction mechanisms and the ability to
+      use and create sophisticated data structures.</p><p>Its main problem, however, is that the compiler is unaware of the
+      concurrency, and is thus unable to perform any relevant checks or
+      optimizations.  In addition, the way in which concurrency and channel
+      communication is implemented in SystemC requires the use of C++'s object
+      system.  While this is not bad in principle, it would be nice to have the
+      ability to write a concurrent program in an imperative, C-like fashion for
+      those more comfortable with that style.  In addition, communication
+      between threads, via channels, requires the use of virtual functions.
+      Taken together, these restrictions mean that SystemC is unlikely to be
+      used for actual application development.  However, it does show the
+      utility of taking a powerful and extensible general purpose language and
+      adding a modeling framework on top of it.</p><p>The Panama modeling environment, based upon SystemC and developed by
+      FIL, has shown that SystemC can be used to do microarchitectural trade-off
+      analysis.  The view adopted by Panama, that a system can be modeled as a
+      collection of objects, each specialized to the system element to be
+      modeled, and each given behavior through a script, is a promising
+      beginning. The idea here is that a skilled modeling technology team
+      creates the base objects, and folk in the product teams can personalize
+      the behavior of the objects simply by writing scripts. This approach has
+      the promise that the task of modeling can be distributed, and that a tools
+      group can provide re-usable technology for use where needed. This approach
+      has many advantages over the approach currently in effect in what was
+      Somerset, that the modeling group provides both the technology and a modeling
+      service.  Such a service-based approach is efficient in throughput- modelers
+      are always busy, but not in latency- no more modelers can be provided, and
+      so the time that a project must wait before it can have a model constructed can
+      be lengthy, unpredictable, and uncontrollable.</p><p>However, even Panama's approach can likely be improved upon: One area is its
+      choice of specialized objects and a rather limited scripting
+      language. Rather than having many different object types, each of which is
+      scriptable, we could have exactly one object, call it a <em>Processor</em>,
+      capable of executing scripts written in a more general-purpose scripting
+      language. Couple this improvement with the understanding that a key new
+      ability we need is to model software at multiple levels of abstraction,
+      and the idea behind Plasma becomes clear.</p></div><br>
+<!-- An Introduction to Plasma -->
+<a name="An-Introduction-to-Plasma"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3 An Introduction to Plasma</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>The novel aspect of this work is that Plasma is suitable for use as
+      both an applications development language and as a modeling language.  For
+      application development, both in the embedded and desktop/server realm, it
+      provides a convenient means for exploiting parallelism provided by a
+      multi-core hardware platform.  For modeling purposes, the parallelism in
+      the language is used to model the parallelism inherent in the design being
+      modeled.  In either case, a production-ready compiler for Plasma will know
+      about this parallelism and be able to create better optimized code than
+      the traditional approach of using a threading library.</p><p>For instance, on an explicit thread switch, the compiler need only
+      generate code to save the live registers of the current function, rather
+      than the entire hardware context.  In some cases, the matter is not just
+      about optimization, but about actual correctness: An optimizer might think
+      that a variable is dead, when in fact it is still being used by another
+      thread.  Useful safety checks might also be made.  For example, the
+      compiler can ensure that two different threads do not write to the same
+      variable unless it is protected by mutual-exclusion code.</p><p>Another goal of Plasma is to add to C++ features that make it easier
+      to create robust, correct programs.  C++ already offers good abstraction
+      mechanisms and strong type-checking.  However, it lacks, for instance,
+      garbage collection.  The current Plasma implementation adds garbage
+      collection via the <a href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/" class="http">Boehm Weiser
+      Garbage Collector</a>, a fully-conservative collector.  The interface allows
+      the user to work with explicitly-managed memory or with managed memory,
+      thus allowing for interoperability with existing C++ code.</p><p>In a production-worthy version of Plasma we hope to further
+      investigate what else could be added in order to make life easier for the
+      programmer.  For example, we might add default initialization of built-in
+      types so that there is no chance of dangling pointers.  We might also
+      consider the recommendations found within <a href="http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a" class="http">Safe, Efficient Garbage Collection for C++</a>.</p><!-- Parallelism -->
 <a name="Parallelism"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.1 Parallelism</font>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1 Parallelism</font>
 </h3></td></tr></table>
 </div><div class="subsection">
 <p>Plasma inherits its parallelism constructs from Occam and extends
 	 them with a functional operator, similar to the <em>future</em> found in
 	 <a href="http://computing-dictionary.thefreedictionary.com/MultiLisp" class="http">Multilisp</a>.  For
-	 example, to create two threads:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+	 example, to create two threads one uses the <code>par</code> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">          par <font color="red"><strong>{</strong></font>
             a();
@@ -115,8 +220,18 @@ Pete Wilson</i></font>
 </tbody></table></td></tr>
 </tbody></table><p>The functions <code>a()</code> and <code>b()</code> will run in parallel
 	 but will both finish before function <code>c()</code> is called.  Each
-	 statement within a par block is launched as a separate thread and
-	 braces may be used to group multiple statements together.</p><p>To work with a more functional approach, the <code>spawn</code>
+	 statement within a <code>par</code> block is launched as a separate thread and
+	 braces may be used to group multiple statements together.</p><p>A replicated form of <code>par</code> exists in the form of the <code>pfor</code> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">  pfor (int i = 0; i != Max; ++i) <font color="red"><strong>{</strong></font>
+    foo(i);
+  <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above example, the body of the <code>pfor</code> block, the
+	 call to function <code>foo()</code>, is launched as a new thread <code>Max</code> times.</p><p>To work with a more functional approach, the <code>spawn</code>
 	 operator may be used:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
@@ -134,27 +249,37 @@ Pete Wilson</i></font>
 	 thread.</p></div>
 <!-- Communication -->
 <a name="Communication"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.2 Communication</font>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2 Communication</font>
 </h3></td></tr></table>
 </div><div class="subsection">
+<!-- Channels -->
+<a name="Channels"></a>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.1 Channels</font>
+</h4></div><div class="subsubsection">
 <p>Communication between threads is handled by typed channels.  A
-	 channel can be any object which satisfies a certain <a href="index-1.html#Channels" class="inbound">API</a> and is written in a thread-safe
-	 manner.  This means that a channel can be extemely efficient:  It does
-	 not require the use of virtual functions and a production-ready version
-	 of the compiler may be able to use hardware-optimized intrinsics, if
-	 available.</p><p>For example, the following code creates two threads, a producer and
-	 a consumer:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+	    channel can be any object which satisfies a certain <a href="index-1.html#Channels" class="inbound">API</a> and is written in a
+	    thread-safe manner.  This means that a channel can be extremely
+	    efficient: It does not require the use of virtual functions and a
+	    production-ready version of the compiler may be able to use
+	    hardware-optimized intrinsics, if available.  The standard library
+	    provides several varieties, including a single-item channel, a
+	    queued channel, where the queue size can be fixed or infinite, and
+	    an interface channel for using the <code>Result</code> object returned
+	    by a spawn function.</p><p>For example, the following code creates two threads, a producer
+	    and a consumer:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">         <strong>typedef</strong> Channel&lt;int&gt; IntChan;
          IntChan c;
          par <font color="red"><strong>{</strong></font>
            <font color="red"><strong>{</strong></font>
+             <font color="#ffa600"><em>// Thread 1.</em></font>
              c.write(1);
              c.write(2);
              c.write(3);
              c.write(-1);
            <font color="red"><strong>}</strong></font>
            <font color="red"><strong>{</strong></font>
+             <font color="#ffa600"><em>// Thread 2.</em></font>
              int x;
              <strong>do</strong> <font color="red"><strong>{</strong></font>
                x = c.get();
@@ -166,9 +291,80 @@ Pete Wilson</i></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table><p>In the above code, <code>mprintf</code> is a Plasma function which
-	 provides a serialized printf.</p><p>Shared data structures may be easily implemented by using the
-	 <code>pMutex</code> class modifier:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+</tbody></table><p>The first thread writes numbers to a channel, while the second
+	    thread reads from this channel and prints them using <code>mprintf</code>, a mutex-protected version of <code>printf</code>.
+	    Flow-control is handled by the channel itself: If there is no data,
+	    then a read will block, while if there is already a data item in the
+	    channel, a write will block.</p><p>Calling <code>get()</code> works when only one channel needs to be
+	    queried, but the situation often arises when multiple channels
+	    exist.  A thread needs to block only if no data exists on any of the
+	    channels.  To support this, Plasma has the <code>alt</code> and <code>afor</code> constructs:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">    alt <font color="red"><strong>{</strong></font>
+      c0.port (int v) <font color="red"><strong>{</strong></font>
+        plasma::mprintf (&quot;Got a value from port c0:  %d\n&quot;,v);
+      <font color="red"><strong>}</strong></font>
+      c1.port (int v) <font color="red"><strong>{</strong></font>
+        plasma::mprintf (&quot;Got a value from port c1:  %d\n&quot;,v);
+      <font color="red"><strong>}</strong></font>
+      c2.port (int v) <font color="red"><strong>{</strong></font>
+        plasma::mprintf (&quot;Got a value from port c2:  %d\n&quot;,v);
+      <font color="red"><strong>}</strong></font>
+      c3.port (int v) <font color="red"><strong>{</strong></font>
+        plasma::mprintf (&quot;Got a value from port c3:  %d\n&quot;,v);
+      <font color="red"><strong>}</strong></font>
+    <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>If none of the channels (<code>c0</code> through <code>c3</code>) have
+	    any data, then the thread will suspend until data is available on
+	    any one of the channels.  At that point, the relevant block of code
+	    will be executed.  If one or more of the channels already has data
+	    upon entry to the <code>alt</code>, then exactly one of the ready
+	    channels will be read and its code executed; the selection of the
+	    channel is non-deterministic.</p><p>Just as Plasma provides the <code>pfor</code> construct for
+	    replicating threads, it also provides <code>afor</code> for replicating
+	    channel reads:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">    afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
+      channels[i].port (int v) <font color="red"><strong>{</strong></font>
+        plasma::mprintf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
+      <font color="red"><strong>}</strong></font>
+    <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above example, the <code>afor</code> block will suspend the
+	    thread if no channels in the <code>channels</code> container are
+	    ready.</p><p><code>Alt</code> and <code>afor</code> blocks may be nested:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">    alt <font color="red"><strong>{</strong></font>
+      afor (int i = 0; i != (int)ichannels.size(); ++i) <font color="red"><strong>{</strong></font>
+        ichannels[i].port (int v) <font color="red"><strong>{</strong></font>
+          plasma::mprintf (&quot;Got a value from port %d:  %d\n&quot;,i+ibase,v);
+        <font color="red"><strong>}</strong></font>
+      <font color="red"><strong>}</strong></font>
+      alt <font color="red"><strong>{</strong></font>
+        xc.port (int v) <font color="red"><strong>{</strong></font>
+          plasma::mprintf (&quot;Got a value from port xc:  %d\n&quot;,v);
+        <font color="red"><strong>}</strong></font>
+      <font color="red"><strong>}</strong></font>
+    <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above example, the thread will suspend unless a channel
+	    in <code>ichannels</code> or the channel <code>xc</code> has data.</p></div>
+<!-- Shared Data Structures -->
+<a name="Shared-Data-Structures"></a>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.2 Shared Data Structures</font>
+</h4></div><div class="subsubsection">
+<p>Shared data structures may be easily implemented by using the
+	    <code>pMutex</code> class modifier:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">  
          pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
@@ -180,22 +376,36 @@ Pete Wilson</i></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table><p>A mutex class has all of its public member functions wrapped with
-	 serialization code (except for the constructors and destructors).  This
-	 may be disabled by usin the <code>pNoMutex</code> keyword, as shown for
-	 the method <code>foo</code>.</p></div>
+</tbody></table><p>A mutex class has all of its public member functions wrapped
+	    with serialization code (except for the constructors and
+	    destructors).  This may be disabled by using the <code>pNoMutex</code>
+	    keyword, as shown for the method <code>foo</code>.</p></div>
+</div>
 <!-- Simulation -->
 <a name="Simulation"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.3 Simulation</font>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3 Simulation</font>
 </h3></td></tr></table>
 </div><div class="subsection">
 <p>Plasma contains a discrete-event time model for simulation
 	 purposes.  This is not part of the language, per se, but is implemented
-	 as a set of functions which manipulate the back-end thread package.  A
-	 thread may delay itself by calling <code>pDelay</code> and may consume
-	 time by calling <code>pBusy</code>.  By consuming time, we mean that the
-	 processor on which the thread is running is considered to be &quot;busy&quot;, or
-	 unavailable to do other work.</p><p>Threads may be distributed to multiple &quot;processors&quot; to multiple
+	 as a set of functions which manipulate the back-end thread package.
+	 This means that a Plasma implementation designed for applications might
+	 not support the time model, while an implementation designed for
+	 modeling would.</p><p>A thread may delay itself by calling <code>pDelay</code> and may
+	 consume time by calling <code>pBusy</code>.  A delay corresponds to a
+	 thread waiting for some event to occur; it is not consuming any
+	 resources and other threads may execute during this time.  Being busy,
+	 on the other hand, means that the thread is working, or consuming the
+	 processing resources of what it is running on.  These two functions are
+	 the only way in which time advances in Plasma: Everything else is
+	 considered to occur in zero time.</p><p>What this means is that a user may write real software for an
+	 embedded application in Plasma.  To gain an understanding of the
+	 software's resource requirements, it may be annotated with <code>pDelay</code> and <code>pBusy</code> calls based upon the anticipated behavior
+	 of the underlying hardware.  For instance, a multiply-accumulate loop
+	 might require two separate instructions, so a call to <code>pBusy</code>
+	 with a value of two would be made.  However, this value could be
+	 changed in order to understand the effects of adding a specific
+	 multiply-accumulate instruction.</p><p>Threads may be distributed to multiple &quot;processors&quot; in order to model multiple
 	 hardware resources in a simulation.  A thread on one processor might be
 	 busy, but this does not affect a thread on another processor:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
@@ -215,38 +425,41 @@ Pete Wilson</i></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table><p>Each thread may be given a priority.  Higher priority threads (a
+</tbody></table><p>Processors have their own private ready queues of threads, by
+	 default, but can be instantiated such that several processors share a
+	 single queue.  This allows for SMP systems to be easily modeled.</p><p>Each thread may be given a priority.  Higher priority threads (a
 	 lower number) execute until completion before lower priority threads.
-	 The lowest priority threads are timesliced.</p></div>
+	 The lowest priority threads are time-sliced.  A delayed high-priority
+	 thread may interrupt a lower-priority thread which is <em>busy</em>.</p></div>
 </div><br>
 <!-- User's Guide -->
 <a name="User's-Guide"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">2 User's Guide</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4 User's Guide</font>
 </h3></td></tr></table>
 </div><div class="section">
 The Plasma user guide is available <a href="index-1.html#Plasma-User's-Guide" class="inbound">here</a>.  Refer to it for more details about Plasma.</div><br>
 <!-- Examples -->
 <a name="Examples"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3 Examples</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">5 Examples</font>
 </h3></td></tr></table>
 </div><div class="section">
 Plasma examples are available <a href="index-2.html#Examples" class="inbound">here</a>.</div><br>
 <!-- Implementation Details -->
 <a name="Implementation-Details"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4 Implementation Details</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">6 Implementation Details</font>
 </h3></td></tr></table>
 </div><div class="section">
 Implementation details and scheduling information can be found here <a href="index-3.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
 <!-- Additional Documentation -->
 <a name="Additional-Documentation"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">5 Additional Documentation</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">7 Additional Documentation</font>
 </h3></td></tr></table>
 </div><div class="section">
 A Twiki page, containing additional background information, can be found
       <a href="http://twiki.sps.mot.com/bin/view.cgi/Projects/SystemsModelling" class="http">here</a>.</div><br>
 <!-- Future Work -->
 <a name="Future-Work"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">6 Future Work</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">8 Future Work</font>
 </h3></td></tr></table>
 </div><div class="section">
 A description of proposed future enhancements can be found <a href="index-4.html#Future-Work" class="inbound">here</a>.</div><br>
@@ -257,6 +470,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 14 18:42:10 2004</em>.</font></p></div>
+Last update <em>Thu Sep 16 14:23:10 2004</em>.</font></p></div>
 </body>
 </html>

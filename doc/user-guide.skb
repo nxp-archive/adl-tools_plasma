@@ -298,7 +298,17 @@ Processor a;
 
 ])
 
-(p [A thread may be started on another processor using two different methods:])
+(p [To create a vector of Processors, use the ,(code [Processors]) data
+structure:])
+
+(cprog [
+
+  Processors procs(10);
+
+])
+
+(p [New threads will be launched on their parent's processor unless one of the
+following mechanisms is used:])
 
 (itemize 
 
@@ -330,6 +340,70 @@ Processor a;
 constructor or the ,(b [setName]) method.  This pointer is unmanaged by the
 ,(b [Processor]) and is simply stored as-is.  This means that you can compare it
 against another pointer for quick identification purposes.])
+
+(p [By default, each processor has its own issue queue and threads must
+be explicitly launched on another processor.  However, Plasma has support for allowing a
+group of processors to share a common issue queue.  This allows for the modeling
+of SMP systems.  To do this, the user either creates a new processor using the
+,(code [make_sharedproc()]) function, or creates an array of processors by
+specifying ,(i [true]) for the third argument of the ,(code [Processors])
+constructor:])
+
+(cprog [
+
+  Processor a = make_sharedproc(pCurProc());
+
+  Processors procs(10,"terminals",true);
+
+])
+
+(p [In the above code, processor ,(code [a]) shares its ready queue with the
+current processor and the ten processors declared by ,(code [procs]) all share
+the same ready queue.])
+
+(p [In the following example, even though all of the threads are launched on the
+same processor (element 0 of the ,(code [procs]) array), they all finish in 50
+time units.  This is because the other nine processors share the same ready
+queue and are able to schedule these threads.])
+
+(cprog [
+
+  Processors procs(10,"processors",true);
+
+  pfor (int i = 0; i != 10; ++i) {
+    on (procs\[0\]) {
+      cout << "Block " << i << " start:  " << pTime() << endl;
+      pBusy(50);
+      cout << "Block " << i << " done:  " << pTime() << endl;      
+    }
+  }
+
+])
+
+(p [The output from this program fragment is:])
+
+(cprog [
+Block 0 start:  0
+Block 1 start:  0
+Block 2 start:  0
+Block 3 start:  0
+Block 4 start:  0
+Block 5 start:  0
+Block 6 start:  0
+Block 7 start:  0
+Block 8 start:  0
+Block 9 start:  0
+Block 0 done:  50
+Block 8 done:  50
+Block 1 done:  50
+Block 9 done:  50
+Block 7 done:  50
+Block 5 done:  50
+Block 2 done:  50
+Block 6 done:  50
+Block 4 done:  50
+Block 3 done:  50
+])
 
 )
 

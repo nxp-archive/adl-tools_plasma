@@ -6,54 +6,178 @@
 (document :title [The Plasma Language]
    :author (list (author :name "Brian Kahne" :email (mailto "bkahne@freescale.com"))
 		 (author :name "Pete Wilson" :email (mailto "Pete.Wilson@freescale.com")))
-   
+
    (p [,(b[Plasma]), (,(b[P])arallel ,(b[LA])nguage for ,(b[S])ystem
-   ,(b[M])odelling and ,(b[A])nalysis) is a parallel language implemented as a
-   superset of C++.  The language extensions are based upon those found in ,(ref
-   :url "http://www.wotug.org/occam/" :text "Occam"), which is based upon CSP
+   ,(b[M])odelling and ,(b[A])nalysis) is a parallel language for system
+   modeling and multithreaded application development implemented as a superset
+   of C++.  The language extensions are based upon those found in ,(ref :url
+   "http://www.wotug.org/occam/" :text "Occam"), which is based upon CSP
    (Communicating Sequential Processes) by C. A. R. Hoare.  The basic idea is
    that threads are explicitly created by the user and they communicate using
    typed channels.  Plasma adds several additional concepts such as shared data
    structures protected by mutual-exclusion code and the ability to easily wait
-   on the result of a function launched as a separate thread.  Although C++
-   is a difficult language from which to extract formal properties, we believe
-   that the combination of CSP (which does have well-understood semantics) and
-   an identified subset of C++ will make this possible.])
+   on the result of a function launched as a separate thread.  Although C++ is a
+   difficult language from which to extract formal properties, we believe that
+   the combination of CSP (which does have well-understood semantics) and an
+   identified subset of Plasma will make this possible.])
+   
+   (section :title "Purpose of This Work"
 
-   (p [The novel aspect of this work is that the language is suitable for use as
-   both an applications development language and as a modeling language.  For
-   application development, both in the embedded and desktop/server realm, it
-   provides a convenient means for exploiting parallelism provided by a
-   multi-core hardware platform.  For modeling purposes, the parallelism in the
-   language is used to model the parallelism inherent in the design being
-   modeled.  In either case, a production-ready compiler for Plasma will know
-   about this parallelism and be able to create better optimized code than the
-   traditional approach of using a threading library.])
+      (p [The goal of the Plasma project is to investigate whether a language with
+      the appropriate constructs might be used to ease the task of system
+      modeling by providing a simple means of representing systems models,
+      increase productivity through clearer representation, and increase
+      productivity and quality through increased compile-time checking of
+      the more difficult-to-get-right aspects of systems models (the
+      concurrency).  In addition to all of this, a language with built-in
+      parallelism would mean that it could be used for actual application
+      development and not just modeling.])
+      
+      (p [The ability to enhance single-thread performance, such as by
+      increasing clock frequency, is rapidly diminishing: power is becoming a
+      dominating factor and limiting scalability.  Adding additional cores is a
+      scalable way to increase performance, but it requires that customers of
+      our parts have a method for developing multi-threaded applications.  A
+      Plasma compiler would allow customers to develop such programs and do so
+      in a safer manner by providing various compile-time checks for obvious
+      problems.])
+      
+      (p [A full-blown Plasma system would thus have wide applicability: It
+      could be used by Freescale design teams to model proposed products and
+      perform early architectural and microarchitectural design trade-offs.  In
+      addition, customers could use the product to model their own complete
+      systems, performing their own analysis to determine what should run as
+      software on microprocessors and what should be dedicated hardware.  The
+      portions of the Plasma code which would be implemented as hardware could
+      then serve either as executable specifications or could be synthesized
+      directly into hardware.])
 
-   (p [For instance, on an explicit thread switch, the compiler need only
-   generate code to save the live registers of the current function, rather than
-   the entire hardware context.  In some cases, the matter is not just about
-   optimization, but about actual correctness: An optimizer might think that a
-   variable is dead, when in fact it is still being used by another thread.])
+      (p [The use of Plasma will make it easier for us to develop products which
+      meet our customers' performance needs, while also meeting their power
+      requirements, by adding extra processor cores rather than developing
+      brand-new cores.  For example, an engine controller consisting of just a
+      single thread might need a new core, at twice the performance of the
+      original, to handle an engine twice the size, thus running into severe
+      power-budget constraints.  On the other hand, the same program implemented
+      in Plasma, where each cylinder is implemented as a separate thread, could
+      simply be run on a system consisting of two cores.])
+      
+      )
+   
+   (section :title "Existing Work"
 
-   (p [Another goal of Plasma is to add to C++ features that make it easier to
-   create robust, correct programs.  C++ already offers good abstraction
-   mechanisms and strong type-checking.  However, it lacks, for instance,
-   garbage collection.  The current Plasma implementation adds garbage
-   collection via the ,(ref :url "http://www.hpl.hp.com/personal/Hans_Boehm/gc/"
-   :text "Boehm Weiser Garbage Collector"), a fully-conservative collector.  The
-   interface allows the user to work with explicitly-managed memory or with
-   managed memory, thus allowing for interoperability with existing C++ code.])
+      (p [There exist a plethora of languages attempting to solve the problem of
+      how to model complex systems.  They generally fall into two main
+      categories: Those originally derived from a hardware description language
+      and those derived from C or C++.  The first approach, typified by ,(ref
+      :text "System Verilog" :url
+      "http://www.eda.org/sv/SystemVerilog_3.1a.pdf"), does allow the user to
+      raise the level of abstraction, but it still remains primarily a language
+      for describing hardware at a relatively low level.  For example, it has
+      relatively limited abilities for creating new abstract data structures.
+      It appears unlikely that we could convince customers to develop their
+      software using this language.])
+      
+      (p [The other approach, deriving a language from C or C++, is typified by
+      ,(ref :text "SpecC" :url "http://www.ics.uci.edu/~specc/"), ,(ref :text
+      "Handel C" :url "http://www.celoxica.com/methodology/handelc.asp"), and
+      ,(ref :text "SystemC" :url "http://systemc.org").  The first two are
+      languages with true parallelism: Their compiles are able to perform safety
+      checks to guard against common concurrency problems.  However, they are
+      primarily aimed at describing hardware, though in a manner familiar to
+      many programmers.  This means that they tend to implement a subset of C or
+      provide constructs which are very specific to certain types of hardware
+      modeling.  In addition, the fact that they are based upon C means that
+      they are limited in their extensibility, versus the abstraction mechanisms
+      offered by C++.])
+      
+      (p [SystemC is not a true language in and of itself, but is a class
+      library built on top of C++.  Since it implements parallelism, which is
+      not provided by C++, it can in some ways be thought of as its own
+      language, in so far as a traditional library is usually thought of as
+      building upon existing facilities of a language.  Since SystemC builds
+      upon C++, it does offer powerful abstraction mechanisms and the ability to
+      use and create sophisticated data structures.])
+      
+      (p [Its main problem, however, is that the compiler is unaware of the
+      concurrency, and is thus unable to perform any relevant checks or
+      optimizations.  In addition, the way in which concurrency and channel
+      communication is implemented in SystemC requires the use of C++'s object
+      system.  While this is not bad in principle, it would be nice to have the
+      ability to write a concurrent program in an imperative, C-like fashion for
+      those more comfortable with that style.  In addition, communication
+      between threads, via channels, requires the use of virtual functions.
+      Taken together, these restrictions mean that SystemC is unlikely to be
+      used for actual application development.  However, it does show the
+      utility of taking a powerful and extensible general purpose language and
+      adding a modeling framework on top of it.])
+      
+      (p [The Panama modeling environment, based upon SystemC and developed by
+      FIL, has shown that SystemC can be used to do microarchitectural trade-off
+      analysis.  The view adopted by Panama, that a system can be modeled as a
+      collection of objects, each specialized to the system element to be
+      modeled, and each given behavior through a script, is a promising
+      beginning. The idea here is that a skilled modeling technology team
+      creates the base objects, and folk in the product teams can personalize
+      the behavior of the objects simply by writing scripts. This approach has
+      the promise that the task of modeling can be distributed, and that a tools
+      group can provide re-usable technology for use where needed. This approach
+      has many advantages over the approach currently in effect in what was
+      Somerset, that the modeling group provides both the technology and a modeling
+      service.  Such a service-based approach is efficient in throughput- modelers
+      are always busy, but not in latency- no more modelers can be provided, and
+      so the time that a project must wait before it can have a model constructed can
+      be lengthy, unpredictable, and uncontrollable.])
 
-   (p [In a production-worthy version of Plasma we hope to further investigate
-   what else could be added in order to make life easier for the programmer.
-   For example, we might add default initialization of built-in types so that
-   there is no chance of dangling pointers.  We might also consider the
-   recommendations found within ,(ref :url
-   "http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a"
-   :text "Safe, Efficient Garbage Collection for C++").])
+      (p [However, even Panama's approach can likely be improved upon: One area is its
+      choice of specialized objects and a rather limited scripting
+      language. Rather than having many different object types, each of which is
+      scriptable, we could have exactly one object, call it a ,(i [Processor]),
+      capable of executing scripts written in a more general-purpose scripting
+      language. Couple this improvement with the understanding that a key new
+      ability we need is to model software at multiple levels of abstraction,
+      and the idea behind Plasma becomes clear.])
 
-   (section :title "Introduction"
+      )
+
+   (section :title "An Introduction to Plasma"
+            
+      (p [The novel aspect of this work is that Plasma is suitable for use as
+      both an applications development language and as a modeling language.  For
+      application development, both in the embedded and desktop/server realm, it
+      provides a convenient means for exploiting parallelism provided by a
+      multi-core hardware platform.  For modeling purposes, the parallelism in
+      the language is used to model the parallelism inherent in the design being
+      modeled.  In either case, a production-ready compiler for Plasma will know
+      about this parallelism and be able to create better optimized code than
+      the traditional approach of using a threading library.])
+
+      (p [For instance, on an explicit thread switch, the compiler need only
+      generate code to save the live registers of the current function, rather
+      than the entire hardware context.  In some cases, the matter is not just
+      about optimization, but about actual correctness: An optimizer might think
+      that a variable is dead, when in fact it is still being used by another
+      thread.  Useful safety checks might also be made.  For example, the
+      compiler can ensure that two different threads do not write to the same
+      variable unless it is protected by mutual-exclusion code.])
+
+      (p [Another goal of Plasma is to add to C++ features that make it easier
+      to create robust, correct programs.  C++ already offers good abstraction
+      mechanisms and strong type-checking.  However, it lacks, for instance,
+      garbage collection.  The current Plasma implementation adds garbage
+      collection via the ,(ref :url
+      "http://www.hpl.hp.com/personal/Hans_Boehm/gc/" :text "Boehm Weiser
+      Garbage Collector"), a fully-conservative collector.  The interface allows
+      the user to work with explicitly-managed memory or with managed memory,
+      thus allowing for interoperability with existing C++ code.])
+
+      (p [In a production-worthy version of Plasma we hope to further
+      investigate what else could be added in order to make life easier for the
+      programmer.  For example, we might add default initialization of built-in
+      types so that there is no chance of dangling pointers.  We might also
+      consider the recommendations found within ,(ref :url
+      "http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a"
+      :text "Safe, Efficient Garbage Collection for C++").])
       
       (subsection :title "Parallelism"
       
@@ -61,7 +185,7 @@
 	 them with a functional operator, similar to the ,(i [future]) found in
 	 ,(ref :text "Multilisp" :url
 	 "http://computing-dictionary.thefreedictionary.com/MultiLisp").  For
-	 example, to create two threads:])
+	 example, to create two threads one uses the ,(code [par]) block:])
       
 	 (cprog [
 
@@ -75,8 +199,23 @@
       
 	 (p [The functions ,(code [a()]) and ,(code [b()]) will run in parallel
 	 but will both finish before function ,(code [c()]) is called.  Each
-	 statement within a par block is launched as a separate thread and
+	 statement within a ,(code [par]) block is launched as a separate thread and
 	 braces may be used to group multiple statements together.])
+	 
+	 (p [A replicated form of ,(code [par]) exists in the form of the ,(code
+	 [pfor]) block:])
+	 
+	 (cprog [
+
+  pfor (int i = 0; i != Max; ++i) {
+    foo(i);
+  }
+
+])
+	 
+	 (p [In the above example, the body of the ,(code [pfor]) block, the
+	 call to function ,(code [foo()]), is launched as a new thread ,(code
+	 [Max]) times.])
       
 	 (p [To work with a more functional approach, the ,(code [spawn])
 	 operator may be used:])
@@ -99,30 +238,38 @@
 	 )
       
       (subsection :title "Communication"
-	 
-	 (p [Communication between threads is handled by typed channels.  A
-	 channel can be any object which satisfies a certain ,(ref
-	 :subsubsection "Channels" :text "API") and is written in a thread-safe
-	 manner.  This means that a channel can be extemely efficient:  It does
-	 not require the use of virtual functions and a production-ready version
-	 of the compiler may be able to use hardware-optimized intrinsics, if
-	 available.])
-	 
-	 (p [For example, the following code creates two threads, a producer and
-	 a consumer:])
 
-	 (cprog [
+	 (subsubsection :title "Channels"
+	 
+	    (p [Communication between threads is handled by typed channels.  A
+	    channel can be any object which satisfies a certain ,(ref
+	    :subsubsection "Channels" :text "API") and is written in a
+	    thread-safe manner.  This means that a channel can be extremely
+	    efficient: It does not require the use of virtual functions and a
+	    production-ready version of the compiler may be able to use
+	    hardware-optimized intrinsics, if available.  The standard library
+	    provides several varieties, including a single-item channel, a
+	    queued channel, where the queue size can be fixed or infinite, and
+	    an interface channel for using the ,(code [Result]) object returned
+	    by a spawn function.])
+	 
+	    (p [For example, the following code creates two threads, a producer
+	    and a consumer:])
+
+	    (cprog [
 
          typedef Channel<int> IntChan;
          IntChan c;
          par {
            {
+             // Thread 1.
              c.write(1);
              c.write(2);
              c.write(3);
              c.write(-1);
            }
            {
+             // Thread 2.
              int x;
              do {
                x = c.get();
@@ -133,13 +280,94 @@
 
 ])
 	 
-	 (p [In the above code, ,(code [mprintf]) is a Plasma function which
-	 provides a serialized printf.])
-      
-	 (p [Shared data structures may be easily implemented by using the
-	 ,(code [pMutex]) class modifier:])
+	    (p [The first thread writes numbers to a channel, while the second
+	    thread reads from this channel and prints them using ,(code
+	    [mprintf]), a mutex-protected version of ,(code [printf]).
+	    Flow-control is handled by the channel itself: If there is no data,
+	    then a read will block, while if there is already a data item in the
+	    channel, a write will block.])
+	    
+	    (p [Calling ,(code [get()]) works when only one channel needs to be
+	    queried, but the situation often arises when multiple channels
+	    exist.  A thread needs to block only if no data exists on any of the
+	    channels.  To support this, Plasma has the ,(code [alt]) and ,(code
+	    [afor]) constructs:])
+	    
+	    (cprog [
+
+    alt {
+      c0.port (int v) {
+        plasma::mprintf ("Got a value from port c0:  %d\\n",v);
+      }
+      c1.port (int v) {
+        plasma::mprintf ("Got a value from port c1:  %d\\n",v);
+      }
+      c2.port (int v) {
+        plasma::mprintf ("Got a value from port c2:  %d\\n",v);
+      }
+      c3.port (int v) {
+        plasma::mprintf ("Got a value from port c3:  %d\\n",v);
+      }
+    }
+
+])
+
+            (p [If none of the channels (,(code [c0]) through ,(code [c3])) have
+	    any data, then the thread will suspend until data is available on
+	    any one of the channels.  At that point, the relevant block of code
+	    will be executed.  If one or more of the channels already has data
+	    upon entry to the ,(code [alt]), then exactly one of the ready
+	    channels will be read and its code executed; the selection of the
+	    channel is non-deterministic.])
+	    
+	    (p [Just as Plasma provides the ,(code [pfor]) construct for
+	    replicating threads, it also provides ,(code [afor]) for replicating
+	    channel reads:])
+	    
+	    (cprog [
+
+    afor (int i = 0; i != (int)channels.size(); ++i) {
+      channels\[i\].port (int v) {
+        plasma::mprintf ("Got a value from port %d:  %d\\n",i,v);
+      }
+    }
+
+])
 	 
-	 (cprog [
+	    (p [In the above example, the ,(code [afor]) block will suspend the
+	    thread if no channels in the ,(code [channels]) container are
+	    ready.])
+	    
+	    (p [,(code [Alt]) and ,(code [afor]) blocks may be nested:])
+	    
+	    (cprog [
+
+    alt {
+      afor (int i = 0; i != (int)ichannels.size(); ++i) {
+        ichannels\[i\].port (int v) {
+          plasma::mprintf ("Got a value from port %d:  %d\\n",i+ibase,v);
+        }
+      }
+      alt {
+        xc.port (int v) {
+          plasma::mprintf ("Got a value from port xc:  %d\\n",v);
+        }
+      }
+    }
+
+])
+
+            (p [In the above example, the thread will suspend unless a channel
+	    in ,(code [ichannels]) or the channel ,(code [xc]) has data.])
+	 	     
+	    )
+	 
+	 (subsubsection :title "Shared Data Structures"
+	    
+	    (p [Shared data structures may be easily implemented by using the
+	    ,(code [pMutex]) class modifier:])
+	 
+	    (cprog [
   
          pMutex class Foo {
            ...
@@ -149,24 +377,45 @@
 
 ])
 	 
-	 (p [A mutex class has all of its public member functions wrapped with
-	 serialization code (except for the constructors and destructors).  This
-	 may be disabled by usin the ,(code [pNoMutex]) keyword, as shown for
-	 the method ,(code [foo]).])
+	    (p [A mutex class has all of its public member functions wrapped
+	    with serialization code (except for the constructors and
+	    destructors).  This may be disabled by using the ,(code [pNoMutex])
+	    keyword, as shown for the method ,(code [foo]).])
 	 
 	 )
+	 
+	 )
+	 
       
       (subsection :title "Simulation"
 	 
 	 (p [Plasma contains a discrete-event time model for simulation
 	 purposes.  This is not part of the language, per se, but is implemented
-	 as a set of functions which manipulate the back-end thread package.  A
-	 thread may delay itself by calling ,(code [pDelay]) and may consume
-	 time by calling ,(code [pBusy]).  By consuming time, we mean that the
-	 processor on which the thread is running is considered to be "busy", or
-	 unavailable to do other work.])
+	 as a set of functions which manipulate the back-end thread package.
+	 This means that a Plasma implementation designed for applications might
+	 not support the time model, while an implementation designed for
+	 modeling would.])
+
+	 (p [A thread may delay itself by calling ,(code [pDelay]) and may
+	 consume time by calling ,(code [pBusy]).  A delay corresponds to a
+	 thread waiting for some event to occur; it is not consuming any
+	 resources and other threads may execute during this time.  Being busy,
+	 on the other hand, means that the thread is working, or consuming the
+	 processing resources of what it is running on.  These two functions are
+	 the only way in which time advances in Plasma: Everything else is
+	 considered to occur in zero time.])
 	 
-	 (p [Threads may be distributed to multiple "processors" to multiple
+	 (p [What this means is that a user may write real software for an
+	 embedded application in Plasma.  To gain an understanding of the
+	 software's resource requirements, it may be annotated with ,(code
+	 [pDelay]) and ,(code [pBusy]) calls based upon the anticipated behavior
+	 of the underlying hardware.  For instance, a multiply-accumulate loop
+	 might require two separate instructions, so a call to ,(code [pBusy])
+	 with a value of two would be made.  However, this value could be
+	 changed in order to understand the effects of adding a specific
+	 multiply-accumulate instruction.])
+	 
+	 (p [Threads may be distributed to multiple "processors" in order to model multiple
 	 hardware resources in a simulation.  A thread on one processor might be
 	 busy, but this does not affect a thread on another processor:])
 	 
@@ -187,13 +436,19 @@
 
 ])
 	 
+	 (p [Processors have their own private ready queues of threads, by
+	 default, but can be instantiated such that several processors share a
+	 single queue.  This allows for SMP systems to be easily modeled.])
+	 
 	 (p [Each thread may be given a priority.  Higher priority threads (a
 	 lower number) execute until completion before lower priority threads.
-	 The lowest priority threads are timesliced.])
+	 The lowest priority threads are time-sliced.  A delayed high-priority
+	 thread may interrupt a lower-priority thread which is ,(i [busy]).])
 
 	 )
       
       )
+      
    
    (section :title "User's Guide"
       

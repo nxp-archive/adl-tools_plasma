@@ -37,9 +37,11 @@
 <tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Future Work</strong></font></th></tr>
 <tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
- <tr><td valign="top" align="left">4.1</td><td colspan="4" width="100%"><a href="index-4.html#Real-time-Programming-Extensions">Real-time Programming Extensions</a></td></tr>
+ <tr><td valign="top" align="left">4.1</td><td colspan="4" width="100%"><a href="index-4.html#Productization-Improvements">Productization Improvements</a></td></tr>
  <tr><td valign="top" align="left">4.2</td><td colspan="4" width="100%"><a href="index-4.html#Fault-Tolerance-Extensions">Fault Tolerance Extensions</a></td></tr>
- <tr><td valign="top" align="left">4.3</td><td colspan="4" width="100%"><a href="index-4.html#Language-Enhancements">Language Enhancements</a></td></tr>
+ <tr><td valign="top" align="left">4.3</td><td colspan="4" width="100%"><a href="index-4.html#Real-time-Programming-Extensions">Real-time Programming Extensions</a></td></tr>
+ <tr><td valign="top" align="left">4.4</td><td colspan="4" width="100%"><a href="index-4.html#Language-Enhancements">Language Enhancements</a></td></tr>
+ <tr><td valign="top" align="left">4.5</td><td colspan="4" width="100%"><a href="index-4.html#Behavioral-Synthesis">Behavioral Synthesis</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -60,21 +62,189 @@
 </center>
 </div></td>
 <td align="left" valign="top" class="skribe-body"><div class="skribe-body">
-<p>The current version of Plasma exists as a prototype.  It is
-      implemented as a front-end filter, using <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a>, which converts Plasma code
-      into C++ code and calls to a simple user-mode thread package.  The threads
-      are implemented using <a href="http://www.cs.washington.edu/research/compiler/papers.d/quickthreads.html" class="http">Quickthreads</a>.</p><p>A production worthy version of Plasma would feature a thread-aware
-      compiler which would produce more highly optimized code.  For instance, on
-      a thread-yield, the compiler would only save the state of live
-      registers.</p><p>Other enhancements we are considering are listed below.</p><!-- Real-time Programming Extensions -->
+<p>The current version of Plasma exists as a prototype.  It is implemented
+   as a front-end filter, using <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a>, which converts Plasma code into
+   C++ code and calls to a simple user-mode thread package.  The threads are
+   implemented using <a href="http://www.cs.washington.edu/research/compiler/papers.d/quickthreads.html" class="http">Quickthreads</a>.
+   If work on Plasma proceeds, it would be productized by a professional
+   compiler company, such as Metrowerks.</p><!-- Productization Improvements -->
+<a name="Productization-Improvements"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.1 Productization Improvements</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>This section lists various improvements which would be made for a
+      production-ready version of Plasma:</p><ul class="itemize"> <li><p>The final product will feature a thread-aware compiler which
+	    would produce more highly optimized code, e.g. on a thread-yield,
+	    the compiler would only save the state of live registers.</p><p>A thread-aware compiler will be able to perform additional
+	    checking to ensure program correctness.  For example, a
+	    non-mutex-protected variable will not be allowed to be written to by
+	    more than one thread unless the compiler can prove that no conflicts
+	    will arise.</p><p>A mechanism will be added so that containers may be
+	    safely sliced, allowing multiple threads to work on non-overlapping
+	    portions.  For example, two threads could work on two
+	    non-overlapping slices of an array by creating two array slices.
+	    This might be implemented in a manner similar to the <code>valarray</code> and <code>slice</code> classes of the standard library.</p></li>
+ <li><p>The prototype version of Plasma uses only user-mode threads.  In
+	    other words, all threads currently run in the same process.  This
+	    will be enhanced to support kernel mode threads.  The user will be
+	    able to designate that a <code>Processor</code> should be placed in
+	    another kernel thread.  This will allow true multi-threading on a
+	    multi-way machine.</p></li>
+ <li><p>The compiler will be aware of the garbage collector and will
+	    optimize accordingly.  For instance, the default <code>new</code>
+	    operator for a class would allocate from the atomic heap if the
+	    class did not contain any internal pointers.  The default behavior
+	    for allocation might change so that a class is allocated from the
+	    collected heap unless the user specifies otherwise.  For example,
+	    the user must currently write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> <strong>class</strong> Foo : public gc
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>to indicate that the class should be managed.  Instead, we might
+	    change it so that the inverse is true:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> <strong>class</strong> Foo : public NoGC
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>to indicate that a class should not be managed.  Otherwise, it
+	    will be.</p><p>The underlying collector, however, would always have a
+	    conservative component so that unmodified C++ code could always be
+	    used with Plasma.  Although we might change Plasma so that, by
+	    default, a class is allocated from the gc heap, the behavior of a
+	    C++ library that is linked in would not change.</p><p>Other improvements might include scan functions for Plasma
+	    classes, compaction for Plasma classes, and incremental
+	    collection.</p></li>
+ <li><p>Plasma is designed to be a garbage-collected language, so
+	    garbage collector aware containers are a necessity.  The standard containers,
+	    e.g. <code>vector</code>, <code>list</code>, etc., would be traced by the
+	    conservative collector.  Currently, one has to write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> vector&lt;int,traceable_allocator&lt;int&gt; &gt; 
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>This will become the default.  Equivalent containers,
+	    e.g. <code>gc_vector</code>, <code>gc_list</code>, will exist which will
+	    allocate from the managed heap and will not invoke destructors when
+	    destroyed.  An efficient, managed string class will also be
+	    added.</p></li>
+ <li><p>To be useful for modeling hardware, Plasma will need a data-type
+	    for modeling arbitrary-width integers.  This will be implemented
+	    using a templated numerical class such as that found in SystemC.  In
+	    fact, we might just want to use the SystemC class, if licensing
+	    permits.  It should be possible, though the use of template
+	    specialization, to create highly optimized versions for common
+	    cases.  For instance, 32-bit or smaller bit vectors would use
+	    standard integers, 64-bit or smaller integers would use long-long
+	    arithmetic, and 128-bit or smaller vectors might be optimized to use
+	    Altivec.</p></li>
+</ul></div><br>
+<!-- Fault Tolerance Extensions -->
+<a name="Fault-Tolerance-Extensions"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.2 Fault Tolerance Extensions</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>Fault tolerance will be added to Plasma in three main ways:</p><ul class="itemize"> <li><p>All system signals will be mapped to C++ exceptions.  So, for
+	    example, a segmentation fault will generate an exception which can
+	    be caught and handled using <code>catch</code> blocks, rather than
+	    having to muck around with POSIX signal handlers.  This will be true
+	    for any special exceptions provided by a system for specific fault
+	    tolerance exceptions, e.g. memory errors, interface timeouts,
+	    etc.</p></li>
+ <li><p>An exception which propagates to the top of a thread will be
+	    caught and held until another thread tries to wait on that thread.
+	    The exception will then be propagated to all waiting threads.  This
+	    means that an exception in a <code>par</code> block will propagate to
+	    the scope outside of the <code>par</code> block. An exception which
+	    occurs in a function which is launched via the <code>spawn</code>
+	    operator will propagate to any thread which calls <code>value()</code>
+	    on the relevant <code>Result</code> object.  In this way, exceptions
+	    will propagate across thread boundaries, allowing them to be dealt
+	    with via the appropriate <code>catch</code> block.</p></li>
+ <li><p>A feature for specifying alternative implementations will be
+	    added to Plasma.  This follows the basic concept of <em>recovery
+	    blocks</em>:  If a particular piece of code fails, the system will
+	    recover and try an alternative method for doing the same thing.</p><p>If a method has an attribute of <code>pRecover</code>, it will be
+	    replaced by a recovery block mechanism and the original body will be
+	    the first implementation tried.  Other implementations may be
+	    specified by using the attribute <code>pOr</code>.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">	    <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
+	    public:
+	      pRecover int func(int,int);
+	      pOr      int func_alt1(int,int);
+	      pOr      int func_alt2(int,int);
+	    private:
+	      ...
+	    <font color="red"><strong>}</strong></font>;
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>Each alternative must have the same signature as the original
+	    <code>pRecover</code> method, but the name may be different.  The list
+	    of alternatives terminates at the first method not marked by a
+	    <code>pOr</code> attribute.</p><p>The above example would then be expanded into something like the
+	    following:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">	    int Foo::foo(int x,int y)
+	    <font color="red"><strong>{</strong></font>
+	      checkpoint();
+	      <strong>try</strong> <font color="red"><strong>{</strong></font>
+	        int rc = func_orig(x,y); <font color="#ffa600"><em>// Original implementation of func().</em></font>
+		complete();
+		<strong>return</strong> rc;
+	      <font color="red"><strong>}</strong></font>
+	      <strong>catch</strong> (...) <font color="red"><strong>{</strong></font>
+	        recover();
+	        <strong>try</strong> <font color="red"><strong>{</strong></font>
+		  int rc = func_alt1(x,y);     <font color="#ffa600"><em>// Alternative 1.</em></font>
+		  complete():
+		  <strong>return</strong> rc;
+		<font color="red"><strong>}</strong></font>
+		<strong>catch</strong> (...) <font color="red"><strong>{</strong></font>
+		  recover();
+		  <strong>try</strong> <font color="red"><strong>{</strong></font>
+		    int rc = <strong>return</strong> func_alt2(x,y);   <font color="#ffa600"><em>// Alternative 2.</em></font>
+		    complete();
+		    <strong>return</strong> rc;
+		  <font color="red"><strong>}</strong></font>
+		  <strong>catch</strong> (...) <font color="red"><strong>{</strong></font>
+		    recover();
+		    <strong>throw</strong>;                   <font color="#ffa600"><em>// No remaining alternatives.</em></font>
+		  <font color="red"><strong>}</strong></font>
+		<font color="red"><strong>}</strong></font>
+	      <font color="red"><strong>}</strong></font>
+	    <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>The first thing that happens is that the <code>checkpoint()</code>
+	    method is called.  If the class does not have this method, it is
+	    skipped.  This method should perform whatever actions are required
+	    to save the state of the class.  In some cases, such as in a purely
+	    functional algorithm, there is no need to do any check-pointing,
+	    while in other cases work may be required.</p><p>Each implementation is then tried in order.  If the function
+	    succeeds, the <code>complete()</code> function is called, if it exists.
+	    This allows the class to clean up, such as by deleting a checkpoint,
+	    or committing a transaction.  If the method does not exist, the
+	    implementation's result will be returned directly.</p><p>If an exception does occur, it is caught and the <code>recover()</code> method is called if it exists.  The next alternative is
+	    then called.  If no alternatives remain, the exception is propagated
+	    up the stack.</p></li>
+</ul></div><br>
+<!-- Real-time Programming Extensions -->
 <a name="Real-time-Programming-Extensions"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.1 Real-time Programming Extensions</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.3 Real-time Programming Extensions</font>
 </h3></td></tr></table>
 </div><div class="section">
 <p>We propose adding various extensions to Plasma to make it easier to
-	 develop real-time embedded applications.  For example, the <code>deadline</code> class will be used to state that a certain sequence of code
-	 (from the point of declaration to the end of the scope) must execute
-	 within the specified amount of time:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+      develop real-time embedded applications.  For example, the <code>deadline</code> class will be used to state that a certain sequence of code
+      (from the point of declaration to the end of the scope) must execute
+      within the specified amount of time:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">          <font color="red"><strong>{</strong></font>
             deadline d(20);
@@ -86,70 +256,55 @@
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>Otherwise, an exception will be thrown.  The exception can then be
-	 caught by a recovery block and an alternative action taken.</p><p>It should be possible to statically analyze a Plasma program which
-	 is free of unbounded-loops.  The <code>deadline</code> declarations can
-	 then be used by the static analysis tool as assertions and these can be
-	 checked by analyzing the relevant code sequences.</p></div><br>
-<!-- Fault Tolerance Extensions -->
-<a name="Fault-Tolerance-Extensions"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.2 Fault Tolerance Extensions</font>
-</h3></td></tr></table>
-</div><div class="section">
-</div><br>
+      caught by a recovery block and an alternative action taken.</p><p>It should be possible to statically analyze a Plasma program which is
+      free of unbounded-loops.  The <code>deadline</code> declarations can then be
+      used by the static analysis tool as assertions and these can be checked by
+      analyzing the relevant code sequences.</p></div><br>
 <!-- Language Enhancements -->
 <a name="Language-Enhancements"></a>
-<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.3 Language Enhancements</font>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.4 Language Enhancements</font>
 </h3></td></tr></table>
 </div><div class="section">
-<ul class="itemize"> <li><p>Default initialization for all built-in variables.  This
-	       inconsistency in the C++ language is frequently the source of
-	       difficult to find bugs and is completely unnecessary:  A good
-	       optimizing compiler can remove unneeded initializations.  For
-	       example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<ul class="itemize"> <li><p>Default initialization for all built-in variables will be
+	       added.  This inconsistency in the C++ language is frequently the
+	       source of difficult to find bugs and is completely unnecessary: A
+	       good optimizing compiler can remove unneeded initializations.
+	       For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> int i; <font color="#ffa600"><em>// Would be initialized to 0. </em></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>Null-pointer checking.  This can be implemented without
-	       adding extra runtime overhead:  A null-pointer access will cause
-	       a protection fault, which can then generate a C++ exception.</p></li>
- <li><p>A proper module system.  C++'s use of header files for
-	       conveying declaration information make for extremely inefficient
-	       compilation.  This is compounded by the fact that templates need
-	       to be in header files.  A proper module system could dramatically
-	       speed up development time.</p></li>
- <li><p>Garbage collector aware containers.  The standard containers,
-	       e.g. <code>vector</code>, <code>list</code>, etc., would be traced by
-	       the conservative collector.  Currently, one has to write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"> vector&lt;int,traceable_allocator&lt;int&gt; &gt; 
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table><p>This would become the default.  Equivalent containers,
-	       e.g. <code>gc_vector</code>, <code>gc_list</code>, would exist which
-	       would allocate from the managed heap and would not invoke
-	       destructors when destroyed.  An efficient, managed string class
-	       would also be added.</p></li>
+ <li><p>Null-pointer checking will be performed.  This can be
+	       implemented without adding extra runtime overhead: A null-pointer
+	       access will cause a protection fault, which can then generate a
+	       C++ exception.</p></li>
  <li><p>A <code>let</code> statement which would allow for the
-	       declaration of variables without explicitly stating their type.
-	       The type would be implied from the type of the initializing
-	       expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+	       declaration of variables without explicitly stating their type
+	       will be added.  The type would be implied from the type of the
+	       initializing expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>Nested functions and lambda functions with true closures.  A
-	       closure would only be allocated if control-flow analysis
-	       indicated that a function might escape its parent's scope.  In
-	       that case, the relevant local variables would be placed in a
-	       closure.  Thus, no extra overhead would exist for the usual case
-	       of un-nested functions or even for the case where a function did
-	       not escape.</p><p>The main advantage of adding this feature is to be able to
+ <li><p>A <code>final</code> block will be added to the language.  This
+	       may only follow a <code>try</code> or <code>catch</code> block and will
+	       be executed whether an exception occurs or not.</p></li>
+ <li><p>A proper module system will be added.  C++'s use of header files for
+	       conveying declaration information make for extremely inefficient
+	       compilation.  This is compounded by the fact that templates need
+	       to be in header files.  A proper module system could dramatically
+	       speed up development time.</p></li>
+ <li><p>Nested functions and lambda functions with true closures will
+	       be added.  A closure would only be allocated if control-flow
+	       analysis indicated that a function might escape its parent's
+	       scope.  In that case, the relevant local variables would be
+	       placed in a closure.  Thus, no extra overhead would exist for the
+	       usual case of un-nested functions or even for the case where a
+	       function did not escape.</p><p>The main advantage of adding this feature is to be able to
 	       better utilize generic, highly-optimized functions such as those
 	       present in the STL.  For instance, the <code>foreach</code> function
 	       becomes far more useful when a lambda function can be used
@@ -157,14 +312,31 @@
 	       specialized for different data structures, it can potentially
 	       yield a faster solution for iterating over a container than a
 	       for-loop.</p></li>
- <li><p>A meta-object protocol/advanced macro processor.  As
-	       mentioned above, the current Plasma implementation uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a>
-	       to convert Plasma into C++.  By making such a feature a part of
-	       Plasma itself, new language features could be added without
-	       changing the actual language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
+ <li><p>A meta-object protocol/advanced macro processor will be
+	       added.  As mentioned above, the current Plasma implementation
+	       uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a> to convert Plasma
+	       into C++.  By making such a feature a part of Plasma itself, new
+	       language features could be added without changing the actual
+	       language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
 	       parallelism in the language would be implemented as low-level
 	       primitives which would not be directly used by the user.</p></li>
 </ul></div><br>
+<!-- Behavioral Synthesis -->
+<a name="Behavioral-Synthesis"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.5 Behavioral Synthesis</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>We would like to be able to synthesize Plasma to hardware.  This has
+      already been demonstrated for <a href="http://systemc.org" class="http">SystemC</a> and <a href="http://www.celoxica.com/methodology/handelc.asp" class="http">Handel C</a>.  The latter technology
+      is very similar to Plasma in that its parallelism is also based on that
+      found in Occam.  Therefore, it should be possible to use an existing
+      synthesis tool, with relatively minor modifications to the front-end to
+      understand Plasma's features.  We will designate a synthesizable subset of
+      the language, such as requiring bounded loops, no dynamic memory
+      allocation, etc.</p><p>The result would be a very powerful system:  A user could use the same
+      language for modeling a complex design, then directly synthesize a portion
+      of it to an FPGA or an ASIC, while other parts of the program are compiled
+      to run on a FreeScale PowerPC part.</p></div><br>
 </div></td>
 </tr></table><div class="skribe-ending">
 <hr> 
@@ -172,6 +344,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 14 18:42:10 2004</em>.</font></p></div>
+Last update <em>Thu Sep 16 14:23:10 2004</em>.</font></p></div>
 </body>
 </html>
