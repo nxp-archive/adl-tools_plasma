@@ -1,3 +1,5 @@
+        ======= plasma release 0.8.8 (v0_8_8) on Linux (cde-tx32-ldt189) =======
+
 2005-01-04  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed bug with pLowestPriority(): It was returning 0, rather
