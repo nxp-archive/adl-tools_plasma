@@ -1,0 +1,66 @@
+//
+// Tests to make sure that a prialt obeys priorities if
+// the consumer is put to sleep, then awakens due to one
+// channel but another channel of higher priority is
+// also ready.
+//
+#include <iostream>
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> IntChan;
+
+void producer(bool w,IntChan &c0,IntChan &c1) 
+{
+  // Make sure that consumer will sleep.
+    pDelay(1);
+  if (w) {
+    c1.write(10);
+    c0.write(20);
+  } else {
+    c0.write(20);
+    c1.write(10);
+  }
+  cout << "Producer done." << endl;
+}
+
+void consumer(IntChan &c0,IntChan &c1)
+{
+  prialt {
+    c0.port (int v) {
+      cout << "Got a value from port c0:  " << v << endl;
+    }
+    c1.port (int v) {
+      cout << "Got a value from port c1:  " << v << endl;
+    }
+  }
+  if (c1.ready()) {
+    cout << "c1 also has a value:  " << c1.get() << endl;
+  }
+  cout << "Consumer done." << endl;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan c0,c1;
+
+  cout << "Test 1:\n";
+  par {
+    producer(true,c0,c1);
+    consumer(c0,c1);
+  }
+  cout << "Test 2:\n";
+  par {
+    producer(false,c0,c1);
+    consumer(c0,c1);
+  }
+  plasma::mprintf ("Done.\n");
+  return 0;
+}
