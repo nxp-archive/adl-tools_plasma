@@ -4,11 +4,8 @@
 ##
 ## Input:   --with-qt (optional configure option).
 ##
-AC_DEFUN(AM_QT,
+AC_DEFUN([AM_QT],
 [
-
-## Get host type.
-AC_CANONICAL_HOST
 
 ## Quickthreads setup.  Runs the Quickthreads configuration
 ## program with what it hopes is the right platform identifier.

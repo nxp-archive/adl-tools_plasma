@@ -27,7 +27,7 @@
 ## If major and minor are ommitted, no version checking is performed.  If included,
 ## GCC must have at least this version number in order to pass.
 ##
-AC_DEFUN(AM_CPP_SETUP,
+AC_DEFUN([AM_CPP_SETUP],
 [
 AC_MSG_CHECKING( to see if -fPIC is needed)
 MY_OS=`/usr/bin/env uname -s`

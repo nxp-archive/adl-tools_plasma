@@ -9,7 +9,7 @@
 ##
 ## LATEXOK:  AM_CONDITIONAL set if Latex can be used.
 ##
-AC_DEFUN(AM_SKRIBE,
+AC_DEFUN([AM_SKRIBE],
 [
 
 AC_PATH_PROG(SKRIBE,skribe)

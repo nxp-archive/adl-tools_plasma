@@ -9,7 +9,7 @@
 ##          OCCLIBS:   OpenC++ link flags.
 ##          OCC:       Full path of executable.
 ##
-AC_DEFUN(AM_OCC,
+AC_DEFUN([AM_OCC],
 [
   AC_ARG_WITH([occ],AC_HELP_STRING([--with-occ],[specify a path to use to find the OpenC++ configuration program.]),ac_occ=$withval)
   if [[ x$ac_occ = x ]] ; then
