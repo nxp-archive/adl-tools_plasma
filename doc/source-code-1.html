@@ -406,7 +406,7 @@
 <em> 349: </em>    pDelay(Clock);
 <em> 350: </em>    <strong>while</strong> (_running) <font color="red"><strong>{</strong></font>
 <em> 351: </em>      <font color="#ffa600"><em>//message(unit, &quot;waiting&quot;);</em></font>
-<em> 352: </em>      alt <font color="red"><strong>{</strong></font>
+<em> 352: </em>      prialt <font color="red"><strong>{</strong></font>
 <em> 353: </em>        _dests.port(int pc) <font color="red"><strong>{</strong></font>               <font color="#ffa600"><em>// read a new destination if there is one from alu</em></font>
 <em> 354: </em>          regs[pc] = pc;
 <em> 355: </em>          status = <font color="red">&quot;newPC&quot;</font>;
@@ -1330,6 +1330,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Sep 17 11:05:31 2004</em>.</font></p></div>
+Last update <em>Mon Sep 20 15:21:20 2004</em>.</font></p></div>
 </body>
 </html>
