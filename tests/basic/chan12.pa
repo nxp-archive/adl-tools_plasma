@@ -15,10 +15,10 @@ void consumer(IntChan &c)
   for (int count = 0; count != Done; ++count) {
     alt {
       c.port(int v) {
-        mprintf ("Got value from channel:  %d at time %ld\n",v,pTime());
+        mprintf ("Got value from channel:  %d at time %lld\n",v,pTime());
       }
       t.port () {
-        mprintf ("Got timeout at time %d\n",pTime());
+        mprintf ("Got timeout at time %lld\n",pTime());
       }
     }
   }

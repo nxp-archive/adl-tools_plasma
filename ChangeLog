@@ -1,3 +1,9 @@
+2004-10-08  Brian Kahne  <tdukes@freescale.com>
+
+	* Port to PowePC:  Minor changes to fix regressions, plus I fixed
+	a bug with the parser- I had some STL data structures that didn't
+	use a traceable allocator.
+
 2004-10-07  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added QuickThreads PowerPC port to the qt directory.  This

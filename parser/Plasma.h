@@ -8,6 +8,8 @@
 
 #include <list>
 
+#include "gc_cpp.h"
+
 // This stuff is used for alt/afor processing.
 struct Port : public gc {
   Ptree   *chan;           // Channel expression of a port statement.
@@ -30,7 +32,7 @@ struct Port : public gc {
 // a tree of port/port-list objects.
 class PortNode {
 public:
-  typedef std::list<PortNode> PortList;
+  typedef std::list<PortNode,gc_allocator<PortNode> > PortList;
 
   PortNode (Port *p) : _port(p) {};
   PortNode () : _port(0) {};

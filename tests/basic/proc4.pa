@@ -21,9 +21,9 @@ int pMain(int argc,const char *argv[])
 
   pfor (int i = 0; i != (int)procs.size(); ++i) {
     on (procs[i]) {
-      mprintf ("Block %d start:  %ld.\n",i,pTime());
+      mprintf ("Block %d start:  %lld.\n",i,pTime());
       pBusy(i*10);
-      mprintf ("Block %d done:  %ld.\n",i,pTime());
+      mprintf ("Block %d done:  %lld.\n",i,pTime());
     }
   }
 

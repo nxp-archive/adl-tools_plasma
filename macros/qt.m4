@@ -19,9 +19,9 @@ if [[ x$ac_qt_host = x ]] ; then
     i686) 
 	ac_qt_host="iX86"
 	;;
-    powepc)
+    powerpc)
 	ac_qt_host="ppc"
-	CFLAGS="${CFLAGS} -mregnames"
+	CCASFLAGS="${CCASFLAGS} -mregnames"
 	;;
     *)  
 	echo ""

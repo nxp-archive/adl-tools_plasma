@@ -11,13 +11,18 @@ AC_PROG_INSTALL
 AC_STDC_HEADERS
 AC_LANG_CPLUSPLUS
 AM_PROG_AS
-AM_CPP_SETUP(3,2)
 AC_PROG_LEX
 AC_PROG_YACC
+AM_CPP_SETUP(3,2)
 
 #########################################################################
 #  Configure arguments 
 #########################################################################
+
+## Make sure flex exists.
+if [[ x$LEX = x: ]] ; then
+  AC_ERROR("Flex not found- this tool is required.")
+fi
 
 ## Check for the location of Perl
 AC_PATH_PROG(PERLPROG,perl)

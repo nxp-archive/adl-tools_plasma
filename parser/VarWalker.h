@@ -9,6 +9,9 @@
 
 #include <vector>
 
+#include "gc_cpp.h"
+#include "gc_allocator.h"
+
 #include "opencxx/walker.h"
 # include <ext/hash_set>
 using namespace __gnu_cxx;
@@ -17,7 +20,7 @@ struct str_equal {
   size_t operator()(const char*x,const char *y) const { return !strcmp(x,y); }
 };
 
-typedef hash_set<const char *,hash<const char *>,str_equal > StrHash;
+typedef hash_set<const char *,hash<const char *>,str_equal> StrHash;
 
 struct ArgPair {
   Ptree   *_arg;
@@ -28,7 +31,7 @@ struct ArgPair {
   void setFwdDef(Ptree *f) { _fwd = f; };
 };
 
-typedef std::vector<ArgPair> ArgVect;
+typedef std::vector<ArgPair,gc_allocator<ArgPair> > ArgVect;
 
 // This walks over an expression.  For each variable declaration, if it's
 // not declared in any scope under the parent scope, it's recorded as a

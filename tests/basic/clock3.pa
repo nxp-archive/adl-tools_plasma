@@ -73,16 +73,18 @@ void end(int c,ClkChan &in1,Chan &in2)
   }
 }
 
-// The cout statement is actually evaluated right to left, so the non-constant call (the get)
-// appears before the constant one (the read), even though it's evaluated first.
 void energy(int period)
 {
-  while (1) {
-    cout << pTime() 
-         << ": current energy:  " << pGetEnergy(pCurProc())
-         << ", current power:" << (pReadEnergy(pCurProc())/period) << "mW" << endl;
-    pDelay(period);
-  }
+   while (1) {
+      // Test the read function.
+      energy_t e = pReadEnergy(pCurProc());
+      // Test the get function.
+      if (e != pGetEnergy(pCurProc())) {
+         pAbort("Mismatch between read and get!");
+      }
+      cout << pTime() << ": current energy:  " << e << ", current power:" << (e/period) << "mW" << endl;
+      pDelay(period);
+   }
 }
 
 void pSetup(ConfigParms &cp)
