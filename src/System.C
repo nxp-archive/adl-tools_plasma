@@ -2,10 +2,21 @@
 // Main system class.  Only one of these ever exists.
 //
 
+#include <sstream>
+#include <stdexcept>
+
+#include "gc_cpp.h"
 #include "Interface.h"
 #include "System.h"
 #include "Thread.h"
+#include "Cluster.h"
 #include "Proc.h"
+
+typedef char * ptr_t;
+extern "C" void (*GC_push_other_roots) GC_PROTO((void));
+extern "C" void GC_push_all_stack GC_PROTO((ptr_t b, ptr_t t));
+
+using namespace std;
 
 namespace plasma {
 
@@ -15,19 +26,63 @@ namespace plasma {
     return x->endtime() > y->endtime();
   }
 
+  extern "C" void GC_stop_world()
+  {
+    //printf ("Stopping the world.\n");
+    Cluster::nopreempt();
+  }
+
+  extern "C" void GC_start_world()
+  {
+    //printf ("Starting the world.\n");
+    Cluster::preempt();
+  }
+
+  // Do nothing b/c no kernel threads in this implementation.
+  extern "C" void GC_lock()
+  {
+  }
+
+  Thread *System::_active_list = 0;
+
   System::System() :
     _size(0x1000), 
-    _stacks(0), 
     _code(0),
     _wantshutdown(false),
     _busyokay(false),
     _time(0)
   {
+    GC_push_other_roots = System::push_other_roots;    
+  }
+
+  // The garbage collector needs to know about all of the "roots" in the
+  // program.  These are the static data sets (one for the main program + one
+  // per dynamic library), and the stack.  Since we're multithreaded, each
+  // thread has a stack.  This function takes care of recording all of the
+  // stacks for the threads we have.  Each active thread is stored in
+  // _active_list.  We iterate over the list and push each stack.  The GC then
+  // uses this information to search for allocated objects.
+  void System::push_other_roots(void)
+  {
+    //    printf ("push_other_roots called:  %d threads.\n",System::num_active_threads());
+    Thread *n = _active_list;
+    while (n) {
+      if (n->stack()) {
+        //printf ("  %p:  %p:%p.\n",n,(ptr_t)n->stack(),(ptr_t)n->stackend()+1);
+        GC_push_all_stack((ptr_t)n->stack(),(ptr_t)n->stackend()+1);
+      }
+      n = n->nt();
+    }
   }
 
   void System::init(const ConfigParms &cp)
   {
     _size = cp._stacksize;
+    if (_size < StackMin) {
+      ostringstream ss;
+      ss << "The stack must be a minimumx of " << hex << StackMin << " bytes.";
+      throw runtime_error(ss.str());
+    }
     _busyokay = cp._busyokay;
   }
 
@@ -46,22 +101,14 @@ namespace plasma {
   // Allocate new stack
   void *System::newstack()
   {
-    void *st = _stacks;
-    if (st) {
-      _stacks = *(void**)st;
-    } else {
-      //    st = new char[_size];
-      st = new char[_size];
-    }
-    return(st);
+    return GC_MALLOC(_size);
   }
 
   // Dispose stack
   // caller is in charge of locking the processor!!!
   void System::dispose(void *st)
   {
-    *(void**)st = _stacks;
-    _stacks = st;
+    GC_FREE(st);
   }
 
   void System::add_busy(ptime_t t,Thread *th)
@@ -119,6 +166,48 @@ namespace plasma {
       }
     }
     return true;
+  }
+
+  // Add element x to head of list.  Returns new list pointer.
+  void System::add_active_thread(Thread *x)
+  {
+    x->setnt(_active_list);
+    x->setpt(0);
+    if (_active_list) {
+      _active_list->setpt(x);
+    }
+    _active_list = x;
+  }
+
+  // Remove element x from list.
+  void System::remove_active_thread(Thread *x)
+  {
+    Thread *t = x->pt();
+    if (t) {
+      // x was pointed to, so therefore is not head of list.
+      t->setnt(x->nt());
+    } else {
+      // x must be head of list.
+      _active_list = x->nt();
+      if (_active_list) {
+        _active_list->setpt(0);
+      }
+    }
+    // For safety.
+    x->setnt(0);
+    x->setpt(0);
+  }  
+
+  // Number of active threads- linear time.
+  unsigned System::num_active_threads()
+  {
+    Thread *n = _active_list;
+    unsigned c = 0;
+    while (n) {
+      ++c;
+      n = n->nt();
+    }
+    return c;
   }
 
 }

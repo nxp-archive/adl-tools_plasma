@@ -79,6 +79,8 @@ do
   fi
 done
 
+echo "Done with automake processing."
+
 conf_flags="--enable-maintainer-mode --enable-compile-warnings" #--enable-iso-c
 
 if test x$NOCONFIGURE = x; then

@@ -13,7 +13,7 @@ using namespace std;
 namespace plasma {
 
   ConfigParms::ConfigParms() :
-    _stacksize(8192),
+    _stacksize(StackMin),
     _verbose(false),
     _preempt(true),
     _timeslice(50000),

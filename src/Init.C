@@ -68,8 +68,8 @@ namespace plasma {
     longjmp(caller, 1);                    // non-local jump to saved state
   }
 
-  Cluster thecluster;
   System  thesystem;
+  Cluster thecluster;
 
   // Terminate program with return code.
   void pExit(int code)
@@ -165,9 +165,10 @@ int main(int argc,const char *argv[])
     sig_hup  = (void*)signal(SIGHUP, SA_HANDLER(shutdown));  // termination triggered
 
     StartThread *st = new StartThread(argc,argv,&processor);
+    //StartThread st(argc,argv,&processor);
     processor.add_ready(st);
     thecluster.scheduler();             // execute thread scheduler 
-    delete st;
+    //    delete st;
     return (thesystem.retcode());
   }
   catch (exception &err) {

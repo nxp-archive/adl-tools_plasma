@@ -387,7 +387,83 @@ The other method for creating a shared data structure is to directly use the
 The Time Model
 --------------
 
-TBD
+Plasma implements a time model so that users may experiment with mapping an
+algorithm to a possible hardware configuration.  The model works along the lines
+of a discrete event simulator:  A thread may delay itself, in which case it
+stays idle until a specified amount of time has passed, or it may explicitly
+consume time.  In other words, actual work done by the thread takes zero time
+but to model algorithmic complexity, explicit calls may be made to simulate a
+piece of hardware doing real work.
+
+Time in plasma consists of discrete time ticks, but no unit is associated with
+the time.  The main time type is a 64-bit integer.
+
+There are three main functions for the time mode:
+
+1.  ``pDelay(x)``:  Delay for **x** time units.  The thread will be idle for
+    this period of time.
+
+2.  ``pBusy(x)``: Consume **x** time units.  This means that the processor is
+    "busy" for this long.  In order to use ``pBusy()``, you must set
+    ``ConfigParms::_busyokay`` to true.  If not, a runtime error will occur when
+    the function is called.  If you are in the busy-mode then preemption is
+    disabled; the only thread switches will be during alt, wait, delay, or busy
+    commands.
+
+    Lowest priority threads are timesliced.  The time slice value is set by
+    setting ``ConfigParms::_simtimeslice`` in ``pSetup()``.  What this means is
+    that a busy command will be divided up until these timeslices, allowing the
+    same processor to squeeze in work from other threads.
+
+3.  ``pTime()``:  Returns the current system time.
+
+The user may declare multiple processors by declaring a **Processor** object,
+e.g.::
+
+    Processor a;
+
+A thread may be started on another processor using two different methods:
+
+1.  With a **par** or **pfor** block, using an **on** block::
+
+    par {
+       on (<proc name>) { ... }
+       ...
+    }
+
+2.  With the spawn command::
+
+    <proc name>.spawn(<command>);
+
+------------------
+Garbage Collection
+------------------
+
+Plasma is equipped with a garbage collector.  This means that heap-allocated
+objects do not need to be explicitly freed; they will be collected when no more
+pointers to the object remain.  This implicitly managed memory (referred to as
+simply *managed* from now on) may be used alongside explicitly managed memory,
+where a call to delete is required.
+
+By default, allocations using **new** are explicitly managed.  To allocate
+managed memory, you may derive an object from **gc** or **gc_cleanup** or
+allocate using the **GC** placement attribute.
+
+For example, the following class will be managed when allocated using **new**::
+
+    class A : public gc { };
+
+However, its destructor will not be called.  If you derive from **gc_cleanup**,
+the class's destructor will be called when the object is collected.
+
+An example of using the **GC** placement attribute is::
+
+   int *x = new (GC) int[1000];
+
+This will allocate a block of memory that is managed by the collector.
+
+You may delete memory that is managed, but this is generally discouraged, since
+the collector will collect it when it is safe to do so.
 
 ------------------------------
 Additional Language Constructs
@@ -400,11 +476,6 @@ TBD
 
 Lambda Functions
 ================
-
-TBD
-
-Garbage Collection
-==================
 
 TBD
 

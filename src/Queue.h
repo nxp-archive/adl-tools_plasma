@@ -8,14 +8,16 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
+#include "gc_cpp.h"
+
 #include <iosfwd>
 
 namespace plasma {
 
   // Objects used in the Queue should be derived from this type.
   // Note:  Templates were not used here b/c we deal just with
-  // pointers.
-  class QBase {
+  // pointers.  Also note that Queue objects are garbage collected.
+  class QBase : public gc {
   public:
     QBase() : _next(0) {};
 

@@ -94,6 +94,9 @@ namespace plasma {
   {
     static bool dummy = init();
 
+    // Explicitly add main thread to active list, since it's never "realized".
+    System::add_active_thread(&_main);
+
     setalarm();                              // set alarm timer
   }
 
@@ -474,6 +477,8 @@ namespace plasma {
   inline void Cluster::exec_ready(Thread *newthread,Thread *oldthread)
   {
     _cur = newthread;
+    void *dummy=0;
+    oldthread->setStackEnd();
     QT_BLOCK(switch_ready, 0, oldthread, newthread->thread());
   }
 
@@ -502,6 +507,8 @@ namespace plasma {
     Thread *newthread = get_ready();
     Thread *old = _cur;
     _cur = newthread;
+    void *dummy=0;
+    old->setStackEnd();
     QT_BLOCK(switch_block, 0, old, newthread->thread());
   }
 

@@ -129,7 +129,7 @@ time3_DEPENDENCIES = $(DEPENDENCIES)
 time4_SOURCES = time4.pa
 time4_DEPENDENCIES = $(DEPENDENCIES)
 
-AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
+AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
 DEP_FILES=\
 	./$(DEPDIR)/par1.Po \
@@ -189,7 +189,7 @@ include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po
 include ./$(DEPDIR)/time4.Po
 
-LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
+LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs -lgc -ldl
 
 CXXLD = $(CXX)
 LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@

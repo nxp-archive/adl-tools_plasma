@@ -21,12 +21,15 @@ namespace plasma {
     thecluster.terminate();
   }
 
+  // Allocates a stack and adds this item to
+  // the system's list of running threads.
   void Thread::realize(UserFunc *f,void *arg)
   {
     _stack = thesystem.newstack();
     void *sto = STP_STKALIGN (_stack, QT_STKALIGN);
     _thread = QT_SP(sto,thesystem.stacksize()-QT_STKALIGN);
     _thread = QT_ARGS(_thread,arg,this,(qt_userf_t*)f,shell);
+    System::add_active_thread(this);
   }
 
   // Destroy real thread i.e. deallocate its stack
@@ -35,6 +38,7 @@ namespace plasma {
     thesystem.dispose(_stack);
     _stack = 0;
     _done = true;
+    System::remove_active_thread(this);
   }
 
 }

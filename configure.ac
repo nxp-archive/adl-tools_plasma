@@ -74,6 +74,8 @@ AC_SUBST(CXXFLAGS)
 AC_PROG_INSTALL
 AC_STDC_HEADERS
 
+AC_CONFIG_SUBDIRS(gc)
+
 AC_CONFIG_FILES([\
    Makefile \
    macros/Makefile \

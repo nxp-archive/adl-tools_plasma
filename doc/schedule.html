@@ -40,9 +40,9 @@ order may change based upon external factors.</p>
 <li><a class="reference" href="#thread-priorities" id="id7" name="id7">Thread Priorities</a></li>
 <li><a class="reference" href="#support-for-multiple-processors" id="id8" name="id8">Support For Multiple Processors</a></li>
 <li><a class="reference" href="#time-model" id="id9" name="id9">Time Model</a></li>
-<li><a class="reference" href="#timeouts" id="id10" name="id10">Timeouts</a></li>
-<li><a class="reference" href="#clocked-channels" id="id11" name="id11">Clocked Channels</a></li>
-<li><a class="reference" href="#garbage-collection" id="id12" name="id12">Garbage Collection</a></li>
+<li><a class="reference" href="#garbage-collection" id="id10" name="id10">Garbage Collection</a></li>
+<li><a class="reference" href="#timeouts" id="id11" name="id11">Timeouts</a></li>
+<li><a class="reference" href="#clocked-channels" id="id12" name="id12">Clocked Channels</a></li>
 <li><a class="reference" href="#kernel-threads" id="id13" name="id13">Kernel Threads</a></li>
 </ul>
 </div>
@@ -364,7 +364,7 @@ wrapped with locking code.</p>
 <h1><a class="toc-backref" href="#id7" name="thread-priorities">Thread Priorities</a></h1>
 <p>Status:</p>
 <blockquote>
-Scheduled for 6/4/2004.</blockquote>
+Completed 6/4/2004.</blockquote>
 <p>Decription:</p>
 <blockquote>
 <p>A thread will be able to change its priority using a function
@@ -400,7 +400,7 @@ pri1, pri2.</blockquote>
 <h1><a class="toc-backref" href="#id8" name="support-for-multiple-processors">Support For Multiple Processors</a></h1>
 <p>Status:</p>
 <blockquote>
-Scheduled for 6/4/2004.</blockquote>
+Completed 6/4/2004.</blockquote>
 <p>Description:</p>
 <blockquote>
 <p>Users will be able to instantiate a <strong>Processor</strong> object.  A spawn
@@ -429,26 +429,80 @@ make one pass through its threads, then pass to the next cluster.</li>
 setting priority.</li>
 </ul>
 </blockquote>
+<p>Regressions:</p>
+<blockquote>
+<ul class="simple">
+<li>proc1 - 3.</li>
+</ul>
+</blockquote>
 </div>
 <div class="section" id="time-model">
 <h1><a class="toc-backref" href="#id9" name="time-model">Time Model</a></h1>
-<p>Refer to twiki page for now.</p>
-</div>
-<div class="section" id="timeouts">
-<h1><a class="toc-backref" href="#id10" name="timeouts">Timeouts</a></h1>
-<p>Create a channel that has a backing thread which wakes up and writes to the
-channel after a specified amount of time.  Use in alt blocks.</p>
-</div>
-<div class="section" id="clocked-channels">
-<h1><a class="toc-backref" href="#id11" name="clocked-channels">Clocked Channels</a></h1>
-<p>Investigate further.  Most likely this will be a channel whose writes are
-guarded by delay statements.  The delay will come from a clock object.</p>
-</div>
-<div class="section" id="garbage-collection">
-<h1><a class="toc-backref" href="#id12" name="garbage-collection">Garbage Collection</a></h1>
 <p>Status:</p>
 <blockquote>
-TBD</blockquote>
+Completed 6/15/2004.</blockquote>
+<p>Description:</p>
+<blockquote>
+For more information, refer to the twiki page.  In short, users may call
+<strong>pDelay(&lt;n&gt;)</strong> to delay for <strong>n</strong> time units or call <strong>pBusy(&lt;n&gt;)</strong> to
+consume <strong>n</strong> time cycles.  When a processor is busy, it does no other work,
+whereas a delay means that a process is just waiting.</blockquote>
+<p>Implementation:</p>
+<blockquote>
+<p>Refer to twiki page for the basic flow.  In short, time is maintained within
+System.  Two priority queues (stl priority queues) exist:  One for delayed
+objects and one for busy objects.  If an object called pDelay, it's added to
+the delay queue and if an object called pBusy, it's added to the busy
+queue.  Note that to use pBusy, you must set ConfigParms::_busyOkay or else
+pBusy will not be allowed.  This disables preemption- the only task
+switching will be done when calls to pDelay or pBusy are made.</p>
+<p>Time model functions:</p>
+<ul class="simple">
+<li>pBusy():  Consumes time.</li>
+<li>pDelay():  Delays a thread.</li>
+<li>pTime():  Returns current time.</li>
+</ul>
+<p>The delay queue stores Thread objects, ordered by decreasing time (smallest
+time is at the front).  The time is the sum of the starting time and the
+delay size (both stored in the Thread).</p>
+<p>The busy queue stores processors, also ordered by decreasing time.  The time
+is the busy thread's start time + busy time.  The busy thread is identified
+by finding the highest priority non-empty queue, then looking at the back.
+This is the case b/c the busy thread is added back to its respective
+priority queue by the pBusy routine.</p>
+<p>At a given point in time, we cycle through all processors.  For each
+processor, we execute all available jobs.  When no more processors exist
+with jobs to run, we call System::update_time().  It looks at both queues
+and chooses a new time that is the smallest of the next items on the two
+queues.  This becomes the new time.  We then transfer all delayed threads
+which have the same time as current back to their owning processors and add
+those processors back to the ready queue.  Duplication is handled by having
+Cluster::add_proc() only add a processor if its state is not &quot;Running&quot;.  We
+then add back all busy processors whose time has expired.  Then we continue.</p>
+<p>If a delayed thread is ready to run, but its processor is busy, we interrupt
+the busy if the thread has higher priority than the busying thread.  We
+record how much busy time has been consumed and re-enqueue the processor.
+For the lowest priority threads, they are considered to be timesliced.  A
+configuration parameter, ConfigParms::_simtimeslice, determines the
+timeslice amount.  A thread of the lowest priority that is busy will
+actually add itself to the busy queue using the timeslice amount.  The busy
+routine itself tracks the total amount of busy time required and loops,
+re-busying the thread until all time has expired.  Thus, for timesliced
+threads and for interrupted threads, the routine sees that more time is
+required and loops as necessary.</p>
+</blockquote>
+<p>Regressions:</p>
+<blockquote>
+<ul class="simple">
+<li>time1 - 4.</li>
+</ul>
+</blockquote>
+</div>
+<div class="section" id="garbage-collection">
+<h1><a class="toc-backref" href="#id10" name="garbage-collection">Garbage Collection</a></h1>
+<p>Status:</p>
+<blockquote>
+Completed 6/17/2004.</blockquote>
 <p>Description:</p>
 <blockquote>
 Plasma is going to have a lot of producer/consumer type code, where the
@@ -456,7 +510,35 @@ ownership of a particular piece of memory will be hard to track.  Garbage
 collection will make the code much easier to understand and less error-prone.</blockquote>
 <p>Implementation:</p>
 <blockquote>
-Boehm garbage collector.</blockquote>
+<p>Boehm garbage collector.  The main issue is that the collector needs to know
+about all roots in the system, i.e. thread stacks.  This is accomplished as
+follows:</p>
+<ol class="arabic">
+<li><dl class="first">
+<dt>A list exists (System::_active_list) that records all active threads.</dt>
+<dd>When a thread is realized, it is added to this list.  Each Thread object
+has a <strong>nt</strong> and <strong>pt</strong> pointer for storing this information.  When a
+thread is destroyed, it is removed from the list.</dd>
+</dl>
+</li>
+<li><dl class="first">
+<dt>In addition to the bottom of the stack, each thread records the top of</dt>
+<dd>the stack.  This is set whenever a thread is swapped out by calling
+Thread::setStackEnd().</dd>
+</dl>
+</li>
+<li><dl class="first">
+<dt>Whhen the collector is called, it called the function pointer</dt>
+<dd>GC_push_other_roots.  This is set to the function
+System::push_other_roots(), which iterates over the active list, pushing
+information about the top and bottom of the stack.</dd>
+</dl>
+</li>
+</ol>
+<p>Other routines used are GC_lock(), which does nothing since we do not use
+kernel threads at this point, and GC_stop_world() and GC_start_world(),
+which turn preemtion off and on.</p>
+</blockquote>
 <p>Dependencies:</p>
 <blockquote>
 The main issue is getting it to handle user-threads.  It handles kernel
@@ -464,7 +546,17 @@ threads and should be able to handle user-threads, but I don't know how to
 do it yet.</blockquote>
 <p>Regressions:</p>
 <blockquote>
-TBD</blockquote>
+No explicit tests- the rest of the regressions should test its usage.</blockquote>
+</div>
+<div class="section" id="timeouts">
+<h1><a class="toc-backref" href="#id11" name="timeouts">Timeouts</a></h1>
+<p>Create a channel that has a backing thread which wakes up and writes to the
+channel after a specified amount of time.  Use in alt blocks.</p>
+</div>
+<div class="section" id="clocked-channels">
+<h1><a class="toc-backref" href="#id12" name="clocked-channels">Clocked Channels</a></h1>
+<p>Investigate further.  Most likely this will be a channel whose writes are
+guarded by delay statements.  The delay will come from a clock object.</p>
 </div>
 <div class="section" id="kernel-threads">
 <h1><a class="toc-backref" href="#id13" name="kernel-threads">Kernel Threads</a></h1>
@@ -521,7 +613,7 @@ TBD</blockquote>
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="schedule.rst">View document source</a>.
-Generated on: 2004/06/01 15:52:35 CDT.
+Generated on: 2004/06/17 14:14:33 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

@@ -1,3 +1,21 @@
+2004-06-17  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Integrated the Boehm-Demers-Weiser (BDW) garbage collector into
+	Plasma.  This is now used by the thread library and available to
+	the user.  To use it, derive an object from gc or allocate using
+	the placement value (GC).
+
+	For example:  new (GC) int[1000];
+
+	or 
+
+	class A : public gc { };
+
+	You can freely mix managed and unmanaged memory.  To have a
+	destructor called, derive from "gc_cleanup".  In general, do not
+	delete managed memory- you can do it, but why bother when the
+	garbage collector will collect it.
+
 2004-06-11  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added timeslicing of lowest-priority threads when busy is

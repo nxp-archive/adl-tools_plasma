@@ -6,6 +6,8 @@
 #ifndef _INTERFACE_H_
 #define _INTERFACE_H_
 
+#include "gc_cpp.h"
+
 #include <vector>
 #include <assert.h>
 

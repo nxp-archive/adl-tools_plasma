@@ -74,8 +74,8 @@ namespace plasma {
     void unlock();           // unlock cluster
     bool locked() const;     // is cluster in kernel mode?
 
-    void nopreempt();        // switch off alarm preemption
-    void preempt();          // switch on alarm preemption
+    static void nopreempt();        // switch off alarm preemption
+    static void preempt();          // switch on alarm preemption
 
     void setCur(THandle t);
     THandle curThread() const;

@@ -313,7 +313,7 @@ Thread Priorities
 
 Status:
 
-    Scheduled for 6/4/2004.
+    Completed 6/4/2004.
 
 Decription:
 
@@ -357,7 +357,7 @@ Support For Multiple Processors
 
 Status:  
 
-    Scheduled for 6/4/2004.
+    Completed 6/4/2004.
 
 Description:
 
@@ -389,10 +389,124 @@ Implementation:
     * Add spawn pseudo method and add support for optional second parameter
       setting priority.
 
+Regressions:
+
+    * proc1 - 3.
+
 Time Model
 ----------
 
-Refer to twiki page for now.
+Status:
+
+    Completed 6/15/2004.
+
+Description:
+
+    For more information, refer to the twiki page.  In short, users may call
+    **pDelay(<n>)** to delay for **n** time units or call **pBusy(<n>)** to
+    consume **n** time cycles.  When a processor is busy, it does no other work,
+    whereas a delay means that a process is just waiting.
+
+Implementation:
+
+    Refer to twiki page for the basic flow.  In short, time is maintained within
+    System.  Two priority queues (stl priority queues) exist:  One for delayed
+    objects and one for busy objects.  If an object called pDelay, it's added to
+    the delay queue and if an object called pBusy, it's added to the busy
+    queue.  Note that to use pBusy, you must set ConfigParms::_busyOkay or else
+    pBusy will not be allowed.  This disables preemption- the only task
+    switching will be done when calls to pDelay or pBusy are made.
+
+    Time model functions:
+
+    * pBusy():  Consumes time.
+
+    * pDelay():  Delays a thread.
+
+    * pTime():  Returns current time.
+
+    The delay queue stores Thread objects, ordered by decreasing time (smallest
+    time is at the front).  The time is the sum of the starting time and the
+    delay size (both stored in the Thread).  
+
+    The busy queue stores processors, also ordered by decreasing time.  The time
+    is the busy thread's start time + busy time.  The busy thread is identified
+    by finding the highest priority non-empty queue, then looking at the back.
+    This is the case b/c the busy thread is added back to its respective
+    priority queue by the pBusy routine.
+
+    At a given point in time, we cycle through all processors.  For each
+    processor, we execute all available jobs.  When no more processors exist
+    with jobs to run, we call System::update_time().  It looks at both queues
+    and chooses a new time that is the smallest of the next items on the two
+    queues.  This becomes the new time.  We then transfer all delayed threads
+    which have the same time as current back to their owning processors and add
+    those processors back to the ready queue.  Duplication is handled by having
+    Cluster::add_proc() only add a processor if its state is not "Running".  We
+    then add back all busy processors whose time has expired.  Then we continue.
+
+    If a delayed thread is ready to run, but its processor is busy, we interrupt
+    the busy if the thread has higher priority than the busying thread.  We
+    record how much busy time has been consumed and re-enqueue the processor.
+    For the lowest priority threads, they are considered to be timesliced.  A
+    configuration parameter, ConfigParms::_simtimeslice, determines the
+    timeslice amount.  A thread of the lowest priority that is busy will
+    actually add itself to the busy queue using the timeslice amount.  The busy
+    routine itself tracks the total amount of busy time required and loops,
+    re-busying the thread until all time has expired.  Thus, for timesliced
+    threads and for interrupted threads, the routine sees that more time is
+    required and loops as necessary.
+
+Regressions:
+
+    * time1 - 4.
+
+Garbage Collection
+------------------
+
+Status:
+
+    Completed 6/17/2004.
+
+Description:
+
+    Plasma is going to have a lot of producer/consumer type code, where the
+    ownership of a particular piece of memory will be hard to track.  Garbage
+    collection will make the code much easier to understand and less error-prone.
+
+Implementation:
+
+    Boehm garbage collector.  The main issue is that the collector needs to know
+    about all roots in the system, i.e. thread stacks.  This is accomplished as
+    follows:
+
+    1.  A list exists (System::_active_list) that records all active threads.
+        When a thread is realized, it is added to this list.  Each Thread object
+        has a **nt** and **pt** pointer for storing this information.  When a
+        thread is destroyed, it is removed from the list.
+
+    2.  In addition to the bottom of the stack, each thread records the top of
+        the stack.  This is set whenever a thread is swapped out by calling
+        Thread::setStackEnd().
+
+    3.  Whhen the collector is called, it called the function pointer
+        GC_push_other_roots.  This is set to the function
+        System::push_other_roots(), which iterates over the active list, pushing
+        information about the top and bottom of the stack.
+
+    Other routines used are GC_lock(), which does nothing since we do not use
+    kernel threads at this point, and GC_stop_world() and GC_start_world(),
+    which turn preemtion off and on.
+
+Dependencies:
+
+    The main issue is getting it to handle user-threads.  It handles kernel
+    threads and should be able to handle user-threads, but I don't know how to
+    do it yet.
+
+Regressions:
+
+    No explicit tests- the rest of the regressions should test its usage.
 
 Timeouts
 --------
@@ -406,32 +520,6 @@ Clocked Channels
 Investigate further.  Most likely this will be a channel whose writes are
 guarded by delay statements.  The delay will come from a clock object.
 
-Garbage Collection
-------------------
-
-Status:
-
-    TBD
-
-Description:
-
-    Plasma is going to have a lot of producer/consumer type code, where the
-    ownership of a particular piece of memory will be hard to track.  Garbage
-    collection will make the code much easier to understand and less error-prone.
-
-Implementation:
-
-    Boehm garbage collector.
-
-Dependencies:
-
-    The main issue is getting it to handle user-threads.  It handles kernel
-    threads and should be able to handle user-threads, but I don't know how to
-    do it yet.
-
-Regressions:
-
-    TBD
 
 Kernel Threads
 --------------

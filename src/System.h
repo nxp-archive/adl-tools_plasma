@@ -10,6 +10,9 @@
 #include "Interface.h"
 #include "ThreadQ.h"
 
+// Rule of thumb minimum to keep the gc happy.
+const int StackMin = 0x8000;
+
 namespace plasma {
 
   class ConfigParms;
@@ -65,14 +68,22 @@ namespace plasma {
     // Returns 0 if no elements remain (at the current time).
     Proc *get_busy();
 
+    // Add or remove threads from active list.
+    static void add_active_thread(Thread *);
+    static void remove_active_thread(Thread *);
+    static unsigned num_active_threads();
+
   private:
     template <class C,class T> T *get_current(C &q);
 
+    static void push_other_roots();
+
     int     _size;             // Default stack size of threads
-    void   *_stacks;           // Disposed thread stacks
     int     _code;             // Exit code.
     bool    _wantshutdown;     // Flag indicates that a shutdown is desired.
     bool    _busyokay;         // Is time consumption legal?
+
+    static Thread *_active_list; // Active threads- used by gc- see push_other_roots() for more info.
 
     ptime_t   _time;           // Current time of the system.
     TPriQueue _delay;          // Delayed threads.

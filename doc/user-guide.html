@@ -47,10 +47,10 @@ of simulation time for discrete, and various safety features.</p>
 </ul>
 </li>
 <li><a class="reference" href="#the-time-model" id="id12" name="id12">The Time Model</a></li>
-<li><a class="reference" href="#additional-language-constructs" id="id13" name="id13">Additional Language Constructs</a><ul class="simple">
-<li><a class="reference" href="#let-blocks" id="id14" name="id14">Let Blocks</a></li>
-<li><a class="reference" href="#lambda-functions" id="id15" name="id15">Lambda Functions</a></li>
-<li><a class="reference" href="#garbage-collection" id="id16" name="id16">Garbage Collection</a></li>
+<li><a class="reference" href="#garbage-collection" id="id13" name="id13">Garbage Collection</a></li>
+<li><a class="reference" href="#additional-language-constructs" id="id14" name="id14">Additional Language Constructs</a><ul class="simple">
+<li><a class="reference" href="#let-blocks" id="id15" name="id15">Let Blocks</a></li>
+<li><a class="reference" href="#lambda-functions" id="id16" name="id16">Lambda Functions</a></li>
 </ul>
 </li>
 <li><a class="reference" href="#future-work" id="id17" name="id17">Future Work</a></li>
@@ -410,20 +410,93 @@ void msg(const char *fmt, ...) {
 </div>
 <div class="section" id="the-time-model">
 <h1><a class="toc-backref" href="#id12" name="the-time-model">The Time Model</a></h1>
-<p>TBD</p>
+<p>Plasma implements a time model so that users may experiment with mapping an
+algorithm to a possible hardware configuration.  The model works along the lines
+of a discrete event simulator:  A thread may delay itself, in which case it
+stays idle until a specified amount of time has passed, or it may explicitly
+consume time.  In other words, actual work done by the thread takes zero time
+but to model algorithmic complexity, explicit calls may be made to simulate a
+piece of hardware doing real work.</p>
+<p>Time in plasma consists of discrete time ticks, but no unit is associated with
+the time.  The main time type is a 64-bit integer.</p>
+<p>There are three main functions for the time mode:</p>
+<ol class="arabic">
+<li><dl class="first">
+<dt><tt class="literal"><span class="pre">pDelay(x)</span></tt>:  Delay for <strong>x</strong> time units.  The thread will be idle for</dt>
+<dd>this period of time.</dd>
+</dl>
+</li>
+<li><dl class="first">
+<dt><tt class="literal"><span class="pre">pBusy(x)</span></tt>: Consume <strong>x</strong> time units.  This means that the processor is</dt>
+<dd><p class="first">&quot;busy&quot; for this long.  In order to use <tt class="literal"><span class="pre">pBusy()</span></tt>, you must set
+<tt class="literal"><span class="pre">ConfigParms::_busyokay</span></tt> to true.  If not, a runtime error will occur when
+the function is called.  If you are in the busy-mode then preemption is
+disabled; the only thread switches will be during alt, wait, delay, or busy
+commands.</p>
+<p class="last">Lowest priority threads are timesliced.  The time slice value is set by
+setting <tt class="literal"><span class="pre">ConfigParms::_simtimeslice</span></tt> in <tt class="literal"><span class="pre">pSetup()</span></tt>.  What this means is
+that a busy command will be divided up until these timeslices, allowing the
+same processor to squeeze in work from other threads.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><tt class="literal"><span class="pre">pTime()</span></tt>:  Returns the current system time.</p>
+</li>
+</ol>
+<p>The user may declare multiple processors by declaring a <strong>Processor</strong> object,
+e.g.:</p>
+<pre class="literal-block">
+Processor a;
+</pre>
+<p>A thread may be started on another processor using two different methods:</p>
+<ol class="arabic">
+<li><p class="first">With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p>
+<pre class="literal-block">
+par {
+   on (&lt;proc name&gt;) { ... }
+   ...
+}
+</pre>
+</li>
+<li><p class="first">With the spawn command:</p>
+<pre class="literal-block">
+&lt;proc name&gt;.spawn(&lt;command&gt;);
+</pre>
+</li>
+</ol>
+</div>
+<div class="section" id="garbage-collection">
+<h1><a class="toc-backref" href="#id13" name="garbage-collection">Garbage Collection</a></h1>
+<p>Plasma is equipped with a garbage collector.  This means that heap-allocated
+objects do not need to be explicitly freed; they will be collected when no more
+pointers to the object remain.  This implicitly managed memory (referred to as
+simply <em>managed</em> from now on) may be used alongside explicitly managed memory,
+where a call to delete is required.</p>
+<p>By default, allocations using <strong>new</strong> are explicitly managed.  To allocate
+managed memory, you may derive an object from <strong>gc</strong> or <strong>gc_cleanup</strong> or
+allocate using the <strong>GC</strong> placement attribute.</p>
+<p>For example, the following class will be managed when allocated using <strong>new</strong>:</p>
+<pre class="literal-block">
+class A : public gc { };
+</pre>
+<p>However, its destructor will not be called.  If you derive from <strong>gc_cleanup</strong>,
+the class's destructor will be called when the object is collected.</p>
+<p>An example of using the <strong>GC</strong> placement attribute is:</p>
+<pre class="literal-block">
+int *x = new (GC) int[1000];
+</pre>
+<p>This will allocate a block of memory that is managed by the collector.</p>
+<p>You may delete memory that is managed, but this is generally discouraged, since
+the collector will collect it when it is safe to do so.</p>
 </div>
 <div class="section" id="additional-language-constructs">
-<h1><a class="toc-backref" href="#id13" name="additional-language-constructs">Additional Language Constructs</a></h1>
+<h1><a class="toc-backref" href="#id14" name="additional-language-constructs">Additional Language Constructs</a></h1>
 <div class="section" id="let-blocks">
-<h2><a class="toc-backref" href="#id14" name="let-blocks">Let Blocks</a></h2>
+<h2><a class="toc-backref" href="#id15" name="let-blocks">Let Blocks</a></h2>
 <p>TBD</p>
 </div>
 <div class="section" id="lambda-functions">
-<h2><a class="toc-backref" href="#id15" name="lambda-functions">Lambda Functions</a></h2>
-<p>TBD</p>
-</div>
-<div class="section" id="garbage-collection">
-<h2><a class="toc-backref" href="#id16" name="garbage-collection">Garbage Collection</a></h2>
+<h2><a class="toc-backref" href="#id16" name="lambda-functions">Lambda Functions</a></h2>
 <p>TBD</p>
 </div>
 </div>
@@ -435,7 +508,7 @@ void msg(const char *fmt, ...) {
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="user-guide.rst">View document source</a>.
-Generated on: 2004/06/01 15:52:34 CDT.
+Generated on: 2004/06/17 14:14:32 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

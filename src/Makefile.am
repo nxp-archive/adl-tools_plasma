@@ -1,6 +1,6 @@
 pkglib_LIBRARIES = libplasma.a
 
-libplasma_a_CPPFLAGS= -I../qt
+libplasma_a_CPPFLAGS= -I../qt -I../gc/include
 
 libplasma_a_SOURCES = \
 	Interface.C \

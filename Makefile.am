@@ -1,6 +1,6 @@
 
 
-SUBDIRS = macros qt src parser $(DOCDIR) tests
+SUBDIRS = macros qt gc src parser $(DOCDIR) tests
 
 AUTOMAKE_OPTIONS = foreign
 

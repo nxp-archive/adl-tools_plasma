@@ -26,7 +26,14 @@ namespace plasma {
 
     // Saves stack pointer.
     void save(qt_t *sptr);
+    void saveStackEnd(void *);
+
     qt_t *thread() { return _thread; };
+
+    void *stack() const { return _stack; };
+    void *stackend() const { return _stackend; };
+
+    void setStackEnd();
 
     // Add a thread to the wait list.
     void add_waiter(Thread *t);
@@ -56,19 +63,27 @@ namespace plasma {
 
     void *endspace() const { return (void*)&_extraspace[0]; };
 
-    static void *operator new(size_t sz) { return ::operator new(sz); };
-    static void *operator new(size_t sz,void *p) { return ::operator new(sz,p); };
+    Thread *nt() const { return _nt; };
+    Thread *pt() const { return _pt; };
+    void setnt(Thread *n) { _nt = n; };
+    void setpt(Thread *p) { _pt = p; };
+
+    static void *operator new(size_t sz) { return gc::operator new(sz); };
+    static void *operator new(size_t sz,void *p) { return gc::operator new(sz,p); };
 
   private:
+
     bool        _done;             // True when thread is done executing.
     ThreadQ     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
+    void       *_stackend;         // End of stack pointer.
     Proc       *_proc;             // Parent processor.
     HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
     ptime_t     _time;             // Busy or delay time of the thread.
     ptime_t     _starttime;        // Start time of a busy or delay.
+    Thread     *_pt,*_nt;          // Linked-list pointers for active threads.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
@@ -76,16 +91,25 @@ namespace plasma {
     _done(false),
     _thread(0),
     _stack(0),
+    _stackend(0),
     _proc(0),
     _priority(0),
     _time(0),
-    _starttime(0)
+    _starttime(0),
+    _pt(0),
+    _nt(0)
   {
   }
 
   inline void Thread::save(qt_t *sptr)
   {
     _thread = sptr;
+  }
+
+  inline void Thread::setStackEnd()
+  {
+    volatile void *dummy;
+    _stackend = &dummy;
   }
 
   inline void Thread::add_waiter(Thread *t)
