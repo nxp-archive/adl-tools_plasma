@@ -178,4 +178,35 @@ namespace plasma {
   {
   }
 
+  /////////////// Timeout ///////////////
+
+  void timeout(void *a)
+  {
+    Timeout *to = (Timeout *)a;
+    pDelay(to->delay());
+    pWake(to->reset(),to->_h);
+  }
+
+  THandle Timeout::clear_notify()
+  {
+    pTerminate(_writet);
+    _writet = 0;
+    return reset();
+  }
+
+  THandle Timeout::reset() 
+  { 
+    THandle t = _readt; 
+    _readt = 0; 
+    return t; 
+  };
+
+  void Timeout::set_notify(plasma::THandle t,plasma::HandleType h)
+  {
+    _readt = t;
+    _h = h;
+    assert(!_writet);
+    _writet = pSpawn(timeout,this,-1);
+  }
+
 }

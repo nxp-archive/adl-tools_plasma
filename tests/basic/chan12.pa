@@ -1,0 +1,48 @@
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+typedef plasma::Channel<int> IntChan;
+
+void consumer(IntChan &c)
+{
+  const int Done = 10;
+  Timeout t(20);
+  for (int count = 0; count != Done; ++count) {
+    alt {
+      c.port(int v) {
+        printf ("Got value from channel:  %d at time %ld\n",v,pTime());
+      }
+      t.port () {
+        printf ("Got timeout at time %d\n",pTime());
+      }
+    }
+  }
+  printf ("Consumer done.\n");
+}
+
+void producer(IntChan &c)
+{
+  c.write(100);
+  pDelay(5);
+  c.write(200);
+  pDelay(25);
+  c.write(300);
+  c.write(400);
+  printf ("Producer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan c;
+  par {
+    producer(c);
+    consumer(c);
+  }
+  printf ("Done.\n");
+  return 0;
+}

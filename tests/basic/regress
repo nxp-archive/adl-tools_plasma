@@ -84,6 +84,11 @@ my @Tests = (
 	      cmd     => "./chan11",
 	      checker => \&check_chan11,
 	     },
+	     # Channel test w/a timeout channel.
+	     {
+	      cmd     => "./chan12",
+	      checker => \&check_chan12,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -465,6 +470,24 @@ sub check_chan11 {
 	      [7.7625, 8.7625, 9.7625, 10.7625, 11.7625, 12.7625, 13.7625, 14.7625, 15.7625, 16.7625]
 	      );
   check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+\.?\\d*)",\@data,12,["No value present."]);
+}
+
+sub check_chan12 {
+  str_rdiff(@_[0],[
+		   "Got value from channel:  100 at time 0",
+		   "Got value from channel:  200 at time 5",
+		   "Got timeout at time 25",
+		   "Got value from channel:  300 at time 30",
+		   "Got value from channel:  400 at time 30",
+		   "Producer done.",
+		   "Got timeout at time 50",
+		   "Got timeout at time 70",
+		   "Got timeout at time 90",
+		   "Got timeout at time 110",
+		   "Got timeout at time 130",
+		   "Consumer done.",
+		   "Done.",
+		  ]);
 }
 
 # Makes sure expected results are found.

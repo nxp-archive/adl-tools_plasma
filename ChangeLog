@@ -1,3 +1,48 @@
+2004-06-18  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added the Timeout class.  This is a channel that will deliver a
+	value in an alt block after a specified amount of time (using
+	pDelay).  Example:
+
+		Timeout t(20);
+		alt {
+		  t.port() { cout << "Got a timeout!" << endl; }
+		}
+
+	The constructor requires a timeout value; this may be changed or
+	read via methods.  No useful value is returned via the port, so
+	you normally wouldn't map the return to a value.
+
+	* Fixed a bug in Cluster::update_time():  If we updated the time
+	and added a delay thread, it was possible that the thread had been
+	terminated, so it wouldn't be added.  So we'd end up adding an
+	empty processor to the processor queue, which would cause us to
+	exit.  Fixed this by checking that at the end, _curproc has
+	something to run.  If not, we mark the processor as waiting and
+	try again.
+
+	* Added the ability to start a thread with an explicit priority.
+	This is done as follows:
+
+	1.  Optional second argument to the on block:
+
+		par {
+		  on (pCurProc(),0) { /* thread 1 */ }
+		  on (pCurProc(),1) { /* thread 2 */ }
+      		  { /* thread 3 */ }
+      		  { /* thread 4 */ }
+    		}
+
+	You have to supply two arguments to "on", so you need to use
+	pCurProc() if you want to launch a thread on the same processor
+	with a specific priority.
+
+	2.  Optional second argument to spawn:  
+
+		spawn(foo(),0);
+
+	A priority of -1 may be used to specify the current thread's priority.
+
 2004-06-17  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Integrated the Boehm-Demers-Weiser (BDW) garbage collector into

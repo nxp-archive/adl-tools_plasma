@@ -189,6 +189,33 @@ namespace plasma {
     THandle  _t;      // Thread returning a result.
   };
 
+  // Timeout channel:  When used in an alt block, will set ready after a specified
+  // amount of simulation time.
+  class Timeout {
+  public:
+    Timeout(ptime_t d) : _delay(d), _readt(0), _writet(0) {};
+
+    ptime_t delay() const { return _delay; };
+    void setDelay(ptime_t d) { _delay = d; };
+
+    bool ready() const { return false; };
+    int get() { return 0; };
+
+    // These are marked as non-mutex b/c they are used by alt, which already
+    // does the locking.
+    void set_notify(THandle t,HandleType h);
+    THandle clear_notify();
+
+  private:
+    friend void timeout(void *a);
+    THandle reset();
+
+    ptime_t    _delay;
+    THandle    _readt;
+    THandle    _writet;
+    HandleType _h;
+  };
+
   //////////////////////////////////////////////////////////////////////////////
   //
   // Implementation.

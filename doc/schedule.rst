@@ -354,7 +354,7 @@ Implementation:
 
 Regressions:
 
-    pri1, pri2.
+    * pri1 - pri4.
 
 Support For Multiple Processors
 -------------------------------
@@ -515,8 +515,24 @@ Regressions:
 Timeouts
 --------
 
-Create a channel that has a backing thread which wakes up and writes to the
-channel after a specified amount of time.  Use in alt blocks.
+Status:
+
+    Completed 6/18/2004.
+
+Description:
+
+    Create a channel that has a backing thread which wakes up and writes to the
+    channel after a specified amount of time.  Use in alt blocks.
+
+Implementation:
+
+    Created the Timeout class- it's in Interface.h.  It's written entirely in
+    C++ so that I could hide the implementation and not have to worry about
+    linking Plasma code in with the rest of the thread package.  
+
+Regressions:
+
+    * chan12
 
 Clocked Channels
 ----------------

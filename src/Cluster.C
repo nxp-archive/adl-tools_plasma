@@ -333,8 +333,10 @@ namespace plasma {
   // Returns false if nothing is available.
   bool Cluster::update_time()
   {       
-    // No processors in ready queue- try to advance time.
-    // Repeat until we have a ready processor, or there is nothing left to do.
+    // No processors in ready queue- try to advance time.  Repeat until there is
+    // either nothing left to do or we get a processor and it has a thread.  We
+    // have to check for the empty processor case b/c it's possible that a
+    // delayed thread was terminated while it was delayed.
     while (!_curproc) {
       if ( !thesystem.update_time()) {
         return false;
@@ -351,6 +353,7 @@ namespace plasma {
         // time left.  The processor will block again when we switch to the
         // thread w/remaining busy time- the busy() routine will see that busy
         // time is left and will add the processor back to the busy queue.
+
         if (p->state() == Proc::Busy) {
           Thread *bt = p->next_ready();
           assert(bt);
@@ -367,8 +370,14 @@ namespace plasma {
       while ( (p = thesystem.get_busy())) {
         add_proc(p);
       }
-      // Finally, update the current processor.
+      // Update the current processor.
       _curproc = _procs.get();
+      // If empty, mark as waiting and try to advance time.  We mark as waiting
+      // so that the processor can be added to the queue again.
+      if (_curproc && _curproc->empty()) {
+        _curproc->setState(Proc::Waiting);
+        _curproc = 0;
+      }
     }
     return true;
   }

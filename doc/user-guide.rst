@@ -296,7 +296,23 @@ Currently, Plasma contains the following channels.  These are declared in ``plas
    queue size is not fixed, but the user may set a maximum size by specifying it
    as the constructor argument.
 
-3. ``ResChan<class Data>``: The **spawn** operator may be interfaced to an
+3. ``Timeout``:  Use this to break out of an alt block after a specified amount
+   of simulation time.  It uses ``pDelay()`` to block for a given amount of
+   time.  If nothing else has awakened the alt block thread before then, this
+   will.  It does not return a useful value, so it is generally used with an
+   empty port statement, e.g.::
+
+     Timeout t(20);
+     alt {
+       c0.port(...) { ... }
+       c1.port(...) { ... }
+       t.port() { cout << "Got a timeout!" << endl; }
+     }
+
+   In the above example, a **Timeout** object is created which will awaken an
+   alt block after 20 time units.
+
+4. ``ResChan<class Data>``: The **spawn** operator may be interfaced to an
    **alt** construct by using this class.  This is a read-only channel which
    will return the result value of the spawned thread.  For example::
 

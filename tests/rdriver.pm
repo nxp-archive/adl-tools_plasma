@@ -72,22 +72,28 @@ doTest(@tests_list);
 
     Utility Functions:
 
-    rdiff(<filename>,<array ref of regular expressions>)
+    file_rdiff(<filename>,<array ref of regular expressions>)
 
-    This is a simple function for checking a file.  The second argument is a reference
-    to an array of strings.  Each string is considered to be a regular expression.  The
-    function must be able to successfully match lines in the file against the array elements,
-    proceeding to the end of the array, or else it fails and calls die.
+    This is a simple function for checking a file.  The second argument is a
+    reference to an array of strings.  Each string is considered to be a regular
+    expression.  The function must be able to successfully match lines in the
+    file against the array elements, proceeding to the end of the array, or else
+    it fails and calls die.
+
+    str_rdiff(<input string>,<array ref of regular expressions>)
+
+    Same as file_rdiff, except that we take the input, split on newlines, then
+    try and match against the regular expressions.
 
     dprint(...)
 
-    Same functionality as print if the --debug option is specified on the command-line.
-    Otherwise, nothing is printed.
+    Same functionality as print if the --debug option is specified on the
+    command-line.  Otherwise, nothing is printed.
 
     dprintf(...)
 
-    Same functionality as printf if the --debug option is specified on the command-line.
-    Otherwise, nothing is printed.
+    Same functionality as printf if the --debug option is specified on the
+    command-line.  Otherwise, nothing is printed.
 
 =cut
     
@@ -96,7 +102,7 @@ package rdriver;
 require Exporter;
 
 our @ISA = ("Exporter");
-our @EXPORT = qw( doTest rdiff dprint dprintf );
+our @EXPORT = qw( doTest file_rdiff str_rdiff dprint dprintf );
 
 $diff = "diff -bi";
 $tmpfile = "cmp.out";
@@ -375,7 +381,7 @@ sub printhelp() {
   exit 0;
 }
 
-sub rdiff {
+sub file_rdiff {
   my $f = shift;
   my $r = shift;
 
@@ -388,6 +394,21 @@ sub rdiff {
   }
   if ($i != $max) {
     print "  Failed to match '$r->[$i]' in file '$f'.\n";
+    die;
+  }
+}
+
+sub str_rdiff {
+  my @lines = split /\n/,shift;
+  my $r = shift;
+
+  my $i = 0;
+  my $max = scalar(@$r);
+  for (@lines) {
+    ++$i if ( $i < $max && $_ =~ $r->[$i] )
+  }
+  if ($i != $max) {
+    print "  Failed to match '$r->[$i]'.\n";
     die;
   }
 }
