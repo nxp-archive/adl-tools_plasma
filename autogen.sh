@@ -15,10 +15,10 @@ fi
 
 echo Found GNU Make at $MAKE ... good.
 echo This script runs configure and make...
-echo Put remember necessary arguments for configure on command line.
+echo Put necessary arguments for configure on the command line.
 
 srcdir=`dirname $0`
-echo "srcdir $srcdir"
+echo "Source dir (srcdir):  $srcdir"
 test -z "$srcdir" && srcdir=.
 
 (test -f $srcdir/configure.ac \

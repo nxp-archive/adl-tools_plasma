@@ -25,7 +25,7 @@
   exit 1;
 }
 
-# if no automake, don't bother testing for aclocal
+# If no automake, don't bother testing for aclocal
 test -n "$NO_AUTOMAKE" || (aclocal --version) < /dev/null > /dev/null 2>&1 || {
   echo
   echo "Error: Missing \`aclocal'. Make sure you have \`automake'"
@@ -50,7 +50,7 @@ do
   if test -f $directory/NO-AUTO-GEN; then
     echo skipping $directory -- flagged as no auto-gen
   else
-    echo processing $directory
+    echo "Processing $directory"
     macrodirs=`sed -n -e 's,AM_ACLOCAL_INCLUDE(\(.*\)),\1,gp' < $configure_ac`
     ( cd $directory
       aclocalinclude="-I ./macros $ACLOCAL_FLAGS"
