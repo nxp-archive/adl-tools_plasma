@@ -2,7 +2,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
 <title>The Plasma Language</title>
  <style type="text/css">
   <!--
@@ -19,38 +19,46 @@
 </head>
 
 <body class="chapter" bgcolor="#ffffff">
-<table width="100%" class="skribetitle"><tbody>
+<table width="100%" class="skribetitle" cellspacing="0" cellpadding="0"><tbody>
 <tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>1. The Plasma Language -- Plasma User's Guide</big></big></big></strong></div><center>
 </center>
 </td></tr></tbody></table>
 <table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
 <td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
 <br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
-<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
 </tbody></table>
 </td></tr>
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Plasma User's Guide</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Plasma User's Guide</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1.1</td><td colspan="4" width="100%"><a href="index-1.html#Usage">Usage</a></td></tr>
  <tr><td valign="top" align="left">1.2</td><td colspan="4" width="100%"><a href="index-1.html#Concurrency">Concurrency</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.2.1</td><td colspan="3" width="100%"><a href="index-1.html#Thread-Creation">Thread Creation</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.2.2</td><td colspan="3" width="100%"><a href="index-1.html#Thread-Control">Thread Control</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.2.3</td><td colspan="3" width="100%"><a href="index-1.html#The-Time-Model">The Time Model</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.2.4</td><td colspan="3" width="100%"><a href="index-1.html#Priorities">Priorities</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.2.5</td><td colspan="3" width="100%"><a href="index-1.html#Thread-Communication">Thread Communication</a></td></tr>
  <tr><td valign="top" align="left">1.3</td><td colspan="4" width="100%"><a href="index-1.html#Power-Modeling">Power Modeling</a></td></tr>
  <tr><td valign="top" align="left">1.4</td><td colspan="4" width="100%"><a href="index-1.html#Resource-Modeling">Resource Modeling</a></td></tr>
  <tr><td valign="top" align="left">1.5</td><td colspan="4" width="100%"><a href="index-1.html#Garbage-Collection">Garbage Collection</a></td></tr>
  <tr><td valign="top" align="left">1.6</td><td colspan="4" width="100%"><a href="index-1.html#Library-Features">Library Features</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.6.1</td><td colspan="3" width="100%"><a href="index-1.html#I/O-Routines">I/O Routines</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.6.2</td><td colspan="3" width="100%"><a href="index-1.html#String-Routines">String Routines</a></td></tr>
+ <tr><td></td><td valign="top" align="left">1.6.3</td><td colspan="3" width="100%"><a href="index-1.html#Random-Number-Generation">Random Number Generation</a></td></tr>
 </tbody>
 </table>
 </td></tr>
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
@@ -119,7 +127,7 @@ communication.</p><!-- Thread Creation -->
 </div><div class="subsection">
 <!-- Par Block -->
 <a name="Par-Block"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.4 Par Block</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.1 Par Block</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>par</strong> block executes each statement in parallel, waiting until all
 child threads are finished before proceeding.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -156,7 +164,7 @@ par <font color="red"><strong>{</strong></font>
 </tbody></table></div>
 <!-- PFor Loop -->
 <a name="PFor-Loop"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.5 PFor Loop</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.2 PFor Loop</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>pfor</strong> loop acts like a for-loop, except that for each loop
 iteration, its body is launched as a separate thread.  All threads must then
@@ -179,18 +187,18 @@ passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable <strong>i</strong> but may directly modify <strong>results</strong>.</p></div>
 <!-- Spawn Operator -->
 <a name="Spawn-Operator"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.6 Spawn Operator</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.3 Spawn Operator</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>spawn</strong> operator creates a thread and returns a handle object which allows
 the result of the thread to be retrieved.  <strong>spawn</strong> takes a single argument
 which must be some sort of function invocation.  This might be an actual
-function, a method call, etc.  The list of supported types is:</p><ul class="itemize"> <li>Literal function call: <code>spawn(foo());</code></li>
- <li>Function pointer call: <code>p = foo; spawn(p());</code></li>
- <li>Method call w/reference: <code>spawn(a.b());</code></li>
- <li>Method call w/pointer: <code>spawn(a-&gt;b());</code></li>
- <li>Static method call: <code>spawn(A::b());</code></li>
- <li>Method pointer w/reference: <code>p = &amp;A::b; spawn(a.*p());</code></li>
- <li>Method pointer w/pointer:  <code>p = &amp;A::b; spawn(a-&gt;*p());</code></li>
+function, a method call, etc.  The list of supported types is:</p><ul class="itemize"><li>Literal function call: <code>spawn(foo());</code></li>
+<li>Function pointer call: <code>p = foo; spawn(p());</code></li>
+<li>Method call w/reference: <code>spawn(a.b());</code></li>
+<li>Method call w/pointer: <code>spawn(a-&gt;b());</code></li>
+<li>Static method call: <code>spawn(A::b());</code></li>
+<li>Method pointer w/reference: <code>p = &amp;A::b; spawn(a.*p());</code></li>
+<li>Method pointer w/pointer:  <code>p = &amp;A::b; spawn(a-&gt;*p());</code></li>
 </ul><p>The function's arguments are evaluated immediately; a thread is then
 launched of the function with its arguments.  The <strong>spawn</strong> operator returns
 an object of type <code>Result&lt;T&gt;</code>, where <strong>T</strong> is the return type of the
@@ -283,16 +291,16 @@ which return booleans.</p></div>
 </h3></td></tr></table>
 </div><div class="subsection">
 <p>The following functions provide control over threads.  These are declared in
-<code>plasma-interface.h</code> which is implicitly included in all plasma (.pa) files.</p><ul class="itemize"> <li><code>THandle pCurThread()</code>:  Return a handle to the current thread.</li>
- <li><code>pWait(THandle)</code>:  Wait until the specified thread is finished.</li>
- <li><code>pYield()</code>:  Have the current thread swap to the next ready thread.</li>
- <li><code>pTerminate()</code>:  Kill the current thread.</li>
- <li><code>pLock()</code>:  Turn off time-slicing.</li>
- <li><code>pUnlock()</code>:  Turn on time-slicing.</li>
- <li><code>pExit(int code)</code>:  Terminate the program with the specified exit code.</li>
- <li><code>pAbort(char *)</code>: Abort the program gracefully with error message
+<code>plasma-interface.h</code> which is implicitly included in all plasma (.pa) files.</p><ul class="itemize"><li><code>THandle pCurThread()</code>:  Return a handle to the current thread.</li>
+<li><code>pWait(THandle)</code>:  Wait until the specified thread is finished.</li>
+<li><code>pYield()</code>:  Have the current thread swap to the next ready thread.</li>
+<li><code>pTerminate()</code>:  Kill the current thread.</li>
+<li><code>pLock()</code>:  Turn off time-slicing.</li>
+<li><code>pUnlock()</code>:  Turn on time-slicing.</li>
+<li><code>pExit(int code)</code>:  Terminate the program with the specified exit code.</li>
+<li><code>pAbort(char *)</code>: Abort the program gracefully with error message
 and return exit code -1.</li>
- <li><code>pPanic(char *)</code>:  Abort program immediately with error message and return
+<li><code>pPanic(char *)</code>:  Abort program immediately with error message and return
     exit code -1.</li>
 </ul></div>
 <!-- The Time Model -->
@@ -307,9 +315,9 @@ stays idle until a specified amount of time has passed, or it may explicitly
 consume time.  In other words, actual work done by the thread takes zero time
 but to model algorithmic complexity, explicit calls may be made to simulate a
 piece of hardware doing real work.</p><p>Time in plasma consists of discrete time ticks, but no unit is associated with
-the time.  The main time type is a 64-bit integer.</p><p>There are three main functions for the time mode:</p><ul class="itemize"> <li><code>pDelay(x)</code>:  Delay for <strong>x</strong> time units.  The thread will be idle for
+the time.  The main time type is a 64-bit integer.</p><p>There are three main functions for the time mode:</p><ul class="itemize"><li><code>pDelay(x)</code>:  Delay for <strong>x</strong> time units.  The thread will be idle for
 this period of time.</li>
- <li><p><code>pBusy(x)</code>: Consume <strong>x</strong> time units.  This means that the
+<li><p><code>pBusy(x)</code>: Consume <strong>x</strong> time units.  This means that the
 processor is &quot;busy&quot; for this long.  In order to use <code>pBusy()</code>, you must set
 <code>ConfigParms::_busyokay</code> to true.  If not, a runtime error will occur when the
 function is called.  If you are in the busy-mode then preemption is disabled;
@@ -317,7 +325,7 @@ the only thread switches will be during alt, wait, delay, or busy commands.</p><
 setting <code>ConfigParms::_simtimeslice</code> in <code>pSetup()</code>.  What this means is that
 a busy command will be divided up into these timeslices, allowing the same
 processor to squeeze in work from other threads.</p></li>
- <li><code>pTime()</code>:  Returns the current system time.</li>
+<li><code>pTime()</code>:  Returns the current system time.</li>
 </ul><p>The user may declare multiple processors by declaring a <strong>Processor</strong> object,
 e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
@@ -335,7 +343,7 @@ Processors procs(10);
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>New threads will be launched on their parent's processor unless one of the
-following mechanisms is used:</p><ul class="itemize"> <li><p>With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+following mechanisms is used:</p><ul class="itemize"><li><p>With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
 par <font color="red"><strong>{</strong></font>
@@ -347,7 +355,7 @@ par <font color="red"><strong>{</strong></font>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>With the spawn command:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<li><p>With the spawn command:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
 &lt;proc name&gt;.spawn(&lt;command&gt;);
@@ -433,11 +441,11 @@ Block 3 done:  50
 same as its parent's priority, with <code>pMain()</code> starting at the lowest
 priority.  Priorities are specified as an integer, where 0 is the highest.  The
 number of priorities may be set by the configuration parameter <code>ConfigParms::_numpriorities</code>.  The default value is 32.</p><p>Priorities may be specified using a functional API or as optional arguments to
-<strong>spawn</strong> or <strong>on</strong>:</p><ul class="itemize"> <li><code>pSetPriority(int)</code>: Set current thread's priority.</li>
- <li><code>pGetPriorities()</code>:  Return current thread's priority.</li>
- <li><code>pLowestPriority()</code>:  Return the lowest priority (timeslice queue).</li>
- <li>Optional second argument to <strong>spawn</strong> of a priority, e.g. <code>spawn(foo(),0);</code></li>
- <li>Optional second argument to <strong>on</strong> block of a priority, e.g. <code>on(p1,0) { ... }</code></li>
+<strong>spawn</strong> or <strong>on</strong>:</p><ul class="itemize"><li><code>pSetPriority(int)</code>: Set current thread's priority.</li>
+<li><code>pGetPriorities()</code>:  Return current thread's priority.</li>
+<li><code>pLowestPriority()</code>:  Return the lowest priority (timeslice queue).</li>
+<li>Optional second argument to <strong>spawn</strong> of a priority, e.g. <code>spawn(foo(),0);</code></li>
+<li>Optional second argument to <strong>on</strong> block of a priority, e.g. <code>on(p1,0) { ... }</code></li>
 </ul><p>For any given processor, threads execute in priority order, with timeslicing
 only for the lowest priority thread.  Of course, if a higher priority waits on
 another thread or enters an alt block, there is the possibility that a lower
@@ -468,52 +476,52 @@ current processor.</p></div>
 </div><div class="subsection">
 <!-- Channels -->
 <a name="Channels"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.7 Channels</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.1 Channels</font>
 </h4></div><div class="subsubsection">
 <p>One method for threads to communicate among themselves is to use a channel.
 This is simply a data structure which allows one thread to write a value to it
 and another thread to read this value.  It is up to the channel to make sure
 that these operations are safe and to ensure proper flow control.  Any class may
 be a channel as long as it has a specific interface.  This interface is required
-in order to use the <strong>alt</strong> and <strong>afor</strong> constructs.</p><p>The required interface for a channel of type <strong>T</strong> is:</p><ul class="itemize"> <li><code>T read()</code>: Returns a value read from the channel.  Blocks if no value is
+in order to use the <strong>alt</strong> and <strong>afor</strong> constructs.</p><p>The required interface for a channel of type <strong>T</strong> is:</p><ul class="itemize"><li><code>T read()</code>: Returns a value read from the channel.  Blocks if no value is
    present.  Returns the last value read, until clear_ready() is called.</li>
- <li><code>T get()</code>: Returns a value from the channel.  Blocks if no value
+<li><code>T get()</code>: Returns a value from the channel.  Blocks if no value
 is present.  Always fetches a new value.  After a call to this, <code>read()</code> will
 return this same value.</li>
- <li><code>void write(T)</code>: Writes a value to the channel.  May block,
+<li><code>void write(T)</code>: Writes a value to the channel.  May block,
 depending upon the channel definition.</li>
- <li><code>bool ready() const</code>: Returns true if the channel has a value.</li>
- <li><code>bool full() const</code>: Returns true if the channel would block if
+<li><code>bool ready() const</code>: Returns true if the channel has a value.</li>
+<li><code>bool full() const</code>: Returns true if the channel would block if
 written to.</li>
- <li><code>void clear_ready()</code>: Clears the ready status, forcing the fetch
+<li><code>void clear_ready()</code>: Clears the ready status, forcing the fetch
 of a new value.</li>
- <li><code>set_notify(Thread *t,int handle)</code>: Stores the thread and handle.
+<li><code>set_notify(Thread *t,int handle)</code>: Stores the thread and handle.
 When the channel gets a value, it will wake this thread, giving it the handle.</li>
- <li><code>clear_notify()</code>: Clears the stored thread so that no
+<li><code>clear_notify()</code>: Clears the stored thread so that no
 notification will take place if a value is written to the channel.  It must be
 possible to call <code>clear_notify()</code> safely, e.g. this should not affect
 the behavior of a blocked writing thread.</li>
- <li><code>value_type</code>: A typedef for the data type of the channel.</li>
+<li><code>value_type</code>: A typedef for the data type of the channel.</li>
 </ul><p>Note that <code>write()</code>, <code>read()</code>, <code>clear_ready()</code>, and
 <code>full()</code> are technically not required by <strong>alt</strong> and <strong>afor</strong>.
 Thus, it is possible to have a read-only channel.</p><p>Currently, Plasma contains the following channels.  These are declared in
-<code>plasma.h</code>.</p><ul class="itemize"> <li><code>Channel&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This is
+<code>plasma.h</code>.</p><ul class="itemize"><li><code>Channel&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This is
 a typed channel which reads and writes an object of type <em>Data</em>.  It
 contains only a single copy of this object; a second write will block if the
 first write's data has not been read.  It may be used with multiple producers.
 By default, only a single consumer is allowed.  To enable multiple consumers,
 specify <code>MultiConsumerChannel</code> for the second template argument <em>Base</em>.</li>
- <li><code>BusyChan Data,class Base = SingleConsumerChannel&gt;</code>: This channel
+<li><code>BusyChan Data,class Base = SingleConsumerChannel&gt;</code>: This channel
 is similar to <code>Channel</code>, except that if a read blocks, it places the
 thread's processor into a busy state.  This can be used for when waiting on a
 resource holds up a task, e.g. a processor waiting on a load cannot do something
 else.  The user can specify a timeslice value in the constructor, or specify 0
 to mean no timeslicing.</li>
- <li><code>QueueChan&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This
+<li><code>QueueChan&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This
 is a typed queued channel: It allows for multiple producers and supports
 multiple consumers if the <em>Base</em> argument is set to <code>MultiConsumerChannel</code>.  By default, the queue size is not fixed, but the user
 may set a maximum size by specifying it as the constructor argument.</li>
- <li><p><code>Timeout</code>: Use this to break out of an <strong>alt</strong> block after
+<li><p><code>Timeout</code>: Use this to break out of an <strong>alt</strong> block after
 a specified amount of simulation time.  It uses <code>pDelay()</code> to block for
 a given amount of time.  If nothing else has awakened the alt block thread
 before then, this will.  It does not return a useful value, so it is generally
@@ -532,7 +540,7 @@ alt <font color="red"><strong>{</strong></font>
 </tbody></table></td></tr>
 </tbody></table><p>In the above example, a <strong>Timeout</strong> object is created which will awaken an
 alt block after 20 time units.</p></li>
- <li><a name="clocked-chan" class="mark"></a><p><code>ClockChan&lt;class Data,,class Base =
+<li><a name="clocked-chan" class="mark"></a><p><code>ClockChan&lt;class Data,,class Base =
 SingleConsumerClockChannel,class Container = list&lt;Data&gt; &gt;</code>: Clocked channels
 allow for the easy modeling of clocked hardware.  The basic idea is that data
 may be written at any time, but the channel may only be read at certain
@@ -547,8 +555,11 @@ next stage.  The communication occurs through clocked channels so that the
 timing is invisible to each stage, and is instead coordinated solely by the
 channels.</p><p>Multiple producers are supported.  Multiple consumers may be allowed by
 specifying <code>MultiConsumerClockChannel</code> for the second template
-argument.</p></li>
- <li><p><code>ResChan&lt;class Data&gt;</code>: The <strong>spawn</strong> operator may be
+argument.</p><p>If the clock period is set to 0, the behavior is the same as an unclocked
+channel.  This allows the user to switch between having a channel be clocked or
+unclocked by simply modifying a constructor argument, rather than changing the
+channel's type.</p></li>
+<li><p><code>ResChan&lt;class Data&gt;</code>: The <strong>spawn</strong> operator may be
 interfaced to an <strong>alt</strong> construct by using this class.  This is a read-only
 channel which will return the result value of the spawned thread.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
@@ -593,53 +604,48 @@ int pMain(int argc,const char *argv[])
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
-</ul><p>The basic Plasma channels all expect there to be a single consumer of
-data. While it is possible to create a multi-consumer channel, an easy way to
-emulate this behavior is to create a replicating thread.  For instance, the
-following structure, when declared, will replicate input data to all of the
-output channels:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+</ul></div>
+<!-- Multiple Consumers -->
+<a name="Multiple-Consumers"></a>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.2 Multiple Consumers</font>
+</h4></div><div class="subsubsection">
+<p>The basic Plasma channels all expect there to be a single consumer of
+data unless explicitly configured to support multiple consumers.  In such a
+case, only one consumer will receive the data.  This is useful in a situation,
+for example, where a group of consumers waits for the next available job.
+However, it does not allow for the broadcasting of information to a group of
+consumers all at once.  Instead, the <code>Broadcaster</code> class exists.  It is
+an object which has an input channel and one or more output channels:  Any data
+sent to the input is reflected to the output.  It is templated on both its input
+and output channel types.  Another class, <code>ClkBroadcaster</code>, specializes
+<code>Broadcaster</code> to work with clocked systems.</p><p>For example, you might use this in the following way:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><strong>struct</strong> Tee <font color="red"><strong>{</strong></font>
-  Tee(IntChan &amp;in,IntChans &amp;out)
-  <font color="red"><strong>{</strong></font>
-    spawn(replicate(in,out));
-  <font color="red"><strong>}</strong></font>
-  int replicate(IntChan &amp;in,IntChans &amp;out)
-  <font color="red"><strong>{</strong></font>
-    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-      int x = in.get();
-      pfor (IntChans::iterator i = out.begin(); i != out.end(); ++i) <font color="red"><strong>{</strong></font>
-        (*i).write(x);
-      <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"><strong>typedef</strong> Channel&lt;int&gt; IntChan;
+<strong>typedef</strong> Broadcaster&lt;IntChan,IntChan&gt; IntBroadcaster;
+
+int pMain(int argc,const char *argv[])
+<font color="red"><strong>{</strong></font> 
+  const int Num = 5;
+  IntBroadcaster ib;
+
+  par <font color="red"><strong>{</strong></font>
+    producer(10,ib.get_source());
+    pfor (int i = 0; i != Num; ++i) <font color="red"><strong>{</strong></font>
+      consumer(i,ib.get_sink());
     <font color="red"><strong>}</strong></font>
-    <strong>return</strong> 0;
   <font color="red"><strong>}</strong></font>
-<font color="red"><strong>}</strong></font>;
-
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table><p>You might use this in the following way:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"> 
-IntChan in;
-
-IntChans out(5);
-
-Tee(in,out);
-
-par <font color="red"><strong>{</strong></font>
-  producer(10,in);
-  pfor (unsigned i = 0; i != out.size(); ++i) <font color="red"><strong>{</strong></font>
-    consumer(i,out[i]);
-  <font color="red"><strong>}</strong></font>
+  plasma::mprintf (&quot;Done.\n&quot;);
+  <strong>return</strong> 0;
 <font color="red"><strong>}</strong></font>
  
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table><p>The data produced by the <code>producer</code> function is sent to all of the
-<code>consumer</code> functions via the <code>Tee</code> structure.</p><p>On the other hand, this only works if data may be replicated.  If this is
+</tbody></table><p>Calling <code>get_source()</code> returns the input channel, which is of type
+<code>Broadcaster::input_channel</code>.  Calling <code>get_sink()</code> adds a new
+output channel to the broadcast object and returns a reference to it.  This
+channel is of type <code>Broadcaster::output_channel</code>.  Each time that the
+producer writes data to the input channel, it is broadcast to all of the consumers.</p><p>On the other hand, this only works if data may be replicated.  If this is
 not valid, e.g. a transaction should not be copied but instead should be
 consumed by any of several listening consumers, then it is necessary to
 configure a channel to allow multiple consumers.  This is done by specifying
@@ -648,7 +654,7 @@ non-clocked channels and <code>MultiConsumerClockChannel</code> for clocked
 channels.  This does impose some slight overhead for bookkeeping, so it is
 generally recommended to keep a channel as single-consumer only unless otherwise
 necessary.</p><p>When a channel is configured as allowing multiple consumers, more than one
-thread may do a get from that channel, or use it in an alt statement.  For
+thread may do a <em>get</em> from that channel, or use it in an <em>alt</em> statement.  For
 example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"><strong>typedef</strong> ClockChan&lt;int,MultiConsumerClockChannel&gt; IntChan;
@@ -700,7 +706,7 @@ read from these channels.  This means that if the first consumer reads from
 <code>c0</code>, then the second consumer will then read from<code>c1</code>.</p></div>
 <!-- Alt Blocks -->
 <a name="Alt-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.8 Alt Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.3 Alt Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -735,7 +741,7 @@ blocks.  This allows the user to block on multiple collections of channels, or a
 collection of channels plus one or more single channels, etc.</p></div>
 <!-- Afor Blocks -->
 <a name="Afor-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.9 Afor Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.4 Afor Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -769,11 +775,11 @@ afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</st
 </tbody></table></td></tr>
 </tbody></table><p>Plasma allows for non-integer index variables but this requires the creation of
 an auxiliary data structure, so performance might be a little slower, e.g. using
-an iterator rather than an integer as an index.</p><p>There are a few restrictions to follow for the <strong>afor</strong> block:</p><ul class="itemize"> <li>You must declare the loop iterator in the first statement of the <strong>afor</strong>
+an iterator rather than an integer as an index.</p><p>There are a few restrictions to follow for the <strong>afor</strong> block:</p><ul class="itemize"><li>You must declare the loop iterator in the first statement of the <strong>afor</strong>
 block.</li>
- <li>The loop will occur multiple times, so make sure that there are no
+<li>The loop will occur multiple times, so make sure that there are no
 side-effects.</li>
- <li>You only have access, within the <strong>port</strong> body, to the first loop
+<li>You only have access, within the <strong>port</strong> body, to the first loop
 iterator variable.  Therefore, avoid fancy <strong>afor</strong> loops which declare multiple
 variables in the first statement or update multiple variables in the third
 statement.</li>
@@ -806,7 +812,7 @@ This guarantees that the channels will be scanned sequentially.  In general, the
 compiler can determine that the loop is constant, it may choose to unroll an <strong>afor</strong> and then re-order the channel querying.</p></div>
 <!-- Shared Data Structures -->
 <a name="Shared-Data-Structures"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.10 Shared Data Structures</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.5 Shared Data Structures</font>
 </h4></div><div class="subsubsection">
 <p>Threads may also communicate using shared data structures whose access methods
 are protected by special synchronization primitives.  There are two means to do
@@ -871,12 +877,12 @@ void msg(const char *fmt, ...) <font color="red"><strong>{</strong></font>
 similar to the way in which time is handled:  A user annotates a model with
 explicit energy-consumption information, which is stored on a per-processor
 basis.  To obtain power, a thread can be created which regularly queries a
-processor for its energy consumption and divides by the sample period.</p><p>The power API is:</p><ul class="itemize"> <li><code>energy_t</code>: The basic energy type.  Currently defined as a <code>double</code></li>
- <li><code>void pEnergy(energy_t)</code>:  Adds the argument to the current
+processor for its energy consumption and divides by the sample period.</p><p>The power API is:</p><ul class="itemize"><li><code>energy_t</code>: The basic energy type.  Currently defined as a <code>double</code></li>
+<li><code>void pEnergy(energy_t)</code>:  Adds the argument to the current
 processor's energy consumption value.</li>
- <li><code>energy_t pGetEnergy(Processor p)</code>:  Returns the specified
+<li><code>energy_t pGetEnergy(Processor p)</code>:  Returns the specified
 processor's energy consumption value.  This clears the value.</li>
- <li><code>energy_t pReadEnergy(Processor p)</code>:  Returns the specified
+<li><code>energy_t pReadEnergy(Processor p)</code>:  Returns the specified
 processor's energy consumption value.  This does not clear the value.</li>
 </ul><p>A reporting thread might look something like:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
@@ -949,9 +955,9 @@ to <em>n</em> requests.  A thread will busy its processor until the request is
 satisfied.  The <code>Quantity</code> class uses a round-robin scheme to satisfy
 all in-bound requests: For each thread, it decrements the request by one and
 delays by the specified timeslice.  The busy processor is time-sliced so that
-higher-priority threads may gain some processing time.</p><p>The interface is:</p><ul class="itemize"> <li><code>Quantity::Quantity(int timeslice)</code>:  Declare an instance and
+higher-priority threads may gain some processing time.</p><p>The interface is:</p><ul class="itemize"><li><code>Quantity::Quantity(int timeslice)</code>:  Declare an instance and
 specify the timeslice amount.</li>
- <li><code>Quantity::request(int amount)</code>:  Request a specific amount.  If
+<li><code>Quantity::request(int amount)</code>:  Request a specific amount.  If
 there are no other requests, then this can be satisfied in <em>(timeslice *
 amount)</em> time units, but other requests will stretch this out.</li>
 </ul></div><br>
@@ -997,10 +1003,10 @@ library, <code>plasma.h</code>.</p><!-- I/O Routines -->
 </h3></td></tr></table>
 </div><div class="subsection">
 <p>A series of <strong>printf</strong>-style routines are provided which implement
-mutex-protected I/O routines.  These are:</p><ul class="itemize"> <li><code>int mprintf(const char *format, ... );</code></li>
- <li><code>int mfprintf(FILE *,const char *format, ...);</code></li>
- <li><code>int mvprintf(const char *format, va_list ap);</code></li>
- <li><code>int mvfprintf(FILE *,const char *format,va_list ap);</code></li>
+mutex-protected I/O routines.  These are:</p><ul class="itemize"><li><code>int mprintf(const char *format, ... );</code></li>
+<li><code>int mfprintf(FILE *,const char *format, ...);</code></li>
+<li><code>int mvprintf(const char *format, va_list ap);</code></li>
+<li><code>int mvfprintf(FILE *,const char *format,va_list ap);</code></li>
 </ul><p>These behave just like the standard routines, except that they are protected
 from preemption while they are executing.</p></div>
 <!-- String Routines -->
@@ -1011,8 +1017,8 @@ from preemption while they are executing.</p></div>
 <p>Strings, such as <strong>Processor</strong> names, are garbage collected in Plasma.  This may
 interfere with using the C++ string class, since it generally manages its own
 memory.  Thus, when passing a string to a <strong>Processor</strong> via <code>setName()</code> or a
-constructor, if the string is not a constant, you should duplicate it using <code>gc_strdup()</code>.</p><ul class="itemize"> <li><code>char *gc_strdup(const char *);</code></li>
- <li><code>char *gc_strdup(const std::string &amp;s);</code></li>
+constructor, if the string is not a constant, you should duplicate it using <code>gc_strdup()</code>.</p><ul class="itemize"><li><code>char *gc_strdup(const char *);</code></li>
+<li><code>char *gc_strdup(const std::string &amp;s);</code></li>
 </ul><p>Both of the above routines duplicate their argument using GC-allocated memory.</p></div>
 <!-- Random Number Generation -->
 <a name="Random-Number-Generation"></a>
@@ -1024,11 +1030,11 @@ as a parameter a generator class, which does the actual work of generating
 pseudo-random numbers.  The <em>Random</em> class wraps this generator and provides
 various functionality, such as supporting <strong>N</strong> streams of independent
 random number generation and the ability to read and write the state of these
-generators using C++ streams.</p><p>Several different generators are provided:</p><ul class="itemize"> <li><strong>LcgRand</strong>:  Linear-congruential generator with period of 2<sup>32</sup>.  This is a
+generators using C++ streams.</p><p>Several different generators are provided:</p><ul class="itemize"><li><strong>LcgRand</strong>:  Linear-congruential generator with period of 2<sup>32</sup>.  This is a
 reversible function.  Its state is stored in one 32-bit word.</li>
- <li><strong>KissRand</strong>:  A combination of several generators, it has a period of 2<sup>127</sup>.
+<li><strong>KissRand</strong>:  A combination of several generators, it has a period of 2<sup>127</sup>.
 It is not reversible.  Its state is stored in 5 32-bit words.</li>
- <li><strong>MtRand</strong>:  The Mersenne Twist random number generator has a period of
+<li><strong>MtRand</strong>:  The Mersenne Twist random number generator has a period of
 2<sup>19937</sup>-1.  It is reversible.  Its state is stored in 625 32-bit words.</li>
 </ul><p>The default generator is <strong>KissRand</strong>.</p><p>The simplest way to use <strong>Random</strong> is to simply generate an unsigned integer by
 calling <code>genrand()</code> or generate a double in the range of [0,1] by calling
@@ -1071,16 +1077,16 @@ Rand.load(is);                <font color="#ffa600"><em>// Load the generators' 
 </tbody></table><p><strong>Random</strong> may also generate numbers using several distributions.
 Currently, the distribution functions only support unsigned integers.  The
 various distributions are shown below.  For each function, the first parameter
-specifies which stream to use for generation.</p><ul class="itemize"> <li><code>unsigned uniform(unsigned s,unsigned base,unsigned limit)</code>:
+specifies which stream to use for generation.</p><ul class="itemize"><li><code>unsigned uniform(unsigned s,unsigned base,unsigned limit)</code>:
 Generates a uniform random number in [<em>base</em>, <em>limit</em>].  The
 <em>limit</em> must be greater than <em>base</em>.</li>
- <li><code>unsigned triangle(unsigned s,unsigned l,unsigned mode,unsigned
+<li><code>unsigned triangle(unsigned s,unsigned l,unsigned mode,unsigned
 u)</code>: Generates using a triangle distribution in [<em>l</em>, <em>u</em> \),
 with the peak of the distribution specified by <em>mode</em>.  Upper must be
 greater than lower.</li>
- <li><code>unsigned exponential(unsigned s,unsigned scale,double lambda)</code>:
+<li><code>unsigned exponential(unsigned s,unsigned scale,double lambda)</code>:
 Generates an exponential distribution in [0, <em>scale</em> \) with <em>lambda</em> describing the fall-off rate.</li>
- <li><code>unsigned normal(unsigned s,unsigned mean,double std_dev)</code>:
+<li><code>unsigned normal(unsigned s,unsigned mean,double std_dev)</code>:
 Generates a normal distribution with the curve centered around <em>mean</em>.</li>
 </ul></div>
 </div><br>
@@ -1091,6 +1097,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Dec  3 11:56:20 2004</em>.</font></p></div>
+Last update <em>Thu Jan 27 15:24:57 2005</em>.</font></p></div>
 </body>
 </html>

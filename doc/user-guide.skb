@@ -599,6 +599,11 @@ channels.])
 specifying ,(code [MultiConsumerClockChannel]) for the second template
 argument.])
 
+(p [If the clock period is set to 0, the behavior is the same as an unclocked
+channel.  This allows the user to switch between having a channel be clocked or
+unclocked by simply modifying a constructor argument, rather than changing the
+channel's type.])
+
 )
 
 (item (p [,(code [ResChan<class Data>]): The ,(b [spawn]) operator may be
@@ -647,54 +652,50 @@ int pMain(int argc,const char *argv\[\])
 
 )
 
+)
+
+(sssection :title "Multiple Consumers"
+
 (p [The basic Plasma channels all expect there to be a single consumer of
-data. While it is possible to create a multi-consumer channel, an easy way to
-emulate this behavior is to create a replicating thread.  For instance, the
-following structure, when declared, will replicate input data to all of the
-output channels:])
+data unless explicitly configured to support multiple consumers.  In such a
+case, only one consumer will receive the data.  This is useful in a situation,
+for example, where a group of consumers waits for the next available job.
+However, it does not allow for the broadcasting of information to a group of
+consumers all at once.  Instead, the ,(code [Broadcaster]) class exists.  It is
+an object which has an input channel and one or more output channels:  Any data
+sent to the input is reflected to the output.  It is templated on both its input
+and output channel types.  Another class, ,(code [ClkBroadcaster]), specializes
+,(code [Broadcaster]) to work with clocked systems.])
+
+(p [For example, you might use this in the following way:])
 
 (cprog [
 
-struct Tee {
-  Tee(IntChan &in,IntChans &out)
-  {
-    spawn(replicate(in,out));
-  }
-  int replicate(IntChan &in,IntChans &out)
-  {
-    while(1) {
-      int x = in.get();
-      pfor (IntChans::iterator i = out.begin(); i != out.end(); ++i) {
-        (*i).write(x);
-      }
+typedef Channel<int> IntChan;
+typedef Broadcaster<IntChan,IntChan> IntBroadcaster;
+
+int pMain(int argc,const char *argv\[\])
+{ 
+  const int Num = 5;
+  IntBroadcaster ib;
+
+  par {
+    producer(10,ib.get_source());
+    pfor (int i = 0; i != Num; ++i) {
+      consumer(i,ib.get_sink());
     }
-    return 0;
   }
-};
-
-])
-
-(p [You might use this in the following way:])
-
-(cprog [
- 
-IntChan in;
-
-IntChans out(5);
-
-Tee(in,out);
-
-par {
-  producer(10,in);
-  pfor (unsigned i = 0; i != out.size(); ++i) {
-    consumer(i,out\[i\]);
-  }
+  plasma::mprintf ("Done.\\n");
+  return 0;
 }
  
 ])
 
-(p [The data produced by the ,(code [producer]) function is sent to all of the
-,(code [consumer]) functions via the ,(code [Tee]) structure.])
+(p [Calling ,(code [get_source()]) returns the input channel, which is of type
+,(code [Broadcaster::input_channel]).  Calling ,(code [get_sink()]) adds a new
+output channel to the broadcast object and returns a reference to it.  This
+channel is of type ,(code [Broadcaster::output_channel]).  Each time that the
+producer writes data to the input channel, it is broadcast to all of the consumers.])
 
 (p [On the other hand, this only works if data may be replicated.  If this is
 not valid, e.g. a transaction should not be copied but instead should be
@@ -707,7 +708,7 @@ generally recommended to keep a channel as single-consumer only unless otherwise
 necessary.])
 
 (p [When a channel is configured as allowing multiple consumers, more than one
-thread may do a get from that channel, or use it in an alt statement.  For
+thread may do a ,(i [get]) from that channel, or use it in an ,(i [alt]) statement.  For
 example:])
 
 (cprog [

@@ -1,0 +1,68 @@
+//
+// Simple channel test using clocked channels with zero clock
+// period- this should act just like an unclocked channel.
+//
+
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+typedef plasma::ClockChan<int> ClkIntChan;
+
+void producer(int val,ClkIntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+    for (int j = 0; j != 100000; ++j) {
+      int x = x + 1;
+    }
+  }
+  chan.write(-1);
+  plasma::mprintf ("Producer done.\n");
+}
+
+void consumer(ClkIntChan &c0,ClkIntChan &c1,ClkIntChan &c2,ClkIntChan &c3)
+{
+  int donecount = 0;
+  while (donecount <  4) {
+    alt {
+      c0.port (int v) {
+        plasma::mprintf ("Got a value from port c0:  %d\n",v);
+        if (v < 0) ++donecount;
+      }
+      c1.port (int v) {
+        plasma::mprintf ("Got a value from port c1:  %d\n",v);
+        if (v < 0) ++donecount;
+      }
+      c2.port (int v) {
+        plasma::mprintf ("Got a value from port c2:  %d\n",v);
+        if (v < 0) ++donecount;
+      }
+      c3.port (int v) {
+        plasma::mprintf ("Got a value from port c3:  %d\n",v);
+        if (v < 0) ++donecount;
+      }
+    }
+  }
+  plasma::mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  const int NumChan = 4;
+  ClkIntChan channels[NumChan] = { ClkIntChan(0),
+                                   ClkIntChan(0), 
+                                   ClkIntChan(0), 
+                                   ClkIntChan(0) 
+  };
+
+  par {
+    producer(10,channels[0]);
+    producer(100,channels[1]);
+    producer(1000,channels[2]);
+    producer(10000,channels[3]);
+    consumer(channels[0],channels[1],channels[2],channels[3]);
+  }
+  plasma::mprintf ("Done.\n");
+  return 0;
+}

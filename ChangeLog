@@ -1,3 +1,16 @@
+2005-01-27  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Modified the broadcaster classes so that you don't specify how
+	many you need- you simply call get_sink() and that appends to the
+	list.  I changed the data structure from a vector to a list so
+	that you don't have to worry about relocations.
+
+	* Modified the clocked channels so that you can have one with a
+	zero clock period.  This becomes equivalent to a non-clocked
+	channel.  The reasoning behind this is that you can write a design
+	where everything is a clocked channel, then modify its behavior if
+	you want to, rather than having to change types.
+
         ====== plasma release 0.8.11 (v0_8_11) on Linux (cde-tx32-ldt189) ======
 
 2005-01-25  Brian Kahne  <bkahne@ibmoto.com>

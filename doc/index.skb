@@ -25,6 +25,10 @@
    
    (p (ref :url (string-append *web-url* "index.pdf")))
    
+   (p [The latest distribution tarball of Plasma may be found at:])
+   
+   (p (ref :url (string-append *web-url* *dist-file*)))
+   
    (section :title "Purpose of This Work"
 
       (p [The goal of the Plasma project is to investigate whether a language with

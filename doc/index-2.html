@@ -2,7 +2,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
 <title>The Plasma Language</title>
  <style type="text/css">
   <!--
@@ -19,23 +19,23 @@
 </head>
 
 <body class="chapter" bgcolor="#ffffff">
-<table width="100%" class="skribetitle"><tbody>
+<table width="100%" class="skribetitle" cellspacing="0" cellpadding="0"><tbody>
 <tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>2. The Plasma Language -- Examples</big></big></big></strong></div><center>
 </center>
 </td></tr></tbody></table>
 <table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
 <td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
 <br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
-<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
 </tbody></table>
 </td></tr>
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Examples</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Examples</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">2.1</td><td colspan="4" width="100%"><a href="index-2.html#Clocked-Hardware-Modeling">Clocked Hardware Modeling</a></td></tr>
  <tr><td valign="top" align="left">2.2</td><td colspan="4" width="100%"><a href="index-2.html#Network-System-Modeling">Network System Modeling</a></td></tr>
@@ -47,8 +47,8 @@
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
@@ -80,12 +80,12 @@
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">int pMain(int argc,const char *argv[]) 
 <font color="red"><strong>{</strong></font>
-  MemClkChan fetch_icache(Clock), icache_decode(Clock),
-    alu_dcache(Clock), regwrite1_dcache(Clock);
+  MemClkChan fetch_icache(Clock,0,1), icache_decode(Clock,0,1),
+    alu_dcache(Clock,0,1), regwrite1_dcache(Clock,0,1);
 
-  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), 
-    regread_muldiv(Clock), alu_regwrite1(Clock), 
-    muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+  PipeClkChan decode_regread(Clock/2,0,1), regread_alu(Clock,0,1), 
+    regread_muldiv(Clock,0,1), alu_regwrite1(Clock,0,1), 
+    muldiv_regwrite2(Clock,0,1), dcache_regwrite2(Clock,0,1);
 
   Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
   
@@ -255,7 +255,7 @@
       subset of C but it does illustrate how Plasma can be used for general
       application development.  It produces x86 assembly code which can be
       assembled by the GNU assembler and is based upon a compiler written in
-      Python by <a href="http://people.cs.uchicago.edu/~varmaa/mini_c/" class="http">Atul Varma</a>.</p><p>The compiler works as follows:</p><ul class="itemize"> <li>The <a href="./source-code-5.html#Lexer">lexer</a>, implemented in <a href="http://www.gnu.org/software/bison/bison.html" class="http">bison</a>, operates
+      Python by <a href="http://people.cs.uchicago.edu/~varmaa/mini_c/" class="http">Atul Varma</a>.</p><p>The compiler works as follows:</p><ul class="itemize"><li>The <a href="./source-code-5.html#Lexer">lexer</a>, implemented in <a href="http://www.gnu.org/software/bison/bison.html" class="http">bison</a>, operates
 	 in its own thread and tokenizes each input file (unlike most compilers,
 	 this one can handle more than one C file).  These tokens are sent over
 	 a channel to the parser.  The input file is memory mapped using <code>mmap</code> so that identifiers can be referenced using <a href="./source-code-5.html#String-Class">a
@@ -263,19 +263,19 @@
 	 that a new string has to be generated is when the tokenizer encounters
 	 C's automatic string concatenation.  In that case, a new string is
 	 allocated using the garbage collector.</li>
- <li>The <a href="./source-code-5.html#Parser">parser</a>, implemented
+<li>The <a href="./source-code-5.html#Parser">parser</a>, implemented
 	 using <a href="http://www.hwaci.com/sw/lemon/" class="http">lemon</a>, also
 	 operates in its own thread.  It just creates the <a href="./source-code-5.html#cc/Node.h">AST</a>.  When the file has been completely parsed,
 	 it then spawns off a thread to perform the rest of the compilation
 	 steps for that translation unit.  The lexer and parser threads are
 	 started in the main program <a href="./source-code-5.html#cc/main.pa">here</a>.</li>
- <li><p>The rest of the compilation steps originate <a href="./source-code-5.html#cc/Compiler.pa">here</a>.  For each translation unit, a
+<li><p>The rest of the compilation steps originate <a href="./source-code-5.html#cc/Compiler.pa">here</a>.  For each translation unit, a
 	    symbol table is first created.  This is done serially due to the
 	    sequential nature of symbol lookup in C.  The <a href="./source-code-5.html#Symbol-Table">symbol
 	    table</a> is implemented as a two-step
-	    look-up process:</p><ul class="itemize"> <li>A single hash table is used to map symbols to
+	    look-up process:</p><ul class="itemize"><li>A single hash table is used to map symbols to
 	       small-integer indices.</li>
- <li>The hash value is then used to index into an array that
+<li>The hash value is then used to index into an array that
 	       stores the current environment.  This array stores pointers to
 	       a linked-list of environment objects.</li>
 </ul><p>When a new scope is entered, a new array is created, which is
@@ -318,6 +318,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Dec  3 11:56:20 2004</em>.</font></p></div>
+Last update <em>Thu Jan 27 15:24:57 2005</em>.</font></p></div>
 </body>
 </html>

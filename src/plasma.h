@@ -195,35 +195,25 @@ namespace plasma {
     // channel and returns a reference.  Since these are generally single-consumer
     // channels, each consumer should get a unique channel.  You can call get_sink with
     // an argument to get a specific channel if necessary.
-    Broadcaster(unsigned n,bool clear = false,const InChan & = InChan(),const OutChan & = OutChan());
+    Broadcaster(bool clear = false,const InChan & = InChan(),const OutChan & = OutChan());
 
     bool empty() const { return _sinks.empty(); };
     unsigned size() const { return _sinks.size(); };
-
-    // Cursor access/manipulation.
-    void reset_cursor() { _cursor = 0; };
-    unsigned get_cursor() const { return _cursor; };
-    void set_cursor(unsigned c) { _cursor = c; };
 
     // Gain access to the input channel.
     InChan &get_source() { return _source; };
     const InChan &get_source() const { return _source; };
 
-    // Retrieve a reference to a specific output channel.
-    OutChan &get_sink(unsigned n) { return _sinks.at(n); };
-    const OutChan &get_sink(unsigned n) const { return _sinks.at(n); };
-
-    // Gain access to the next channel, as specified by the cursor.
-    OutChan &get_sink() { return _sinks.at(_cursor++); };
-    const OutChan &get_sink() const { return _sinks.at(_cursor++); };
+    // Gain access to the next channel.
+    OutChan &get_sink() { _sinks.push_back(_out); return _sinks.back(); };
 
   private:
     static void reflect(void *);
 
-    typedef std::vector<OutChan,traceable_allocator<OutChan> > Sinks;
+    typedef std::list<OutChan,traceable_allocator<OutChan> > Sinks;
 
     bool     _clear;
-    mutable unsigned _cursor;
+    OutChan  _out;
     InChan   _source;
     Sinks    _sinks;
   };
@@ -238,19 +228,15 @@ namespace plasma {
     typedef ClockChan<Data> Chan;
     typedef Broadcaster<ClockChan<Data>, Channel<Data> > Base;
    
-    // n:    Number of sinks.
     // p:    Clock period.
     // s:    Clock skew (default is 0).
     // size: Queue size for clocked channel (default is 1).
-    ClkBroadcaster(unsigned n,plasma::ptime_t p = DefaultClockPeriod ,plasma::ptime_t s = 0,unsigned size = 1) : 
-      Base(n,true,Chan(p,s,size)) {};
+    ClkBroadcaster(plasma::ptime_t p = DefaultClockPeriod ,plasma::ptime_t s = 0,unsigned size = 1) : 
+      Base(true,Chan(p,s,size)) {};
     
     // Same interface as Broadcaster.
     using Base::empty;
     using Base::size;
-    using Base::reset_cursor;
-    using Base::get_cursor;
-    using Base::set_cursor;
     using Base::get_source;
     using Base::get_sink;
   };
@@ -429,10 +415,12 @@ namespace plasma {
 
   /////////////// ClockChan ///////////////
 
+  // We have current data if we have data (duh!) and it's either
+  // older than now or we have a zero clock period.
   template <typename Data,typename Base,typename Container>
   bool ClockChan<Data,Base,Container>::current_data() const
   {
-    return (!empty() && curr_data_time() < curr_time());
+    return (!empty() && (!Base::period() || curr_data_time() < curr_time()));
   }
 
   template <typename Data,typename Base,typename Container>
@@ -508,11 +496,10 @@ namespace plasma {
   //
   
   template <typename InChan,typename OutChan>
-  Broadcaster<InChan,OutChan>::Broadcaster(unsigned n,bool clear,const InChan &in,const OutChan &out) : 
+  Broadcaster<InChan,OutChan>::Broadcaster(bool clear,const InChan &in,const OutChan &out) : 
     _clear(clear),
-    _cursor(0),
-    _source(in),
-    _sinks(n,out)
+    _out(out),
+    _source(in)
   {
     // Start the refector thread.
     pSpawn(reflect,this,0);

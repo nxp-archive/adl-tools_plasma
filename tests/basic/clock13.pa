@@ -133,7 +133,7 @@ int pMain(int,const char **)
   IntClkChan three_four(1,0,size);
   IntClkChan four_five(1,0,size);
   
-  IntBroadcast flush(5);
+  IntBroadcast flush;
 
   Data.resize(5);
 

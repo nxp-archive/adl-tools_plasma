@@ -2,7 +2,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1">
 <title>The Plasma Language</title>
  <style type="text/css">
   <!--
@@ -19,23 +19,23 @@
 </head>
 
 <body class="chapter" bgcolor="#ffffff">
-<table width="100%" class="skribetitle"><tbody>
+<table width="100%" class="skribetitle" cellspacing="0" cellpadding="0"><tbody>
 <tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>3. The Plasma Language -- Future Work</big></big></big></strong></div><center>
 </center>
 </td></tr></tbody></table>
 <table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
 <td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
 <br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
-<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
 </tbody></table>
 </td></tr>
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Future Work</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Future Work</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">3.1</td><td colspan="4" width="100%"><a href="index-3.html#Productization-Improvements">Productization Improvements</a></td></tr>
  <tr><td valign="top" align="left">3.2</td><td colspan="4" width="100%"><a href="index-3.html#Fault-Tolerance-Extensions">Fault Tolerance Extensions</a></td></tr>
@@ -48,8 +48,8 @@
 </tbody></table>
 </center>
 <br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
-<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
-<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
@@ -73,7 +73,7 @@
 </h3></td></tr></table>
 </div><div class="section">
 <p>This section lists various improvements which would be made for a
-      production-ready version of Plasma:</p><ul class="itemize"> <li><p>The final product will feature a thread-aware compiler which
+      production-ready version of Plasma:</p><ul class="itemize"><li><p>The final product will feature a thread-aware compiler which
 	    would produce more highly optimized code, e.g. on a thread-yield,
 	    the compiler would only save the state of live registers.</p><p>A thread-aware compiler will be able to perform additional
 	    checking to ensure program correctness.  For example, a
@@ -84,13 +84,13 @@
 	    portions.  For example, two threads could work on two
 	    non-overlapping slices of an array by creating two array slices.
 	    This might be implemented in a manner similar to the <code>valarray</code> and <code>slice</code> classes of the standard library.</p></li>
- <li><p>The prototype version of Plasma uses only user-mode threads.  In
+<li><p>The prototype version of Plasma uses only user-mode threads.  In
 	    other words, all threads currently run in the same process.  This
 	    will be enhanced to support kernel mode threads.  The user will be
 	    able to designate that a <code>Processor</code> should be placed in
 	    another kernel thread.  This will allow true multi-threading on a
 	    multi-way machine.</p></li>
- <li><p>The compiler will be aware of the garbage collector and will
+<li><p>The compiler will be aware of the garbage collector and will
 	    optimize accordingly.  For instance, the default <code>new</code>
 	    operator for a class would allocate from the atomic heap if the
 	    class did not contain any internal pointers.  The default behavior
@@ -123,7 +123,7 @@
 	    C++ library that is linked in would not change.</p><p>Other improvements might include scan functions for Plasma
 	    classes, compaction for Plasma classes, and incremental
 	    collection.</p></li>
- <li><p>Plasma is designed to be a garbage-collected language, so
+<li><p>Plasma is designed to be a garbage-collected language, so
 	    garbage collector aware containers are a necessity.  The standard containers,
 	    e.g. <code>vector</code>, <code>list</code>, etc., would be traced by the
 	    conservative collector.  Currently, one has to write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -140,7 +140,7 @@ vector&lt;int,traceable_allocator&lt;int&gt; &gt;
 	    allocate from the managed heap and will not invoke destructors when
 	    destroyed.  An efficient, managed string class will also be
 	    added.</p></li>
- <li><p>To be useful for modeling hardware, Plasma will need a data-type
+<li><p>To be useful for modeling hardware, Plasma will need a data-type
 	    for modeling arbitrary-width integers.  This will be implemented
 	    using a templated numerical class such as that found in SystemC.  In
 	    fact, we might just want to use the SystemC class, if licensing
@@ -150,7 +150,7 @@ vector&lt;int,traceable_allocator&lt;int&gt; &gt;
 	    standard integers, 64-bit or smaller integers would use long-long
 	    arithmetic, and 128-bit or smaller vectors might be optimized to use
 	    Altivec.</p></li>
- <li><p>For easily modifying configurations, a scripting interface is
+<li><p>For easily modifying configurations, a scripting interface is
 	    desirable.  We would like to make the Plasma interface language
 	    independent and have the actual implementation be hidden behind an
 	    interface.  For example, the interface might provide methods to run
@@ -161,14 +161,14 @@ vector&lt;int,traceable_allocator&lt;int&gt; &gt;
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.2 Fault Tolerance Extensions</font>
 </h3></td></tr></table>
 </div><div class="section">
-<p>Fault tolerance will be added to Plasma in three main ways:</p><ul class="itemize"> <li><p>All system signals will be mapped to C++ exceptions.  So, for
+<p>Fault tolerance will be added to Plasma in three main ways:</p><ul class="itemize"><li><p>All system signals will be mapped to C++ exceptions.  So, for
 	    example, a segmentation fault will generate an exception which can
 	    be caught and handled using <code>catch</code> blocks, rather than
 	    having to muck around with POSIX signal handlers.  This will be true
 	    for any special exceptions provided by a system for specific fault
 	    tolerance exceptions, e.g. memory errors, interface timeouts,
 	    etc.</p></li>
- <li><p>An exception which propagates to the top of a thread will be
+<li><p>An exception which propagates to the top of a thread will be
 	    caught and held until another thread tries to wait on that thread.
 	    The exception will then be propagated to all waiting threads.  This
 	    means that an exception in a <code>par</code> block will propagate to
@@ -178,7 +178,7 @@ vector&lt;int,traceable_allocator&lt;int&gt; &gt;
 	    on the relevant <code>Result</code> object.  In this way, exceptions
 	    will propagate across thread boundaries, allowing them to be dealt
 	    with via the appropriate <code>catch</code> block.</p></li>
- <li><p>A feature for specifying alternative implementations will be
+<li><p>A feature for specifying alternative implementations will be
 	    added to Plasma.  This follows the basic concept of <em>recovery
 	    blocks</em>:  If a particular piece of code fails, the system will
 	    recover and try an alternative method for doing the same thing.</p><p>If a method has an attribute of <code>pRecover</code>, it will be
@@ -282,7 +282,7 @@ int Foo::foo(int x,int y)
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.4 Language Enhancements</font>
 </h3></td></tr></table>
 </div><div class="section">
-<ul class="itemize"> <li><p>Default initialization for all built-in variables will be added.
+<ul class="itemize"><li><p>Default initialization for all built-in variables will be added.
 	    This inconsistency in the C++ language is frequently the source of
 	    difficult to find bugs and is completely unnecessary: A good
 	    optimizing compiler can remove unneeded initializations.  For
@@ -296,11 +296,11 @@ int i; <font color="#ffa600"><em>// Would be initialized to 0. </em></font>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>Null-pointer checking will be performed.  This can be
+<li><p>Null-pointer checking will be performed.  This can be
 	    implemented without adding extra runtime overhead: A null-pointer
 	    access will cause a protection fault, which can then generate a C++
 	    exception.</p></li>
- <li><p>A <code>let</code> statement which would allow for the declaration
+<li><p>A <code>let</code> statement which would allow for the declaration
 	    of variables without explicitly stating their type will be added.
 	    The type would be implied from the type of the initializing
 	    expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -313,15 +313,15 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>A <code>final</code> block will be added to the language.  This may
+<li><p>A <code>final</code> block will be added to the language.  This may
 	    only follow a <code>try</code> or <code>catch</code> block and will be
 	    executed whether an exception occurs or not.</p></li>
- <li><p>A proper module system will be added.  C++'s use of header files
+<li><p>A proper module system will be added.  C++'s use of header files
 	    for conveying declaration information make for extremely inefficient
 	    compilation.  This is compounded by the fact that templates need to
 	    be in header files.  A proper module system could dramatically speed
 	    up development time.</p></li>
- <li><p>Nested functions and lambda functions with true closures will be
+<li><p>Nested functions and lambda functions with true closures will be
 	    added.  A closure would only be allocated if control-flow analysis
 	    indicated that a function might escape its parent's scope.  In that
 	    case, the relevant local variables would be placed in a closure.
@@ -333,19 +333,19 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 	    as the functor argument.  Since <code>foreach</code> can be specialized
 	    for different data structures, it can potentially yield a faster
 	    solution for iterating over a container than a for-loop.</p></li>
- <li><p>A meta-object protocol/advanced macro processor will be added.
+<li><p>A meta-object protocol/advanced macro processor will be added.
 	    As mentioned above, the current Plasma implementation uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a> to
 	    convert Plasma into C++.  By making such a feature a part of Plasma
 	    itself, new language features could be added without changing the
 	    actual language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
 	    parallelism in the language would be implemented as low-level
 	    primitives which would not be directly used by the user.</p></li>
- <li><p>Other possible language enhancements might include:</p><ul class="itemize"> <li>Pattern matching, such as that found in the <a href="http://www.kernel.pl/~malekith/gont/index.html" class="http">Gont
+<li><p>Other possible language enhancements might include:</p><ul class="itemize"><li>Pattern matching, such as that found in the <a href="http://www.kernel.pl/~malekith/gont/index.html" class="http">Gont
 	       language</a>.</li>
- <li>An alternative system for declarations, such as that
+<li>An alternative system for declarations, such as that
 	       described in <em>The Design and Evolution of C++</em>, page 46 and
 	       implemented in the preprocessor <a href="http://www.op59.net/cmm/cmm-0.28/readme.html" class="http">Cmm</a>.</li>
- <li>An alternative template syntax.  The goal is to make it
+<li>An alternative template syntax.  The goal is to make it
 	       easier to write compile-time polymorphic code.  Therefore, we
 	       would like to experiment with how to make it much easier to write
 	       generic functions, possibly borrowing ideas from the ML family of
@@ -375,6 +375,6 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Dec  3 11:56:20 2004</em>.</font></p></div>
+Last update <em>Thu Jan 27 15:24:57 2005</em>.</font></p></div>
 </body>
 </html>

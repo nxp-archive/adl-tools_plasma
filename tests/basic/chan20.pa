@@ -18,6 +18,7 @@ typedef IntBroadcaster::output_channel output_channel;
 
 void producer(int val,input_channel &chan) 
 {
+  pDelay(1);
   for (int i = 0; i != 10; ++i) {
     chan.write(val+i);
   }
@@ -27,6 +28,7 @@ void producer(int val,input_channel &chan)
 
 void consumer(int id,output_channel &chan)
 {
+  pDelay(1);
   cout << "Starting consumer." << endl;
   int v = 100;
   do {
@@ -40,11 +42,12 @@ void pSetup(ConfigParms &cp) { cp._busyokay = true; }
 
 int pMain(int argc,const char *argv[])
 { 
-  IntBroadcaster ib(5);
+  const int Num = 5;
+  IntBroadcaster ib;
 
   par {
     producer(10,ib.get_source());
-    pfor (unsigned i = 0; i != ib.size(); ++i) {
+    pfor (int i = 0; i != Num; ++i) {
       consumer(i,ib.get_sink());
     }
   }

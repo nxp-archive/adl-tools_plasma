@@ -16,7 +16,9 @@ skribe_src = $(shell ls *.skb)
 
 TESTDIR = $(top_srcdir)/tests
 
-SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")"
+DISTFILE = $(PACKAGE)-$(VERSION).tar.gz
+
+SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-file* \"$(DISTFILE)\")"
 
 DOCCLEANFILES = *.sui *.html *.pdf *.dvi *.tex *.log *.aux *.out
 
@@ -41,6 +43,11 @@ docinstall: all-am
 	done
 	echo " $(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO)";
 	$(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO);
+    ## Remove from the web directory any existing distributions.
+	rm -f $(DESTDIR)/$(webdir)/$(PACKAGE)*.tar.gz
+    ## Final step:  Make a distribution and copy it to the web directory.
+	(cd $(top_srcdir) && $(MAKE) dist && cp $(DISTFILE) $(DESTDIR)$(webdir) )
+
 
 index.html: $(skribe_src) source-code.html
 

@@ -59,8 +59,8 @@ void pSetup(ConfigParms &cp)
 
 int pMain(int argc,const char *argv[])
 {
-  IntClkBroadcaster ibc(4,Clock);
-  IntClkBroadcaster ibf(4,Clock);
+  IntClkBroadcaster ibc(Clock);
+  IntClkBroadcaster ibf(Clock);
 
   // We specifically launch fewer consumers than total number of
   // sinks so that we make sure that the broadcast functionality works-
@@ -69,9 +69,9 @@ int pMain(int argc,const char *argv[])
   par {
     producer(ibc.get_source());
     flusher (ibf.get_source());
-    consumer(ibc.get_sink(0),ibf.get_sink(0),1);
-    consumer(ibc.get_sink(1),ibf.get_sink(1),2);
-    consumer(ibc.get_sink(2),ibf.get_sink(2),3);
+    consumer(ibc.get_sink(),ibf.get_sink(),1);
+    consumer(ibc.get_sink(),ibf.get_sink(),2);
+    consumer(ibc.get_sink(),ibf.get_sink(),3);
   }
 
   return 0;

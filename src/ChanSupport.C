@@ -68,7 +68,7 @@ namespace plasma {
   // Returns true if we're on a clock edge, given a clock period.
   bool ClockChanImpl::is_phi() const
   {
-    return (pTime() % _period) == _skew;
+    return (!_period) ? true : ((pTime() % _period) == _skew);
   }
 
   // Returns the time of the next clock cycle.  We compute the time of the 
@@ -139,7 +139,7 @@ namespace plasma {
 
   void SingleConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if ((is_phi() && current_data)) {
+    if ((is_phi() && current_data) || !period()) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker();
@@ -240,7 +240,7 @@ namespace plasma {
   // and ignore other consumers.
   void MultiConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if (is_phi() && current_data) {
+    if ( (is_phi() && current_data) || !period()) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker(_cons.begin());

@@ -91,6 +91,7 @@ check_PROGRAMS = \
 	clock12 \
 	clock13 \
 	clock14 \
+	clock15 \
 	quantity1 \
 	gc1
 
@@ -344,6 +345,9 @@ clock13_DEPENDENCIES = $(DEPENDENCIES)
 clock14_SOURCES = clock14.pa
 clock14_DEPENDENCIES = $(DEPENDENCIES)
 
+clock15_SOURCES = clock15.pa
+clock15_DEPENDENCIES = $(DEPENDENCIES)
+
 quantity1_SOURCES = quantity1.pa
 quantity1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -390,7 +394,6 @@ include ./$(DEPDIR)/chan24.Po
 include ./$(DEPDIR)/chan25.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
-include ./$(DEPDIR)/spawn4.Po
 include ./$(DEPDIR)/mutex1.Po
 include ./$(DEPDIR)/pri1.Po
 include ./$(DEPDIR)/pri2.Po
@@ -428,6 +431,7 @@ include ./$(DEPDIR)/clock11.Po
 include ./$(DEPDIR)/clock12.Po
 include ./$(DEPDIR)/clock13.Po
 include ./$(DEPDIR)/clock14.Po
+include ./$(DEPDIR)/clock15.Po
 include ./$(DEPDIR)/quantity1.Po
 include ./$(DEPDIR)/gc1.Po
 
