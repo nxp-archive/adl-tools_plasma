@@ -179,34 +179,6 @@ namespace plasma {
     return (!locked() && (_cur->priority() == 0));
   }
 
-  // Causes the current thread to wait on the specified thread.
-  void Cluster::wait(Thread *t)
-  {
-    assert(t);
-    // Prevent preemption.
-    lock();
-    if (t->done()) {
-      // Thread has already finished.
-      unlock();
-      return;
-    }
-    // Not done- add waiting thread to other thread's wait queue.
-    t->add_waiter(_cur);
-    //  print_ready();
-    // Block and continue to another thread.
-    exec_block();
-  }
-
-  HandleType Cluster::sleep()
-  {
-    // Prevent preemption.
-    lock();
-    // Switch to next thread- do not add this thread back to ready queue.
-    exec_block();
-    // Return current handle of this thread.
-    return _cur->handle();
-  }
-
   // This adds a thread to a processor and adds the processor
   // to the processor queue if the processor is either not busy or
   // it is busy and the thread has a higher priority than the busy
@@ -243,6 +215,18 @@ namespace plasma {
     unlock();
   }
 
+  // This will wake a busy processor- it's usually used in conjunction with
+  // busysleep.
+  void Cluster::busywake(Thread *t,HandleType h)
+  {
+    lock();
+    t->setHandle(h);
+    Proc *p = t->proc();
+    p->clearBusyThread();
+    add_proc(p);
+    unlock();
+  }
+
   void Cluster::delay(ptime_t t)
   {
     lock();
@@ -252,7 +236,95 @@ namespace plasma {
     exec_block();
   }
 
-  void Cluster::busy(ptime_t total_time)
+  // Causes the current thread to wait on the specified thread.
+  void Cluster::wait(Thread *t)
+  {
+    assert(t);
+    // Prevent preemption.
+    lock();
+    if (t->done()) {
+      // Thread has already finished.
+      unlock();
+      return;
+    }
+    // Not done- add waiting thread to other thread's wait queue.
+    t->add_waiter(_cur);
+    //  print_ready();
+    // Block and continue to another thread.
+    exec_block();
+  }
+
+  // This causes a thread to sleep until something else wakes it up.
+  HandleType Cluster::sleep()
+  {
+    // Prevent preemption.
+    lock();
+    // Switch to next thread- do not add this thread back to ready queue.
+    exec_block();
+    // Return current handle of this thread.
+    return _cur->handle();
+  }
+
+  // Assuming we've setup the thread and processor to be busy, now we update time.
+  void Cluster::do_busy(ptime_t requested_time)
+  {
+    // If we already have a busy thread, it's b/c we're a higher priority thread
+    // preempting the other.  Add the other back to the schedule queue so that it'll
+    // be run later.
+    _curproc->clearBusyThread();
+    // In case of processors sharing an issue queue, make sure that thread has
+    // correct processor.
+    _cur->setProc(_curproc);
+    // Add to various busy queues.
+    thesystem.add_busy(requested_time,_cur);
+    // We have to move the scheduling thread from the old processor to the
+    // new processor.  We do this *before* updating the processor so that we make
+    // our decision of whether to advance time or not based upon whether real threads exist,
+    // not just the scheduling thread.
+    _main.proc()->remove_ready(&_main);
+    // Update- we know something is available b/c we just added something.
+    // This updates the time.
+    get_new_proc();
+    // Now add the scheduling thread back in to the new processor.
+    _main.setProc(_curproc);
+    _curproc->add_ready(&_main);
+    // Switch to new item w/o adding current thread to ready queue.
+    // We make sure that we're not going to switch to ourselves.  This can
+    // occur if, for example, there is only one thread in the processor.  This
+    // means that we've updated the time and what we added above is now back in
+    // the queue.
+    if (_curproc->next_ready() != _cur) {
+      // Switch to next thread.
+      exec_block();
+    } else {
+      // We would be switching to ourselves, so just remove from queue.
+      _curproc->get_ready();
+    }
+  }
+
+  // This is a cross between sleep and busy.  The processor remains busy
+  // until something wakes it up.
+  HandleType Cluster::busysleep(ptime_t ts)
+  {
+    if (!thesystem.busyokay()) {
+      pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
+    }
+    // Loop until the handle is updated.  This handles the case where a higher priority thread
+    // wakes up the processor- we don't want to continue until we've gotten an actual signal.
+    _cur->clearHandle();
+    do {
+      // Setup the thread.  Do not add to busy queue, since we're doing this for an indefinite
+      // amount of time.
+      do_busy(ts);
+    } while (!_cur->validHandle());
+    // Return current handle of this thread.
+    return _cur->handle();
+  }
+
+  // Normal busy call- this will make the processor busy for a certain amount of time.
+  // The user can supply a timeslice amount for lowest-priority processes.  If <= 0, the
+  // default timeslice will be used.
+  void Cluster::busy(ptime_t total_time,ptime_t userts)
   {
     if (!thesystem.busyokay()) {
       pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
@@ -263,39 +335,11 @@ namespace plasma {
     while (total_time) {
       // Add to system busy queue.
       // If we're dealing with a time-slice process, only add for the timeslice amount.
-      ptime_t requested_time = (_cur->priority() || total_time < _busyts) ? total_time : _busyts;
-      // If we already have a busy thread, it's b/c we're a higher priority thread
-      // preempting the other.  Add the other back to the schedule queue so that it'll
-      // be run later.
-      _curproc->clearBusyThread();
-      // In case of processors sharing an issue queue, make sure that thread has
-      // correct processor.
-      _cur->setProc(_curproc);
-      // Add thread to system busy queue.  This also adds it back to the processor's busy queue.
-      thesystem.add_busy(requested_time,_cur);
-      // We have to move the scheduling thread from the old processor to the
-      // new processor.  We do this *before* updating the processor so that we make
-      // our decision of whether to advance time or not based upon whether real threads exist,
-      // not just the scheduling thread.
-      _main.proc()->remove_ready(&_main);
-      // Update- we know something is available b/c we just added something.
-      // This updates the time.
-      get_new_proc();
-      // Now add the scheduling thread back in to the new processor.
-      _main.setProc(_curproc);
-      _curproc->add_ready(&_main);
-      // Switch to new item w/o adding current thread to ready queue.
-      // We make sure that we're not going to switch to ourselves.  This can
-      // occur if, for example, there is only one thread in the processor.  This
-      // means that we've updated the time and what we added above is now back in
-      // the queue.
-      if (_curproc->next_ready() != _cur) {
-        // Switch to next thread.
-        exec_block();
-      } else {
-        // We would be switching to ourselves, so just remove from queue.
-        _curproc->get_ready();
-      }
+      ptime_t requested_time = 
+      (_cur->priority() || total_time < _busyts) ? total_time : 
+      ((userts > 0) ? userts : _busyts);
+      // Update time.
+      do_busy(requested_time);
       // Update time remaining- loop if we still have busy stuff to do.
       //cout << "\nThread " << _cur << ":  woke up at " << time() << ", initial time remaining is " << total_time 
       //      << ", thread used " << _cur->time() << endl;

@@ -13,7 +13,7 @@ if test -z "$*"; then
   echo "Arguments may be passed on the \`$0\` command line."
 fi
 
-autoreconf --install --symlink --include=./macros
+autoreconf --install --symlink --include=./macros || exit 1
 
 echo "Done with automake processing."
 

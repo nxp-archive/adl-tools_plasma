@@ -1,0 +1,36 @@
+//
+// Simple test of the quantity class.
+//
+#include <iostream>
+
+#include "Quantity.h"
+
+using namespace std;
+using namespace plasma;
+
+Processor p0, p1, p2;
+
+void foo (int id,int amount,Quantity &q)
+{
+  cout << pTime() << ":  thread " << id << " starting" << endl;
+  q.request(amount);
+  cout << pTime() << ":  thread " << id << " done" << endl;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  Quantity quantity(10);
+
+  par {
+    on(p0) { foo(0,6,quantity); }
+    on(p1) { foo(1,6,quantity); }
+    on(p2) { foo(2,6,quantity); }
+  }
+  cout << "Done." << endl;
+  return 0;
+}

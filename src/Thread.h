@@ -59,6 +59,8 @@ namespace plasma {
     void setProc(Proc *p) { _proc = p; };
 
     HandleType handle() const { return _handle; };
+    bool validHandle() const { return (_handle.first >= 0); };
+    void clearHandle() { _handle = HandleType(-1,-1); };
     void setHandle(HandleType h) { _handle = h; };
 
     unsigned priority() const { return _priority; };

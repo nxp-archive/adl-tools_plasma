@@ -74,6 +74,7 @@ check_PROGRAMS = \
 	clock1 \
 	clock2 \
 	clock3 \
+	quantity1 \
 	gc1
 
 par1_SOURCES = par1.pa
@@ -273,6 +274,9 @@ clock2_DEPENDENCIES = $(DEPENDENCIES)
 clock3_SOURCES = clock3.pa
 clock3_DEPENDENCIES = $(DEPENDENCIES)
 
+quantity1_SOURCES = quantity1.pa
+quantity1_DEPENDENCIES = $(DEPENDENCIES)
+
 gc1_SOURCES = gc1.pa
 gc1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -343,6 +347,7 @@ DEP_FILES=\
 	./$(DEPDIR)/clock1.Po \
 	./$(DEPDIR)/clock2.Po \
 	./$(DEPDIR)/clock3.Po \
+	./$(DEPDIR)/quantity1.Po \
 	./$(DEPDIR)/gc1.Po
 
 include ./$(DEPDIR)/par1.Po
@@ -404,6 +409,7 @@ include ./$(DEPDIR)/time5.Po
 include ./$(DEPDIR)/clock1.Po
 include ./$(DEPDIR)/clock2.Po
 include ./$(DEPDIR)/clock3.Po
+include ./$(DEPDIR)/quantity1.Po
 include ./$(DEPDIR)/gc1.Po
 
 include $(top_srcdir)/tests/Makefile.rules

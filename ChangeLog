@@ -1,3 +1,32 @@
+2004-10-05  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Moved the energy API out of Interface and Proc and into a
+	separate class.  This is a thin wrapper around the ProcValue
+	class, which is a hash keyed by processors.  The idea is that the
+	user can now record any value- energy just being a common
+	specialization.
+
+	* Created the Quantity class to handle the case where the user
+	wants to model a limited resource that multiple threads/processors
+	are trying to get.  This uses a new channel, BusyChan, which is
+	like a simple channel, except that it causes the process to go
+	busy if a read is attempted and no data is available.
+
+	To implement BusyChan, a new form of busy was added (pBusySleep)
+	which keeps a processor busy until it is awoken (pBusyWake).
+
+	The Quantity class works like this:
+
+	1.  The user declares the class and specifies a timeslice.  This
+	corresponds to the amount of time it takes to do 1 of that
+	quantity, e.g. a bus object might take 10 time units to do a read.
+
+	2.  A thread calls Quantity::request(int amount), where amount
+	specifies the number of items it needs.  The class then does a
+	round-robin on all requesting threads, taking up a timeslice and
+	decrementing the count of a thread.  When a thread's request has
+	decremented to zero, the requesting thread's processor is un-busied.
+	
         ======= plasma release 0.7.0 (v0_7_0) on Linux (cde-tx32-ldt189) =======
 
 2004-09-23  Brian Kahne  <bkahne@ibmoto.com>

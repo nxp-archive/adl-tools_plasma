@@ -329,6 +329,11 @@ my @Tests = (
 	      cmd     => "./clock3",
 	      checker => \&check_clock3,
 	     },
+	     # Simple test of the quantity class.
+	     {
+	      cmd     => "./quantity1",
+	      checker => \&check_quantity1,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -1187,6 +1192,18 @@ EOD
 140: current energy:  20, current power:2mW
 EOD
 
+}
+
+sub check_quantity1 {
+  str_rdiff(@_[0],<<'EOD');
+0:  thread 0 starting
+0:  thread 1 starting
+0:  thread 2 starting
+160:  thread 2 done
+170:  thread 0 done
+180:  thread 1 done
+Done.
+EOD
 }
 
 ##

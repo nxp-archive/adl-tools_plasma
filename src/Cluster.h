@@ -44,6 +44,9 @@ namespace plasma {
 
     // Wake specified thread, switching to it and supplying specified handle.
     void wake(THandle t,HandleType h);
+    // Wake a busy processor (used with busysleep).
+    void busywake(Thread *t,HandleType h);
+
 
     // Set the priority of the current thread.  Does not do any scheduling.
     // Note:  0 is highest priority from the point of view of the interface,
@@ -65,8 +68,11 @@ namespace plasma {
     void delay(ptime_t);
 
     // Consume the specified amount of time.
-    void busy(ptime_t);
+    void busy(ptime_t busyt,ptime_t userts);
 
+    // Busy the processor until somebody wakes it up.
+    HandleType busysleep(ptime_t userts);    
+    
     // Current time.
     ptime_t time() const;
 
@@ -110,6 +116,8 @@ namespace plasma {
     // Add thread back to its processor, awakening the thread if not busy or
     // waking thread is of higher priority.
     void add_thread_to_proc(Thread *t);
+    // Internal routine for busy thread setup.
+    void do_busy(ptime_t);    
 
     // Execute thread new, saving data in old.
     void exec_ready(THandle newthread,THandle oldthread);

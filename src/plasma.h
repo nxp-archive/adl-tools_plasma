@@ -24,36 +24,70 @@ namespace plasma {
   char *gc_strdup(const char *);
   char *gc_strdup(const std::string &s);
 
-  // Basic channel class:  Stores only a single piece of data, so 
-  // a second write before a read will block.  This is generally
-  // used bya single producer to go to a single consumer, but it is
-  // possible to have multiple producers.
+  // Base class for simple channels.  An actual channel should
+  // inherit from this class and implement write, read, and get.
   template <class Data>
-  pTMutex class Channel {
+  class SimpleChannelBase {
     typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
   public:
-    Channel() : _ready(false), _readt(0) {};
-    void write(const Data &d);
+    SimpleChannelBase() : _ready(false), _readt(0) {};
     bool ready() const { return _ready; };
-    void clear_ready() { _ready = false; };
-    Data read() { return read_internal(false); };
-    Data get() { return read_internal(true); };
+    void clear_ready() { pLock(); _ready = false; pUnlock(); };
 
     // These are marked as non-mutex b/c they are used by alt, which already
     // does the locking.
-    pNoMutex void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
-    pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
-  private:
+    void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
+    THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
+  protected:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     bool have_writers() const { return !_writers.empty(); };
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
-    Data read_internal(bool clear_ready);
 
     Data       _data;
     bool       _ready;
     THandle    _readt;
     Writers    _writers;
     HandleType _h;
+  };
+
+  // Basic channel class:  Stores only a single piece of data, so 
+  // a second write before a read will block.  This is generally
+  // used bya single producer to go to a single consumer, but it is
+  // possible to have multiple producers.
+  template <class Data>
+  pTMutex class Channel : public SimpleChannelBase<Data> {
+    typedef SimpleChannelBase<Data> Base;
+  public:
+    Channel() {};
+    void write(const Data &d);
+    Data read() { return read_internal(false); };
+    Data get() { return read_internal(true); };
+
+  private:
+    Data read_internal(bool clear_ready);
+  };
+
+  // This is similiar to Channel in that it stores a single item, but if a read
+  // blocks, it forces the processor to go busy.  This can be used for when
+  // waiting on a resource holds up a task, e.g. a processor waiting on a load
+  // can't do something else.
+  // The user can specify a timeslice value in the constructor, or specify 0 to
+  // mean no timeslice.
+  // Note:  This is not protected by mutex code b/c if we're in busy-okay mode,
+  // we don't have preemption.
+  template <class Data>
+  class BusyChan : public SimpleChannelBase<Data> {
+    typedef SimpleChannelBase<Data> Base;
+  public:
+    BusyChan(ptime_t ts = 0) : _timeslice(ts) {};
+    void write(const Data &d);
+    Data read() { return read_internal(false); };
+    Data get() { return read_internal(true); };
+
+  private:
+    Data read_internal(bool clear_ready);
+
+    ptime_t    _timeslice;
   };
 
   // Queued channel class:  The class may store either an arbitrary number of
@@ -173,44 +207,92 @@ namespace plasma {
   {
     // We'll be consuming data, so if we have a waiting
     // writer, it's valid to wake it up.
-    if (have_writers() && clearready) {
-      pAddReady(next_writer());
+    if (Base::have_writers() && clearready) {
+      pAddReady(Base::next_writer());
     }
-    if (!_ready) {
+    if (!Base::_ready) {
       // We don't have data, so the reader must
       // block until the writer adds data.
-      set_notify(pCurThread(),HandleType());
+      Base::set_notify(pCurThread(),HandleType());
       pSleep();
     }
     if (clearready) {
-      clear_ready();
+      Base::clear_ready();
     }
     // Reactivate a waiting writer if one appeared while we were asleep.
-    if (have_writers() && clearready) {
-      pAddReady(next_writer());
+    if (Base::have_writers() && clearready) {
+      pAddReady(Base::next_writer());
     }    
-    return _data;
+    return Base::_data;
   }
 
   template <class Data>
   void Channel<Data>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
-    if (_readt) {
-      pWake(clear_notify(),_h);
+    if (Base::_readt) {
+      pWake(Base::clear_notify(),Base::_h);
     }
-    while (_ready) {
+    while (Base::_ready) {
       // We already have data, so the write must block
       // until the reader consumes the data.
-      set_writenotify(pCurThread());
+      Base::set_writenotify(pCurThread());
       pSleep();
     }
     // Store data and set ready.
-    _data = d;
-    _ready = true;
+    Base::_data = d;
+    Base::_ready = true;
     // Reactivate a reader if one appeared while we were asleep.
-    if (_readt) {
-      pWake(clear_notify(),_h);
+    if (Base::_readt) {
+      pWake(Base::clear_notify(),Base::_h);
+    }    
+  };
+
+  /////////////// BusyChan ///////////////
+
+  template <class Data>
+  Data BusyChan<Data>::read_internal(bool clearready)
+  {
+    // We'll be consuming data, so if we have a waiting
+    // writer, it's valid to wake it up.
+    if (Base::have_writers() && clearready) {
+      pAddReady(Base::next_writer());
+    }
+    if (!Base::_ready) {
+      // We don't have data, so the reader must
+      // block until the writer adds data.
+      Base::set_notify(pCurThread(),HandleType());
+      pBusySleep(_timeslice);
+    }
+    if (clearready) {
+      Base::clear_ready();
+    }
+    // Reactivate a waiting writer if one appeared while we were asleep.
+    if (Base::have_writers() && clearready) {
+      pAddReady(Base::next_writer());
+    }    
+    return Base::_data;
+  }
+
+  template <class Data>
+  void BusyChan<Data>::write(const Data &d) 
+  { 
+    // If we have a waiting reader, wake it up.
+    if (Base::_readt) {
+      pBusyWake(Base::clear_notify(),Base::_h);
+    }
+    while (Base::_ready) {
+      // We already have data, so the write must block
+      // until the reader consumes the data.
+      Base::set_writenotify(pCurThread());
+      pSleep();
+    }
+    // Store data and set ready.
+    Base::_data = d;
+    Base::_ready = true;
+    // Reactivate a reader if one appeared while we were asleep.
+    if (Base::_readt) {
+      pBusyWake(Base::clear_notify(),Base::_h);
     }    
   };
 

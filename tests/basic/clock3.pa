@@ -9,7 +9,9 @@
 //
 
 #include <iostream>
+
 #include "plasma.h"
+#include "Energy.h"
 
 using namespace std;
 using namespace plasma;

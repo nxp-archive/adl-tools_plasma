@@ -127,7 +127,13 @@ namespace plasma {
     Proc *p = th->proc();
     p->setState(Proc::Busy);
     p->add_busy(th);
-    _busy.push(p);
+    // Only add to busy queue if time is non-zero.
+    // Time might be zero if the user wants to be busy
+    // indefinitely.  In that case, something else will
+    // have to wake up the processor.
+    if (t) {
+      _busy.push(p);
+    }
   }
 
   void System::add_delay(ptime_t t,Thread *th)

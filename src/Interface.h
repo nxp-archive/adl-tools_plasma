@@ -29,9 +29,6 @@ namespace plasma {
   typedef unsigned long long int uint64;
   typedef uint64 ptime_t;
 
-  // Energy is a double.
-  typedef double energy_t;
-
   //
   // This defines parameters that are adjustable by the user.
   //
@@ -62,9 +59,16 @@ namespace plasma {
     void setName(const char *);
     bool operator==(const Processor &p) const { return _proc == p._proc; };
     bool operator!=(const Processor &p) const { return _proc != p._proc; };
+
+    friend struct HashProc;
   private:
     Proc *_proc;
   };
+
+  struct HashProc {
+    size_t operator()( Processor p ) const { return (size_t)p._proc; };
+  };
+
 
   // Call this function to create a processor which shares its ready-queue
   // with another processor.  This can be used to model a cluster of processors
@@ -134,6 +138,9 @@ namespace plasma {
   // to this thread.
   void pWake(THandle,HandleType);
 
+  // Wake a busy thread that was made busy by pBusySleep.
+  void pBusyWake(THandle,HandleType);
+
   // Return the thread's handle value (same as returned by pSleep()).
   HandleType pHandle(THandle);
 
@@ -170,21 +177,18 @@ namespace plasma {
   void pDelay(ptime_t);
 
   // Consumes the specified amount of time.  Note:  This is only
-  // valid if the system has been configured to allow time consumption.
-  void pBusy(ptime_t);
+  // valid if the system has been configured to allow for time consumption.
+  // Second parameter is a timeslice amount- if <= 0, the default timeslice
+  // amount will be used.
+  void pBusy(ptime_t,ptime_t ts = 0);
+
+  // This makes a processor busy for an indefinite amount of time.
+  // The processor and thread will only awake if pBusyWake() is called.
+  // We do timeslice, however, if ts > 0.
+  void pBusySleep(ptime_t ts = 0);
 
   // Return the current simulation time.
   ptime_t pTime();
-
-  // Specify how much energy is used.  This adds to the current processor's
-  // energy count.
-  void pEnergy(energy_t);
-
-  // Get the energy count for this processor.  Clears the count.
-  energy_t pGetEnergy(Processor p);
-
-  // Same as above but does not clear the count.
-  energy_t pReadEnergy(Processor p);
 
   // Terminate program with return code .
   void pExit(int code);

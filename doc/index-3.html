@@ -150,6 +150,11 @@ vector&lt;int,traceable_allocator&lt;int&gt; &gt;
 	    standard integers, 64-bit or smaller integers would use long-long
 	    arithmetic, and 128-bit or smaller vectors might be optimized to use
 	    Altivec.</p></li>
+ <li><p>For easily modifying configurations, a scripting interface is
+	    desirable.  We would like to make the Plasma interface language
+	    independent and have the actual implementation be hidden behind an
+	    interface.  For example, the interface might provide methods to run
+	    a script and query for name/value pairs of data.</p></li>
 </ul></div><br>
 <!-- Fault Tolerance Extensions -->
 <a name="Fault-Tolerance-Extensions"></a>
@@ -370,6 +375,6 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 28 11:45:04 2004</em>.</font></p></div>
+Last update <em>Fri Oct  1 14:56:07 2004</em>.</font></p></div>
 </body>
 </html>

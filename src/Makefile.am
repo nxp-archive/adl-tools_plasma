@@ -14,7 +14,8 @@ libplasma_la_SOURCES = \
 	Random.C \
 	LcgRand.C \
 	KissRand.C \
-	MtRand.C
+	MtRand.C \
+	Energy.C
 
 pkginclude_HEADERS = \
 	plasma-interface.h \
@@ -23,7 +24,9 @@ pkginclude_HEADERS = \
 	Random.h \
 	LcgRand.h \
 	KissRand.h \
-	MtRand.h
+	MtRand.h \
+	Quantity.h \
+	Energy.h
 
 noinst_HEADERS = \
 	Machine.h  \

@@ -121,6 +121,11 @@ namespace plasma {
     thecluster.wake(t,h);
   }
 
+  void pBusyWake(THandle t,HandleType h)
+  {
+    thecluster.busywake(t,h);
+  }
+
   HandleType pHandle(THandle t)
   {
     return t->handle();
@@ -151,33 +156,19 @@ namespace plasma {
     thecluster.delay(t);
   }
 
-  void pBusy(ptime_t t)
+  void pBusy(ptime_t t,ptime_t ts)
   {
-    thecluster.busy(t);
+    thecluster.busy(t,ts);
+  }
+
+  void pBusySleep(ptime_t ts)
+  {
+    thecluster.busysleep(ts);
   }
 
   ptime_t pTime()
   {
     return thesystem.time();
-  }
-
-  // Specify how much energy is used.  This adds to the current processor's
-  // energy count.
-  void pEnergy(energy_t e)
-  {
-    thecluster.curProc()->add_energy(e);
-  }
-
-  // Get the energy count for this processor.  Clears the count.
-  energy_t pGetEnergy(Processor p)
-  {
-    return p()->get_energy();
-  }
-
-  // Same as above but does not clear the count.
-  energy_t pReadEnergy(Processor p)
-  {
-    return p()->read_energy();
   }
 
   // Lock thecluster.
