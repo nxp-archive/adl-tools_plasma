@@ -1,3 +1,17 @@
+
+2004-08-05  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed a bug with priorities:  The wake function would always
+	wake up a thread, even if its processor was busy.  The new
+	behavior is:  If a thread is awakened whose priority is higher
+	than the busy thread, the busy thread will re-compute, just as
+	delay was handled.  If the awakened thread is lower priority, it
+	will be added to the ready queue but the processor will stay busy.
+
+	Added pri7 and pri8 to test this.
+
+	* Checked in ecu code.  Still need to do some debugging.
+
         ======= plasma release 0.3.0 (v0_3_0) on Linux (cde-tx32-ldt189) =======
 
 2004-07-29  Brian Kahne  <bkahne@ibmoto.com>

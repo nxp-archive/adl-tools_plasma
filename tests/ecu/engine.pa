@@ -1,0 +1,267 @@
+//
+// engine.pa
+//
+
+#include <cstdio>
+#include <cmath>
+
+#include "configuration.h"
+
+using namespace std;
+using namespace plasma;
+
+// ----------------------- accelerate --------------------
+
+static double accelerate(double t, double fuel, double fuelpush, 
+                         double mass, double u) 
+{
+  // t is time interval						: seconds
+  // fuel is amount of fuel burned in dt		: ml
+  // fuelpush is 'specific impulse' of fuel	: newton-seconds per ml
+  // mass is vehicle mass						: kg
+  // u is initial speed						: m/sec
+  // returns new speed						: m/sec
+	
+  // Physics: Newtonian acceleration
+  // v**2 = u**2 + 2as
+  // s = ut + 0.5 * a * t**2
+  // p = ma;
+  // a = m/((fuel * fuelpush) - frictional_force)
+  // Friction: rises sharply with speed
+  // f = (friction * v) ** 2
+	
+  double s, v, a, f;
+	
+  //printf("\naccelerate: t = %f, fuel = %f, fuelpush = %f, mass = %fm u = %f",
+  //	t, fuel, fuelpush, mass, u);
+		
+  // compute effects of friction
+  f = friction * u;						// assume speed constant enough over interval, and..
+  f = f * f ;								// .. compute frictional force just for starting speed
+  //printf("\n\tfrictional force = %f", f);
+		
+  f = (fuel * fuelpush) - f;				// force = fuel's impulse - frictional force
+	
+	
+  //printf("effective force = %f", f);
+  a = f / mass;							// p = ma, rearranged
+	
+  //printf("\n\ta = %f", a);
+	
+  s = (u * t) + ((a * t * t)/2.0);		// how far have we gone?
+  //printf("\n\ts = %f", s);
+	
+  v = (u * u) + (2 * a * s);				// compute new speed
+  //printf("\n\tvsqu = %f", v);
+	
+  // if v is negative, somehow friction is driving our car backwards, which is unlikely
+  // thus our dynamic simplifications must be at fault. just make car motionless
+  int32 v_int = (int32)v;
+  if (v_int < 0) {
+    // ooo! strong friction done slowed us to a halt
+    v = 0.0;
+  } else {
+    // otherwise compute sqrt
+    v = sqrt(v); 
+  }
+  
+  //printf("\n\tv = %f", v);
+	
+  return v;
+}
+	
+
+// ---------------------- inject_fuel -----------------
+
+static void inject_fuel(int32 squirt, double fuel) 
+{
+  // dummy for the moment.
+  // squirt says how long to hold the injector open
+  // later, we'll compute how much fuel we'll get given fuel line pressure
+  
+}
+		
+// ---------------------- fire_spark -----------------
+
+static void fire_spark(int32 cylinder, int32 flash, double fuel) 
+{
+  // dummy for the moment
+  // eventually we'll create a signature for knock detect to look at
+	
+  // compute car dynamics, using accelerate()
+  double new_speed, fuel_amnt;
+	
+  fuel_amnt = fuel;
+	
+  // compute our new speed; assume the fuel is delivered in unit time
+  new_speed = accelerate(1.0, fuel_amnt, fuelpush, mass, speed);
+	
+  printf("\n***FireSpark at %lld for cyl[%d]::", pTime(), cylinder);
+  printf("fuel=%2.2f, startspeed=%2.2f newspeed=%2.2f", fuel_amnt, speed, new_speed);
+	
+	
+  // log the new speed and the fact we sparked
+  fprintf(logfile, "\nFSF::%8lld::", pTime());
+  fprintf(logfile, "spark %2.2f", fuel);
+  fprintf(logfile, "\nFSS::%8lld::", pTime());
+  fprintf(logfile, "speed %2.2f ++ %2.2f", speed, new_speed);
+	
+  speed = new_speed;
+	
+}
+	
+// ----------------------- cylinder --------------------
+static void cylinder(int32 cyl, FuelChan &do_inject, Chan &do_spark) 
+{
+  // models one cylinder
+  // channels do_inject, do_spark carry commands from the engine controller 
+  // to inject or spark immediately
+  // it is assumed that the ecu knows what the angular status of each cylinder is
+	
+  bool engine_running = true;
+  double fuel = 0;
+	
+  printf("\nCylinder %d starting...", cyl);
+	
+  while (engine_running) {
+    alt {
+      do_inject.port(fuel_request request) {
+        int32 squirt = request.squirt_time;
+        fuel = request.fuel_amount;
+        inject_fuel(squirt, fuel);
+        printf("\n%lld::#### Engine cylinder %d ", pTime(), cyl);
+        printf("received request to inject %2.2f", fuel);
+        printf("for %d", squirt);
+        engine_running = (fuel > 0);
+      }
+      do_spark.port(int flash) {
+        printf("\n%lld::**** Engine cylinder %d received request to fire spark", pTime(), cyl);
+        fire_spark(cyl, flash, fuel);
+        engine_running = flash;
+      }
+    }
+  }
+  printf("\n..cylinder %d closing down at %lld", cyl, pTime());
+}
+
+// ------------- cylinders -------------
+static void cylinders(int32 n, FuelChans &inject, Chans &spark) 
+{
+  printf("\nStarting cylinders 0..%d", n);
+  pfor (int i = 0; i != n; ++i) {
+    cylinder(i, inject[i], spark[i]);
+  }
+}
+
+// ---------------------- engine --------------------
+void engine(FuelChans &inject, Chans &spark)
+{
+  // channel from ecu provides instructions to engine
+  printf("\nEngine starting...");	
+  cylinders(num_cylinders, inject, spark);
+}
+	
+// function to convert from speed to teeth-per-sec
+// ---------------- tps ------------------
+static double tps(double speed) 
+{
+  // compute teeth per second from speed
+  return (speed * speedratio * num_teeth)/60.0;
+}
+
+// ----------------------- flywheel ----------------------
+void flywheel(Chan &from_flywheel, Chan &to_starter) 
+{
+  // models the flywheel's generation of flywheel ticks
+  // we simply sample car speed at some fast enough rate
+  // and compute when we'll see the next tick from a flywheel tooth
+  // output a tick down the channel when it's time
+  // we convert speed to degrees per second using speed ratio via rpm
+  // we convert to teeth per second and look for the moments when elapsed
+  // teeth equals next tooth 
+	
+  int32 engine_running = 1;
+  double teeth = 0.0;					// floaty representation of where we are in the teeth
+  int32 next_tooth = 1;				// integer number of next tooth
+  bool started = false;
+			
+  printf("\nFlywheel starting...");
+	
+  while (true) {
+    // sample car speed and compute when next tooth will hit
+    double fraction = 0.02;					// expect 50 samples per tooth interval
+    double dt;					            // time interval
+    double new_speed;						// intermediate convenience value
+    int32 wait_time;
+    int32 sampling;			
+    double tooth_target;
+    double old_speed;
+
+    sampling = true;
+    //printf("\n%ld::\tFlywheel", Now);
+    //teethpersec = tps(speed);
+    //printf("\nSpeed = %f; teethpersec = %f", speed, teethpersec);
+		
+    dt = (next_tooth - teeth) / tps(speed);	// 100% of time to next tooth at curr speed
+    dt = dt * fraction;						// fraction of expected time
+    wait_time = (int32) dt;
+    if (wait_time == 0) {
+      wait_time = 1;
+    }
+    tooth_target = next_tooth;
+    old_speed = speed;
+		
+    //printf("\n%ld::Flywheel-compute delay till tooth %ld waittime=%ld", 
+    //	Now, next_tooth, wait_time);
+    //printf("speed=%2.2f teeth = %2.2f dt=%2.2f", speed, teeth, dt);
+    while (sampling) {
+      double dtooth;
+      double teethpersec;
+			
+      pDelay(wait_time);
+			
+      // where have we got to with teeth?
+      teethpersec = tps(speed);			// recompute because speed can change twixt teeth
+      teeth = teeth + (teethpersec * dt);
+      dtooth = tooth_target - teeth;
+      if (dtooth <= 0.0) {
+        // got to tooth time
+        sampling = false;
+      }
+    }
+    //printf("\n\n ==== ToothTick! %f", teeth);
+		
+    // on every tooth, compute car speed anew
+    new_speed = accelerate(1.0, 0.0, 0.0, mass, speed);
+    //fprintf(logfile, "\n\tfriction is slowing car: u=%2.2f v=%2.2f", speed, new_speed);
+		
+    fprintf(logfile, "\nTFS::%8lld::Tooth ", pTime(), next_tooth);
+    fprintf(logfile, "speed %2.2f -- %2.2f", speed, new_speed);
+    speed = new_speed;
+		
+    // create tooth interrupt
+    from_flywheel.write(next_tooth);
+		
+    // set up for next tooth
+    //printf("\n%ld::Created tooth interrupt t[%ld]", Now, next_tooth);
+		
+    teeth = next_tooth;
+    next_tooth = next_tooth + 1;
+    //printf("\t==>teeth = %2.2f", teeth);
+		
+    if (next_tooth == num_teeth) {
+      // handle cyclic nature of tooth number
+      next_tooth = 0;	
+      teeth = 0.0;
+      engine_running = engine_running - 1;
+      
+      // handle starter
+      if (!started) {
+        started = true;				// yay! we're running!
+        to_starter.write(true);
+      }
+    }
+  } 
+}
+
+	

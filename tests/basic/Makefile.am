@@ -48,6 +48,8 @@ check_PROGRAMS = \
 	pri4 \
 	pri5 \
 	pri6 \
+	pri7 \
+	pri8 \
 	proc1 \
 	proc2 \
 	proc3 \
@@ -180,6 +182,12 @@ pri5_DEPENDENCIES = $(DEPENDENCIES)
 pri6_SOURCES = pri6.pa
 pri6_DEPENDENCIES = $(DEPENDENCIES)
 
+pri7_SOURCES = pri7.pa
+pri7_DEPENDENCIES = $(DEPENDENCIES)
+
+pri8_SOURCES = pri8.pa
+pri8_DEPENDENCIES = $(DEPENDENCIES)
+
 proc1_SOURCES = proc1.C
 proc1_DEPENDENCIES = $(DEPENDENCIES)
 proc1_LDADD = $(CXX_LDADD)
@@ -269,6 +277,8 @@ DEP_FILES=\
 	./$(DEPDIR)/pri4.Po \
 	./$(DEPDIR)/pri5.Po \
 	./$(DEPDIR)/pri6.Po \
+	./$(DEPDIR)/pri7.Po \
+	./$(DEPDIR)/pri8.Po \
 	./$(DEPDIR)/proc1.Po \
 	./$(DEPDIR)/proc2.Po \
 	./$(DEPDIR)/proc3.Po \
@@ -321,6 +331,8 @@ include ./$(DEPDIR)/pri3.Po
 include ./$(DEPDIR)/pri4.Po
 include ./$(DEPDIR)/pri5.Po
 include ./$(DEPDIR)/pri6.Po
+include ./$(DEPDIR)/pri7.Po
+include ./$(DEPDIR)/pri8.Po
 include ./$(DEPDIR)/proc2.Po
 include ./$(DEPDIR)/proc3.Po
 include ./$(DEPDIR)/proc4.Po

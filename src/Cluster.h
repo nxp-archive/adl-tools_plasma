@@ -107,6 +107,9 @@ namespace plasma {
     // Try to remove thread from ready queue (if it exists) from
     // the current processor.
     THandle get_ready(THandle t);
+    // Add thread back to its processor, awakening the thread if not busy or
+    // waking thread is of higher priority.
+    void add_thread_to_proc(Thread *t);
 
     // Execute thread new, saving data in old.
     void exec_ready(THandle newthread,THandle oldthread);

@@ -60,7 +60,7 @@ typedef Channel<Message> MsgChan;
 typedef vector<MsgChan> MsgChans;
 
 // The user; a copy of this runs on each terminal
-void user(MsgChan &out, MsgChan &in, int index, int &sigma_t, int &n) 
+void user(MsgChan &out, MsgChan &in, int index, ptime_t &sigma_t, int &n) 
 {
   Message data;
   data.source = index;
@@ -160,9 +160,9 @@ void apps(MsgChans &in, MsgChans &out, IntChans &notify, int n)
 }
 
 // The reporting procedure
-void monitor(ptime_t dt, ptime_t endtime, int &sigma, int &count) 
+void monitor(ptime_t dt, ptime_t endtime, ptime_t &sigma, int &count) 
 {
-  float t;
+  double t;
   mprintf("\nExample Simulation Starting.\n");
 
   while (pTime() < endtime) {
@@ -176,7 +176,7 @@ void monitor(ptime_t dt, ptime_t endtime, int &sigma, int &count)
     }
     mprintf ("%f tps.  Avg response time = ",t);
     if (count > 0) {
-      t = ((float)sigma)/(count * msec);
+      t = ((double)sigma)/(count * msec);
     } else {
       t = 0.0;
     }
@@ -204,7 +204,7 @@ int pMain(int argc,const char *argv[])
     num_apps = num_terms / 10, 
     use_frontend = 0;
 
-  int sigma = 0;
+  ptime_t sigma = 0;
   int count = 0;
 
   MsgChan comms_to_demux, mux_to_comms;
@@ -244,7 +244,8 @@ int pMain(int argc,const char *argv[])
   mprintf("\n\tNumber of Terminals     = %d",num_terms);
   mprintf("\n\tNumber of App Instances = %d",num_apps);
   mprintf("\n\tCPU speed (in mips)     = %d",cpu_mips);
-  mprintf("\n\tComms frontend speed    = %d\n",frontend_mips);
+  mprintf("\n\tComms frontend speed    = %d",frontend_mips);
+  mprintf("\n\tSeed                    = %d\n",Rand.seed());
   
   MsgChans 
     terms_to_comms(num_terms), 

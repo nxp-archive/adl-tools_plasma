@@ -207,14 +207,39 @@ namespace plasma {
     return _cur->handle();
   }
 
+  // This adds a thread to a processor and adds the processor
+  // to the processor queue if the processor is either not busy or
+  // it is busy and the thread has a higher priority than the busy
+  // thread.
+  void Cluster::add_thread_to_proc(Thread *t)
+  {
+    Proc *p = t->proc();
+    p->add_ready(t);
+    if (p->state() == Proc::Busy) {
+      Thread *bt = p->busythread();
+      assert(bt);
+      if (t->priority() > bt->priority()) {
+        bt->setTime((time()-bt->starttime()));
+        add_proc(p);
+      }
+    } else {
+      add_proc(p);
+    }
+  }
+
   // We simply add the new thread to the ready queue so that the
-  // operation is valid even if it's on another processor.
+  // operation is valid even if it's on another processor.  One exception
+  // to this is that if the processor is busy, we must examine the priority
+  // of the busy thread vs. the thread we're trying to wake.  If the waking
+  // thread has a higher priority, then it is awakened and the busy thread will
+  // re-busy itself to use up all of its time.  If the waking thread has a lower
+  // priority, then we wake the thread, but the processor stays busy- when it
+  // completes, the waking thread will then execute.
   void Cluster::wake(Thread *t,HandleType h)
   {
     lock();
     t->setHandle(h);
-    t->proc()->add_ready(t);
-    add_proc(t->proc());
+    add_thread_to_proc(t);
     unlock();
   }
 
@@ -234,6 +259,7 @@ namespace plasma {
     }
     // Loop until all time has been used.
     // Processor is not locked b/c preemption is deactivated in busy-okay mode.
+    //cout << "\nThread " << _cur << ":  busy for " << total_time << endl;
     while (total_time) {
       // Add to busy queue.
       // If we're dealing with a time-slice process, only add for the timeslice amount.
@@ -262,7 +288,10 @@ namespace plasma {
         _curproc->get_ready();
       }
       // Update time remaining- loop if we still have busy stuff to do.
+      //cout << "\nThread " << _cur << ":  woke up at " << time() << ", initial time remaining is " << total_time 
+      //      << ", thread used " << _cur->time() << endl;
       total_time -= _cur->time();
+      //cout << "\nThread " << _cur << ":  woke up at " << time() << ", time remaining is " << total_time << endl;
     }
   }
 
@@ -375,23 +404,12 @@ namespace plasma {
       Thread *t;
       while ( (t = thesystem.get_delay())) {
         // Add thread to processor and set processor to run.
-        Proc *p = t->proc();
-        p->add_ready(t);
         // If processor of delayed thread is busy, then only run it if its
         // priority is higher.  In that case, we record the amount of time
         // consumed.  The processor will block again when we switch to the
         // thread w/remaining busy time- the busy() routine will see that busy
         // time is left and will add the processor back to the busy queue.
-        if (p->state() == Proc::Busy) {
-          Thread *bt = p->busythread();
-          assert(bt);
-          if (t->priority() > bt->priority()) {
-            bt->setTime((time()-bt->starttime()));
-            add_proc(p);
-          }
-        } else {
-          add_proc(p);
-        }
+        add_thread_to_proc(t);
       }
       // Grab stuff from busy queue.
       Proc *p;

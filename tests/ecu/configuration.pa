@@ -1,0 +1,50 @@
+//
+// configuration.pa
+//
+
+// configuration globals
+
+#include "configuration.h"
+
+const char *version = "v0.03, 6 February 2003";
+const char *copyright = "copyright Freescale 2004-2005, all rights reserved.";
+
+// platform.  the "names" are integers so that we can look up their
+// MIPS in the cpu_MIPS array.
+plasma::Processor zen((const char *)0);
+plasma::Processor tpu((const char *)1);
+plasma::Processor hardware((const char *)2);
+
+// performance
+int32 cpu_MIPS[3];		// slot n holds mips for cpu n
+
+const int32 zen_mips = 100;
+const int32 tpu_mips = 37;
+
+// ticks per second
+const int32 ticks_per_second = 1000000;			// a tick is a microsecond
+
+// globals
+double fuelrate;					// units of fuel per second: 	ml per sec
+double fuelpush;					// impulse per unit of fuel: 	newton-seconds per ml
+double mass;						// 'weight' of car :			kg
+double speed;					// car speed:					meters/sec
+
+double speedratio;				// 'rpm' per unit speed
+double friction;				// coefficient of friction
+int32 num_teeth;				// number of teeth on flywheel
+int32 num_cylinders;			// number of cylinders.
+
+int32 tooth_chunk;
+								 
+const int32 circle = 1000000;	// a complete circle has this number of units (a million)
+
+// the shared accelerator variable
+int32 gAccelerator;
+
+FILE *logfile = 0;
+	
+// the shared variables for angle management
+int32 measured_angle, est_angle_rate, est_angle_accel;		// parameters of angle movement
+int32 measured_t;									// time at which params valid
+

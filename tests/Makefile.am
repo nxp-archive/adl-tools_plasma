@@ -1,2 +1,2 @@
 
-SUBDIRS = basic sw eav
+SUBDIRS = basic sw eav ecu

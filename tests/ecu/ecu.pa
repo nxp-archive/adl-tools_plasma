@@ -1,0 +1,354 @@
+// ecu.pa
+// a simplistic model of an automotive engine controller (and engine)
+// pete october/november 2002
+
+/* ========================= history =======================
+
+    july 3 2004:  conversion to plasma.
+	november 14 2002: structural first approximation sans logging. pre-alpha quality at best
+		to do: 	fuel injection and firing should drive motor; it doesn't
+				need some appropriate logging file format
+   =========================================================
+*/
+
+/* ========================= description =======================
+
+the goal here is to get the 'architecture' of an engine controller captured, so that
+we can understand how the bits play together. when complete, this model will NOT contain (eg) 'real
+strategy code', but will contain at least placeholders for real code which could be refined
+in a later model
+
+what it will do is to allow us to 
+	- look at context switch rates
+	- look at partitioning the sw across more than one processor
+	- look for APU opportunities
+	- confirm the architecture
+	- look at the gross effects of scheduling and multiple processors on event jitter
+
+for a next step:
+with 'real code' and a 'real OS' we can construct an exact analogue of this system at the 
+'algorithmic' level of deatil, in which plausible code is running in a simulated realtime 
+environment. then we can further
+	- look at the effects of task switching on cache behaviour
+	- look for mechanisms which speed actual code
+	- look for mechanisms which shrink code footprint
+	- confirm it's code that needs shrining, not data
+	- compare 'locks' and 'messages' for footprint and efficiency
+	- ...
+	
+
+what we model is a (very!) simplified engine and engine controller
+	- the engine is an n-cyclinder engine
+	- it has a flywheel with t teeth on it, sensed by a hall-effect sensor whose sensitivity
+varies with speed (low at low speeds) and which needs thresholding for effective digitisation
+	- there is an accelerator pedal
+	- there is an external environment which imposes frictional and mass-based forces on the motor
+so that there is a maximum speed it can attain with any particular rate of fuel feed and a 
+maximum acceleration at a given fuel feed rate
+	- there is a fuel injector per cylinder, which squirts fuel in when the injector is open. the
+amount of fuel injected is a function of fuel line pressure and open time
+	- there is a spark plug per cylinder, which must be zapped to have the fuel-air mixture go bang. 
+however, if it's asked to go bang at the wrong time, it might knock - get pre-ignition - nasty
+	- there is a fuel pressure detector
+	- there is a microphone per cylinder to listen for knocking
+	
+we will eventually try partitioning this software across a different mix of cpus, including a
+zen, an etpu and a cpm (or rather, logical equivalents thereof).
+
+   =========================================================
+*/
+
+#include <cmath>
+#include <cstdio>
+
+#include "constants.h"				// useful units
+#include "configuration.h"			// globals specifying configuration (eg, num cyclinders)
+#include "engine.h"					// the engine model
+#include "car.h"						// accelerator etc
+#include "utilities.h"				// Compute()
+#include "angle.h"					// angle manager
+
+using namespace plasma;
+using namespace std;
+
+// statistics
+
+int32 deadline_average[cylinder_max];
+double deadline_variance[cylinder_max];
+int32 num_samples;
+
+// --------------------- init_statistics ----------------
+
+void init_statistics() 
+{
+  num_samples = 0;
+  for (int i = 0; i != num_cylinders; ++i) {
+    deadline_average[i] = 0;
+    deadline_variance[i] = 0.0;
+  }
+}
+	
+// --------------------- report_statisticts --------------
+
+void report_statistics() 
+{
+  num_samples = num_samples/(num_cylinders);
+  printf("\n\n\n============================================================\n");
+  printf("\nDeadline statistics for injection and firing:\n");
+  for (int i = 0; i != num_cylinders; ++i) {
+    double v = 0, deg;
+    int32 av = 0;
+    if (num_samples) {
+      av = deadline_average[i]/num_samples;
+      v = deadline_variance[i]/num_samples;
+    }
+		
+    printf("\nCylinder[%d] varied by %d angle units", i, av);
+    deg = av * 360;
+    deg = deg/circle;
+    printf(" [%2.2f deg]", deg);
+    deg = v * 360;
+    deg = deg/circle;
+    printf(" var=%2.2f [%2.2f deg]", v, deg);
+    v = sqrt(v);
+    deg = v * 360;
+    deg = deg/circle;
+    printf(" std=%2.2f [%2.2f deg]", v, deg);
+  }
+  printf("\n\n\n============================================================\n");
+}
+	
+// ---------------------- init_vehicle ------------------
+void init_vehicle() 
+{
+  fuelpush = 0.631;			// newton-seconds per ml
+  mass = 2000.0;				// car weighs about a ton
+  speed = 0.0;
+  speedratio = 0.05;
+  friction = 0.631;			// squared multiplier term in speed-dependent comp of friction
+  num_cylinders = 8;
+  num_teeth = 36;				// one every 10 degrees; a couple o milliseconds between teesh at 8000rpm
+  tooth_chunk = circle/num_teeth; // portion of a circle for a tooth
+}
+	
+// ---------------------- cylinder_process ---------------
+void cylinder_process(int32 c, int32 n, FuelChan &inject, Chan &spark, Chan &ask, Chan &wakeup) 
+{
+  // this process controls a single cylinder c of n cylinders, choosing how much
+  // fuel to squirt, when, and when to fire
+  // the firing order is an (unrealistic) 0, 1, 2, 3....
+  // inject is the channel we tell cylinder to inject fuel, value is amount
+  // spark is channel we tell cylinder's sparkplug to fire
+  // ask is the channel we ask to be woken up at the appropriate angle
+	
+  // first choose our (fixed) firing angle (get adaptive later)
+  // cylinder 0 fires at nominal angle 0.1, cylinder 1 at 0.1 + (1/n) later 
+  //...angles measured as fractions of a circle
+  // fuel needs to be squirted before ignition
+  // since angular velocity of engine changes, we can't predict the time at
+  // which the angle is reached massively in advance (although
+  // we'll try by having a 2nd-order fit filter on angular velocity of flywheel
+	
+  int32 fire_angle, inject_angle;
+	
+  printf("\n\tCylinderManager Process starting for cylinder[%d] on ", c);
+	
+  inject_angle = c * (circle/(n + 1));			// compute default fire angle for cylinder c of n+1
+  inject_angle = inject_angle + (circle/100);
+  fire_angle = inject_angle + (circle/200);
+	
+  printf("\n\t..injects at %d, fires at %d", inject_angle, fire_angle);
+	
+  // now, loop
+	
+  while (true) {
+    int32 accelerator, dt;
+    int32 req_angle;
+    fuel_request f_req;
+    // find out where the accelerator is
+		
+    accelerator = gAccelerator;
+    //printf("\n\t***c[%ld] reads accelerator as %ld\n", c, accelerator);
+		
+    // placeholder for strategy code to compute where we need to be
+		
+    Compute(3500);
+		
+    //printf("\n\t***c[%ld] has completed strategy code", c);
+		
+    // set up for injection
+		
+    //printf("\n\t***c[%ld] wants to wake up for angle %ld", c, inject_angle);
+		
+    ask.write(inject_angle);			// ask to be told when we get to the tooth before this angle
+		
+    dt = wakeup.get();				// get given time we need to suspend for		
+    pDelay(dt);
+		
+    req_angle = curr_angle(pTime()) - inject_angle;
+    num_samples = num_samples + 1;
+    deadline_average[c] = deadline_average[c] + req_angle;
+    deadline_variance[c] = deadline_variance[c] + (req_angle * req_angle);
+    // tell injector to inject
+    f_req.squirt_time = 1;
+    f_req.fuel_amount = accelerator * 3;
+		
+    //printf("\n\t***c[%ld] injecting at %ld; ", c, Now);
+    //printf("fuel_amount = %2.2f", f_req.fuel_amount);
+    inject.write(f_req);
+
+    // set up for fire
+    printf("\n%lld::***c[%d] INJECTED (dtheta=%d)", pTime(), c, req_angle);
+		
+    ask.write(fire_angle);
+    dt = wakeup.get();
+    //printf("\n%ld::c[%ld] told to sleep for %ld ticks to reach fire angle", Now, c, dt);
+		
+    // sleep till we get here
+    pDelay(dt);
+		
+    //printf("\n\t***c[%ld] firing at %ld", c, Now);
+    req_angle = curr_angle(pTime()) - fire_angle;
+    num_samples = num_samples + 1;
+    deadline_average[c] = deadline_average[c] + req_angle;
+    deadline_variance[c] = deadline_variance[c] + (req_angle * req_angle);
+
+    spark.write(25);
+		
+    printf("\n%lld::***c[%d] FIRED (dtheta=%d)", pTime(), c, req_angle);
+  }
+}
+	
+// ---------------------- baseload --------------------
+void baseload(const char *name, int32 quantum) 
+{
+  // we set ourselves a very low priority and use up spare processor compute cycles
+  // run on all 'computers' (but not the hardware)
+	
+  pSetPriority(6);
+  printf("\nBaseload starting on %s at %lld with priority %d", name, pTime(), pGetPriority());
+	
+  while (true) {		
+    // compute load by seeing how long we take to do a quantum of computer
+    int32 t = pTime();
+    pBusy(quantum);					// use 'nude' compute...
+    t = pTime() - t;
+    double capacity = quantum;
+    capacity = quantum/t;
+    capacity = 100.0 - (capacity * 100.0);
+    printf("\nBaseload at %lld::running at ", pTime());
+    printf("%2.1f%% ", capacity); 
+    printf("of %s capacity [took %d ticks for %d compute quanta]", name, t, quantum); 
+  }
+}
+
+// -------------------- cylinders -------------------
+static void cylinders(int32 n, Chan &started, FuelChans &inject, Chans &spark, Chans &ask, Chans &wakeups) 
+{
+  printf("\nCreate cylinder manager 0..%d", n-1);
+  // now we have to wait one revolution for the engine to start
+  started.get();
+		
+  pSetPriority(1);
+		
+  printf("\nECU: starter motor has got engine moving; start cylinder management");
+  pfor (int i = 0; i != n; ++i) {
+    cylinder_process(i, n, inject[i], spark[i], ask[i], wakeups[i]);
+  }
+}
+	
+// ----------------------- ecu ------------------------
+void ecu(Chan &started, Chan &tick, Chan &acc_query, Chan &acc_val,
+         int32 num_cylinders, FuelChans &inject, Chans &spark, Chans &wakeups) 
+{
+  //array chan wakeups[cylinder_max];
+  Chans ask(cylinder_max);
+			
+  // now we can start the ecu
+  printf("\nECU starting with a %d-cylinder engine to control...", num_cylinders);
+  par {
+    on (tpu) { angle_manager(num_cylinders, tick, ask, wakeups); }
+    on (zen) { cylinders(num_cylinders, started, inject, spark, ask, wakeups); }
+    on (zen) { baseload("zen", 2500); }
+    on (tpu) { baseload("tpu", 2500); }
+  }
+}
+
+// ----------------------- vehicle_status ---------------
+void vehicle_status() 
+{
+  double rpm = speed/speedratio;
+  printf("\nT=%lld::\t", pTime());
+  printf("V=%2.3f, RPM=%3.1f", speed, rpm);
+}
+	
+// ---------------------- report ------------------------
+void report(int32 dt, int32 stop_time) 
+{
+  // gives status every dt until stop_time, when it kills the sim
+  printf("\nReports starting; report every %d until %d", dt, stop_time);
+  while ((int)pTime() < stop_time) {
+    vehicle_status();
+    pDelay(dt * 4);
+  }
+  printf("\n\n====== ECU/Engine simulation closing down ==========\n\n");
+  report_statistics();
+  pExit(0);
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+	
+//------------------------- main -------------------------
+int pMain(int argc,const char *argv[]) 
+{
+  double t, dt, dv;
+  Chan tick, acc_query, acc_val, started, to_starter;
+  Chans spark(cylinder_max), wakeups(cylinder_max);
+  
+  FuelChans inject(cylinder_max);
+
+  int32 simtime;
+		
+  printf("\n\n\nSimple Generic Engine & ECU\n\t%s\n\t%s", version, copyright);
+	
+  t = 0.0;
+  dt = 0.1;
+  dv = 0.0;
+  init_vehicle();
+  init_statistics();
+	
+  // configuration
+  cpu_MIPS[(int)zen.name()] = zen_mips;
+  cpu_MIPS[(int)tpu.name()] = tpu_mips;
+  cpu_MIPS[(int)hardware.name()] = 0;
+	
+  // run the engine
+	
+  speed = 0.15;
+  simtime = 500000;
+  const char *logname = "LogFile";
+  if (!(logfile = fopen(logname, "w"))) {
+    pAbort("Unable to open logfile.");
+  }
+		
+  par {
+	
+    // the simulated machinery
+    on (hardware) { report(1000, simtime);	}				// cyclic status reports and sim time-out
+		
+    on (hardware) { flywheel(tick, to_starter);	}			// interrupt per tooth
+    on (hardware) { starter(to_starter, started); }			// gets engine turning
+    on (hardware) { engine(inject, spark); }	// the engine itself
+    on (hardware) { accelerator(simtime, acc_query, acc_val); }	// the stimulus
+		
+    // the simulated software and processors
+    on (zen) { ecu(started, tick, acc_query, acc_val, num_cylinders, inject, spark, wakeups); }
+  }
+	
+  printf("\n==== Closing Down =====\n");
+  fclose(logfile);
+  return 0;
+}

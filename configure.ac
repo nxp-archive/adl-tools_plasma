@@ -97,7 +97,8 @@ AC_CONFIG_FILES([\
    tests/Makefile \
    tests/basic/Makefile \
    tests/sw/Makefile \
-   tests/eav/Makefile
+   tests/eav/Makefile \
+   tests/ecu/Makefile
 ])
 
 AC_CONFIG_FILES([\

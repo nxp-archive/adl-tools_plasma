@@ -247,40 +247,46 @@ sub check_example {
   my ($found_count,$exp_count) = (0,4);
 
   my @lines = split /\n/,@_[0];
-  for (@lines) {
-    if ( /Did (\d+) in (\d+\.\d+) secs -> (\d+\.\d+) tps.\s+Avg response time = (\d+\.\d+) secs/ ) {
-      ++$found_count;
-      my ($count,$time,$tps,$art) = (eval $1,eval $2,eval $3,eval $4);
-      if ($count <= 0) {
-	print "Bad transaction count, report $found_count - expected positive number.\n";
-	die;
-      }
-      if ($time <= 0) {
-	print "Bad time value, report $found_count - expected positive number.\n";
-	die;
-      }
-      if ($tps <= 0) {
-	print "Bad transaction rate, report $found_count - expected positive number.\n";
-	die;
-      }
-      if ($art <= 0) {
-	print "Bad average response time, report $found_count - expected positive number.\n";
-	die;
-      }
-    } elsif ( /Completed simulation run\.\s+Stopping\./ ) {
-      ++$got_stopped;
-    }
-  }
+  eval {
+	for (@lines) {
+	  if ( /Did (\d+) in (\d+\.\d+) secs -> (\d+\.\d+) tps.\s+Avg response time = (\d+\.\d+) secs/ ) {
+		++$found_count;
+		my ($count,$time,$tps,$art) = (eval $1,eval $2,eval $3,eval $4);
+		if ($count <= 0) {
+		  print "Bad transaction count, report $found_count - expected positive number.\n";
+		  die;
+		}
+		if ($time <= 0) {
+		  print "Bad time value, report $found_count - expected positive number.\n";
+		  die;
+		}
+		if ($tps <= 0) {
+		  print "Bad transaction rate, report $found_count - expected positive number.\n";
+		  die;
+		}
+		if ($art <= 0) {
+		  print "Bad average response time, report $found_count - expected positive number.\n";
+		  die;
+		}
+	  } elsif ( /Completed simulation run\.\s+Stopping\./ ) {
+		++$got_stopped;
+	  }
+	}
 
-  if (!$got_stopped) {
-    print "Did not found completion message.\n";
-    die;
-  }
+	if (!$got_stopped) {
+	  print "Did not found completion message.\n";
+	  die;
+	}
 
-  if ($found_count != $exp_count) {
-    print "Found only $found_count report lines, expected $exp_count.\n";
-    die;
-  }
+	if ($found_count != $exp_count) {
+	  print "Found only $found_count report lines, expected $exp_count.\n";
+	  die;
+	}
+  };
+  if ($@) {
+	print "Test failed.  Output was:  \n@_[0]\n";
+	die;
+  }  
   
 }
 

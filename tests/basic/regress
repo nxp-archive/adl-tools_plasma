@@ -200,6 +200,16 @@ my @Tests = (
 	      cmd     => "./pri6",
 	      checker => \&check_pri6,
 	     },
+	     # Test of priorities w/channels.
+	     {
+	      cmd     => "./pri7",
+	      checker => \&check_pri7,
+	     },
+	     # Test of priorities w/channels.
+	     {
+	      cmd     => "./pri8",
+	      checker => \&check_pri8,
+	     },
 	     # C++-only processor test.
 	     {
 	      cmd     => "./proc1",
@@ -769,6 +779,26 @@ sub check_pri6 {
 		   "High completed at 400",
 		   "Low completed at 1200",
 		   ]);
+}
+
+sub check_pri7 {
+  str_rdiff(@_[0],[
+				   "Low:  Going busy at 0",
+				   "Wakeup at 50",
+				   "High:  Going busy at 50",
+				   "High:  Done at 100",
+				   "Low:  Done at 2550",
+				  ]);
+}
+
+sub check_pri8 {
+  str_rdiff(@_[0],[
+				   "High:  Going busy at 0",
+				   "Wakeup at 100",
+				   "High:  Done at 2500",
+				   "Low:  Going busy at 2500",
+				   "Low:  Done at 2600",
+				   ]);
 }
 
 # C++-only processor test.

@@ -1,0 +1,76 @@
+//
+// This tests to make sure that a high priority sleeping process will
+// awake and interrupt a lower-priority busy process.  The busy process
+// will still compute for the needed time.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> Chan;
+
+Processor p;
+
+void high(Chan &c)
+{
+  const ptime_t BusyTime = 50;
+  // Wait for data.
+  c.get();
+  ptime_t to = pTime();
+  cout << "High:  Going busy at " << to << endl; 
+  // Compute
+  pBusy(BusyTime);
+
+  ptime_t tn = pTime();
+  cout << "High:  Done at " << tn << endl; 
+  // The elapsed time should be equal to the busy
+  // time b/c of its high priority.
+  assert( (tn - to) == BusyTime);
+}
+
+void low()
+{
+  const ptime_t BusyTime = 2500;
+
+  ptime_t to = pTime();
+
+  cout << "Low:  Going busy at " << to << endl; 
+  pBusy(BusyTime);
+
+  ptime_t tn = pTime();
+  cout << "Low:  Done at " << tn << endl; 
+  // The elapsed time should be greater than the
+  // busy time b/c of its low priority.
+  assert ( (tn - to) > BusyTime );
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  Chan c;
+
+  par {
+    on (p,1) {
+      high(c);
+    }
+    on (p,10) {
+      low();
+    }
+    on (pCurProc()) {
+      // Delay a bit, then wake up the high priority thread
+      // by writing to the channel.
+      pDelay(50);
+      cout << "Wakeup at " << pTime() << endl;
+      c.write(1);
+    }
+  }
+  return 0;
+}

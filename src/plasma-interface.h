@@ -20,7 +20,7 @@ namespace plasma {
 // outside of the plasma namespace so that it affects
 // everything and thus looks like an operator.
 pSpawner class Spawn {};
-Spawn spawn;
+extern Spawn spawn;
 
 #include "Interface.h"
 

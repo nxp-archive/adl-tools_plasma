@@ -1,0 +1,243 @@
+//
+// angle.pa
+//
+
+#include "configuration.h"
+#include "utilities.h"
+
+using namespace std;
+using namespace plasma;
+
+// the angle manager for the ecu
+
+// ---------------------- curr_angle ---------------
+int32 curr_angle(int32 time) 
+{
+  // returns best estimate of current angle using global angle, time and angle rate info
+  int32 d_angle, angle_now, dt;
+	
+  // find out what the angle was when the last tooth was seen
+  // then compute where we should be given that and the angle rate
+	
+  //printf("\ncurr_angle::last angle =%ld at %ld", measured_angle, measured_t);
+  dt = time - measured_t;
+  //printf("::dt=%ld", dt);
+  d_angle = dt * est_angle_rate;
+  angle_now = measured_angle + d_angle;
+  //printf("::dangle=%ld rate=%ld ==> angle now = %ld", d_angle, est_angle_rate, angle_now);
+  return angle_now;
+}
+
+// ---------------------- angle_to_time ------------
+static int32 angle_to_time(int32 time, int32 target_angle) 
+{
+  // uses stored angle info to convert a future angle to expected time of arrival
+  // initially just use angle rate (wrap in accel later)
+  // returns how long you must wait to get to the angle
+		
+  int32 dt, angle_now;
+		
+  // estimate what our current engine angle is
+  angle_now = curr_angle(time);
+		
+  // see whether the target angle is more than this or less
+  // if less, then it is for the next time around
+		
+  /*
+    if (target_angle < angle_now) {
+    target_angle = target_angle + circle;
+    }
+  */	
+  // now compute how long we have to wait to get to target angle
+  dt = (target_angle - angle_now)/est_angle_rate; 
+		
+  //printf("..wait %ld ticks for angle", dt);
+  
+  if (dt < 0) {
+    printf("\n\t*** angle-to-time for %d at %d: negative dt %d",
+           target_angle, time, dt);
+    dt = 0;
+  }
+  return dt;
+}
+
+// ---------------------- signal_cylinder ------------	
+void signal_cylinder(int32 wakeangle, Chan &awake) 
+{		
+  // compute the time we need to wake up at
+  int32 dt = angle_to_time(pTime(), wakeangle);
+  //printf("\n\tsignal::angle = %ld;dt -> %ld", wakeangle, dt);
+  
+  // tell the cylinder
+  awake.write(dt);  
+}
+
+// ---------------------- track ------------------	
+static void track(Chan &teeth, Chans &tooth_marks) 
+{
+  // a simple digital filter to extract tooth rate
+  // every time it gets a tooth, it broadcasts to the cylinders so they can do The Right Thing
+  int32 tooth, angle_rate1;
+		
+  pSetPriority(1);
+							
+  measured_t = pTime();
+
+  measured_angle = 0;
+  est_angle_rate = 0;
+  est_angle_accel = 0;
+  printf("\n%08lld::tooth digital filter starting..", pTime());
+		
+  // first sample
+  tooth = teeth.get();
+  measured_angle = tooth;
+  est_angle_rate = tooth_chunk/(pTime() - measured_t);				// a tooth's worth of degrees in time dt
+  measured_t = pTime();										// timestamp the data
+		
+  printf("\n%08lld::tooth digital filter received sample 1..", pTime());
+  printf("\n\tangle = %d rate = %d, accel = %d ", measured_angle, est_angle_rate, est_angle_accel);
+  Compute(50);
+		
+  // second sample
+  tooth = teeth.get();
+  angle_rate1 = tooth_chunk/(pTime() - measured_t);
+  est_angle_rate = (est_angle_rate + angle_rate1)/2;
+		
+  measured_t = pTime();
+  printf("\n%08lld::tooth digital filter received sample 2..", pTime());
+  printf("\n\tangle = %d rate = %d", measured_angle, est_angle_rate);
+		
+  Compute(50);
+		
+  // loop
+  
+  while (true) {
+    int32 dt;
+			
+    // tooth digital filter loop
+    tooth = teeth.get();
+			
+    //load = ExecInfo(TaskInstructions);
+			
+    measured_angle = tooth * tooth_chunk;
+			
+    dt = pTime() - measured_t;
+			
+    //printf("\n%ld::tooth %ld seen -> angle %ld; measured time = %ld; dt = %ld", 
+    //	Now, tooth, measured_angle, measured_t, dt);
+    measured_t = pTime();
+			
+    if (dt > 0) {
+      fprintf(logfile, "\nTDF::%8lld::tooth %d", pTime(), tooth);
+				
+      est_angle_rate = tooth_chunk/dt;								// rate from prev tooth
+      //printf(" ==> est_angle_rate = %ld", est_angle_rate); 
+				
+    }
+				
+    // now notify all cylinders of tooth arrival
+    pfor (int i = 0; i != num_cylinders; ++i) {
+      tooth_marks[i].write(tooth);
+    }
+			
+    //load = ExecInfo(TaskInstructions) - load;
+    //printf("\n---tooth digital filter loop - compute() is for %ld ticks", load);
+    Compute(350);
+  } 
+}
+
+// --------------------- cylinder_wake -----------------	
+static void cylinder_wake(int32 index, Chan &tooth, Chan &ask, Chan &awake) 
+{
+  // one instance per cylinder
+  // tooth counts toothticks from the digital filter; 
+  // ask specifies a tooth to wait for from my cylinder
+  // awake sigals back to the cylinder, the value being the time at which he should awake
+		
+  //int32 waketime;				// the time to wake up at
+  int32 waketooth;			// the tooth to wake up on
+  int32 currtooth;			// the tooth we just saw
+  int32 wakeangle;			// the angle we want to wake up at
+		
+  printf("\nCylinder-wake[%d] starting...", index);
+		
+  waketooth = -1;
+  currtooth = -2;
+  wakeangle = 0;
+		
+  pSetPriority(1);
+		
+  while (true) {
+    alt {
+      tooth.port(int ct) {
+        currtooth = ct;
+
+        // we just got a current tooth
+        //printf("\n\tcylinder-wake[%ld] saw tooth %ld want t %ld", index, currtooth, waketooth);
+        if (waketooth == currtooth) {
+          // note the match
+          //printf("\n\tcylinder-wake[%ld] saw tooth %ld matches tooth %ld for wakeangle %ld", 
+          //	index, currtooth, waketooth, wakeangle);
+	
+          signal_cylinder(wakeangle, awake);
+          waketooth = -1;
+          Compute(83);
+        }
+      }
+					
+      ask.port(int wa) {
+        wakeangle = wa;
+        int32 angle_now;
+        int32 target_tooth;
+        // we just got given an angle request, which we've captured in wakeangle					
+					
+        // see if this is for a smaller angle than where we're already at
+        angle_now = curr_angle(pTime());
+        target_tooth = 	wakeangle/tooth_chunk;
+        //printf("\n%ld::cylinder-wake[%ld] saw request for %ld; curr angle ~ %ld waketooth=%ld target_tooth=%ld", 
+        //	Now, index, wakeangle, angle_now, waketooth, target_tooth); 
+        if (angle_now > wakeangle) {
+          // then we need to wake up in the future CHECK THIS FIRST!!
+          waketooth = wakeangle / tooth_chunk;				// tooth before the angle we want
+          //printf("==> toothchunk = %ld tooth wanted = %ld", tooth_chunk, waketooth);
+          Compute(77);
+        } 
+        else if (target_tooth == currtooth) {
+          // ok, we're still in this tooth
+          //printf("==> got request for currtooth %ld == targettooth", currtooth);	
+          waketooth = -1;
+          signal_cylinder(wakeangle, awake);
+          Compute(95);
+        }
+        else {
+          waketooth = wakeangle / tooth_chunk;
+          //printf("==> need new waketooth %ld", waketooth);
+          Compute(51);
+        }
+      }
+    }
+  }
+}
+	
+// ---------------------- angle_manager -----------------
+void angle_manager(int32 num_cylinders, Chan &teeth, Chans &ask, Chans &wakeups) 
+{
+  // we get raw ticks on teeth (we get the tooth number)
+  // ask[] provides a request that a client gets woken up at a specific angle
+  // clients being numbered by index
+  // client suspends on responses[index] and gets woken up when angle turns up
+  
+  Chans tooth_marks(cylinder_max);
+  Chans requests(cylinder_max);
+  Chan tooth_request;
+										   					
+  pSetPriority(1);
+		
+  par {
+    pfor(int i = 0; i != num_cylinders; ++i) {
+      //service_request(i, ask[i], tooth_request, tooth_marks[i], wakeups[i]);
+      cylinder_wake(i, tooth_marks[i], ask[i], wakeups[i]);
+    }
+    track(teeth, tooth_marks);
+  }
+}

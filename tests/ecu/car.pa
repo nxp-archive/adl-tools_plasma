@@ -1,0 +1,61 @@
+//
+// car.pa
+//
+
+#include "configuration.h"
+
+using namespace std;
+using namespace plasma;
+
+// ----------------- respond ---------------
+static void respond(Chan &req, Chan &accel_val, int32 simtime, int32 &position) 
+{
+  // if someone wants to know what the accelerator setting is, respond() tells 'em
+  while (true) {
+    req.get();
+    // printf("\n**Accelerator asked for position; responding with %ld at %ld", position, Now);
+    accel_val.write(position);
+  }
+}
+
+// ------------------ profile ----------------	
+void profile(int32 simtime,int32 &position) 
+{
+  // change the accelerator setting over time
+  int32 slices, i;
+  slices = 100;
+  i = 0;
+  while ((int)pTime() < simtime) {
+    pDelay(simtime/slices);
+    int32 f = (i * 90)/slices;
+    position = 10 + f;
+    //printf("\n***Accelerator moved to %ld at %ld", position, Now);
+    i = i + 1;
+    gAccelerator = position;
+  }
+  printf("\n*** Accelerator profiling halting.");
+}
+
+// ------------------------ accelerator -------------------
+void accelerator(int32 simtime, Chan &acc_query, Chan &acc_val)
+{
+  // moves accelerator in appropriate manner and tells anyone who asks where it is
+  int32 position;
+		
+  printf("\nAccelerator starting..");
+  position = 10;
+  gAccelerator = position;
+  par {
+    respond(acc_query, acc_val, simtime, position);
+    profile(simtime,position);
+  }
+}
+	
+// ------------------------ starter ---------------------
+void starter(Chan &to_starter, Chan &started)
+{
+  printf("\nStarter motor starting...");
+  to_starter.get();
+  started.write(true);
+}
+
