@@ -46,8 +46,6 @@ AC_DEFUN([AM_PLASMA],
     }
   ],AC_MSG_RESULT([ok.]),AC_MSG_ERROR([failed.]))
 
-  CXX="$orig_CXX"
-
   AC_SUBST(PLASMA)
   AC_SUBST(PLASMAPATH)
 
