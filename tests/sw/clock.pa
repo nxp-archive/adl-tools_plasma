@@ -91,12 +91,6 @@ void cpu_gen(Random<> &Rand,Chan &register1, Chan &register2, Chan &carryin_flag
     int v2   = Rand.uniform(0, 0, 256);
     int c_in = Rand.uniform(0, 0, 2);
     int op   = Rand.uniform(0, 0, 5);
-    par {
-      op_register.write(op);
-      register1.write(v1);
-      register2.write(v2);
-      carryin_flag.write(c_in);
-    }
     printf("%d (%lld):  Issuing %d",count,pTime(),v1);
     switch (op) {
       case Add: 
@@ -123,6 +117,12 @@ void cpu_gen(Random<> &Rand,Chan &register1, Chan &register2, Chan &carryin_flag
     }
     printf ("\n");
     ++count;
+    par {
+      op_register.write(op);
+      register1.write(v1);
+      register2.write(v2);
+      carryin_flag.write(c_in);
+    }
   }
 }
 
@@ -143,6 +143,11 @@ void cpu_read(ClkChan &result_register, Chan &carryout_flag)
       }
     }
   }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
 }
 
 int pMain(int argc,const char *argv[])

@@ -4,6 +4,7 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <iostream>
 #include <plasma.h>
 
 using namespace std;
@@ -26,7 +27,8 @@ void producer(int val,input_channel &chan)
 
 void consumer(int id,output_channel &chan)
 {
-  int v;
+  cout << "Starting consumer." << endl;
+  int v = 100;
   do {
     v = chan.get();
     plasma::mprintf ("Got a value from port %d:  %d\n",id,v);
@@ -43,7 +45,7 @@ int pMain(int argc,const char *argv[])
   par {
     producer(10,ib.get_source());
     pfor (unsigned i = 0; i != ib.size(); ++i) {
-      consumer(i,ib.get_sink(i));
+      consumer(i,ib.get_sink());
     }
   }
   plasma::mprintf ("Done.\n");

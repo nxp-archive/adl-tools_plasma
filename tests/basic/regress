@@ -394,6 +394,16 @@ my @Tests = (
 			  cmd     => "./clock11",
 			  checker => \&check_clock11,
 			 },
+			 # Test of zero-sized clocked channels.
+			 {
+			  cmd     => "./clock12",
+			  checker => \&check_clock12,
+			 },
+			 # Test of zero-sized clocked channels w/flush.
+			 {
+			  cmd     => "./clock13",
+			  checker => \&check_clock13,
+			 },
 			 # Simple test of the quantity class.
 			 {
 			  cmd     => "./quantity1",
@@ -1254,11 +1264,11 @@ Done.
 EOD
 
   str_rdiff(@_[0],<<'EOD');
-0: current energy:  0, current power:0mW
+0: current energy:  10, current power:1mW
 10: current energy:  20, current power:2mW
-20: current energy:  20, current power:2mW
-30: current energy:  30, current power:3mW
-40: current energy:  40, current power:4mW
+20: current energy:  30, current power:3mW
+30: current energy:  40, current power:4mW
+40: current energy:  50, current power:5mW
 50: current energy:  50, current power:5mW
 60: current energy:  50, current power:5mW
 70: current energy:  50, current power:5mW
@@ -1266,9 +1276,8 @@ EOD
 90: current energy:  50, current power:5mW
 100: current energy:  40, current power:4mW
 110: current energy:  40, current power:4mW
-120: current energy:  40, current power:4mW
-130: current energy:  30, current power:3mW
-140: current energy:  20, current power:2mW
+120: current energy:  30, current power:3mW
+130: current energy:  20, current power:2mW
 EOD
 
 }
@@ -1276,10 +1285,10 @@ EOD
 sub check_clock5 {
   str_rdiff(@_[0],<<'EOD');
 stage 1:  Producing at time 0:  1
-stage 1:  Producing at time 0:  2
-stage 1:  Producing at time 10:  3
-stage 1:  Producing at time 20:  4
-stage 1:  Producing at time 30:  -1
+stage 1:  Producing at time 10:  2
+stage 1:  Producing at time 20:  3
+stage 1:  Producing at time 30:  4
+stage 1:  Producing at time 40:  -1
 stage 1:  Done.
 EOD
 
@@ -1349,11 +1358,19 @@ EOD
 # Test of clearing a clocked channel.
 sub check_clock10 {
   str_rdiff(@_[0],<<'EOD');
-0:  Done with writes.
-1:  Before the clear.
-1:  After the clear.
-10:  Result:  1000
-20:  Result:  2000
+TEST 2:  0:  Done with writes.
+TEST 2:  10:  Before the clear.
+TEST 2:  10:  After the clear.
+TEST 2:  20:  Result:  1000
+TEST 2:  30:  Result:  2000
+EOD
+
+  str_rdiff(@_[0],<<'EOD');
+TEST 1:  0:  Done with writes.
+TEST 1:  10:  Before the clear.
+TEST 1:  10:  After the clear.
+TEST 1:  Wrote 2000
+TEST 1:  20:  Result:  2000
 EOD
 }
 
@@ -1378,6 +1395,78 @@ sub check_clock11 {
 EOD
 }
 
+# Test of a zero-sized clock channel.
+sub check_clock12 {
+  str_rdiff(@_[0],<<'EOD');
+DATA:  Time:  0:
+DATA:    0:  10
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  1:
+DATA:    0:  20
+DATA:    1:  10
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  2:
+DATA:    0:  30
+DATA:    1:  20
+DATA:    2:  10
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  3:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  10
+DATA:    4:  0
+DATA:  Time:  4:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  10
+DATA:  Time:  5:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  10
+DATA:  Time:  6:
+DATA:    0:  0
+DATA:    1:  40
+DATA:    2:  30
+DATA:    3:  20
+DATA:    4:  10
+DATA:  Time:  7:
+DATA:    0:  0
+DATA:    1:  -1
+DATA:    2:  40
+DATA:    3:  30
+DATA:    4:  20
+DATA:  Time:  8:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  -1
+DATA:    3:  40
+DATA:    4:  30
+DATA:  Time:  9:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  -1
+DATA:    4:  40
+DATA:  Time:  10:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  -1
+EOD
+}
+
 sub check_quantity1 {
   str_rdiff(@_[0],<<'EOD');
 0:  thread 0 starting
@@ -1387,6 +1476,162 @@ sub check_quantity1 {
 170:  thread 0 done
 180:  thread 1 done
 Done.
+EOD
+}
+
+# Test of a zero-sized clock channel w/flush
+sub check_clock13 {
+  str_rdiff(@_[0],<<'EOD');
+DATA:  Time:  0:
+DATA:    0:  10
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  1:
+DATA:    0:  20
+DATA:    1:  10
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  2:
+DATA:    0:  30
+DATA:    1:  20
+DATA:    2:  10
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  3:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  10
+DATA:    4:  0
+DATA:  Time:  4:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  10
+DATA:  Time:  5:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  10
+DATA:  Time:  6:
+DATA:    0:  50
+DATA:    1:  40
+DATA:    2:  30
+DATA:    3:  20
+DATA:    4:  10
+DATA:  Time:  7:
+DATA:    0:  60
+DATA:    1:  50
+DATA:    2:  40
+DATA:    3:  30
+DATA:    4:  20
+DATA:  Time:  8:
+DATA:    0:  70
+DATA:    1:  60
+DATA:    2:  50
+DATA:    3:  40
+DATA:    4:  30
+DATA:  Time:  9:
+DATA:    0:  20
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  10:
+DATA:    0:  30
+DATA:    1:  20
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  11:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  12:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  13:
+DATA:    0:  40
+DATA:    1:  30
+DATA:    2:  20
+DATA:    3:  0
+DATA:    4:  0
+DATA:  Time:  14:
+DATA:    0:  50
+DATA:    1:  40
+DATA:    2:  30
+DATA:    3:  20
+DATA:    4:  0
+DATA:  Time:  15:
+DATA:    0:  60
+DATA:    1:  50
+DATA:    2:  40
+DATA:    3:  30
+DATA:    4:  20
+DATA:  Time:  16:
+DATA:    0:  70
+DATA:    1:  60
+DATA:    2:  50
+DATA:    3:  40
+DATA:    4:  30
+DATA:  Time:  17:
+DATA:    0:  80
+DATA:    1:  70
+DATA:    2:  60
+DATA:    3:  50
+DATA:    4:  40
+DATA:  Time:  18:
+DATA:    0:  90
+DATA:    1:  80
+DATA:    2:  70
+DATA:    3:  60
+DATA:    4:  50
+DATA:  Time:  19:
+DATA:    0:  100
+DATA:    1:  90
+DATA:    2:  80
+DATA:    3:  70
+DATA:    4:  60
+DATA:  Time:  20:
+DATA:    0:  0
+DATA:    1:  100
+DATA:    2:  90
+DATA:    3:  80
+DATA:    4:  70
+DATA:  Time:  21:
+DATA:    0:  0
+DATA:    1:  -1
+DATA:    2:  100
+DATA:    3:  90
+DATA:    4:  80
+DATA:  Time:  22:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  -1
+DATA:    3:  100
+DATA:    4:  90
+DATA:  Time:  23:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  -1
+DATA:    4:  100
+DATA:  Time:  24:
+DATA:    0:  0
+DATA:    1:  0
+DATA:    2:  0
+DATA:    3:  0
+DATA:    4:  -1
 EOD
 }
 

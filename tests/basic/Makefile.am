@@ -87,6 +87,8 @@ check_PROGRAMS = \
 	clock9 \
 	clock10 \
 	clock11 \
+	clock12 \
+	clock13 \
 	quantity1 \
 	gc1
 
@@ -328,6 +330,12 @@ clock10_DEPENDENCIES = $(DEPENDENCIES)
 clock11_SOURCES = clock11.pa
 clock11_DEPENDENCIES = $(DEPENDENCIES)
 
+clock12_SOURCES = clock12.pa
+clock12_DEPENDENCIES = $(DEPENDENCIES)
+
+clock13_SOURCES = clock13.pa
+clock13_DEPENDENCIES = $(DEPENDENCIES)
+
 quantity1_SOURCES = quantity1.pa
 quantity1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -408,6 +416,8 @@ include ./$(DEPDIR)/clock8.Po
 include ./$(DEPDIR)/clock9.Po
 include ./$(DEPDIR)/clock10.Po
 include ./$(DEPDIR)/clock11.Po
+include ./$(DEPDIR)/clock12.Po
+include ./$(DEPDIR)/clock13.Po
 include ./$(DEPDIR)/quantity1.Po
 include ./$(DEPDIR)/gc1.Po
 

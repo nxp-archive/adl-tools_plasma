@@ -47,16 +47,16 @@ void updater(ClkDataChan &update)
 {
   cout << pTime() << ":  Sending update 1,10" << endl;
   update.write(Data(1,10));
-  pDelay(Clock);
+  //  pDelay(Clock);
   cout << pTime() << ":  Sending update 2,50" << endl;
   update.write(Data(2,50));
-  pDelay(Clock);
+  //  pDelay(Clock);
   cout << pTime() << ":  Sending update 3,60" << endl;
   update.write(Data(3,60));
-  pDelay(Clock);
+  //  pDelay(Clock);
   cout << pTime() << ":  Sending update 4,1000" << endl;
   update.write(Data(4,1000));
-  pDelay(Clock);
+  //  pDelay(Clock);
 }
 
 void queryer(IntChan &request,IntChan &reply)

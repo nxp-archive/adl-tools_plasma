@@ -34,6 +34,7 @@ AC_ARG_ENABLE(opt,
    OPT="-O3"
    AC_MSG_RESULT([Optimizing with -O3])	
  else
+   OPT="-fkeep-inline-functions -fno-default-inline"
    AC_MSG_RESULT([Optimization disabled.])	
  fi
  ,

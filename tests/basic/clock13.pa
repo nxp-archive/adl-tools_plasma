@@ -1,0 +1,136 @@
+//
+// Test of a fully interlocked "zero-sized" clocked channel
+// with a flush signal.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef ClockChan<int> IntClkChan;
+
+typedef ClkBroadcaster<int> IntBroadcast;
+typedef IntBroadcast::input_channel BroadcastIn;
+typedef IntBroadcast::output_channel BroadcastOut;
+
+vector<int> Data;
+bool        Halt = false;
+
+void begin_stage(int id,IntClkChan &out,BroadcastOut &flush)
+{
+  static int input_data[] = { 10,20,30,40,50,60,70,80,90,100,-1 };
+
+  for (int *i = &input_data[0]; *i >= 0; ++i) {
+    alt {
+      flush.port() {
+        i = &input_data[0];
+        continue;
+      }
+      {}
+    }
+    //cout << pTime() << ":  Writing " << *i << endl;
+    Data[id] = *i;
+    out.write(*i);
+  }
+  Data[id] = 0;
+  out.write(-1);
+}
+
+void middle_stage(int id,int pause,int delay,IntClkChan &in,BroadcastOut &flush,IntClkChan &out)
+{
+  while (true) {
+    int x;
+    prialt {
+      flush.port() { 
+        Data[id] = 0; 
+        if (in.ready()) { in.get(); }
+        continue;
+      }
+      in.port(int tmp) { 
+        x = tmp; 
+      }
+    }
+    Data[id] = x;
+    if (x == pause) {
+      pDelay(delay);
+    }
+    out.write(x);
+    Data[id] = 0;
+    //cout << pTime() << ":  Read " << x << endl;
+  }
+}
+
+void end_stage(int id,IntClkChan &in,BroadcastOut &flush,BroadcastIn &flush_out)
+{
+  bool do_flush = true;
+  int x;
+  do {
+    prialt {
+      flush.port() {
+        Data[id] = 0; 
+        if (in.ready()) { in.get(); }
+        //        in.clear();
+        continue;
+      }
+      in.port(int tmp) {
+        x = tmp;
+      }
+    }
+    Data[id] = x;
+    //cout << pTime() << ":  Read " << x << endl;
+    if (x == 30 && do_flush) {
+      flush_out.write(1);
+      do_flush = false;
+    }
+  } while (x >= 0);
+  Halt = true;
+}
+
+void report()
+{
+  while(true) {
+    cout << "\nDATA:  Time:  " << pTime() << ":\n";
+    for (unsigned i = 0; i != Data.size(); ++i) {
+      cout << "DATA:    " << i << ":  " << Data[i] << '\n';
+    }
+    cout << endl;
+    if (Halt) break;
+    pDelay(1);
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int,const char **)
+{
+  int size = 0;
+  IntClkChan one_two(1,0,size);
+  IntClkChan two_three(1,0,size);
+  IntClkChan three_four(1,0,size);
+  IntClkChan four_five(1,0,size);
+  
+  IntBroadcast flush(5);
+
+  Data.resize(5);
+
+  par {
+    on (pCurProc(),0) {
+      par {
+        begin_stage(0,one_two,flush.get_sink());
+        middle_stage(1,-2,0,one_two,flush.get_sink(),two_three);
+        middle_stage(2,20,2,two_three,flush.get_sink(),three_four);
+        middle_stage(3,-2,0,three_four,flush.get_sink(),four_five);
+        end_stage(4,four_five,flush.get_sink(),flush.get_source());
+      }
+    }
+    report();
+  }
+
+  return 0;
+}

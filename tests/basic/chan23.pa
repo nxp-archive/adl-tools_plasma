@@ -27,16 +27,12 @@ int pMain(int argc,const char *argv[])
 {
   IntChan c;
 
-  // Create a bunch of processes trying to write to the channel.
+  // Create a process trying to write to the channel.
   spawn(producer(c,10));
-  spawn(producer(c,20));
-  spawn(producer(c,30));
-  spawn(producer(c,40));
-  spawn(producer(c,50));
 
   cout << "Done with writes." << endl;
 
-  // Delay in order to make sure that they all get scheduled.
+  // Delay in order to make sure that it gets scheduled.
   pDelay(1);
 
   // Now clear the channel.  This should eliminate the writers.

@@ -63,7 +63,7 @@ namespace plasma {
   /////////////// ClockChan ///////////////
 
   ClockChanImpl::ClockChanImpl(ptime_t p,ptime_t s,unsigned ms) : 
-    _period(p), _skew(s), _maxsize(ms), _size(0), _clear_mode(0)
+    _period(p), _skew(s), _maxsize(ms), _size(0)
   {}
 
   // Returns true if we're on a clock edge, given a clock period.
@@ -141,7 +141,7 @@ namespace plasma {
 
   void SingleConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if ((is_phi() && current_data) || clear_mode()) {
+    if ((is_phi() && current_data)) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker();
@@ -242,12 +242,7 @@ namespace plasma {
   // and ignore other consumers.
   void MultiConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if (clear_mode()) {
-      MClkInfo::iterator cm = _cons.find(clear_mode());
-      cancel_waker(cm);
-      pWake(reset(cm));
-    }
-    else if (is_phi() && current_data) {
+    if (is_phi() && current_data) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker(_cons.begin());

@@ -20,6 +20,7 @@ namespace plasma {
 
   protected:
     void set_writenotify(THandle t) { _writers.push_back(t); };
+    void push_writer(THandle t) { _writers.push_front(t); };
     bool have_writers() const { return !_writers.empty(); };
     THandle next_writer() { THandle t = _writers.front(); _writers.pop_front(); return t; };
 
@@ -140,23 +141,24 @@ namespace plasma {
 
     unsigned maxsize() const { return _maxsize; };
     void setMaxSize(unsigned ms) { _maxsize = ms; }
-    bool full() const { return (_maxsize > 0) && _size >= _maxsize; };
+    // We're full if we're >= the max size.
+    bool full() const { return _size >= allowed_size(); };
+
+    bool interlocked() const { return (_maxsize == 0); };
 
     void set_size(unsigned s) { _size = s; };
     void incr_size() { ++_size; };
     void decr_size() { --_size; };
-    void check_size() const { assert(_maxsize < 0 || _size <= _maxsize); }
-
-    THandle clear_mode() const { return _clear_mode; };
-    void set_clear_mode(THandle c) { _clear_mode = c; };
+    void check_size() const { assert(_maxsize <= 0 || _size <= _maxsize); }
     
   private:
+    unsigned allowed_size() const { return (!_maxsize) ? 1 : _maxsize; };
+
     ptime_t    _period;    // Clock period.
     ptime_t    _skew;      // Skew- offset from clock edge.
     unsigned   _maxsize;   // Max size.  If -1, no fixed size.  0 means a writer blocks
                            // until a reader consumes the data.
     unsigned   _size;      // Number of items in channel.
-    THandle    _clear_mode;
   };
 
   // Base class used for single-consumer clocked channels.

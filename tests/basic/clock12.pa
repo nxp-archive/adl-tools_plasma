@@ -1,0 +1,97 @@
+//
+// Test of a fully interlocked "zero-sized" clocked channel.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef ClockChan<int> IntClkChan;
+
+vector<int> Data;
+bool        Halt = false;
+
+void begin_stage(int id,IntClkChan &out)
+{
+  static int input_data[] = { 10,20,30,40,-1 };
+
+  for (int *i = &input_data[0]; *i >= 0; ++i) {
+    //cout << pTime() << ":  Writing " << *i << endl;
+    Data[id] = *i;
+    out.write(*i);
+  }
+  Data[id] = 0;
+  out.write(-1);
+}
+
+void middle_stage(int id,int pause,int delay,IntClkChan &in,IntClkChan &out)
+{
+  while (true) {
+    int x = in.get();
+    Data[id] = x;
+    if (x == pause) {
+      pDelay(delay);
+    }
+    out.write(x);
+    Data[id] = 0;
+    //cout << pTime() << ":  Read " << x << endl;
+  }
+}
+
+void end_stage(int id,IntClkChan &in)
+{
+  int x;
+  do {
+    x = in.get();
+    Data[id] = x;
+    //cout << pTime() << ":  Read " << x << endl;
+  } while (x >= 0);
+  Halt = true;
+}
+
+void report()
+{
+  while(true) {
+    cout << "\nDATA:  Time:  " << pTime() << ":\n";
+    for (unsigned i = 0; i != Data.size(); ++i) {
+      cout << "DATA:    " << i << ":  " << Data[i] << '\n';
+    }
+    cout << endl;
+    if (Halt) break;
+    pDelay(1);
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int,const char **)
+{
+  int size = 0;
+  IntClkChan one_two(1,0,size);
+  IntClkChan two_three(1,0,size);
+  IntClkChan three_four(1,0,size);
+  IntClkChan four_five(1,0,size);
+
+  Data.resize(5);
+
+  par {
+    on (pCurProc(),0) {
+      par {
+        begin_stage(0,one_two);
+        middle_stage(1,0,0,one_two,two_three);
+        middle_stage(2,20,2,two_three,three_four);
+        middle_stage(3,0,0,three_four,four_five);
+        end_stage(4,four_five);
+      }
+    }
+    report();
+  }
+
+  return 0;
+}

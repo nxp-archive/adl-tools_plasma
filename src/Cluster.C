@@ -502,17 +502,6 @@ namespace plasma {
     exec_ready(&_main,old);
   }
 
-  // Terminate the current thread, continue execution with next ready thread.
-  void Cluster::terminate()
-  {
-    // Lock cluster to prevent preemption.
-    lock();
-    Thread *ready = get_ready();
-    Thread *old = _cur;
-    _cur = ready;
-    QT_ABORT(switch_term, old, 0, ready->thread());
-  }
-
   // Terminate a thread.  Remove from ready queue if it's in there and mark as done.
   void Cluster::terminate(Thread *t)
   {
@@ -541,19 +530,36 @@ namespace plasma {
     unlock();
   }
 
+  // Terminate the current thread, continue execution with next ready thread.
+  void Cluster::terminate()
+  {
+    // Lock cluster to prevent preemption.
+    lock();
+    
+    // Schedule any waiting threads.  We do this before a call to get_ready()
+    // b/c it might be the case that a waiter is the next thread that should be
+    // executed, e.g. if a waiting thread has a higher priority than any existing
+    // ready threads.
+    // For every waiting thread, add it back to the ready queue of its parent processor.
+    // Then make sure that the processor is running.
+    while (Thread *next = _cur->get_waiter()) {
+      next->setHandle(_cur->handle());
+      next->proc()->add_ready(next);
+      thecluster.add_proc(next->proc());
+    }
+
+    Thread *ready = get_ready();
+    Thread *old = _cur;
+    _cur = ready;
+    QT_ABORT(switch_term, old, 0, ready->thread());
+  }
+
   // This terminates a thread, returning the stack to the
   // cluster for use by another thread.
   void *switch_term(qt_t *, void* old, void *)
   {
     Thread *oldthread = (Thread*)old;         // get current thread
     oldthread->destroy();                     // free stack
-    // For every waiting thread, add it back to the ready queue of its parent processor.
-    // Then make sure that the processor is running.
-    while (Thread *next = oldthread->get_waiter()) {
-      next->setHandle(oldthread->handle());
-      next->proc()->add_ready(next);
-      thecluster.add_proc(next->proc());
-    }
     if (!thecluster.in_scheduler()) {
       // If we're not in (switching to) the scheduler, make sure that preemption
       // is on.  Otherwise, the scheduler will run and unlock the cluster once

@@ -13,10 +13,44 @@ const int Clock = 10;
 
 typedef ClockChan<int> ClkIntChan;
 
-void producer(ClkIntChan &c,int val)
+void producer(int id,ClkIntChan &c,int val)
 {
-  cout << "Wrote " << val << endl;
+  cout << "TEST " << id << ":  Wrote " << val << endl;
   c.write(val);
+}
+
+void test(int id,ClkIntChan &c)
+{
+  // Create a bunch of processes trying to write to the channel.
+  spawn(producer(id,c,100));
+
+  cout << "TEST " << id << ":  " << pTime() << ":  Done with writes." << endl;
+
+  // Delay in order to make sure that they all get scheduled.
+  pDelay(Clock);
+
+  cout << "TEST " << id << ":  " << pTime() << ":  Before the clear." << endl;
+
+  // Now clear the channel.  This should eliminate the writers.
+  // but not advance time.
+  c.clear();
+
+  cout << "TEST " << id << ":  " << pTime() << ":  After the clear." << endl;
+
+  // Now try and write something.  If this didn't work, we'll exit
+  // immediately due to deadlock.  We can only do this if we have a
+  // save > 0 b/c otherwise we'll block on the write.
+  if (c.maxsize() > 0) {
+    c.write(1000);
+  }
+  spawn(producer(id,c,2000));
+
+  // Now print out anything in the channel.
+  while (true) {
+    int r = c.get();
+    cout << "TEST " << id << ":  " << pTime() << ":  Result:  " << r << endl;
+  }
+
 }
 
 void pSetup(ConfigParms &cp)
@@ -26,38 +60,12 @@ void pSetup(ConfigParms &cp)
 
 int pMain(int argc,const char *argv[])
 {
-  ClkIntChan c(Clock);
+  ClkIntChan c1(Clock);
+  ClkIntChan c2(Clock,0,1);
 
-  // Create a bunch of processes trying to write to the channel.
-  spawn(producer(c,100));
-  spawn(producer(c,200));
-  spawn(producer(c,300));
-  spawn(producer(c,400));
-  spawn(producer(c,500));
-
-  cout << pTime() << ":  Done with writes." << endl;
-
-  // Delay in order to make sure that they all get scheduled.
-  pDelay(1);
-
-  cout << pTime() << ":  Before the clear." << endl;
-
-  // Now clear the channel.  This should eliminate the writers.
-  // but not advance time.
-  c.clear();
-
-  cout << pTime() << ":  After the clear." << endl;
-
-  // Now try and write something.  If this didn't work, we'll exit
-  // immediately due to deadlock.
-  c.write(1000);
-  spawn(producer(c,2000));
-
-  // Now print out anything in the channel.
-  while (true) {
-    int r = c.get();
-    cout << pTime() << ":  Result:  " << r << endl;
+  par {
+    test(1,c1);
+    test(2,c2);
   }
-
   return 0;
 }
