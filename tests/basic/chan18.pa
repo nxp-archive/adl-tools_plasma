@@ -1,0 +1,52 @@
+//
+// Tests that a prialt will read the channels in the specified
+// order.
+//
+#include <plasma.h>
+
+typedef plasma::Channel<int>    IntChan;
+
+// This should read the channels in-order, since we're using
+// a prialt.
+void consumer(IntChan &c0,IntChan &c1,IntChan &c2,IntChan &c3)
+{
+  int done = 0;
+  while (done < 4) {
+    prialt {
+      c0.port(int x) {
+        plasma::mprintf ("From port c0:  %d\n",x);        
+        ++done;
+      }
+      c1.port(int x) {
+        plasma::mprintf ("From port c1:  %d\n",x);        
+        ++done;
+      }
+      c2.port(int x) {
+        plasma::mprintf ("From port c2:  %d\n",x);        
+        ++done;
+      }
+      c3.port(int x) {
+        plasma::mprintf ("From port c3:  %d\n",x);        
+        ++done;
+      }
+    }
+  }
+  plasma::mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan c0,c1,c2,c3;
+  
+  // Write to the channels.
+  c0.write(10);
+  c1.write(20);
+  c2.write(30);
+  c3.write(40);
+
+  // Now launch the consumer in order to read the data.
+  consumer(c0,c1,c2,c3);
+
+  plasma::mprintf ("Done.\n");
+  return 0;
+}

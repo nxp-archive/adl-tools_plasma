@@ -164,10 +164,10 @@ Ptree *VarWalker::TranslateUserPlain(Ptree *exp)
   else if (keyword->Eq("pfor")) {
     return TranslateUserFor(exp);
   }
-  else if (keyword->Eq("alt")) {
+  else if (keyword->Eq("alt") || keyword->Eq("prialt")) {
     return TranslateUserBlock(exp);
   }
-  else if (keyword->Eq("afor")) {
+  else if (keyword->Eq("afor") || keyword->Eq("priafor")) {
     return TranslateUserFor(exp);
   } else if (keyword->Eq("on")) {
     return TranslateUserWhile(exp);

@@ -319,7 +319,7 @@
 	    upon entry to the ,(code [alt]), then exactly one of the ready
 	    channels will be read and its code executed; the selection of the
 	    channel is non-deterministic.])
-	    
+	    	    
 	    (p [Just as Plasma provides the ,(code [pfor]) construct for
 	    replicating threads, it also provides ,(code [afor]) for replicating
 	    channel reads:])
@@ -359,7 +359,14 @@
 
             (p [In the above example, the thread will suspend unless a channel
 	    in ,(code [ichannels]) or the channel ,(code [xc]) has data.])
-	 	     
+	    
+	    (p [As mentioned above, the ordering in which channels will be read
+	    for ,(code [alt]) and ,(code [afor]) blocks is indeterminate.  To
+	    guarantee a specific ordering, the ,(code [prialt]) and ,(code
+	    [priafor]) constructs may be used.  These take the same form as
+	    ,(code [alt]) and ,(code [afor]) except that the channels will be
+	    queried in the order specified by the user.])
+
 	    )
 	 
 	 (subsubsection :title "Synchronous Communication"

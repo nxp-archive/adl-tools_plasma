@@ -184,7 +184,7 @@ void uintr(MsgChan &srvr_out, MsgChan &Uintpt, MsgChan &appl_in, int Umips)
     if (mesg.cmd) {
       uint = Uintpt.get();
     } else {
-      alt {
+      prialt {
         Uintpt.port(Msg m) {
           uint = m;
         }
@@ -282,7 +282,7 @@ void Hintr(MsgChan &appl_out, MsgChan &Hclock, MsgChan &Hreqst,
   while(true) {
     if (mesg.cmd) {
       // if holding prior mesg, don't read appl_out
-      alt {
+      prialt {
         Hclock.port(Msg m) {
           clock = m;
         }
@@ -294,7 +294,7 @@ void Hintr(MsgChan &appl_out, MsgChan &Hclock, MsgChan &Hreqst,
         }
       }
     } else {
-      alt {
+      prialt {
         Hclock.port(Msg m) {
           clock = m;
         }

@@ -150,6 +150,16 @@ my @Tests = (
 	      cmd     => "./chan17",
 	      checker => \&check_chan17,
 	     },
+	     # Test of prialt.
+	     {
+	      cmd     => "./chan18",
+	      checker => \&check_chan18,
+	     },
+	     # Test of priafor.
+	     {
+	      cmd     => "./chan19",
+	      checker => \&check_chan19,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -672,6 +682,34 @@ sub check_chan17 {
 	      [1..10],
 	     );
   check_channel (@_[0],"Producer (\\d+):\\s+Sending msg num=(\\d+)",\@data2);
+}
+
+sub check_chan18 {
+  str_rdiff(@_[0],[
+		   "From port c0:  10",
+		   "From port c1:  20",
+		   "From port c2:  30",
+		   "From port c3:  40",
+		   "Consumer done.",
+		   "Done.",
+		   ]);
+}
+
+sub check_chan19 {
+  str_rdiff(@_[0],[
+		   "From port c0:  10",
+		   "From port c1:  20",
+		   "From port c2:  30",
+		   "From port c3:  40",
+		   "From port c4:  50",
+		   "From port c5:  60",
+		   "From port c6:  70",
+		   "From port c7:  80",
+		   "From port c8:  90",
+		   "From port c9:  100",
+		   "Consumer done.",
+		   "Done.",
+		  ]);
 }
 
 sub check_spawn1 {

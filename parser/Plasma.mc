@@ -58,7 +58,9 @@ bool Plasma::Initialize()
   RegisterNewForStatement("pfor");
   RegisterNewWhileStatement("on");
   RegisterNewBlockStatement("alt");
+  RegisterNewBlockStatement("prialt");
   RegisterNewForStatement("afor");
+  RegisterNewForStatement("priafor");
   RegisterNewClosureStatement("port");
   RegisterMetaclass("pSpawner","Plasma");
   return TRUE;
@@ -101,7 +103,10 @@ Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
   else if (keyword->Eq("alt")) {
     return TranslateAlt(env,keyword,rest);
   }
-  else if (keyword->Eq("afor")) {
+  else if (keyword->Eq("prialt")) {
+    return TranslatePriAlt(env,keyword,rest);
+  }
+  else if (keyword->Eq("afor") || keyword->Eq("priafor")) {
     return TranslateAfor(env,keyword,rest);
   }
 
@@ -768,24 +773,36 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   return true;
 }
 
-// Translate an alt block.
-Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
+// Translate an alt or prialt block.
+Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest,bool reverse)
 {
-  PortVect pv;
+  PortList pv;
   Ptree *defaultblock = nil;
 
-  if (!parseAltBody(env,rest,pv,defaultblock)) {
+  if (!parseAltBody(env,rest,pv,defaultblock,reverse)) {
     return false;
   }
 
   return generateAltBlock(env,pv,defaultblock);
 }
 
+// Translate an alt block.
+Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  return TranslateAlt(env,keyword,rest,true);
+}
+
+// Translate a prialt block.
+Ptree* Plasma::TranslatePriAlt(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  return TranslateAlt(env,keyword,rest,false);
+}
+
 // Translate an afor block.  This is similar to an alt block, except that
 // we loop over the port statements.
 Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
 {
-  PortVect pv;
+  PortList pv;
   Ptree *defaultblock = nil;
 
   if (!parseAforBody(env,rest,pv,defaultblock)) {
@@ -795,14 +812,30 @@ Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
   return generateAltBlock(env,pv,defaultblock);
 }
 
+// Does a depth-first of origpv, placing a flattened
+// list of ports into pv.
+void flatten(PortList &pv,const PortList &origpv)
+{
+  for (PortList::const_iterator i = origpv.begin(); i != origpv.end(); ++i) {
+    if (i->isport()) {
+      pv.push_back(&(i->port()));
+    } else {
+      flatten(pv,i->list());
+    }
+  }
+}
+
 // Main generation function for alt/afor blocks.  Given a list of
 // ports, constructs the necessary alt structure.
-Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defaultblock)
+Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *defaultblock)
 {
   Ptree *label  = Ptree::GenSym();
   Ptree *handle = Ptree::GenSym();
   Ptree *sindex = Ptree::GenSym();
   Ptree *uflag  = Ptree::GenSym();
+
+  PortList pv;
+  flatten(pv,origpv);
 
   // We put this inside of a try block if we don't have a default block,
   // since we want to clear the notifications if an exception occurs.
@@ -818,8 +851,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
   // Create auxiliary stack if needed.
   bool needsindex = false;
   bool haveloops = false;
-  for (PortVect::const_iterator i = pv.begin(); i != pv.end(); ++i) {
-    const Port &p = *i;
+  for (PortList::const_iterator i = pv.begin(); i != pv.end(); ++i) {
+    const Port &p = i->port();
     if (p.isloop()) {
       haveloops = true;
       cur = lappend(cur,Ptree::qMake("`p.s1`\n"));
@@ -844,8 +877,9 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
   }
 
   // For each entry, write out ready-query logic.
-  for (int index = 0; index != (int)pv.size(); ++index) {
-    const Port &p = pv[index];
+  int index = 0;
+  for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter,++index) {
+    const Port &p = iter->port();
     cur = lappend(cur,Ptree::qMake("`handle`.first = `index`;\n"));
     if (p.isloop()) {
       // Afor code.
@@ -865,8 +899,9 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
   } else {
     // This generated code is only reached if no ports were ready.
     // In that case, we set each channel to notify us when it has data.
-    for (int index = 0; index != (int)pv.size(); ++index) {
-      const Port &p = pv[index];
+    int index = 0;
+    for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter,++index) {
+      const Port &p = iter->port();
       if (p.isloop()) {
         // If we have a non-builtin type as an index variable, we store each index
         // variable in a vector and store the corresponding index.  When we wake up,
@@ -900,8 +935,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
                                    "plasma::pLock();\n"));
 
     // Clear all notification, since we have a value.
-    for (unsigned index = 0; index != pv.size(); ++index) {
-      const Port &p = pv[index];
+    for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter) {
+      const Port &p = iter->port();
       if (p.isloop()) {
         cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
                                        "(`p.chan`) `p.op` clear_notify();\n"
@@ -921,8 +956,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
   // Exception cleanup code if no default block.
   if (!defaultblock) {
     cur = lappend(cur,Ptree::Make("catch (...) {\n"));
-    for (PortVect::const_iterator i = pv.begin(); i != pv.end(); ++i) {
-      const Port &p = *i;
+    for (PortList::const_iterator i = pv.begin(); i != pv.end(); ++i) {
+      const Port &p = i->port();
       if (p.isloop()) {
         cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
                                        "  (`p.chan`) `p.op` clear_notify();\n"
@@ -940,7 +975,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
 
 // Generates the case statement for the alt action code.
 Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,Ptree *uflag,
-                               const PortVect &pv,Ptree *defaultblock)
+                               const PortList &pv,Ptree *defaultblock)
 {
   // Unlock processors- may be redundant for some cases, but is needed
   // for default blocks and non-standard channels.
@@ -951,8 +986,9 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
 
   // Handling code.  Each value should be a valid declaration.
   // The second statement represents the channel to be queried.
-  for (int index = 0; index != (int)pv.size(); ++index) {
-    const Port &p = pv[index];
+  int index = 0;
+  for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter,++index) {
+    const Port &p = iter->port();
     cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
     // If we have a loop, we copy the handle's second item to the loopvar so
     // that it can be used by the body of the code.
@@ -1002,8 +1038,9 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
   return cur;
 }
 
-// Parses an alt's body.
-bool Plasma::parseAltBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock)
+// Parses an alt or prialt body.
+bool Plasma::parseAltBody(Environment *env,Ptree *rest,PortList &pv,
+                          Ptree* &defaultblock,bool reverse)
 {
   Ptree *body;
   if(!Ptree::Match(rest, "[ %? ]", &body)){
@@ -1014,9 +1051,17 @@ bool Plasma::parseAltBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defa
   // Ignore the braces.
   body = body->Cadr();
 
+  pv.push_back(PortNode());
+
   // Parse the body of the alt.
-  if (!parseAltBlock(env,body,false,pv,defaultblock)) {
+  if (!parseAltBlock(env,body,false,pv.back().list(),defaultblock)) {
     return false;
+  }
+
+  if (reverse) {
+    // Now reverse the elements just to jack with people:  They shouldn't
+    // be depending upon it being in a particular order- prialt should be used for that.
+    pv.back().list().reverse();
   }
 
   return true;
@@ -1046,7 +1091,7 @@ bool Plasma::parseAforCondition(VarWalker *vw,Environment *env,Ptree *s1,Ptree *
 }
 
 // Parses an afor block.
-bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock)
+bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &defaultblock)
 {
   Ptree *s1, *s2, *s3, *body;
 
@@ -1055,21 +1100,21 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &def
     return false;
   }
 
-  int pvsize = pv.size();
-
   // Ignore the braces.
   body = body->Cadr();
-  
-  if (!parseAltBlock(env,body,true,pv,defaultblock)) {
+
+  pv.push_back(PortNode());
+
+  if (!parseAltBlock(env,body,true,pv.back().list(),defaultblock)) {
     return false;
   }
 
-  if ((int)pv.size() > pvsize+1) {
+  if ((int)pv.back().list().size() > 1) {
     ErrorMessage(env,"more than one port statement in an afor block is currently not supported",nil,rest);
     return false;
   }
 
-  Port &p = pv.back();
+  Port &p = pv.back().list().back().port();
   // Store afor information in channel object.
   p.s1 = s1;
   p.s2 = s2;
@@ -1103,19 +1148,22 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &def
 }
 
 // Scans for alt, afor, or port constructs.
-bool Plasma::parseAltBlock(Environment *env,Ptree *body,bool isloop,PortVect &pv,Ptree* &defaultblock)
+bool Plasma::parseAltBlock(Environment *env,Ptree *body,bool isloop,PortList &pv,Ptree* &defaultblock)
 {
   // Walk through the statements in the alt block.  They may be
   // either a port, alt, afor, or default block.
   for (PtreeIter i = body; !i.Empty(); ++i) {
     Ptree *pchan,*pop,*pval,*pbody;
     if (Ptree::Match(*i,"[ %? %? port ( %? ) %? ]",&pchan,&pop,&pval,&pbody)) {
-      pv.push_back(Port(isloop,pchan,pop,pval,pbody));
+      pv.push_back(new Port(isloop,pchan,pop,pval,pbody));
     }
     else if ((*i)->Car()->Eq("alt")) {
-      parseAltBody(env,(*i)->Cdr(),pv,defaultblock);
+      parseAltBody(env,(*i)->Cdr(),pv,defaultblock,true);
     }
-    else if ((*i)->Car()->Eq("afor")) {
+    else if ((*i)->Car()->Eq("prialt")) {
+      parseAltBody(env,(*i)->Cdr(),pv,defaultblock,false);
+    }
+    else if ((*i)->Car()->Eq("afor") || (*i)->Car()->Eq("priafor")) {
       parseAforBody(env,(*i)->Cdr(),pv,defaultblock);
     }
     else if (Ptree::Match(*i,"[ { %* } ]")) {

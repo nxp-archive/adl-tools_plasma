@@ -6,10 +6,10 @@
 #ifndef _PLASMA_H_
 #define _PLASMA_H_
 
-#include <vector>
+#include <list>
 
 // This stuff is used for alt/afor processing.
-struct Port {
+struct Port : public gc {
   Ptree   *chan;           // Channel expression of a port statement.
   Ptree   *op;             // Operator used to access channel.
   Ptree   *val;            // Value expression of a port statement.
@@ -26,7 +26,24 @@ struct Port {
   bool needstack() const { return stack; };
 };
 
-typedef std::vector<Port> PortVect;
+// Stores a port or a list- used to create 
+// a tree of port/port-list objects.
+class PortNode {
+public:
+  typedef std::list<PortNode> PortList;
+
+  PortNode (Port *p) : _port(p) {};
+  PortNode () : _port(0) {};
+  bool isport() const { return _port; };
+  Port &port() const { assert(_port); return *_port; };
+  const PortList &list() const { return _list; };
+  PortList &list() { return _list; };
+private:
+  Port     *_port;
+  PortList  _list;
+};
+
+typedef PortNode::PortList PortList;
 
 // Main parser metaclass.
 class Plasma : public Class {
@@ -45,7 +62,9 @@ private:
   // Translation functions for the new types introduced by Plasma.
   Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest,bool reverse);
   Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree* TranslatePriAlt(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateSpawn(Environment* env,Ptree* keyword, Ptree* rest);
 
@@ -53,13 +72,13 @@ private:
   void makeThreadStruct(Environment *env,Ptree *type,Ptree *args,const ArgVect &av);
   void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                        Environment *env,bool heapalloc);
-  Ptree *generateAltBlock(Environment *env,const PortVect &pv,Ptree *defaultblock);
+  Ptree *generateAltBlock(Environment *env,const PortList &pv,Ptree *defaultblock);
   Ptree *generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,Ptree *uflag,
-                         const PortVect &pv,Ptree *defaultblock);
+                         const PortList &pv,Ptree *defaultblock);
   bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
-  bool parseAltBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock);
-  bool parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock);
-  bool parseAltBlock(Environment *env,Ptree *body,bool isloop,PortVect &pv,Ptree* &defaultblock);
+  bool parseAltBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &defaultblock,bool reverse);
+  bool parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &defaultblock);
+  bool parseAltBlock(Environment *env,Ptree *body,bool isloop,PortList &pv,Ptree* &defaultblock);
   bool checkForMemberCall(Environment *,Class* &,Environment* &,Ptree* &,Ptree* &);
   bool makeSpawnStruct(Environment *env,Class *,TypeInfo,Ptree *,Ptree *);
   bool makeSpawnFunc(Environment *env,Class *,TypeInfo,Ptree *,Ptree *,Ptree *,Ptree *,bool);

@@ -349,7 +349,7 @@ struct Fetch {
     pDelay(Clock);
     while (_running) {
       //message(unit, "waiting");
-      alt {
+      prialt {
         _dests.port(int pc) {				// read a new destination if there is one from alu
           regs[pc] = pc;
           status = "newPC";

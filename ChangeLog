@@ -1,3 +1,15 @@
+2004-09-20  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added prialt and priafor constructs.  These are guaranteed to
+	read the ports in the order specified by the user, whereas the
+	ordering is indeterminate for alt/afor.
+
+	* Changed the handling of alt blocks so that the channels are read
+	in reverse order, just to distinguish between alt and prialt.  The
+	afor is handled the same as priafor, but the idea is that a more
+	sophisticated compiler, which recognized that an afor is a
+	constant loop, might unroll the loop and do some reordering.
+
 2004-09-17  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed some scheduling bugs related to pooled processors:

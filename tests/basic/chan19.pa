@@ -1,0 +1,40 @@
+//
+// Tests that a priafor will read the channels in the specified
+// order.
+//
+#include <plasma.h>
+
+typedef plasma::Channel<int>    IntChan;
+typedef std::vector<IntChan> IntChans;
+
+// This should read the channels in-order, since we're using
+// a prialt.
+void consumer(IntChans &chans)
+{
+  unsigned done = 0;
+  while (done < chans.size()) {
+    priafor (unsigned i = 0; i != chans.size(); ++i) {
+      chans[i].port(int x) {
+        plasma::mprintf ("From port c%d:  %d\n",i,x);
+        ++done;
+      }
+    }
+  }
+  plasma::mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChans chans(10);
+  
+  // Write to the channels.
+  for (unsigned i = 0; i != chans.size(); ++i) {
+    chans[i].write((i+1)*10);
+  }
+
+  // Now launch the consumer in order to read the data.
+  consumer(chans);
+
+  plasma::mprintf ("Done.\n");
+  return 0;
+}
