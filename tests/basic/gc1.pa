@@ -1,0 +1,55 @@
+//
+// Garbage collection test:  Allocate lots of 
+//
+#include <stdio.h>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+const int num = 1000;
+const int xx = 400;
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    {
+      int *y = 0;
+      for (int i = 0; i != num; ++i) {
+        int *x = new (GC) int[10000];
+        mprintf ("In foo!\n");
+        int j = 0;
+        for (int jj = 0; jj != 10000000; ++jj) {
+          j += 1;
+        }
+        if (!y) {
+          y = x;
+          y[xx] = 0;
+        } else {
+          y[xx]++;
+        }
+      }
+      mprintf ("Done with foo:  %d\n",y[xx]);
+    }
+    {
+      int *y = 0;
+      for (int i = 0; i != num; ++i) {
+        int *x = new (GC) int[10000];
+        mprintf("In bar!\n");
+        int j = 0;
+        for (int jj = 0; jj != 10000000; ++jj) {
+          j += 1;
+        }
+        if (!y) {
+          y = x;
+          y[xx] = 0;
+        } else {
+          y[xx]++;
+        }
+      }
+      mprintf ("Done with bar:  %d\n",y[xx]);
+    }
+  }
+  return 0;
+}
