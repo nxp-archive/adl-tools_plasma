@@ -7,68 +7,72 @@
 #include "Processor.h"
 #include "System.h"
 
-ConfigParms::ConfigParms() :
-  _stacksize(8192),
-  _verbose(false),
-  _preempt(true),
-  _timeslice(50000)
-{}
+namespace plasma {
 
-// Create a new thread and make it ready.
-Thread *pSpawn(UserFunc *f,void *a)
-{
-  return processor.create(f,a);
-}
+  ConfigParms::ConfigParms() :
+    _stacksize(8192),
+    _verbose(false),
+    _preempt(true),
+    _timeslice(50000)
+  {}
 
-// Create a new thread and make it ready.
-Thread *pSpawn(UserFunc *f,int nbytes,void *a)
-{
-  return processor.create(f,nbytes,a);
-}
+  // Create a new thread and make it ready.
+  Thread *pSpawn(UserFunc *f,void *a)
+  {
+    return processor.create(f,a);
+  }
 
-void pAddReady(Thread *t)
-{
-  processor.add_ready(t);
-}
+  // Create a new thread and make it ready.
+  Thread *pSpawn(UserFunc *f,int nbytes,void *a)
+  {
+    return processor.create(f,nbytes,a);
+  }
 
-Thread *pCurThread()
-{
-  return processor.getCur();
-}
+  void pAddReady(Thread *t)
+  {
+    processor.add_ready(t);
+  }
 
-void pWait(Thread *t)
-{
-  processor.wait(t);
-}
+  Thread *pCurThread()
+  {
+    return processor.getCur();
+  }
 
-void pYield()
-{
-  processor.yield();
-}
+  void pWait(Thread *t)
+  {
+    processor.wait(t);
+  }
 
-void pTerminate()
-{
-  processor.terminate();
-}
+  void pYield()
+  {
+    processor.yield();
+  }
 
-int pSleep()
-{
-  return processor.sleep();
-}
+  void pTerminate()
+  {
+    processor.terminate();
+  }
 
-void pWake(Thread *t,int h)
-{
-  processor.wake(t,h);
-}
+  int pSleep()
+  {
+    return processor.sleep();
+  }
 
-// Lock processor.
-void pLock(void)
-{
-  processor.lock();
-}
+  void pWake(Thread *t,int h)
+  {
+    processor.wake(t,h);
+  }
 
-// Unlock processor.
-void pUnlock(void)
-{
-  processor.unlock();
+  // Lock processor.
+  void pLock(void)
+  {
+    processor.lock();
+  }
+
+  // Unlock processor.
+  void pUnlock(void)
+  {
+    processor.unlock();
+  }
+
 }

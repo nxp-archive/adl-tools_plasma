@@ -1,60 +1,11 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <plasma.h>
 
-class Channel {
-public:
-  Channel() : _ready(false), _t(0) {};
-  void write(int d);
-  void set_notify(Thread *t,int h) { assert(!_t); _t = t; _h = h; };
-  Thread *clear_notify() { Thread *t = _t; _t = 0; return t; };
-  bool ready() const { return _ready; };
-  void clear_ready() { _ready = false; };
-  int read() { return read_internal(false); };
-  int get() { return read_internal(true); };
-private:
-  int read_internal(bool clear_ready);
+typedef plasma::Channel<int> IntChan;
 
-  bool    _ready;
-  int     _data;
-  Thread *_t;
-  int     _h;
-};
-
-int Channel::read_internal(bool clearready)
-{
-  pLock();
-  if (!_ready) {
-    set_notify(pCurThread(),0);
-    pSleep();
-  }
-  if (_t) {
-    pAddReady(clear_notify());
-  }
-  int temp = _data;
-  if (clearready) {
-    clear_ready();
-  }
-  pUnlock();
-  return temp;
-}
-
-void Channel::write(int d) 
-{ 
-  pLock();
-  if (_ready) {
-    set_notify(pCurThread(),0);
-    pSleep();
-  }
-  _data = d;
-  _ready = true;
-  if (_t) {
-    pWake(clear_notify(),_h);
-  }
-  pUnlock();
-};
-
-void producer(int val,Channel &chan) 
+void producer(int val,IntChan &chan) 
 {
   for (int i = 0; i != 10; ++i) {
     chan.write(val+i);
@@ -66,24 +17,24 @@ void producer(int val,Channel &chan)
   printf ("Producer done.\n");
 }
 
-void consumer(Channel &c0,Channel &c1,Channel &c2,Channel &c3)
+void consumer(IntChan &c0,IntChan &c1,IntChan &c2,IntChan &c3)
 {
   int donecount = 0;
   while (donecount <  4) {
     alt {
-      port (c0,v) {
+      port (int v;c0;) {
         printf ("Got a value from port c0:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (c1,v) {
+      port (int v;c1;) {
         printf ("Got a value from port c1:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (c2,v) {
+      port (int v;c2;) {
         printf ("Got a value from port c2:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (c3,v) {
+      port (int v;c3;) {
         printf ("Got a value from port c3:  %d\n",v);
         if (v < 0) ++donecount;
       }
@@ -95,7 +46,7 @@ void consumer(Channel &c0,Channel &c1,Channel &c2,Channel &c3)
 int pMain(int argc,const char *argv[])
 { 
   const int NumChan = 4;
-  Channel channels[NumChan];
+  IntChan channels[NumChan];
 
   par {
     producer(10,channels[0]);

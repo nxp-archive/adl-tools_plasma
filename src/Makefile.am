@@ -11,7 +11,8 @@ libplasma_a_SOURCES = \
 	ThreadQ.C
 
 pkginclude_HEADERS = \
-	plasma-interface.h
+	plasma-interface.h \
+	plasma.h
 
 noinst_HEADERS = \
 	Machine.h  \

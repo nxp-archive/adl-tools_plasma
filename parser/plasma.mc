@@ -135,7 +135,7 @@ Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_in
   TypeInfo t;
   b->GetType(t,e);
   const char *name = exp->ToString();
-  //cout << "Found variable " << name << endl;
+  //cout << "Found variable " << name << ", type:  " << b->GetEncodedType() << endl;
   // You can't have pointers to references, so if it's a reference, we treat it
   // as is.  We also want to treat any loop variables as copy-by-value so that
   // we won't clobber it.
@@ -161,6 +161,15 @@ Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_in
   }
 }
 
+struct Port {
+  Ptree *chan;
+  Ptree *val;
+  Ptree *body;
+  Port(Ptree *c,Ptree *v,Ptree *b) : chan(c), val(v), body(b) {};
+};
+
+typedef vector<Port> PortVect;
+
 class Plasma : public Class {
 public:
   Ptree* TranslateUserPlain(Environment*,Ptree*, Ptree*);
@@ -173,6 +182,7 @@ private:
   void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
   void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                        Environment *env,bool heapalloc);
+  bool parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock);
 };
 
 bool Plasma::Initialize()
@@ -181,8 +191,7 @@ bool Plasma::Initialize()
   RegisterNewBlockStatement("par");
   RegisterNewForStatement("pfor");
   RegisterNewBlockStatement("alt");
-  RegisterNewClosureStatement("port");
-  RegisterNewBlockStatement("otherwise");
+  RegisterNewForStatement("port");
   return TRUE;
 }
 
@@ -317,9 +326,9 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
   Ptree *tvname = Ptree::GenSym();
   Ptree *iname = Ptree::GenSym();
 
-  return Ptree::qMake("TVect `tvname`;\n"
+  return Ptree::qMake("plasma::TVect `tvname`;\n"
                       "for (`s1` `s2` ; `s3`) { `start` `tvname`.push_back(`thn`); }\n"
-                      "for (TVect::iterator `iname` = `tvname`.begin(); `iname` != `tvname`.end(); ++`iname`) { pWait(*`iname`); }\n"
+                      "for (plasma::TVect::iterator `iname` = `tvname`.begin(); `iname` != `tvname`.end(); ++`iname`) { pWait(*`iname`); }\n"
                       );
 }
 
@@ -358,16 +367,16 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "Thread *`thname` = pSpawn(`nfname`,sizeof(`tstype`),&`tsname`);\n"));
+                                         "plasma::Thread *`thname` = plasma::pSpawn(`nfname`,sizeof(`tstype`),&`tsname`);\n"));
     } else {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "Thread *`thname` = pSpawn(`nfname`,&`tsname`);\n"));
+                                         "plasma::Thread *`thname` = plasma::pSpawn(`nfname`,&`tsname`);\n"));
     }
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *);\n"));
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
-    elist = lappend(elist,Ptree::qMake("Thread *`thname` = pSpawn(`nfname`,0);\n"));
+    elist = lappend(elist,Ptree::qMake("plasma::Thread *`thname` = plasma::pSpawn(`nfname`,0);\n"));
   }
 }
 
@@ -382,15 +391,6 @@ void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args)
     cur = lappend(cur,Ptree::qMake("};\n"));
     InsertBeforeToplevel(env,front);
 }
-
-struct Port {
-  Ptree *chan;
-  Ptree *val;
-  Ptree *body;
-  Port(Ptree *c,Ptree *v,Ptree *b) : chan(c), val(v), body(b) {};
-};
-
-typedef vector<Port> PortVect;
 
 // Translate an alt block.
 Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
@@ -408,40 +408,14 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
   PortVect pv;
   Ptree *defaultblock = nil;
 
-  // Walk through the statements in the alt block.  Each should be a 
-  // case statement or a default statement.
-  for (PtreeIter i = body; !i.Empty(); ++i) {
-    Ptree *cguard,*cbody;    
-    if (Ptree::Match(*i,"[ port ( %? ) %? ]",&cguard,&cbody)) {
-      Ptree *chan,*val;
-      if (Ptree::Match(cguard,"[ %? , %? ]",&chan,&val)) {
-        pv.push_back(Port(chan,val,cbody));
-      } 
-      else if (Ptree::Match(cguard,"[ %? ]",&chan)) {
-        pv.push_back(Port(chan,0,cbody));
-      } 
-      else {
-        ErrorMessage(env, "bad port statement:  Expected either a channel and value or just a channel.",nil,*i);        
-        return nil;
-      }
-    }
-    else if (Ptree::Match(*i,"[ { %* } ]")) {
-      defaultblock = *i;
-    } else {
-      ErrorMessage(env, "bad alt statement:  Only case or default statements are allowed within the block.",nil,*i);
-      return nil;
-    }
-  }
-
-  if (pv.empty()) {
-    ErrorMessage(env,"bad alt statement:  You must have at least one port or default block.",nil,keyword);
+  if (!parseAltBlock(env,body,pv,defaultblock)) {
     return nil;
   }
 
   Ptree *iname = Ptree::GenSym();  
   Ptree *label = Ptree::GenSym();
   Ptree *start = Ptree::List(Ptree::qMake("{\n"
-                                     "pLock();\n"
+                                     "plasma::pLock();\n"
                                      "int `iname`;\n"));
   Ptree *cur = start;
 
@@ -463,13 +437,14 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
     // In that case, we set each channel to notify us when it has data.
     for (int index = 0; index != (int)pv.size(); ++index) {
       const Port &port = pv[index];
-      cur = lappend(cur,Ptree::qMake("(`port.chan`).set_notify(pCurThread(),`index`);\n"));
+
+      cur = lappend(cur,Ptree::qMake("(`port.chan`).set_notify(plasma::pCurThread(),`index`);\n"));
     }
 
     // Next, we sleep.  When we wake up, we get the handle of the channel
     // which woke us.
-    cur = lappend(cur,Ptree::qMake("`iname` = pSleep();\n"
-                                   "pLock();\n"));
+    cur = lappend(cur,Ptree::qMake("`iname` = plasma::pSleep();\n"
+                                   "plasma::pLock();\n"));
 
     // Clear all notification, since we have a value.
     for (unsigned index = 0; index != pv.size(); ++index) {
@@ -483,45 +458,24 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
   cur = lappend(cur,Ptree::qMake("`label`:\n"
                              "switch(`iname`) {\n"));
 
-  Ptree *readname = Ptree::Make("read");
-
+  // Handling code.  Each value should be a valid declaration.
+  // The second statement represents the channel to be queried.
   for (int index = 0; index != (int)pv.size(); ++index) {
     const Port &port = pv[index];
     if (port.val) {
-      // We only need to query the read member if the user wants
-      // to map the read value to a variable.
-      TypeInfo t;
-      if (!env->Lookup(port.chan->Car(),t)) {
-        ErrorMessage(env,"Channel not found.",nil,port.chan);
+      Ptree *val,*cv,*type;
+      if (Ptree::Match(port.val,"[%? %? %? ;]",&cv,&type,&val)) {
+        // User specified a type, so use it directly.
+        cur = lappend(cur,Ptree::qMake("case `index`: {\n"
+                                       "`cv``type``val` = (`port.chan`).get();\n"
+                                       "{\n"
+                                       "`port.body`\n"
+                                       "}\n"
+                                       "} break;\n"));
+      } else {
+        ErrorMessage(env,"Invalid value declaration for port statement",nil,port.val);
         return nil;
       }
-      Class *mc = 0;
-      if (t.IsReferenceType()) {
-        t.Dereference();
-      }
-      if (!t.IsClass(mc)) {
-        ErrorMessage(env,"Channel must be a class object.",nil,port.chan);
-        return nil;
-      }
-      assert(mc);
-      Member member;
-      if (!mc->LookupMember(readname,member)) {
-        ErrorMessage(env,"Bad channel:  No read() member found.",nil,port.chan);
-        return nil;
-      }
-      if (!member.IsFunction()) {
-        ErrorMessage(env,"Bad channel:  read() member is not a function.",nil,port.chan);
-        return nil;
-      }
-      TypeInfo rt;
-      member.Signature(rt);
-      rt.Dereference();
-      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
-                                     "`rt.MakePtree(port.val)` = (`port.chan`).get();\n"
-                                     "{\n"
-                                     "`port.body`\n"
-                                     "}\n"
-                                     "} break;\n"));
     } else {
       // Simple case- no value, so just insert code.
       cur = lappend(cur,Ptree::qMake("case `index`: {\n"
@@ -540,4 +494,31 @@ Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
   cur = lappend(cur,Ptree::Make("}\n}\n"));
 
   return start;
+}
+
+bool Plasma::parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock)
+{
+  // Walk through the statements in the alt block.  Each should be a 
+  // case statement or a default statement.
+  for (PtreeIter i = body; !i.Empty(); ++i) {
+    Ptree *pval,*pchan,*pnil,*pbody;
+    if (Ptree::Match(*i,"[ port ( %? %? ; %? ) %? ]",&pval,&pchan,&pnil,&pbody)) {
+      if (pnil != nil) {
+        ErrorMessage(env,"bad port statement:  Nothing may appear after second semicolon.",nil,*i);
+      }
+      pv.push_back(Port(pchan,pval,pbody));
+    }
+    else if (Ptree::Match(*i,"[ { %* } ]")) {
+      defaultblock = *i;
+    } else {
+      ErrorMessage(env, "bad alt statement:  Only port blocks or a default block are allowed within the alt block.",nil,*i);
+      return false;
+    }
+  }
+
+  if (pv.empty()) {
+    ErrorMessage(env,"bad alt statement:  You must have at least one port or default block.",nil,body);
+    return false;
+  }
+  return true;
 }

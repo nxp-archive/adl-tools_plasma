@@ -3,76 +3,28 @@
 #include <iostream>
 
 #include "plasma-interface.h"
+#include "plasma.h"
 
 using namespace std;
+using namespace plasma;
 
 void producer(void *);
 void consumer(void *);
 
-class Channel {
-public:
-  Channel() : _ready(false), _t(0) {};
-  void write(int d);
-  void set_notify(Thread *t,int h) { assert(!_t); _t = t; _h = h; };
-  Thread *clear_notify() { Thread *t = _t; _t = 0; return t; };
-  bool ready() const { return _ready; };
-  void clear_ready() { _ready = false; };
-  int read() { return read_internal(false); };
-  int get() { return read_internal(true); };
-private:
-  int read_internal(bool clear_ready);
-
-  bool    _ready;
-  int     _data;
-  Thread *_t;
-  int     _h;
-};
-
-int Channel::read_internal(bool clearready)
-{
-  pLock();
-  if (!_ready) {
-    set_notify(pCurThread(),0);
-    pSleep();
-  }
-  if (_t) {
-    pAddReady(clear_notify());
-  }
-  int temp = _data;
-  if (clearready) {
-    clear_ready();
-  }
-  pUnlock();
-  return temp;
-}
-
-void Channel::write(int d) 
-{ 
-  pLock();
-  if (_ready) {
-    set_notify(pCurThread(),0);
-    pSleep();
-  }
-  _data = d;
-  _ready = true;
-  if (_t) {
-    pWake(clear_notify(),_h);
-  }
-  pUnlock();
-};
+typedef plasma::Channel<int> IntChan;
 
 struct PArg {
   int      val;
-  Channel &chan;
+  IntChan &chan;
 
-  PArg(int a,Channel &c) : val(a), chan(c) {};
+  PArg(int a,IntChan &c) : val(a), chan(c) {};
 };
 
 const int NumChan = 4;
 
 int pMain(int argc,const char *argv[])
 { 
-  Channel channels[NumChan];
+  IntChan channels[NumChan];
   PArg parg1(10,channels[0]);
   PArg parg2(100,channels[1]);
   PArg parg3(1000,channels[2]);
@@ -94,7 +46,7 @@ int pMain(int argc,const char *argv[])
 
 void producer(void *a) 
 {
-  Channel &chan = ((PArg*)a)->chan;
+  IntChan &chan = ((PArg*)a)->chan;
   int val = ((PArg*)a)->val;
 
   for (int i = 0; i != 10; ++i) {
@@ -109,7 +61,7 @@ void producer(void *a)
 
 void consumer(void *a)
 {
-  Channel *channels = ((Channel*)a);
+  IntChan *channels = ((IntChan*)a);
   for (int negcount = 0; negcount < NumChan; ) {
     int j = 0, end = 0;
     pLock();

@@ -7,25 +7,29 @@
 
 #include <iosfwd>
 
-class Thread;
+namespace plasma {
 
-// Very simple queue class of thread objects.
-class ThreadQ {
-public:
-  ThreadQ() : _head(0), _tail(0) {};
+  class Thread;
 
-  void add(Thread *t);
-  Thread *get();
+  // Very simple queue class of thread objects.
+  class ThreadQ {
+  public:
+    ThreadQ() : _head(0), _tail(0) {};
 
-  bool empty() const { return !_head; };
+    void add(Thread *t);
+    Thread *get();
 
-  // O(n) operation for size()!
-  unsigned size() const;
+    bool empty() const { return !_head; };
 
-  void print(std::ostream &) const;
-private:
-  Thread *_head; // Head of the queue.
-  Thread *_tail; // Tail of the queue.
-};
+    // O(n) operation for size()!
+    unsigned size() const;
+
+    void print(std::ostream &) const;
+  private:
+    Thread *_head; // Head of the queue.
+    Thread *_tail; // Tail of the queue.
+  };
+
+}
 
 #endif

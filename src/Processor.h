@@ -9,110 +9,115 @@
 
 #include "Thread.h"
 
-class ConfigParms;
+namespace plasma {
 
-class Processor 
-{
-public:
-  Processor();
-  void init(const ConfigParms &);
+  class ConfigParms;
 
-  // Main entry point.  This runs until there are no more user threads.
-  void scheduler();
+  class Processor 
+  {
+  public:
+    Processor();
+    void init(const ConfigParms &);
 
-  // Create a thread and add to the ready queue.
-  Thread *create(UserFunc *f,void *arg);
-  Thread *create(UserFunc *f,int nbytes,void *args);
+    // Main entry point.  This runs until there are no more user threads.
+    void scheduler();
 
-  // Add an already created thread to the ready queue.  This must
-  // have already been realized.
-  void add_ready(Thread *t);
+    // Create a thread and add to the ready queue.
+    Thread *create(UserFunc *f,void *arg);
+    Thread *create(UserFunc *f,int nbytes,void *args);
 
-  // Causes the current thread to wait on the specified thread.
-  void wait(Thread *t);
+    // Add an already created thread to the ready queue.  This must
+    // have already been realized.
+    void add_ready(Thread *t);
 
-  // Yield on the current thread.  Switch to the next ready thread.
-  void yield();
+    // Causes the current thread to wait on the specified thread.
+    void wait(Thread *t);
 
-  // Terminate the current thread and switch to the next ready thread.
-  void terminate();
+    // Yield on the current thread.  Switch to the next ready thread.
+    void yield();
 
-  // Current thread sleeps.  When awakened, gets handle value sent by
-  // wake command.  Note:  You *must* have some other storage of this thread,
-  // since it's removed from the ready queue.
-  int sleep();
+    // Terminate the current thread and switch to the next ready thread.
+    void terminate();
 
-  // Wake specified thread, switching to it and supplying specified handle.
-  void wake(Thread *t,int h);
+    // Current thread sleeps.  When awakened, gets handle value sent by
+    // wake command.  Note:  You *must* have some other storage of this thread,
+    // since it's removed from the ready queue.
+    int sleep();
 
-  // Explicitly switch to the scheduler thread.
-  // Caller must lock processor.
-  void runscheduler();
+    // Wake specified thread, switching to it and supplying specified handle.
+    void wake(Thread *t,int h);
 
-  void lock();             // lock processor
-  void unlock();           // unlock processor
-  bool locked() const;     // is processor in kernel mode?
+    // Explicitly switch to the scheduler thread.
+    // Caller must lock processor.
+    void runscheduler();
 
-  void nopreempt();        // switch off alarm preemption
-  void preempt();          // switch on alarm preemption
+    void lock();             // lock processor
+    void unlock();           // unlock processor
+    bool locked() const;     // is processor in kernel mode?
 
-  void setCur(Thread *t);
-  Thread *getCur() const;
+    void nopreempt();        // switch off alarm preemption
+    void preempt();          // switch on alarm preemption
 
-private:
-  friend void *switch_ready(qt_t *sptr, void*, void *old);
-  friend void *switch_term(qt_t *, void* old, void *);
-  friend void *switch_block(qt_t *sptr, void*, void *old);
+    void setCur(Thread *t);
+    Thread *getCur() const;
 
-  bool in_scheduler() const;
+  private:
+    friend void *switch_ready(qt_t *sptr, void*, void *old);
+    friend void *switch_term(qt_t *, void* old, void *);
+    friend void *switch_block(qt_t *sptr, void*, void *old);
 
-  static bool init();
+    bool in_scheduler() const;
 
-  // Execute thread new, saving data in old.
-  void exec_ready(Thread *newthread,Thread *oldthread);
-  // Execute next ready thread.  Old thread (_cur), is not added
-  // to ready queue.
-  void exec_block();
+    static bool init();
 
-  friend void resetalarm();
+    // Execute thread new, saving data in old.
+    void exec_ready(Thread *newthread,Thread *oldthread);
+    // Execute next ready thread.  Old thread (_cur), is not added
+    // to ready queue.
+    void exec_block();
 
-  static unsigned _timeslice;        // Time slice period in usec.
+    friend void resetalarm();
 
-  Thread     _main;                  // Main thread (the scheduler loop itself).
-  Thread    *_cur;                   // Current thread.
-  bool       _kernel;                // Set if thread is in kernel mode
-  int        _handle;                // Temporary storage of handle passed by pWake.
+    static unsigned _timeslice;        // Time slice period in usec.
 
-  static sigset_t _empty_mask;    // empty signal mask
-  static sigset_t _alarm_mask;    // mask with SIGALRM
-};
+    Thread     _main;                  // Main thread (the scheduler loop itself).
+    Thread    *_cur;                   // Current thread.
+    bool       _kernel;                // Set if thread is in kernel mode
+    int        _handle;                // Temporary storage of handle passed by pWake.
 
-inline void Processor::lock(void)
-{
-  _kernel = 1;
+    static sigset_t _empty_mask;    // empty signal mask
+    static sigset_t _alarm_mask;    // mask with SIGALRM
+  };
+
+  inline void Processor::lock(void)
+  {
+    _kernel = 1;
+  }
+
+  inline void Processor::unlock(void)
+  {
+    _kernel = 0;
+  }
+
+  inline bool Processor::locked() const
+  {
+    return _kernel;
+  }
+
+  inline void Processor::setCur(Thread *t)
+  {
+    _cur = t;
+  }
+
+  inline Thread *Processor::getCur() const
+  {
+    return _cur;
+  }
+
+  // processor-object, statically allocated in address space of current process
+  extern Processor processor;               
+
 }
-
-inline void Processor::unlock(void)
-{
-  _kernel = 0;
-}
-
-inline bool Processor::locked() const
-{
-  return _kernel;
-}
-
-inline void Processor::setCur(Thread *t)
-{
-  _cur = t;
-}
-
-inline Thread *Processor::getCur() const
-{
-  return _cur;
-}
-
-// processor-object, statically allocated in address space of current process
-extern Processor processor;               
 
 #endif
+
