@@ -1,3 +1,9 @@
+2004-12-22  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed bug:  We could get a crash if we tried accessing the
+	current priority from a global constructor because the current
+	processor wasn't set up yet.  I now return the lowest priority in
+	such a situation.
 
 2004-12-22  Brian Kahne  <bkahne@ibmoto.com>
 

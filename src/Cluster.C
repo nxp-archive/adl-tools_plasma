@@ -370,7 +370,7 @@ namespace plasma {
 
   unsigned Cluster::get_priority() const
   {
-    return _cur->priority();
+    return (_cur) ? _cur->priority() : lowest_priority();
   }
 
   unsigned Cluster::lowest_priority() const
