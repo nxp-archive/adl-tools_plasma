@@ -919,6 +919,68 @@ hamming distance between the previous and current value, or have a very
 low-priority thread which adds energy when a processor is idle, attempting to
 model leakage current.])
 
+(p [Of course, the power modeling API can be thought of as a specific instance
+of the more general concept of storing a value with a particular processor.  In
+fact, this is exactly what is done:  The power and energy API is based upon the
+,(code [ProcValue]) class, which lets the user hash a value against a
+processor.  Its API is:])
+
+(mark "ProcValue")
+
+(cprog [
+
+  template <typename Data>
+  struct ProcValue : public hash_map<Processor,Data,HashProc> { 
+    // This adds to the value for the specified processor.
+    Data add(Processor p,Data d);
+    // This adds to the current processor.
+    Data add(Data d);
+    // This gets the processor's value and clears the value.
+    // Returns Data() if the item is not there.
+    Data get(Processor p);
+    // Reads the value, returns Data() if item is not there.
+    Data read(Processor p) const;
+  };
+
+])
+
+(p [This is a template so that any kind of value can be stored.  The ,(code
+[add]) functions add their argument to the existing value associated with the
+specified processor and return this result.  The ,(code [get]) routine returns
+the current value and clears it in the hash, while the ,(code [read]) routine
+returns the value without modifying the hash.])
+
+)
+
+(section :title "Resource Modeling"
+
+(p [The need to model an object with limited resources frequently arises.  For
+example, a memory controller has a specific, fixed bandwidth.  Plasma provides a
+class, called ,(code [Quantity]), to help with this task.  It works as follows:
+The user declares an instance of the class and specifies a timeslice as a
+constructor argument.  The timeslice refers to the time it takes to do one
+request, e.g. for a memory controller, a single read may take 10 time units.])
+	 
+(p [Once declared, threads may request an amount ,(i [n]), which will correspond
+to ,(i [n]) requests.  A thread will busy its processor until the request is
+satisfied.  The ,(code [Quantity]) class uses a round-robin scheme to satisfy
+all in-bound requests: For each thread, it decrements the request by one and
+delays by the specified timeslice.  The busy processor is time-sliced so that
+higher-priority threads may gain some processing time.])
+
+(p [The interface is:])
+
+(itemize
+
+(item [,(code [Quantity::Quantity(int timeslice)]):  Declare an instance and
+specify the timeslice amount.])
+
+(item [,(code [Quantity::request(int amount)]):  Request a specific amount.  If
+there are no other requests, then this can be satisfied in ,(i [(timeslice *
+amount)]) time units, but other requests will stretch this out.])
+
+)
+
 )
 
 (section :title "Garbage Collection"

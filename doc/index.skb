@@ -504,7 +504,7 @@ public:
 	 )
 	 
       
-      (subsection :title "Simulation"
+	 (subsection :title "Simulation"
 	 
 	 (p [Plasma contains a discrete-event time model for simulation
 	 purposes.  This is not part of the language, per se, but is implemented
@@ -584,20 +584,28 @@ par {
 	 Additionally, a model might wrap all calls to ,(code [pEnergy]) so that
 	 a scaling value, based on clock-frequency, might be applied.])
 	 
-	 (p [This concept could be extended to other resources besides just
-	 power and computation.  C++'s (and thus Plasma's) data structure support
-	 make this relatively straight-forward: A hash can be constructed to
-	 associate processors with arbitrary data.  This makes it possible to
-	 track additional resources without changing the underlying runtime
-	 kernel.  What is not as straight-forward is to link resource
-	 utilization to compute time; future versions of Plasma will attempt to
-	 deal with this problem.  For example, suppose the user wants to track
-	 memory bandwidth, where two processors share a memory bus.  If the two
-	 processors each want to consume 60% of the available bandwidth, one or
-	 the other will have to wait for the other to finish.  This might be
-	 modeled by adding a feature where a processor is considered to be busy
-	 until a certain condition is reached.])
+	 (p [This concept can be extended to other resources besides just power
+	 and computation: The ,(ref :text (code [ProcValue]) :mark "ProcValue")
+	 template allows a user to associate a data value with a processor.  The
+	 class's methods allow for incrementing a value, retrieving and clearing
+	 it, or just retrieving it.  The power API is a simple wrapper around
+	 this class, using a ,(code [double]) as a data value for energy.])
 	 
+	 )
+	 
+      (subsection :title "Modeling Limited Resources"
+	 
+	 (p [The need to model an object with limited resources frequently
+	 arises.  For example, a memory controller has a specific, fixed
+	 bandwidth.  Plasma provides a class, called ,(ref :text (code
+	 [Quantity]) :section "Resource Modeling"), to help with this task.  It
+	 lets the user specify how long an individual request will take, e.g. a
+	 read will take 10 time units.  Threads then make requests of this
+	 object; their underlying processor is placed into a busy state until
+	 the request is satisfied.  However, this busy state is time-sliced so
+	 that other, higher priority threads are allowed to potentially grab
+	 some processing time.])
+	 	 
 	 )
 	 
       )

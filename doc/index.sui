@@ -2,7 +2,8 @@
   :file "index.html"
   (marks
     ("ResultCheck" :file "index-1.html" :mark "ResultCheck" :class "mark")
-    ("clocked-chan" :file "index-1.html" :mark "clocked-chan" :class "mark"))
+    ("clocked-chan" :file "index-1.html" :mark "clocked-chan" :class "mark")
+    ("ProcValue" :file "index-1.html" :mark "ProcValue" :class "mark"))
   (chapters
     ("Plasma User's Guide" :file "index-1.html" :mark "Plasma-User's-Guide" :class "chapter")
     ("Examples" :file "index-2.html" :mark "Examples" :class "chapter")
@@ -20,6 +21,7 @@
     ("Usage" :file "index-1.html" :mark "Usage" :class "section")
     ("Concurrency" :file "index-1.html" :mark "Concurrency" :class "section")
     ("Power Modeling" :file "index-1.html" :mark "Power-Modeling" :class "section")
+    ("Resource Modeling" :file "index-1.html" :mark "Resource-Modeling" :class "section")
     ("Garbage Collection" :file "index-1.html" :mark "Garbage-Collection" :class "section")
     ("Library Features" :file "index-1.html" :mark "Library-Features" :class "section")
     ("Clocked Hardware Modeling" :file "index-2.html" :mark "Clocked-Hardware-Modeling" :class "section")
@@ -49,6 +51,7 @@
     ("Communication" :file "index.html" :mark "Communication" :class "subsection")
     ("Simulation" :file "index.html" :mark "Simulation" :class "subsection")
     ("Power Modeling" :file "index.html" :mark "Power-Modeling" :class "subsection")
+    ("Modeling Limited Resources" :file "index.html" :mark "Modeling-Limited-Resources" :class "subsection")
     ("Thread Creation" :file "index-1.html" :mark "Thread-Creation" :class "subsection")
     ("Thread Control" :file "index-1.html" :mark "Thread-Control" :class "subsection")
     ("The Time Model" :file "index-1.html" :mark "The-Time-Model" :class "subsection")

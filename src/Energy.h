@@ -29,7 +29,7 @@ namespace plasma {
     // Returns Data() if the item is not there.
     Data get(Processor p);
     // Reads the value, returns Data() if item is not there.
-    Data read(Processor p);
+    Data read(Processor p) const;
   };
   
   //
@@ -79,9 +79,9 @@ namespace plasma {
   }
 
   template <typename Data>
-  Data ProcValue<Data>::read(Processor p)
+  Data ProcValue<Data>::read(Processor p) const
   {
-    typename Base::iterator i = Base::find(p);
+    typename Base::const_iterator i = Base::find(p);
     if (i != Base::end()) {
       return i->second;
     } else {
