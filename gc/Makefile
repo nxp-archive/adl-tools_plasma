@@ -66,8 +66,8 @@ CCAS = $(CC)
 CCASFLAGS = $(CFLAGS) $(DEFS)
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPLUSPLUS_FALSE = #
-CPLUSPLUS_TRUE = 
+CPLUSPLUS_FALSE = 
+CPLUSPLUS_TRUE = #
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
@@ -75,7 +75,7 @@ CXXDEPMODE = depmode=gcc3
 CXXFLAGS = -g -O2
 CXXINCLUDES = 
 CYGPATH_W = echo
-DEFS = -DPACKAGE_NAME=\"gc\" -DPACKAGE_TARNAME=\"gc\" -DPACKAGE_VERSION=\"6.2\" -DPACKAGE_STRING=\"gc\ 6.2\" -DPACKAGE_BUGREPORT=\"Hans.Boehm@hp.com\" -DGC_VERSION_MAJOR=6 -DGC_VERSION_MINOR=2 -DPACKAGE=\"gc\" -DVERSION=\"6.2\" -DGC_LINUX_THREADS=1 -D_REENTRANT=1 -DTHREAD_LOCAL_ALLOC=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DSILENT=1 -DNO_SIGNALS=1 -DNO_EXECUTE_PERMISSION=1 -DALL_INTERIOR_POINTERS=1 -DJAVA_FINALIZATION=1 -DGC_GCJ_SUPPORT=1 -DATOMIC_UNCOLLECTABLE=1 
+DEFS = -DPACKAGE_NAME=\"gc\" -DPACKAGE_TARNAME=\"gc\" -DPACKAGE_VERSION=\"6.3\" -DPACKAGE_STRING=\"gc\ 6.3\" -DPACKAGE_BUGREPORT=\"Hans.Boehm@hp.com\" -DGC_VERSION_MAJOR=6 -DGC_VERSION_MINOR=3 -DPACKAGE=\"gc\" -DVERSION=\"6.3\" -DGC_LINUX_THREADS=1 -D_REENTRANT=1 -DTHREAD_LOCAL_ALLOC=1 -DSTDC_HEADERS=1 -DHAVE_SYS_TYPES_H=1 -DHAVE_SYS_STAT_H=1 -DHAVE_STDLIB_H=1 -DHAVE_STRING_H=1 -DHAVE_MEMORY_H=1 -DHAVE_STRINGS_H=1 -DHAVE_INTTYPES_H=1 -DHAVE_STDINT_H=1 -DHAVE_UNISTD_H=1 -DHAVE_DLFCN_H=1 -DSILENT=1 -DNO_SIGNALS=1 -DNO_EXECUTE_PERMISSION=1 -DALL_INTERIOR_POINTERS=1 -DJAVA_FINALIZATION=1 -DGC_GCJ_SUPPORT=1 -DATOMIC_UNCOLLECTABLE=1 
 DEPDIR = .deps
 ECHO = echo
 ECHO_C = 
@@ -97,18 +97,18 @@ LIBS =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 LTLIBOBJS = 
-MAINT = #
-MAINTAINER_MODE_FALSE = 
-MAINTAINER_MODE_TRUE = #
+MAINT = 
+MAINTAINER_MODE_FALSE = #
+MAINTAINER_MODE_TRUE = 
 MAKEINFO = ${SHELL} /proj/ppctools/tlv/u/bkahne/p/plasma/gc/missing --run makeinfo
 MY_CFLAGS = -g -O2
 OBJEXT = o
 PACKAGE = gc
 PACKAGE_BUGREPORT = Hans.Boehm@hp.com
 PACKAGE_NAME = gc
-PACKAGE_STRING = gc 6.2
+PACKAGE_STRING = gc 6.3
 PACKAGE_TARNAME = gc
-PACKAGE_VERSION = 6.2
+PACKAGE_VERSION = 6.3
 PATH_SEPARATOR = :
 POWERPC_DARWIN_FALSE = 
 POWERPC_DARWIN_TRUE = #
@@ -117,18 +117,19 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = strip
 THREADLIBS = -lpthread
+UNWINDLIBS = 
 USE_LIBDIR_FALSE = #
 USE_LIBDIR_TRUE = 
-VERSION = 6.2
+VERSION = 6.3
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
-addincludes =  include/gc_cpp.h include/gc_allocator.h
+addincludes = 
 addlibs = 
 addobjs =  mach_dep.lo
-addtests =  test_cpp
+addtests = 
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
 am__fastdepCXX_FALSE = #
@@ -180,7 +181,6 @@ SUBDIRS = doc include
 # :GOTCHA: deliberately we do not include 'Makefile'
 
 # files used by makefiles other than Makefile.am
-# (:FIXME: do we really need gcc_support.c ?)
 #
 
 # part of C++ interface
@@ -200,7 +200,7 @@ EXTRA_DIST = alpha_mach_dep.S mips_sgi_mach_dep.s sparc_mach_dep.S README.QUICK 
     WCC_MAKEFILE\
 add_gc_prefix.c gcname.c if_mach.c if_not_there.c \
     hpux_test_and_clear.s pc_excludes gc.mak MacOS.c \
-    MacProjects.sit.hqx gcc_support.c mach_dep.c setjmp_t.c \
+    MacProjects.sit.hqx mach_dep.c setjmp_t.c \
     threadlibs.c AmigaOS.c \
     Mac_files/datastart.c Mac_files/dataend.c \
     Mac_files/MacOS_config.h Mac_files/MacOS_Test_config.h\
@@ -211,13 +211,13 @@ cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
     cord/de_win.h cord/de_win.RC\
 libtool.m4
 
-extra = libgccpp.la
-#extra = 
+#extra = libgccpp.la
+extra = 
 lib_LTLIBRARIES = libgc.la $(extra) 
 
 include_HEADERS = include/gc.h include/gc_local_alloc.h \
 include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/leak_detector.h include/gc_typed.h  include/gc_cpp.h include/gc_allocator.h
+include/leak_detector.h include/gc_typed.h 
 
 
 EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
@@ -237,7 +237,7 @@ $(asm_libgc_sources)
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
-libgc_la_LIBADD =  mach_dep.lo $(THREADLIBS)
+libgc_la_LIBADD =  mach_dep.lo $(THREADLIBS) $(UNWINDLIBS)
 libgc_la_DEPENDENCIES =  mach_dep.lo
 libgc_la_LDFLAGS = -version-info 1:2:0
 
@@ -248,22 +248,22 @@ EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
 
 
 libgccpp_la_SOURCES = gc_cpp.cc
-libgccpp_la_LIBADD = $(THREADLIBS)
+libgccpp_la_LIBADD = $(THREADLIBS) $(UNWINDLIBS)
 libgccpp_la_LDFLAGS = -version-info 1:2:0
 
 AM_CXXFLAGS =  -fexceptions
 AM_CFLAGS =  -fexceptions
 
-extra_checks = test_cpp
-#extra_checks = 
+#extra_checks = test_cpp
+extra_checks = 
 
 check_PROGRAMS = gctest $(extra_checks)
 
 # gctest_OBJECTS = test.o
 gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgc.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = ./libgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 test_cpp_SOURCES = tests/test_cpp.cc
-test_cpp_LDADD = ./libgc.la ./libgccpp.la $(THREADLIBS) $(EXTRA_TEST_LIBS)
+test_cpp_LDADD = ./libgc.la ./libgccpp.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 
 TESTS = gctest $(extra_checks)
 
@@ -285,8 +285,6 @@ dist_noinst_HEADERS = version.h
 # this is an auxiliary shell file used by Makefile and Makefile.direct
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
-
-MAKEOVERRIDES = 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -315,8 +313,8 @@ libgc_la_OBJECTS = $(am_libgc_la_OBJECTS)
 libgccpp_la_DEPENDENCIES =
 am_libgccpp_la_OBJECTS = gc_cpp.lo
 libgccpp_la_OBJECTS = $(am_libgccpp_la_OBJECTS)
-check_PROGRAMS = gctest$(EXEEXT) test_cpp$(EXEEXT)
-#check_PROGRAMS = gctest$(EXEEXT)
+#check_PROGRAMS = gctest$(EXEEXT) test_cpp$(EXEEXT)
+check_PROGRAMS = gctest$(EXEEXT)
 am_gctest_OBJECTS = test.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
 gctest_DEPENDENCIES = ./libgc.la
@@ -393,18 +391,18 @@ all: all-recursive
 
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno
-$(srcdir)/Makefile.in: # Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
+$(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  Makefile
-Makefile: # $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)
 
 $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
-$(srcdir)/configure: # $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+$(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4): # configure.in acinclude.m4
+$(ACLOCAL_M4):  configure.in acinclude.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 libLTLIBRARIES_INSTALL = $(INSTALL)
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -1078,11 +1076,11 @@ test.o:	$(srcdir)/tests/test.c
 	$(COMPILE) -c $(srcdir)/tests/test.c
 # 	Using $< in the above seems to fail with the HP/UX on Itanium make.
 test_cpp.o:	$(srcdir)/tests/test_cpp.cc
-	$(COMPILE) -c $(srcdir)/tests/test_cpp.cc
+	$(CXXCOMPILE) -c $(srcdir)/tests/test_cpp.cc
 $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
 include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
 include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/gc_mark.h  include/gc_cpp.h include/gc_allocator.h
+include/gc_mark.h 
 
 .s.lo:
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<

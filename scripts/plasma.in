@@ -23,6 +23,10 @@ directly to B<g++>, since it has so many different options.
 
 Display this help message.
 
+=item B<--version, -V>
+
+Display the program's version number.
+
 =item B<--man>
 
 Display more documentation using the I<man> format.
@@ -76,6 +80,7 @@ B<g++>.  A I<3.x> version is recommended.
 # Autoconf substitutions.
 my $prefix="@prefix@";
 my $cxx="@CXXPROG@";
+my $version="@PLASMA_MAJOR_VERSION@.@PLASMA_MINOR_VERSION@.@PLASMA_MICRO_VERSION@";
 
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
@@ -98,6 +103,7 @@ my $help = 0;
 my $link = 1;
 my $compile = 0;
 my $verbose = 0;
+my $printversion = 0;
 my $devel;
 
 # OCC options (pre-compile)
@@ -112,10 +118,10 @@ if (!&GetOptions
      "devel=s"       => \$devel,
      "help|h|?"      => \$help,
      "man"           => \$man,
+     "version|V"     => \$printversion,
      "plasma|p=s"    => \&handle_srcfile,
      "I=s"           => \&handle_occ_val,
      "D=s%"          => \&handle_occ_val,
-     "V"             => \&handle_occ_noval,
      "v"             => \&handle_occ_noval,
      "C"             => \&handle_occ_noval,
      "E"             => \&handle_occ_noval,
@@ -153,6 +159,8 @@ if (!&GetOptions
 printhelp(0,1) if $help;
 
 printhelp(0,2) if $man;
+
+printhelp(0,0,1) if $printversion;
 
 my ($base,$pincs,$plibs,$prog);
 my $baselibs = "-lplasma -lgc -lqt -ldl";
@@ -240,8 +248,10 @@ sub handle_gccopts {
 }
 
 sub printhelp() {
-  my ($eval,$verbose) = (shift,shift);
-  pod2usage(-exitval => $eval,-verbose=>$verbose);
+  my ($eval,$verbose,$nohelp) = (shift,shift,shift);
+  print "\nPLASMA compiler v$version\n\n";
+  print "Copyright (c) 2004 Freescale Semiconductor Inc.  All Rights Reserved.\n\n";
+  pod2usage(-exitval => $eval,-verbose=>$verbose) if (!$nohelp);
   exit 0;
 }
 
