@@ -12,17 +12,20 @@
 
 using namespace std;
 
+void setup();
+
 namespace plasma {
 
   unsigned Proc::_numpriorities = 0;
 
+  // Ensure that we've initialized everything.  This guards against
+  // Processors declared globally in a user program occurring before
+  // setup time.
   Proc::Proc() : 
-    _ready(_numpriorities),
+    _ready(numPriorities()),
     _numthreads(0),
     _state(Waiting)
   {
-    // Make sure that we've initialized this to a valid value.
-    assert(_numpriorities);
   }
 
   void Proc::init(const ConfigParms &cp)
@@ -70,10 +73,12 @@ namespace plasma {
   }
 
   // Add thread to relevant ready queue, based upon its
-  // priority.  Thread is not added if marked as done.
+  // priority.  Thread is not added if done or ready (since
+  // it's already been added).
   void Proc::add_ready(Thread *t)
   {
-    if (!t->done()) {
+    if (t->state() == Thread::Run) {
+      t->setState(Thread::Ready);
       int p = t->priority();
       _ready[p].add(t);
       ++_numthreads;
@@ -87,6 +92,7 @@ namespace plasma {
     for (int i = _ready.size()-1; i >= 0; --i) {
       if (Thread *next = _ready[i].get()) {
         --_numthreads;
+        next->setState(Thread::Run);
         return next;
       }
     }
@@ -112,6 +118,7 @@ namespace plasma {
     Thread *next = _ready[p].get(t);
     if (next) {
       --_numthreads;
+      next->setState(Thread::Run);
     }
     return next;
   }
@@ -121,6 +128,7 @@ namespace plasma {
     assert(t->proc() == this);
     int p = t->priority();
     _ready[p].remove(t);
+    t->setState(Thread::Run);
     --_numthreads;
   }
 
@@ -146,8 +154,17 @@ namespace plasma {
     o << endl;
   }
 
+  void Proc::print_ready() const
+  {
+    print_ready(cout);
+  }
+
   unsigned Proc::numPriorities()
   {
+    // Ensures proper initialization.
+    setup();
+    // Make sure that we've initialized this to a valid value.
+    assert(_numpriorities);
     return _numpriorities;
   }
 

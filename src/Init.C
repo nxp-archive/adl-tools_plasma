@@ -1,3 +1,4 @@
+
 //
 // Main program- initializes resources and starts threads.
 //
@@ -80,18 +81,18 @@ namespace plasma {
   }
 
   // Abort program with error message.
-  void pAbort(char *msg)
+  void pAbort(const char *msg)
   {
     pLock();
-    cout << "\nPlasma aborted: " << msg << ".\n";
+    cerr << "\nPlasma aborted: " << msg << ".\n";
     thesystem.shutdown(-1);              // shutdown system and deliver exit code -1
     thecluster.runscheduler();
   }
 
   // Abort program with error message and immediate exit.
-  void pPanic(char *msg)
+  void pPanic(const char *msg)
   {
-    cout << "\nPlasma panic: " << msg << ".\n";
+    cerr << "\nPlasma panic: " << msg << ".\n";
     abort();                        // produce core
   }
 
@@ -131,12 +132,46 @@ void pSetup(ConfigParms &)
 {
 }
 
+// Setup function.  We try to hook this up so that it's called
+// before anything that needs it, even if that stuff is also
+// global/static.  The general steps of this function are:
+// 1.  Run setup function.
+// 2.  Execute any necessary static init functions.
+int setupInternal()
+{
+  try {
+    ConfigParms configParms;
+
+    // Run setup function.
+    pSetup(configParms);
+    
+    // Initialize process system.
+    Proc::init(configParms);
+    
+    thesystem.init(configParms);
+    thecluster.init(configParms);
+  }
+  catch (exception &err) {
+    pPanic(err.what());
+  }
+  return 0;
+}
+
+// This wraps the setup function within a static variable so that
+// we can ensure that the setup function is only called once.
+// In general, any class with a static init function that could
+// be used by the user (i.e. Cluster isn't currently) should have a
+// call to setup() (not setupInternal!) in its constructor to ensure
+// that setup is performed.
+void setup()
+{
+  static int dummy = setupInternal();
+}
+
 // This executes the function pMain, calling it with the usual
 // argc and argv.
 int main(int argc,const char *argv[])
 {
-  ConfigParms configParms;
-
   // Continuation state for program exit.
   if (setjmp(caller)) {
     return(code); // return to caller        
@@ -144,18 +179,14 @@ int main(int argc,const char *argv[])
 
   try {
 
-    // Run setup function.
-    pSetup(configParms);
-
-    // Initialize process system.
-    Proc::init(configParms);
+    // If we haven't done setup yet, do it now.
+    setup();
 
     // Default processor.  Created after call to init so that we
     // have the correct number of priorities set.
     Proc processor;
 
-    thesystem.init(configParms);
-    thecluster.init(configParms,&processor);
+    thecluster.reset(&processor);
 
     sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
     sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill
@@ -172,7 +203,6 @@ int main(int argc,const char *argv[])
     return (thesystem.retcode());
   }
   catch (exception &err) {
-    cerr << err.what() << endl;
-    return 1;
+    pPanic(err.what());
   }
 }

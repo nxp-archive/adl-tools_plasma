@@ -124,6 +124,21 @@ my @Tests = (
 	      cmd     => "./chan13",
 	      checker => \&check_chan13,
 	     },
+	     # Channel test w/multiple processors.
+	     {
+	      cmd     => "./chan14",
+	      checker => \&check_chan14,
+	     },
+	     # Channel test w/value not required in port body.
+	     {
+	      cmd     => "./chan15",
+	      checker => \&check_chan15,
+	     },
+	     # Channel test w/afor and value not required in port body.
+	     {
+	      cmd     => "./chan16",
+	      checker => \&check_chan16,
+	     },
 	     # Spawn test- C++ only.
 	     {
 	      cmd     => "./spawn1",
@@ -213,6 +228,11 @@ my @Tests = (
 	     {
 	      cmd     => "./time4",
 	      checker => \&check_time4,
+	     },
+	     # Time w/a single thread on its own processor.
+	     {
+	      cmd     => "./time5",
+	      checker => \&check_time5,
 	     },
 	    );
 
@@ -725,21 +745,27 @@ sub check_chan11 {
 }
 
 sub check_chan12 {
+  # Check that the correct data is communicated.
   str_rdiff(@_[0],[
 		   "Got value from channel:  100 at time 0",
 		   "Got value from channel:  200 at time 5",
 		   "Got timeout at time 25",
 		   "Got value from channel:  300 at time 30",
 		   "Got value from channel:  400 at time 30",
-		   "Producer done.",
 		   "Got timeout at time 50",
 		   "Got timeout at time 70",
 		   "Got timeout at time 90",
 		   "Got timeout at time 110",
 		   "Got timeout at time 130",
+		  ]);
+  # Check that everybody finishes.  Note that a slight tweak to the scheduler
+  # means that the exact ordering of the done messages could change, so that's
+  # why it's separated out here.
+  str_rdiff(@_[0],[
+		   "Producer done.",
 		   "Consumer done.",
 		   "Done.",
-		  ]);
+		   ]);
 }
 
 sub check_chan13 {
@@ -750,6 +776,73 @@ sub check_chan13 {
 	      [10..12],
 	     );
   check_channel (@_[0],"Data from port (\\d+):\\s+(\\d+)",\@data);
+}
+
+sub check_chan14 {
+  my @data = (
+	      [10..19],
+	     );
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data);
+}
+
+sub check_chan15 {
+
+  # Verify consumer gets its data.
+  my @data = (
+	      [0..9],
+	     );
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+count is (\\d+)",\@data,2);
+
+  # Verify that producer publishes all data.
+  str_rdiff(@_[0],[
+		   "Producer wrote 0.",
+		   "Producer wrote 1.",
+		   "Producer wrote 2.",
+		   "Producer wrote 3.",
+		   "Producer wrote 4.",
+		   "Producer wrote 5.",
+		   "Producer wrote 6.",
+		   "Producer wrote 7.",
+		   "Producer wrote 8.",
+		   "Producer wrote 9.",
+		   ]);
+}
+
+sub check_chan16 {
+
+  # Verify consumer gets its data.
+  my @data = (
+	      [0..9],
+	      [0..9],
+	     );
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+count is (\\d+)",\@data,3);
+
+  # Verify that producer publishes all data.
+  str_rdiff(@_[0],[
+		   "Producer 0 wrote 0.",
+		   "Producer 0 wrote 1.",
+		   "Producer 0 wrote 2.",
+		   "Producer 0 wrote 3.",
+		   "Producer 0 wrote 4.",
+		   "Producer 0 wrote 5.",
+		   "Producer 0 wrote 6.",
+		   "Producer 0 wrote 7.",
+		   "Producer 0 wrote 8.",
+		   "Producer 0 wrote 9.",
+		   ]);
+  str_rdiff(@_[0],[
+		   "Producer 1 wrote 0.",
+		   "Producer 1 wrote 1.",
+		   "Producer 1 wrote 2.",
+		   "Producer 1 wrote 3.",
+		   "Producer 1 wrote 4.",
+		   "Producer 1 wrote 5.",
+		   "Producer 1 wrote 6.",
+		   "Producer 1 wrote 7.",
+		   "Producer 1 wrote 8.",
+		   "Producer 1 wrote 9.",
+		   ]);
+
 }
 
 sub check_spawn1 {
@@ -976,6 +1069,14 @@ sub check_time4 {
 	      4 => [30,100],
  	     );
   check_times($_[0],\%diff);
+}
+
+sub check_time5 {
+  str_rdiff(@_[0],[
+		   "Start of foo.",
+		   "End of foo at 1000.",
+		   "Done.",
+		   ]);
 }
 
 ##

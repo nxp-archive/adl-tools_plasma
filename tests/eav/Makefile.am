@@ -2,7 +2,7 @@
 # EAV build.
 #
 
-TESTS = eav
+TESTS = regress
 
 check_PROGRAMS = \
 	eav

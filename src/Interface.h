@@ -51,6 +51,8 @@ namespace plasma {
     Processor();
     Processor(Proc *p) : _proc(p) {};
     Proc *operator()() { return _proc; };
+    bool operator==(const Processor &p) const { return _proc == p._proc; };
+    bool operator!=(const Processor &p) const { return _proc != p._proc; };
   private:
     Proc *_proc;
   };
@@ -162,10 +164,10 @@ namespace plasma {
   void pExit(int code);
 
   // Abort program gracefully with error message and return exit code -1.
-  void pAbort(char *);
+  void pAbort(const char *);
 
   // Abort program immediately with error message and return exit code -1.
-  void pPanic(char *);
+  void pPanic(const char *);
 
   // A result class is returned by the spawn operator.  It acts like the
   // "futures" feature MultiLisp:  The spawn operator initiates a thread; to

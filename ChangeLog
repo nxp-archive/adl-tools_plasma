@@ -1,3 +1,18 @@
+2004-07-01  Brian Kahne  <bkahne@ibmoto.com>
+
+	* EAV regression added.
+
+	* Fixed bug with busy:  It was possible to get the same processor
+	back, where the first item to execute is the same thread that
+	we're currently in.  This can happen when there's a processor with
+	just a single thread that goes busy.  Put in a check that if the
+	new processor's next thread is our current thread, skip the call
+	to exec_block.
+
+	* Fixed problem with channels, when the user doesn't need the
+	channel value.  We weren't calling get, so we never cleared out
+	the channel value.
+
 2004-06-28  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed implicit method calls within par blocks.  This means that

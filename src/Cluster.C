@@ -109,7 +109,7 @@ namespace plasma {
     return true;
   }
 
-  void Cluster::init(const ConfigParms &cp,Proc *p)
+  void Cluster::init(const ConfigParms &cp)
   {
     // We don't use preemption if we're using the time model
     // or the user has turned off preemption.
@@ -118,7 +118,10 @@ namespace plasma {
     }
     _timeslice = cp._timeslice;
     _busyts = cp._simtimeslice;
+  }
 
+  void Cluster::reset(Proc *p)
+  {
     _curproc = p;
     p->setState(Proc::Running);
 
@@ -199,12 +202,15 @@ namespace plasma {
     return _cur->handle();
   }
 
+  // We simply add the new thread to the ready queue so that the
+  // operation is valid even if it's on another processor.
   void Cluster::wake(Thread *t,HandleType h)
   {
     lock();
     t->setHandle(h);
-    Thread *old = _cur;
-    exec_ready(t,old);
+    t->proc()->add_ready(t);
+    add_proc(t->proc());
+    unlock();
   }
 
   void Cluster::delay(ptime_t t)
@@ -242,7 +248,17 @@ namespace plasma {
       _main.setProc(_curproc);
       _curproc->add_ready(&_main);
       // Switch to new item w/o adding current thread to ready queue.
-      exec_block();
+      // We make sure that we're not going to switch to ourselves.  This can
+      // occur if, for example, there is only one thread in the processor.  This
+      // means that we've updated the time and what we added above is now back in
+      // the queue.
+      if (_curproc->next_ready() != _cur) {
+        // Switch to next thread.
+        exec_block();
+      } else {
+        // We would be switching to ourselves, so just remove from queue.
+        _curproc->get_ready();
+      }
       // Update time remaining- loop if we still have busy stuff to do.
       t -= _cur->time();
     }
@@ -433,7 +449,7 @@ namespace plasma {
     }
 
     // Remove from ready queue if it's in there.
-    get_ready(t);
+    t->proc()->get_ready(t);
 
     // Mark as done.
     t->destroy();

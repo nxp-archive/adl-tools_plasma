@@ -1,2 +1,2 @@
 
-SUBDIRS = basic
+SUBDIRS = basic eav

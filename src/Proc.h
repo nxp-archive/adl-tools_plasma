@@ -58,6 +58,8 @@ namespace plasma {
 
     // Printt the ready queue to the specified stream.
     void print_ready(std::ostream &o) const;
+    // Prints to cout.
+    void print_ready() const;
 
     static unsigned numPriorities();
 

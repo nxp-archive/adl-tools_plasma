@@ -43,7 +43,13 @@ namespace plasma {
     // Returns 0 if it doesn't exist.
     Thread *get_waiter(Thread *t);
 
-    bool done() const { return _done; };
+    // Ready:  A thread is in ready queue.
+    // Run:    Thread is not in the ready queue (may be executing or blocked).
+    // Done:   Thread is finished.
+    enum State { Done, Ready, Run };
+    State state() const { return _state; };
+    void setState(State s) { _state = s; };
+    bool done() const { return _state == Done; };
 
     Proc *proc() const { return _proc; };
     void setProc(Proc *p) { _proc = p; };
@@ -73,7 +79,7 @@ namespace plasma {
 
   private:
 
-    bool        _done;             // True when thread is done executing.
+    State        _state;           // Current thread state.
     ThreadQ     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
@@ -88,7 +94,7 @@ namespace plasma {
   };
 
   inline Thread::Thread() :
-    _done(false),
+    _state(Run),
     _thread(0),
     _stack(0),
     _stackend(0),

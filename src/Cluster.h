@@ -18,7 +18,8 @@ namespace plasma {
   {
   public:
     Cluster();
-    void init(const ConfigParms &,Proc *p);
+    void init(const ConfigParms &);
+    void reset(Proc *p);
 
     // Main entry point.  This runs until there are no more user threads.
     void scheduler();

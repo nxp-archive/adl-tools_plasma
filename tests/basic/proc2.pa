@@ -9,6 +9,10 @@
 using namespace std;
 using namespace plasma;
 
+// These are global in order to make sure that initialization
+// will happen in the proper order.
+Processor p1,p2;
+
 void delay(double x,int d = 10,int w = 10000000);
 
 pMutex class M {
@@ -24,7 +28,6 @@ public:
 
 int pMain(int argc,const char *argv[])
 { 
-  Processor p1,p2;
   Processor *proc = &p1;
 
   par {

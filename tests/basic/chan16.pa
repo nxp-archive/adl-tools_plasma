@@ -1,0 +1,55 @@
+//
+// Tests that afor works w/a port statement that doesn't need a value.
+//
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> IntChan;
+
+const int NumData = 10;
+
+void producer(int id,int val,IntChan &chan) 
+{
+  for (int i = 0; i != NumData; ++i) {
+    chan.write(val+i);
+    mprintf ("Producer %d wrote %d.\n",id,i);
+  }
+  chan.write(-1);
+  mprintf ("Producer done.\n");
+}
+
+void consumer(int NumChans,IntChan *chans)
+{
+  int finish = 0;
+  int count[NumChans];
+  for (int i = 0; i != NumChans; ++i) {
+    count[i] = 0;
+  }
+  while (finish != NumChans) {
+    afor (int i = 0; i != NumChans; ++i) {
+      chans[i].port () {
+        mprintf ("Got a value from port c%d:  count is %d\n",i,count[i]++);
+        if (count[i] == NumData) { finish++; };
+      }
+    }
+  }
+  mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  const int NumChans = 2;
+  IntChan chans[NumChans];
+
+  par {
+    { int id = 0; producer(id,10,chans[id]); }
+    { int id = 1; producer(id,20,chans[id]); }
+    { consumer(NumChans,chans); }
+  }
+  mprintf ("Done.\n");
+  return 0;
+}

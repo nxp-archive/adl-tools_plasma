@@ -82,7 +82,7 @@ Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3)
 
 Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3, Ptree* p4)
 {
-    return new TsList(p1, List(p2, p3, p4));
+    return new TsList(p1, TsList::List(p2, p3, p4));
 }
 
 

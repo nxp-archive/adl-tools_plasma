@@ -117,31 +117,47 @@ namespace plasma {
   template <class Data>
   Data Channel<Data>::read_internal(bool clearready)
   {
-    if (!_ready) {
-      set_notify(pCurThread(),HandleType());
-      pSleep();
-    }
+    // We'll be consuming data, so if we have a waiting
+    // writer, it's valid to wake it up.
     if (_writet) {
       pAddReady(clear_writenotify());
+    }
+    if (!_ready) {
+      // We don't have data, so the reader must
+      // block until the writer adds data.
+      set_notify(pCurThread(),HandleType());
+      pSleep();
     }
     if (clearready) {
       clear_ready();
     }
+    // Reactivate a waiting writer if one appeared while we were asleep.
+    if (_writet) {
+      pAddReady(clear_writenotify());
+    }    
     return _data;
   }
 
   template <class Data>
   void Channel<Data>::write(const Data &d) 
   { 
-    if (_ready) {
-      set_writenotify(pCurThread());
-      pSleep();
-    }
-    _data = d;
-    _ready = true;
+    // If we have a waiting reader, wake it up.
     if (_readt) {
       pWake(clear_notify(),_h);
     }
+    if (_ready) {
+      // We already have data, so the write must block
+      // until the reader consumes the data.
+      set_writenotify(pCurThread());
+      pSleep();
+    }
+    // Store data and set ready.
+    _data = d;
+    _ready = true;
+    // Reactivate a reader if one appeared while we were asleep.
+    if (_readt) {
+      pWake(clear_notify(),_h);
+    }    
   };
 
   /////////////// QueueChan ///////////////

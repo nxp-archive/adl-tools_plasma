@@ -1,0 +1,49 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+# Tests used in this regression.
+
+use lib "..";
+use rdriver;
+use strict;
+use Data::Dumper;
+
+my @Tests = (
+	     # Basic eav run.
+	     {
+	      cmd     => "./eav 4 50 10 128 40 4 500 50",
+	      checker => \&check_eav,
+	     },
+	    );
+
+doTest(\@Tests);
+
+##
+## <TESTS>
+##
+
+# The searches are done independently so that order is not
+# important- we just wantto make sure that the strings are present.
+sub check_eav {
+  
+  str_rdiff(@_[0],[
+		   "Comms starting.",
+		   ]);
+
+  str_rdiff(@_[0],[
+		   "TP agent starting.",
+		   ]);
+
+  str_rdiff(@_[0],[
+		   "Disk manager starting.",
+		   ]);
+
+  str_rdiff(@_[0],[
+		   "The users have all finished.",
+		   "Total of 1890 in",
+		   ]);
+}
+
+##
+## </TESTS>
+##

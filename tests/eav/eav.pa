@@ -100,16 +100,16 @@ void sayflush()
   fflush(stdout);
 }
 
-// prints out x/y to 2 decimal places when x>=0 and y>=0
-void printfixed(int32 x, int32 y) 
+// Prints out x/y to 2 decimal places when x>=0 and y>=0
+void printfixed(uint64 x, uint64 y) 
 {
   if (x == 0) {
     mprintf("0.00");
-  } if (y == 0) {
+  } else if (y == 0) {
     mprintf("Infinity");
   } else {
-    int32 vi = x/y;
-    int32 vf = vi * y;
+    uint64 vi = x/y;
+    uint64 vf = vi * y;
     vf = x - vf;
     if (vf > 20000000) {
       y = y/100;
@@ -117,8 +117,22 @@ void printfixed(int32 x, int32 y)
       vf = vf * 100;
     }
     vf = vf / y;
-    mprintf ("%ld.%02ld", vi, vf);
+    mprintf ("%lld.%02lld", vi, vf);
   }
+}
+
+// Debugging output:  Only displays if debug variable is set.
+bool Debug = false;
+int dprintf(const char *fmt, ... )
+{
+  if (Debug) {
+    va_list ap;
+    va_start (ap,fmt);
+    int c = mprintf(fmt,ap);
+    va_end (ap);
+    return c;
+  }
+  return 0;
 }
 
 //////////////////////////// think /////////////////////////////// 
@@ -127,7 +141,7 @@ void printfixed(int32 x, int32 y)
 // given the number of instructions and the MIPS rate
 void think(int32 mips, int32 instructions) 
 {
-  pDelay(instructions/mips);
+  pBusy(instructions/mips);
 }
 
 //////////////////////////// user //////////////////////////////////
@@ -143,8 +157,10 @@ void user(Chan &in, Chan &out, int32 usernum, int32 max_in,
   while ((now = pTime()) < max) {
     int32 dummy, t;
     t = now;
+    dprintf ("user %d:  Sent request\n",usernum);
     out.write(usernum);
     dummy = in.get();
+    dprintf ("user %d:  Got response.\n",usernum);
     dt = (now - t)/msec;			// delta t in milliseconds
     count = count + 1;				// number of transactions
     sigma_t = sigma_t + dt;			// total response time
@@ -152,7 +168,9 @@ void user(Chan &in, Chan &out, int32 usernum, int32 max_in,
     times1 = times1 + dt;					// global response time sigma
     pDelay(Random.uniform(0, (ThinkTime - ThinkVar) * msec, 
                  (ThinkTime + ThinkVar) * msec));
+    dprintf ("user %d:  Total transactions %d at time %lld\n",usernum,transactions1,now);
   }
+  dprintf ("user %d:  Done.\n");
   transactions = transactions + count;
   times = times + sigma_t;
 }
@@ -249,24 +267,28 @@ void timestamp(int32 dt, int32 maxtime, int32 &transactions, int32 &time)
 void comms_in(int32 mips, Chans &in, Chans &out, Chans &free) 
 {
   int32 terminal, tp;
-  say("\nComms starting..");
+  say("\nComms starting.");
   while (1) {
     afor (int i = 0; i != (int)in.size(); ++i) {
       in[i].port(int v) {
         // Drain a value from the input channels.
         terminal = v;
+        dprintf ("comms_in:  Got a value from terminal %d\n",v);
       }
     }
     // Got input from a terminal; now find a free tp process
     afor (int i = 0; i != (int)free.size(); ++i) {
       free[i].port() {
         tp = i;
+        dprintf ("comms_in:  Got a tp process %d\n",tp);
       }
     }
     // Compute.
     think(mips, TermInPath);
+    dprintf ("comms_in:  Finished thinking.\n");
     // Send value.
     out[tp].write(terminal);
+    dprintf ("comms_in:  Wrote value %d to tp %d\n",terminal,tp);
   }
 }
 
@@ -281,11 +303,14 @@ void comms_out(int32 mips, Chans &from_agents, Chans &to_terminals)
     afor(unsigned i = 0; i != from_agents.size(); ++i) {
       from_agents[i].port(int v) {
         terminal = v;
+        dprintf ("comms_out:  Got tp message of %d.\n",terminal);
       }
     }
     // ok, got the value back from the system. give it to a terminal
     think(mips, TermOutPath);
+    dprintf ("comms_out:  Finished thinking.\n");
     to_terminals[terminal].write(terminal);
+    dprintf ("comms_out:  Send messageof %d to terminal %d.\n",terminal,terminal);
   }
 }
 	
@@ -313,6 +338,8 @@ const int32 Read = 0, Write_synch = 1, Write_asynch = 2;
 // the disk manager runs a number of disks, which he chooses between 
 // at random for a request. each disk is represented by a process
 class DiskManager {
+
+public:
 
   // a sequential buffer implementation
   void drive_buffer(int32 buff_size, Chan &in, Chan &out, int32 number) 
@@ -417,12 +444,14 @@ class DiskManager {
   void manager(int32 mips, int32 disks, Chans &commands, Chans &to_drives)
   {  
     int32 cmnd, agent, drivenum, composite;
-    say("\nDisk manager starting");	
+    say("\nDisk manager starting.");	
     while(1) {
+      dprintf ("disk manager:  waiting for command.\n",cmnd,agent);
       afor(unsigned i = 0; i != commands.size(); ++i) {
         commands[i].port(int v) {
           cmnd = v;
           agent = i;
+          dprintf ("disk manager:  command %d from %d.\n",cmnd,agent);
         }
       }
       // got a request from a tp agent; assign it to a drive
@@ -430,6 +459,7 @@ class DiskManager {
       composite = cmnd + (agent << 16);
       think(mips, DiskCmndPath);		// IO-issuing path length
       to_drives[drivenum].write(composite);
+      dprintf ("disk manager:  wrote message to drives.\n");
     }
   }
 
@@ -457,10 +487,6 @@ public:
   void operator()(int32 mips, int32 buff_size, int32 disks, Chans &in, Chans &out) 
   {
     Chans to_drives(disks), from_drives(disks), buff_to_drives(disks);
-
-    par {
-      manager(to_drives);
-    }
 	
     par {
       par {
@@ -489,19 +515,21 @@ public:
 // reads a block from disk by sending the disk manager a message	
 void disk_read(Chan &to_disks, Chan &from_disks) 
 {
-  int32 any;
+  dprintf ("disk_read:  start %d.\n",Read);
   to_disks.write(Read);
-  int32 = from_disks.get();
+  dprintf ("disk_read:  before get.\n");
+  from_disks.get();
+  dprintf ("disk_read:  finish.\n");
 }
 
 // writes a block to the disk controller
-void disk_write_asynch(chan to_disks, from_disks) 
+void disk_write_asynch(Chan &to_disks, Chan &from_disks) 
 {
   to_disks.write(Write_asynch);
 }
 	
 // writes a block to the disk
-void disk_write_synch(chan to_disks, from_disks) 
+void disk_write_synch(Chan &to_disks, Chan &from_disks) 
 {
   to_disks.write(Write_synch);
   from_disks.get();
@@ -515,14 +543,20 @@ void disk_write_synch(chan to_disks, from_disks)
 // always go to memory; with 90% hit rate we go to disk 10% of the time
 void mem_read(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
 {
+  dprintf ("mem_read:  starting.\n");
   if (Random.uniform(0, 0, 1000) > hit_rate) {
+    dprintf ("mem_read:  disk write asynch start.\n");
     // hit_rate is an integer in 0..999; if our rv is larger than hitrate
     //then we have a MISS	
     disk_read(to_disks, from_disks);
+    dprintf ("mem_read:  disk write asynch finish.\n");
   } else {
     // memory read; this is quick; assume 10 microseconds
+    dprintf ("mem_read:  delay start.\n");
     pDelay(15 * musec);
+    dprintf ("mem_read:  delay finish.\n");
   }
+  dprintf ("mem_read:  finished.\n");
 }
 	
 void mem_write_synch(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
@@ -540,13 +574,19 @@ void mem_write_synch(Chan &to_disks, Chan &from_disks, int32 hit_rate)
 	
 void mem_write_asynch(Chan &to_disks, Chan &from_disks, int32 hit_rate)
 {
+  dprintf ("mem_write_asynch:  starting.\n");
   // gives stuff to the memory system
   if (Random.uniform(0, 0, 1000) > hit_rate) {
+    dprintf ("mem_write_asynch:  disk write asynch start.\n");
     disk_write_asynch(to_disks, from_disks);
+    dprintf ("mem_write_asynch:  disk write asynch finish.\n");
   } else {
     // memory write; this is quick; assume 10 microseconds
+    dprintf ("mem_write_asynch:  delay start.\n");
     pDelay(15 * musec);
+    dprintf ("mem_write_asynch:  delay finish.\n");
   }
+  dprintf ("mem_write_asynch:  finished.\n");
 }
 
 //////////////////// RECORDS AND JOURNALS /////////////////////////
@@ -564,7 +604,7 @@ void after_journal(Chan &to_disks, Chan &from_disks, int32 hit_rate)
   mem_write_synch(to_disks, from_disks, hit_rate);
 }
 	
-void get_record(Chan to_disks, Chan &from_disks, int32 hit_rate) 
+void get_record(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
 {
   // reads a record from the database
   mem_read(to_disks, from_disks, hit_rate);
@@ -579,9 +619,12 @@ void put_record(Chan &to_disks, Chan &from_disks, int32 hit_rate)
 void read_record(int32 mips, Chan &to_disks, Chan &from_disks, int32 hit_rate)
 {
   // this routine does a read operation on one record
+  dprintf ("read_record:  start.\n");
   before_journal(to_disks, from_disks, hit_rate);
   think(mips, ReadPath);
+  dprintf ("read_record:  before get.\n");
   get_record(to_disks, from_disks, hit_rate);
+  dprintf ("read_record:  finish.\n");
 }
 	
 void update_record(int32 mips, Chan &to_disks, Chan &from_disks, int32 hit_rate)
@@ -600,7 +643,8 @@ void update_record(int32 mips, Chan &to_disks, Chan &from_disks, int32 hit_rate)
 //	its out and signals its free to the comms mux via the free channel
 
 class Agents {
- 
+
+public: 
   void lock_record(int32 mips) 
   {
     // we simply compute a bit -	locks are in memory
@@ -615,35 +659,41 @@ class Agents {
 
   void tp_agent(int32 mips, Chan &in, Chan &out, Chan &free, Chan &to_disks, Chan &from_disks,
                 int32 tp_num, int32 hit_rate)
-  {
-    int32 terminal;
-		
-    CurrPriority = 3;	        // lower priority
+  {		
+    int32 terminal = 0,freecount = 0;
+    pSetPriority(3);	        // lower priority
     while(1) {
-      free.write(terminal);	// signal i'm free
+      dprintf ("tp agent  %d:  is free.\n",tp_num);
+      free.write(freecount++);	// signal i'm free
+      dprintf ("tp agent  %d:  waiting for input.\n",tp_num);
       terminal = in.get();	// get some input
+      dprintf ("tp agent %d:  got message from terminal %d.\n",tp_num,terminal);
       lock_record(mips);	// lock all the records
       lock_record(mips);
       lock_record(mips);
+      dprintf ("tp agent  %d:  done with locking record.\n",tp_num);
 			
       read_record(mips, to_disks, from_disks, hit_rate);
       read_record(mips, to_disks, from_disks, hit_rate);
+      dprintf ("tp agent  %d:  done with reading record.\n",tp_num);
       update_record(mips, to_disks, from_disks, hit_rate);
-      
+ 
+      dprintf ("tp agent  %d:  sent message to terminal %d.\n",tp_num,terminal);
       out.write(terminal);		// provide results to terminal
 			
       unlock_record(mips);
       unlock_record(mips);
       unlock_record(mips);
+      dprintf ("tp agent  %d:  records unlocked.\n",tp_num);
     }
   }
 
 public:
   void operator()(int32 mips, Chans &in, Chans &out, Chans &free, Chans &to_disks, Chans &from_disks, 
-         int32 num_agents, hit_rate) 
+         int32 num_agents, int32 hit_rate) 
   {
     //	the body, forking the agents..
-    say("\nThe TP agent starting up..");
+    say("\nTP agent starting.");
     pfor (int i = 0; i != num_agents; ++i) {
       tp_agent(mips, in[i], out[i], free[i], to_disks[i], from_disks[i], i, hit_rate);
     }
@@ -653,8 +703,16 @@ public:
 	
 /////////////////////////// mainbody ////////////////////////////////////
 
-int pMain(int argc,const char *argv) 
+void pSetup(ConfigParms &cp)
+{
+  cp._numpriorities = 4;
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[]) 
 {		
+  GC_disable();
+
   int32 actual_users, hit_rate, mips, buff_size, disks, tp_agents, SimulationTime, ReportInterval;
   
   int32 transactions = 0, times = 0, sigma_transac = 0, sigma_response = 0;
@@ -664,14 +722,14 @@ int pMain(int argc,const char *argv)
 		
   if (argc < 2) {
     // no arguments offered at all; use defaults
-    actual_users = 100; // 10
+    actual_users = 100; // 100
     hit_rate = 15;
     mips = 10; // 10
     buff_size = 128;
-    disks = 40;	// 4
+    disks = 40;	// 40
     tp_agents = 4;		// 4
-    SimulationTime = 500; // 50;
-    ReportInterval = 50; // 5
+    SimulationTime = 500; // 500;
+    ReportInterval = 50; // 50
   } else if (argc < 9) {
     // wrong number offered
     mprintf("\nEAV: usage");
@@ -684,8 +742,7 @@ int pMain(int argc,const char *argv)
     mprintf("\n\tMax Simulation Time in seconds [0..1500]");
     mprintf("\n\tReporting interval in seconds [0..1500]");
     mprintf("\nSimulation will halt almost immediately.\n\n");
-    StopSim;
-    wait(10);
+    pExit(1);
   } else {
     // Init parms.
     int i = 1;
@@ -708,7 +765,7 @@ int pMain(int argc,const char *argv)
   mprintf("\n\tNumber of TP Agents	= %ld", tp_agents);
   mprintf("\n\tProcessor speed (mips) = %ld", mips);
   mprintf("\n\tDisk Buffer Hit Rate	= ");
-  mprintfixed(hit_rate, 10);
+  printfixed(hit_rate, 10);
   mprintf(" percent");
   if (disks > num_drives) {
     disks = num_drives;
@@ -732,7 +789,6 @@ int pMain(int argc,const char *argv)
     tp_to_disks(tp_agents),
     disks_to_tp(tp_agents);
 	
-  int32 t, rate;
   par {
     par {
       on (mainframe) {
@@ -767,12 +823,13 @@ int pMain(int argc,const char *argv)
       say("\nThe users have all finished..\nTotal of ");
       saynum(transactions);
       say(" in ");
-      printfixed(Now, sec);
+      printfixed(pTime(), sec);
       say(" seconds for a transaction rate of ");
       //mprintfixed(transactions * sec, Now);
-      printfixed(transactions, Now/sec);
+      printfixed(transactions, pTime()/sec);
       say (" tps\n");
       pExit(0);
     }
   }
+  return 0;
 }

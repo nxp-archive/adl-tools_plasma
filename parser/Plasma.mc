@@ -914,36 +914,35 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
   // The second statement represents the channel to be queried.
   for (int index = 0; index != (int)pv.size(); ++index) {
     const Port &p = pv[index];
+    cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
+    // If we have a loop, we copy the handle's second item to the loopvar so
+    // that it can be used by the body of the code.
+    if (p.isloop() && !defaultblock) {
+      cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
+      if (p.needstack()) {
+        cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
+      } else {
+        TypeInfo t = p.indextype;
+        cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
+      }
+      cur = lappend(cur,Ptree::qMake("}\n"));
+    }
     if (p.val) {
       if (p.val->Length() > 1) {
         ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",nil,p.val);
         return nil;
       }
       // User specified a type, so use it directly.
-      cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
-      // If we have a loop, we copy the handle's second item to the loopvar so
-      // that it can be used by the body of the code.
-      if (p.isloop() && !defaultblock) {
-        cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
-        if (p.needstack()) {
-          cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
-        } else {
-          TypeInfo t = p.indextype;
-          cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
-        }
-        cur = lappend(cur,Ptree::qMake("}\n"));
-      }
-      cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"
-                                     "{\n"
-                                     "`p.body`\n"
-                                     "}\n"
-                                     "} break;\n"));
+
+      cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"));
     } else {
-      // Simple case- no value, so just insert code.
-      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
-                                     "`p.body`\n"
-                                     "} break;\n"));      
+      // Simple case- no value.  We still have to call get in order to drain the value,
+      // but we don't assign it to anything.
+      cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` get();\n"));
     }
+    cur = lappend(cur,Ptree::qMake("{\n"
+                                   "`p.body`\n"
+                                   "} } break;\n")); 
   }
 
   // Write the default block code, if present.

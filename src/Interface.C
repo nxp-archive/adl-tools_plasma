@@ -60,7 +60,8 @@ namespace plasma {
 
   void pAddReady(Thread *t)
   {
-    thecluster.curProc()->add_ready(t);
+    t->proc()->add_ready(t);
+    thecluster.add_proc(t->proc());
   }
 
   void pAddWaiter(THandle t,THandle waiter)

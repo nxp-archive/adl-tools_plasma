@@ -1,0 +1,63 @@
+//
+// This makes sure that a channel will work correctly if it's communicating
+// between to threads which are each on their own processor.
+//
+#include <assert.h>
+#include <stdio.h>
+#include <plasma.h>
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> IntChan;
+
+Processor P;
+Processor C;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    if(pCurProc() != P) {
+      pAbort ("Producer's processor has a mismatch.\n");
+    }
+    chan.write(val+i);
+  }
+  chan.write(-1);
+  mprintf ("Producer done.\n");
+}
+
+void consumer(IntChan &chan)
+{
+  bool quit = false;;
+  while (!quit) {
+    if (pCurProc() != C) {
+      pAbort ("Consumer's processor has a mismatch.\n");
+    }
+    alt {
+      chan.port (int v) {
+        mprintf ("Got a value from port c0:  %d\n",v);
+        pBusy(10);
+        if (v < 0) { quit = true; };
+      }
+    }
+  }
+  mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan channel;
+
+  par {
+    on (P) { producer(10,channel); }
+    on (C) { consumer(channel); }
+  }
+  mprintf ("Done.\n");
+  return 0;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+  cp._numpriorities = 3;
+}

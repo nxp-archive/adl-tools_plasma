@@ -33,6 +33,9 @@ check_PROGRAMS = \
 	chan11 \
 	chan12 \
 	chan13 \
+	chan14 \
+	chan15 \
+	chan16 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -50,7 +53,8 @@ check_PROGRAMS = \
 	time1 \
 	time2 \
 	time3 \
-	time4
+	time4 \
+	time5
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
@@ -123,6 +127,15 @@ chan12_DEPENDENCIES = $(DEPENDENCIES)
 chan13_SOURCES = chan13.pa
 chan13_DEPENDENCIES = $(DEPENDENCIES)
 
+chan14_SOURCES = chan14.pa
+chan14_DEPENDENCIES = $(DEPENDENCIES)
+
+chan15_SOURCES = chan15.pa
+chan15_DEPENDENCIES = $(DEPENDENCIES)
+
+chan16_SOURCES = chan16.pa
+chan16_DEPENDENCIES = $(DEPENDENCIES)
+
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -177,6 +190,9 @@ time3_DEPENDENCIES = $(DEPENDENCIES)
 time4_SOURCES = time4.pa
 time4_DEPENDENCIES = $(DEPENDENCIES)
 
+time5_SOURCES = time5.pa
+time5_DEPENDENCIES = $(DEPENDENCIES)
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
 DEP_FILES=\
@@ -203,6 +219,9 @@ DEP_FILES=\
 	./$(DEPDIR)/chan11.Po \
 	./$(DEPDIR)/chan12.Po \
 	./$(DEPDIR)/chan13.Po \
+	./$(DEPDIR)/chan14.Po \
+	./$(DEPDIR)/chan15.Po \
+	./$(DEPDIR)/chan16.Po \
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
@@ -220,7 +239,8 @@ DEP_FILES=\
 	./$(DEPDIR)/time1.Po \
 	./$(DEPDIR)/time2.Po \
 	./$(DEPDIR)/time3.Po \
-	./$(DEPDIR)/time4.Po
+	./$(DEPDIR)/time4.Po \
+	./$(DEPDIR)/time5.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -244,6 +264,9 @@ include ./$(DEPDIR)/chan10.Po
 include ./$(DEPDIR)/chan11.Po
 include ./$(DEPDIR)/chan12.Po
 include ./$(DEPDIR)/chan13.Po
+include ./$(DEPDIR)/chan14.Po
+include ./$(DEPDIR)/chan15.Po
+include ./$(DEPDIR)/chan16.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po
@@ -260,6 +283,7 @@ include ./$(DEPDIR)/time1.Po
 include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po
 include ./$(DEPDIR)/time4.Po
+include ./$(DEPDIR)/time5.Po
 
 AM_LDFLAGS = -L$(top_srcdir)/src -L$(top_srcdir)/qt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
 LDADD =  -lplasma -lqt  -lgc -ldl

@@ -1,0 +1,32 @@
+//
+// This makes sure that a single thread on its own processor
+// can go busy and not cause any problems.
+//
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+Processor P;
+
+void foo() {
+  cout << "Start of foo." << endl;
+  pBusy(1000);
+  cout << "End of foo at " << pTime() << "." << endl;
+}
+
+void pSetup (ConfigParms &cp)
+{
+  cp._numpriorities = 3;
+  cp._busyokay = true;
+  cp._simtimeslice = 10;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    on (P) { foo(); }
+  }
+  cout << "Done." << endl;
+  return 0;
+}
