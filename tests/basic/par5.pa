@@ -10,7 +10,7 @@ using namespace plasma;
 typedef vector<double> Doubles;
 
 struct Foo {
-void stuff() {};
+  void stuff() {};
   typedef vector<int> Ints;
   void a()
   {
@@ -57,38 +57,38 @@ void stuff() {};
 
 void Foo::b()
 {
-    Ints results(5);
-    par {
-      {
-        int a = 1,b=2,c=3;
-        par {
-          {
-            results[0] = a*10;
-            cout << "Done with block 10.1.\n";
-          }
-          {
-            results[1] = b*10;
-            cout << "Done with block 10.2.\n";
-          }
-          {
-            results[2] = c*10;
-            cout << "Done with block 10.3.\n";
-          }
+  Ints results(5);
+  par {
+    {
+      int a = 1,b=2,c=3;
+      par {
+        {
+          results[0] = a*10;
+          cout << "Done with block 10.1.\n";
+        }
+        {
+          results[1] = b*10;
+          cout << "Done with block 10.2.\n";
+        }
+        {
+          results[2] = c*10;
+          cout << "Done with block 10.3.\n";
         }
       }
-      {
-        results[3] = 40;
-        cout << "Done with block 20.\n";
-      }
-      {
-        results[4] = 50;
-        cout << "Done with block 30.\n";
-      }
     }
-    cout << "Result is:  ";
-    ostream_iterator<int> oi(cout," ");
-    copy(results.begin(),results.end(),oi);
-    cout << endl;
+    {
+      results[3] = 40;
+      cout << "Done with block 20.\n";
+    }
+    {
+      results[4] = 50;
+      cout << "Done with block 30.\n";
+    }
+  }
+  cout << "Result is:  ";
+  ostream_iterator<int> oi(cout," ");
+  copy(results.begin(),results.end(),oi);
+  cout << endl;
 }
 
 int pMain(int argc,const char *argv[])

@@ -1,11 +1,10 @@
 
 OccBuildDir = $(top_builddir)/opencxx
-OccSrcDir = $(top_srcdir)/opencxx
 GcBuildDir = $(top_builddir)/gc
 GcSrcDir = $(top_srcdir)/gc
 
 OCC = $(OccBuildDir)/occ
-OCCFLAGS = -I$(OccSrcDir) -I$(GcSrcDir)
+OCCFLAGS = -I$(top_builddir) -I$(GcSrcDir)
 
 bin_PROGRAMS = plasma-comp
 
@@ -46,7 +45,7 @@ include ./$(DEPDIR)/Mutex.Po
 include ./$(DEPDIR)/TMutex.Po
 
 .mc.o:
-	if $(OCC) -m$@ $(OCCFLAGS) $< -c -d"-MT $@" -d-MD -d-MP -d"-MF$(DEPDIR)/$*.Tpo" -- $(CXXFLAGS) ;\
+	if $(OCC) --static-mc=$@ $(OCCFLAGS) $< -c -d"-MT $@" -d-MD -d-MP -d"-MF$(DEPDIR)/$*.Tpo" -- $(CXXFLAGS) ;\
 	then mv "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po" ; \
 	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
 	fi	

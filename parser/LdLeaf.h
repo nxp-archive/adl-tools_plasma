@@ -8,7 +8,8 @@
 
 #include <iosfwd>
 
-#include "ptree.h"
+#include "opencxx/parser/Ptree.h"
+#include "opencxx/parser/DupLeaf.h"
 
 namespace Opencxx {
   class Environment;
@@ -19,7 +20,7 @@ namespace Opencxx {
 // a character string, which won't work when there are nested par blocks.
 class LdLeaf : public Opencxx::DupLeaf {
 public:
-  LdLeaf(char *s,int l) : DupLeaf(s,l) {};
+  LdLeaf(char *s,int l) : Opencxx::DupLeaf(s,l) {};
   int Write(std::ostream&, int);
 };
 

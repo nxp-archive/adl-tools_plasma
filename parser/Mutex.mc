@@ -5,9 +5,13 @@
 // to disable the generation of mutex code.
 //
 
+#include "opencxx/Member.h"
+#include "opencxx/PtreeMaker.h"
+
 #include "Mutex.h"
 
 using namespace std;
+using namespace Opencxx;
 
 bool Mutex::Initialize()
 {
@@ -18,8 +22,8 @@ bool Mutex::Initialize()
 
 bool isNoMutex(Ptree *mlist)
 {
-  while (mlist != nil) {
-    if (mlist->Eq(NoMutexStr)) {
+  while (mlist != 0) {
+    if (PtreeUtil::Eq(mlist,NoMutexStr)) {
       return true;
     }
     mlist = mlist->Car();

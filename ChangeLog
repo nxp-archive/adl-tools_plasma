@@ -1,3 +1,12 @@
+2005-02-22  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Upgraded to OpenC++ 2.8 (current CVS snapshot).  I merged in my
+	changes and got everything working.  The interface is pretty much
+	the same, with a few minor tweeks.  In the future, I think that
+	we'll want to move towards using OpenC++ simply as a filter and
+	have plasma (the perl program) call the preprocessor and
+	compiler.  However, that can wait for now.
+
         ====== plasma release 0.8.14 (v0_8_14) on Linux (cde-tx32-ldt189) ======
 
 2005-02-15  Brian Kahne  <bkahne@ibmoto.com>

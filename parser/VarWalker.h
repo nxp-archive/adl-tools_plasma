@@ -8,13 +8,14 @@
 #define _VARWALKER_H_
 
 #include <vector>
-
-#include "gc/gc_cpp.h"
-#include "gc/gc_allocator.h"
-
-#include "walker.h"
 # include <ext/hash_set>
 using namespace __gnu_cxx;
+
+#include "opencxx/mop2.h"
+
+#include "opencxx/Walker.h"
+
+using namespace Opencxx;
 
 struct str_equal {
   size_t operator()(const char*x,const char *y) const { return !strcmp(x,y); }
@@ -23,10 +24,10 @@ struct str_equal {
 typedef hash_set<const char *,hash<const char *>,str_equal> StrHash;
 
 struct ArgPair {
-  Ptree   *_arg;
-  bool     _ref; // true -> value or reference parm, false -> pointer.
-  TypeInfo _type;
-  Ptree   *_fwd; // Fwd define, if any.
+  Ptree    *_arg;
+  bool               _ref; // true -> value or reference parm, false -> pointer.
+  TypeInfo  _type;
+  Ptree    *_fwd; // Fwd define, if any.
   ArgPair(Ptree *a,bool r,TypeInfo t) : _arg(a), _ref(r), _type(t), _fwd(0) {};
   void setFwdDef(Ptree *f) { _fwd = f; };
 };
@@ -63,7 +64,7 @@ public:
   };
   void reset() { 
     _inguard = false;
-    _args = nil; 
+    _args = 0; 
     _argnames.clear(); 
     _vhash.clear();
     _handledThis = false;

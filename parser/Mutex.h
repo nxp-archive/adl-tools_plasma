@@ -18,8 +18,11 @@ class Mutex : public Wrapper {
 public:
   static bool Initialize();
 protected:
-  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* name,Ptree *variadic);
-  virtual bool wrapMember(Environment *env,Member &member) const;
+  virtual std::pair<Opencxx::Ptree*,Opencxx::Ptree*> makeWrapperBody(Opencxx::Environment *env,
+                                                                     Opencxx::Member& member, 
+                                                                     Opencxx::Ptree* name,
+                                                                     Opencxx::Ptree *variadic);
+  virtual bool wrapMember(Opencxx::Environment *env,Opencxx::Member &member) const;
 };
 
 #endif

@@ -8,7 +8,9 @@
 
 #include <list>
 
-#include "gc/gc_cpp.h"
+#include "opencxx/mop2.h"
+
+using namespace Opencxx;
 
 // This stuff is used for alt/afor processing.
 struct Port : public gc {
@@ -20,9 +22,10 @@ struct Port : public gc {
   Ptree   *stack;          // Stack/stack index var for afor.
   TypeInfo indextype;      // Index type for afor blocks.
   Ptree   *loopvar;        // Loop-variable for afor.
-  Port(bool l,Ptree *c,Ptree *o,Ptree *v,Ptree *b) : chan(c), op(o), val(v), body(b), 
-                                                     s1(nil), s2(nil), s3(nil),
-                                                     stack(nil), loopvar(nil)
+  Port(bool l,Ptree *c,Ptree *o,Ptree *v,Ptree *b) : 
+    chan(c), op(o), val(v), body(b), 
+    s1(0), s2(0), s3(0),
+    stack(0), loopvar(0)
   {};
   bool isloop() const { return s1; };
   bool needstack() const { return stack; };

@@ -1,8 +1,9 @@
 
 #include <assert.h>
 #include <iostream>
-#include "mop.h"
-#include "ptree-core.h"
+
+#include "opencxx/PtreeIter.h"
+#include "opencxx/Environment.h"
 
 #include "VarWalker.h"
 #include "Plasma.h"
@@ -63,7 +64,7 @@ bool Plasma::Initialize()
   RegisterNewForStatement("priafor");
   RegisterNewClosureStatement("port");
   RegisterMetaclass("pSpawner","Plasma");
-  return TRUE;
+  return true;
 }
 
 // The argument list was created in reverse order, so that's why
@@ -87,31 +88,33 @@ string argList(const ArgVect &av)
 // a pointer to the new end-of-list object.
 inline Ptree *lappend(Ptree *l,Ptree *x)
 {
-  return Ptree::Last(Ptree::Snoc(l,x));
+  return PtreeUtil::Last(PtreeUtil::Snoc(l,x));
 }
 
 // This figures out what kind of user statement we have and dispatches to the
 // appropriate function.
 Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
 {
-  if (keyword->Eq("par")) {
+  using namespace PtreeUtil;
+
+  if (Eq(keyword,"par")) {
     return TranslatePar(env,keyword,rest);
   }
-  else if (keyword->Eq("pfor")) {
+  else if (Eq(keyword,"pfor")) {
     return TranslatePfor(env,keyword,rest);
   }
-  else if (keyword->Eq("alt")) {
+  else if (Eq(keyword,"alt")) {
     return TranslateAlt(env,keyword,rest);
   }
-  else if (keyword->Eq("prialt")) {
+  else if (Eq(keyword,"prialt")) {
     return TranslatePriAlt(env,keyword,rest);
   }
-  else if (keyword->Eq("afor") || keyword->Eq("priafor")) {
+  else if (Eq(keyword,"afor") || Eq(keyword,"priafor")) {
     return TranslateAfor(env,keyword,rest);
   }
 
-  ErrorMessage(env, "unknown user statement encountered",nil,keyword);
-  return nil;
+  ErrorMessage(env, "unknown user statement encountered",0,keyword);
+  return 0;
 }
 
 void dumpEnv(Environment *env)
@@ -137,17 +140,19 @@ void dumpEnv(Environment *env)
 // is completed and execution continues.
 Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
 {
+  using namespace PtreeUtil;
+
   Ptree *body;
 
-  if(!Ptree::Match(rest, "[ %? ]", &body)){
-    ErrorMessage(env, "invalid par statement", nil, keyword);
-    return nil;
+  if(!Match(rest, "[ %? ]", &body)){
+    ErrorMessage(env, "invalid par statement", 0, keyword);
+    return 0;
   }
 
   // Ignore the braces.
   body = body->Cadr();
 
-  Ptree *start = Ptree::List(Ptree::qMake("//Begin par block\n"));
+  Ptree *start = List(Ptree::qMake("//Begin par block\n"));
   Ptree *cur = start;
 
   //  dumpEnv(env);
@@ -157,7 +162,7 @@ Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
   // parent scope.
   VarWalker *vw = new VarWalker(env->GetWalker()->GetParser(),env);
 
-  Ptree *thnames = nil;
+  Ptree *thnames = 0;
 
   // Iterate over constituent statements, creating spawn statements.
   for(PtreeIter i = body; !i.Empty(); ++i) {
@@ -170,7 +175,7 @@ Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
     cur = lappend(cur,Ptree::qMake("pWait(`*i`);\n"));
   }
 
-  cur->SetCdr(Ptree::List(Ptree::Make("// End par block.\n")));
+  cur->SetCdr(List(Ptree::Make("// End par block.\n")));
 
   return start;
 }
@@ -179,18 +184,19 @@ Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
 // dispatched as a thread for each loop iteration.
 Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
 {
+  using namespace PtreeUtil;
+
   Ptree *s1, *s2, *s3, *body;
-  if(!Ptree::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
-    ErrorMessage(env, "invalid pfor statement", nil, keyword);
-    return nil;
+  if(!Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
+    ErrorMessage(env, "invalid pfor statement", 0, keyword);
+    return 0;
   }
 
   // Bit of a hack here- if we have a on-block, we need to remove the outer
   // brackets so that convertToThread will see it.  Otherwise, we have to keep
   // the braces, so that it will be handled as a single expression and be
   // properly translated.
-  //  if (body->Second()->Ca_ar()->Eq("on")) {
-  if (Ptree::Match(body,"[ { [ [ on %_ ] ] } ]")) {
+  if (Match(body,"[ { [ [ on %_ ] ] } ]")) {
     body = body->Cadr()->Car();
   }
 
@@ -199,9 +205,9 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
   // parent scope.
   VarWalker *vw = new VarWalker(env->GetWalker()->GetParser(),env);
 
-  Ptree *thnames = nil;
+  Ptree *thnames = 0;
 
-  Ptree *start = Ptree::List(Ptree::qMake("//Begin pfor block\n"));
+  Ptree *start = List(Ptree::qMake("//Begin pfor block\n"));
   Ptree *cur = start;
 
   // Handling the guard means that we want to record any declarations and
@@ -210,7 +216,7 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
   vw->Translate(s1);
   vw->saveGuardEnv();
   if (vw->guardEnvEmpty()) {
-    ErrorMessage(env,"pfor statement declares no loop variables.",nil,keyword);
+    ErrorMessage(env,"pfor statement declares no loop variables.",0,keyword);
   }
 
   // We heap allocate our temporary structures because otherwise the
@@ -219,10 +225,10 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
   vw->handleGuard(false);
   convertToThread(cur,thnames,body,vw,env,true);
 
-  Ptree *thn = thnames->First();
+  Ptree *thn = First(thnames);
 
-  Ptree *tvname = Ptree::GenSym();
-  Ptree *iname = Ptree::GenSym();
+  Ptree *tvname = GenSym();
+  Ptree *iname = GenSym();
 
   return Ptree::qMake("plasma::TVect `tvname`;\n"
                       "for (`s1` `s2` ; `s3`) { `start` `tvname`.push_back(`thn`); }\n"
@@ -241,10 +247,12 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
 void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                              Environment *env,bool onthread)
 {
-  Ptree *tstype = Ptree::GenSym();       // Symbol for thread argument structure type.
-  Ptree *tsname = Ptree::GenSym();       // Symbol for thread argument structure instance name.
-  Ptree *nfname = Ptree::GenSym();
-  Ptree *thname = Ptree::GenSym();       // Symbol for thread handle name.
+  using namespace PtreeUtil;
+
+  Ptree *tstype = GenSym();       // Symbol for thread argument structure type.
+  Ptree *tsname = GenSym();       // Symbol for thread argument structure instance name.
+  Ptree *nfname = GenSym();
+  Ptree *thname = GenSym();       // Symbol for thread handle name.
 
   assert(elist);
 
@@ -254,14 +262,14 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   }
 
   // Do we have a placement statement?  If so, proc will store the expression
-  // which specifies the processor.  If not, this will be nil, so the evaluation
+  // which specifies the processor.  If not, this will be 0, so the evaluation
   // will produce an empty string.
-  Ptree *proc = nil,*pri = nil,*tproc = nil,*tpri = nil,*tbody = nil,*onarg = nil;
-  if (Ptree::Match(expr,"[ on ( %? ) %? ]",&onarg,&tbody)) {
+  Ptree *proc = 0,*pri = 0,*tproc = 0,*tpri = 0,*tbody = 0,*onarg = 0;
+  if (Match(expr,"[ on ( %? ) %? ]",&onarg,&tbody)) {
     // Check to see if we have two arguments.  If so, first is the
     // processor, second is the priority.  Otherwise, priority defaults
     // to -1, which means priority of current thread.
-    if (Ptree::Match(onarg,"[ %? , %? ]",&tproc,&tpri)) {
+    if (Match(onarg,"[ %? , %? ]",&tproc,&tpri)) {
       pri = tpri;
     } else {
       tproc = onarg;
@@ -274,7 +282,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   }
 
   // We must do this after checking for the on-statement, since "on" is not valid C++
-  // and the translation step would thus return nil in error.
+  // and the translation step would thus return 0 in error.
   vw->setnames(tstype,tsname);              
   Ptree *nexpr = vw->Translate(expr);    // Translate expression, scanning for variables.
   Ptree *args = vw->args();
@@ -283,7 +291,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   Class *tsclass = new Class(env,tstype);
   env->RecordPointerVariable(tsname->ToString(),tsclass);
 
-  thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
+  thnames = Cons(thname,thnames); // Add on to list of thread names.
 
   // We need to insert anything in the bottom-most environment to ensure
   // that it gets added.  This is a problem if we come across Plasma code in
@@ -298,9 +306,9 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     // We insert a prototype before, and the actual function after, the current location
     // because we want to handle the case where the thread calls the current function recursively.
     InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
-    AppendAfterToplevel(benv,Ptree::List(Ptree::qMake("void `nfname`(void *`tsname`) {\n"),
-                                         lineDirective(env,expr),
-                                         Ptree::qMake("`TranslateExpression(env,nexpr)`\n}\n")));
+    AppendAfterToplevel(benv,List(Ptree::qMake("void `nfname`(void *`tsname`) {\n"),
+                                  lineDirective(env,expr),
+                                  Ptree::qMake("`TranslateExpression(env,nexpr)`\n}\n")));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
                                          "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`,`pri`).first;\n"));
@@ -311,7 +319,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *);\n"));
-    AppendAfterToplevel(benv,Ptree::List(Ptree::qMake("void `nfname`(void *) {\n"),
+    AppendAfterToplevel(benv,List(Ptree::qMake("void `nfname`(void *) {\n"),
                                          lineDirective(env,expr),
                                          Ptree::qMake("`TranslateExpression(env,nexpr)`\n}\n")));
     elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0,`pri`);\n"));
@@ -321,7 +329,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 // This constructs and inserts a thread structure only if we don't have one that's large enough.
 void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args,const ArgVect &av)
 {
-    Ptree *front = Ptree::List(Ptree::qMake("struct `type` {\n"));
+    Ptree *front = PtreeUtil::List(Ptree::qMake("struct `type` {\n"));
     Ptree *cur = front;
     for(PtreeIter i = args; !i.Empty(); i++){
       cur = lappend(cur,Ptree::qMake("  `*i`;\n"));
@@ -350,12 +358,12 @@ Ptree* Plasma::TranslateMemberCall(Environment* env, Ptree* object,
                                    Ptree* op, Ptree* member, Ptree* arglist)
 {
   // For future compatibility, if the member isn't "spawn", pass it on through.
-  if (!member->Eq("spawn")) {
+  if (!PtreeUtil::Eq(member,"spawn")) {
     return Class::TranslateMemberCall(env,object,op,member,arglist);
   } else {
     // Was this a pointer call?  If so, dereference it.
     Ptree *obj = object;
-    if (op->Eq("->")) {
+    if (PtreeUtil::Eq(op,"->")) {
       obj = Ptree::qMake("*(`object`)");
     }
     return TranslateFunctionCall(env,obj,arglist);
@@ -368,10 +376,12 @@ Ptree* Plasma::TranslateMemberCall(Environment* env, Ptree* object,
 // result of the function.  Trying to read the result before it's finished will block the thread.
 Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* preargs)
 {
+  using namespace PtreeUtil;
+
   // If the object is just "spawn" then we consider this to be the function call invocationm, e.g.
   // the spawn operator.  Otherwise, we consider this to be the spawn pseudo-method call.
-  Ptree *proc = nil;
-  if (!spawnobj->Eq("spawn")) {
+  Ptree *proc = 0;
+  if (!Eq(spawnobj,"spawn")) {
     proc = Ptree::qMake("(`spawnobj`)()");
   }
 
@@ -381,20 +391,20 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   Ptree *priority = Ptree::Make("-1");
 
   // Extract arguments.
-  switch (args->Length()) {
+  switch (Length(args)) {
   case 1:
     // No action taken- we will use the current priority.
-    args = args->First();
+    args = First(args);
     break;
   case 3:
     // Extract priority from second argument (which is 3rd element in
     // list due to the comma).
-    priority = args->Third();
-    args = args->First();
+    priority = Third(args);
+    args = First(args);
     break;
   default: {
-    ErrorMessage(env,"The spawn operator requires one or two argument.",nil,spawnobj);
-    return nil;
+    ErrorMessage(env,"The spawn operator requires one or two argument.",0,spawnobj);
+    return 0;
   }
   }
 
@@ -402,23 +412,23 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   Ptree *ufunc,*uargs;
 
   // Try to extract a function call.
-  if (!Ptree::Match(args,"[ %? ( %? ) ]",&ufunc,&uargs)) {
+  if (!Match(args,"[ %? ( %? ) ]",&ufunc,&uargs)) {
     Ptree *uop,*uptr;
     // For some reason, member pointers parse differently than member calls.
     // So we convert it here to the same form:  obj <op> member.
-    if (Ptree::Match(args,"[ %? %? [ %? ( %? ) ] ]",&ufunc,&uop,&uptr,&uargs)) {
-      ufunc = Ptree::List(ufunc,uop,uptr);
+    if (Match(args,"[ %? %? [ %? ( %? ) ] ]",&ufunc,&uop,&uptr,&uargs)) {
+      ufunc = List(ufunc,uop,uptr);
     } else {
-      ErrorMessage(env,"Invalid spawn call- argument must be a function call.",nil,args);
-      return nil;
+      ErrorMessage(env,"Invalid spawn call- argument must be a function call.",0,args);
+      return 0;
     }
   }
 
   // Will store object's class if a member call.
-  Class *objclass = nil;
+  Class *objclass = 0;
 
   // Will store object pointer expression if a member call.
-  Ptree *objptr = nil;
+  Ptree *objptr = 0;
 
   // Environment of the invoked type.  The main environment if a function, otherwise
   // environment of the class defining the member.
@@ -429,14 +439,14 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
 
   // If we're dealing with a member call, setup stuff appropriately.
   if (!checkForMemberCall(env,objclass,callenv,ufunc,objptr)) {
-    return nil;;
+    return 0;;
   }
 
   // The argument type must be a function call.  Its return type will indicate
   // the type of the result channel object.
   if (!callenv->Lookup(ufunc,t)) {
-    ErrorMessage(env,"Could not lookup spawn argument.",nil,ufunc);
-    return nil;
+    ErrorMessage(env,"Could not lookup spawn argument.",0,ufunc);
+    return 0;
   }
 
   // Make sure that spawn's argument is some sort of a subroutine call.
@@ -444,27 +454,27 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
     TypeInfo tt;
     t.Dereference(tt);
     if (!tt.IsFunction()) {
-      ErrorMessage(env,"Spawn argument must be a function call, function pointer, or method call.",nil,ufunc);
-      return nil;
+      ErrorMessage(env,"Spawn argument must be a function call, function pointer, or method call.",0,ufunc);
+      return 0;
     }
   }
 
-  Ptree *targs  = Ptree::GenSym();
-  Ptree *sfunc  = Ptree::GenSym();
-  Ptree *lfunc  = Ptree::GenSym();
+  Ptree *targs  = GenSym();
+  Ptree *sfunc  = GenSym();
+  Ptree *lfunc  = GenSym();
 
   Environment *benv = env->GetBottom();
 
   // Create temporary argument storage structure.
   if (!makeSpawnStruct(benv,objclass,t,targs,ufunc)) {
-    return nil;
+    return 0;
   }
 
   // Create spawn function- this will take the function and its arguments
   // and launch a thread, returning a result structure w/a pointer to the
   // result data.
-  if (!makeSpawnFunc(benv,objclass,t,targs,ufunc,lfunc,sfunc,(proc != nil))) {
-    return nil;
+  if (!makeSpawnFunc(benv,objclass,t,targs,ufunc,lfunc,sfunc,(proc != 0))) {
+    return 0;
   }
 
   // Finally, replace spawn operator w/call to spawn function.
@@ -503,37 +513,39 @@ bool Plasma::checkForMemberCall(Environment *env,Class* &objclass,
                                  Environment* &callenv,Ptree* &ufunc,
                                 Ptree* &objptr)
 {
+  using namespace PtreeUtil;
+
   // Are we dealing with a pointer or reference to a member?
   bool memptr = false;
   bool explicitobj = true;
   bool deref = false;
   Ptree *object, *member;
-  if (Ptree::Match(ufunc,"[ %? . %? ]",&object,&member)) {
+  if (Match(ufunc,"[ %? . %? ]",&object,&member)) {
     // Member call with reference of object.
     objptr = Ptree::qMake("&(`object`)");
-  } else if (Ptree::Match(ufunc,"[ %? -> %? ]",&object,&member)) {
+  } else if (Match(ufunc,"[ %? -> %? ]",&object,&member)) {
     // Member call with pointer to object.
     objptr = object;
     deref = true;
-  } else if (Ptree::Match(ufunc,"[ %? .* %? ]",&object,&member)) {
+  } else if (Match(ufunc,"[ %? .* %? ]",&object,&member)) {
     // Pointer to member w/reference object.
     objptr = Ptree::qMake("&(`object`)");
     memptr = true;
-  } else if (Ptree::Match(ufunc,"[ %? ->* %? ]",&object,&member)) {
+  } else if (Match(ufunc,"[ %? ->* %? ]",&object,&member)) {
     // Pointer to member w/pointer object.
     objptr = object;
     deref = true;
     memptr = true;
-  } else if (Ptree::Match(ufunc,"[ %? :: %? ]",&object,&member)) {
+  } else if (Match(ufunc,"[ %? :: %? ]",&object,&member)) {
     // Call to static- handle as a function.
-    object = nil;
-    member = nil;
-    objptr = nil;
+    object = 0;
+    member = 0;
+    objptr = 0;
   } else {
     // Not a member call with an explicit object.
-    object = nil;
-    member = nil;
-    objptr = nil;
+    object = 0;
+    member = 0;
+    objptr = 0;
     explicitobj = false;
   }
 
@@ -541,14 +553,14 @@ bool Plasma::checkForMemberCall(Environment *env,Class* &objclass,
   if (object) {
     TypeInfo pt;
     if (!env->Lookup(object,pt)) {
-      ErrorMessage(env,"Could not lookup member call class.",nil,object);
+      ErrorMessage(env,"Could not lookup member call class.",0,object);
       return false;
     }
     if (deref) {
       pt.Dereference();
     }
     if (!(objclass = pt.ClassMetaobject())) {
-      ErrorMessage("Could not find class's type.",nil,object);
+      ErrorMessage("Could not find class's type.",0,object);
       return false;
     }
     ufunc = member;
@@ -561,7 +573,7 @@ bool Plasma::checkForMemberCall(Environment *env,Class* &objclass,
     if (Environment *menv = env->IsMember(ufunc)) {
       // Is a member- get type.
       if (!(objclass = menv->LookupThis())) {
-        ErrorMessage(env,"Could not find member function's class.",nil,ufunc);
+        ErrorMessage(env,"Could not find member function's class.",0,ufunc);
         return false;
       }
       callenv = menv;
@@ -657,6 +669,8 @@ bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo t,Ptree *
 bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *targs,
                            Ptree *ufunc,Ptree *lfunc,Ptree *sfunc,bool proc)
 {
+  using namespace PtreeUtil;
+
   TypeInfo origt = t;
   bool fptr = false;
   if (isPtrType(t)) {
@@ -763,7 +777,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   Ptree *fwddecl = start;
   InsertBeforeToplevel(env,Ptree::qMake("`fwddecl`;\n"));
 
-  start = Ptree::qMake("inline `Ptree::CopyList(fwddecl)` ");
+  start = Ptree::qMake("inline `CopyList(fwddecl)` ");
   cur = start;
 
   // Initialization of the argument passing structure.
@@ -797,7 +811,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
 Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest,bool reverse)
 {
   PortList pv;
-  Ptree *defaultblock = nil;
+  Ptree *defaultblock = 0;
 
   if (!parseAltBody(env,rest,pv,defaultblock,reverse)) {
     return false;
@@ -823,7 +837,7 @@ Ptree* Plasma::TranslatePriAlt(Environment* env,Ptree* keyword, Ptree* rest)
 Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
 {
   PortList pv;
-  Ptree *defaultblock = nil;
+  Ptree *defaultblock = 0;
 
   if (!parseAforBody(env,rest,pv,defaultblock)) {
     return false;
@@ -849,10 +863,12 @@ void flatten(PortList &pv,const PortList &origpv)
 // ports, constructs the necessary alt structure.
 Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *defaultblock)
 {
-  Ptree *label  = Ptree::GenSym();
-  Ptree *handle = Ptree::GenSym();
-  Ptree *sindex = Ptree::GenSym();
-  Ptree *loop  = Ptree::GenSym();
+  using namespace PtreeUtil;
+
+  Ptree *label  = GenSym();
+  Ptree *handle = GenSym();
+  Ptree *sindex = GenSym();
+  Ptree *loop   = GenSym();
 
   PortList pv;
   flatten(pv,origpv);
@@ -860,8 +876,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
   // We put this inside of a try block if we don't have a default block,
   // since we want to clear the notifications if an exception occurs.
   Ptree *start = (!defaultblock) ? 
-    Ptree::List(Ptree::Make("try {\n")) :
-    Ptree::List(Ptree::Make("{\n"));
+    List(Ptree::Make("try {\n")) :
+    List(Ptree::Make("{\n"));
   Ptree *cur = start;
 
   cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"));
@@ -970,8 +986,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
     cur = lappend(cur,Ptree::qMake("goto `loop`;\n"));
   }
 
-  if ( (cur = generateAltBody(env,cur,label,handle,pv,defaultblock)) == nil) {
-    return nil;
+  if ( (cur = generateAltBody(env,cur,label,handle,pv,defaultblock)) == 0) {
+    return 0;
   }
 
   cur = lappend(cur,Ptree::Make("}\n"));
@@ -1013,17 +1029,17 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
     const Port &p = iter->port();
     cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
     if (p.val) {
-      if (p.val->Length() > 1) {
-        ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",nil,p.val);
-        return nil;
+      if (PtreeUtil::Length(p.val) > 1) {
+        ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",0,p.val);
+        return 0;
       }
       // User specified a type, so use it directly.
       cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"
                                      " plasma::pUnlock();\n"));
       // Add it to the environment so that we can translate the body and it
       // will recognize it.
-      Class *pclass = new Class(env,p.val->Ca_ar());
-      env->RecordVariable(p.val->Car()->Second()->Car()->ToString(),pclass);
+      Class *pclass = new Class(env,PtreeUtil::Ca_ar(p.val));
+      env->RecordVariable(PtreeUtil::Second(p.val->Car())->Car()->ToString(),pclass);
     } else {
       // Simple case- no value.  We still have to call get in order to drain the value,
       // but we don't assign it to anything.
@@ -1055,8 +1071,8 @@ bool Plasma::parseAltBody(Environment *env,Ptree *rest,PortList &pv,
                           Ptree* &defaultblock,bool reverse)
 {
   Ptree *body;
-  if(!Ptree::Match(rest, "[ %? ]", &body)){
-    ErrorMessage(env, "invalid alt statement", nil, rest);
+  if(!PtreeUtil::Match(rest, "[ %? ]", &body)){
+    ErrorMessage(env, "invalid alt statement", 0, rest);
     return false;
   }
 
@@ -1089,14 +1105,14 @@ bool Plasma::parseAforCondition(VarWalker *vw,Environment *env,Ptree *s1,Ptree *
   vw->Translate(s1);
   vw->saveGuardEnv();
   if (vw->guardEnvEmpty()) {
-    ErrorMessage(env,"afor statement declares no loop variables.",nil,s1);
-    return nil;
+    ErrorMessage(env,"afor statement declares no loop variables.",0,s1);
+    return 0;
   }
   vw->handleGuard(false);
   vw->Translate(s3);
 
   if (vw->argnames().empty()) {
-    ErrorMessage(env,"afor statement does not use its iterator variable in its condition expression.",nil,s3);
+    ErrorMessage(env,"afor statement does not use its iterator variable in its condition expression.",0,s3);
     return false;
   }
   return true;
@@ -1107,8 +1123,8 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &def
 {
   Ptree *s1, *s2, *s3, *body;
 
-  if(!Ptree::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
-    ErrorMessage(env, "invalid afor statement", nil, rest);
+  if(!PtreeUtil::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
+    ErrorMessage(env, "invalid afor statement", 0, rest);
     return false;
   }
 
@@ -1122,7 +1138,7 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &def
   }
 
   if ((int)pv.back().list().size() > 1) {
-    ErrorMessage(env,"more than one port statement in an afor block is currently not supported",nil,rest);
+    ErrorMessage(env,"more than one port statement in an afor block is currently not supported",0,rest);
     return false;
   }
 
@@ -1153,7 +1169,7 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &def
     }
   }
   if (needstack) {
-    p.stack  = Ptree::GenSym();
+    p.stack  = PtreeUtil::GenSym();
   }
 
   return true;
@@ -1166,32 +1182,32 @@ bool Plasma::parseAltBlock(Environment *env,Ptree *body,bool isloop,PortList &pv
   // either a port, alt, afor, or default block.
   for (PtreeIter i = body; !i.Empty(); ++i) {
     Ptree *pchan,*pop,*pval,*pbody;
-    if (Ptree::Match(*i,"[ %? %? port ( %? ) %? ]",&pchan,&pop,&pval,&pbody)) {
+    if (PtreeUtil::Match(*i,"[ %? %? port ( %? ) %? ]",&pchan,&pop,&pval,&pbody)) {
       pv.push_back(new Port(isloop,pchan,pop,pval,pbody));
     }
-    else if ((*i)->Car()->Eq("alt")) {
+    else if (PtreeUtil::Eq((*i)->Car(),"alt")) {
       parseAltBody(env,(*i)->Cdr(),pv,defaultblock,true);
     }
-    else if ((*i)->Car()->Eq("prialt")) {
+    else if (PtreeUtil::Eq((*i)->Car(),"prialt")) {
       parseAltBody(env,(*i)->Cdr(),pv,defaultblock,false);
     }
-    else if ((*i)->Car()->Eq("afor") || (*i)->Car()->Eq("priafor")) {
+    else if (PtreeUtil::Eq((*i)->Car(),"afor") || PtreeUtil::Eq((*i)->Car(),"priafor")) {
       parseAforBody(env,(*i)->Cdr(),pv,defaultblock);
     }
-    else if (Ptree::Match(*i,"[ { %* } ]")) {
+    else if (PtreeUtil::Match(*i,"[ { %* } ]")) {
       if (defaultblock) {
-        ErrorMessage(env, "bad alt/afor block:  Only one default block is allowed.",nil,*i);
+        ErrorMessage(env, "bad alt/afor block:  Only one default block is allowed.",0,*i);
         return false;
       }
       defaultblock = *i;
     } else {
-      ErrorMessage(env, "bad alt/afor block:  Only port, afor, alt, or a default block are allowed within an alt/afor block.",nil,*i);
+      ErrorMessage(env, "bad alt/afor block:  Only port, afor, alt, or a default block are allowed within an alt/afor block.",0,*i);
       return false;
     }
   }
 
   if (pv.empty()) {
-    ErrorMessage(env,"bad alt/afor block:  You must have at least one port or default block.",nil,body);
+    ErrorMessage(env,"bad alt/afor block:  You must have at least one port or default block.",0,body);
     return false;
   }
   return true;

@@ -31,7 +31,7 @@ Display the program's version number.
 
 Display more documentation using the I<man> format.
 
-=item B<-v>
+=item B<--verbose, -v>
 
 Verbose mode: Display commands issued by the wrapper script and by the compiler
 front-end.
@@ -122,7 +122,7 @@ if (!&GetOptions
      "plasma|p=s"    => \&handle_srcfile,
      "I=s"           => \&handle_occ_val,
      "D=s%"          => \&handle_occ_val,
-     "v"             => \&handle_occ_noval,
+     "verbose|v"     => \&handle_occ_noval,
      "C"             => \&handle_occ_noval,
      "E"             => \&handle_occ_noval,
      "c"             => \&handle_occ_noval,
@@ -211,6 +211,9 @@ sub handle_occ_val {
 
 sub handle_occ_noval {
   my $a = $_[0];
+  if ($a eq "verbose") {
+	$a = "v";
+  }
   dprint "Got occ arg $a\n";
   $occoptions .= " -$a";
   $link = 0 if ($a eq "c");

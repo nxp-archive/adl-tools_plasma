@@ -29,7 +29,7 @@ void Wrapper::TranslateClass(Environment* env)
         Member wrapper = member;
         setupOrigMember(env,member,org_name);
         ChangeMember(member);
-        makeWrapper(env, wrapper, org_name, nil);
+        makeWrapper(env, wrapper, org_name, 0);
         AppendMember(wrapper, Class::Public);
       }
     }
@@ -42,7 +42,7 @@ void Wrapper::setupOrigMember(Environment *env,Member &member,Ptree *org_name)
   // We only insert the line directive if there is a function body- there might
   // not be one if we're processing a declaration and this isn't an inlined function.
   if (ofb) {
-    member.SetFunctionBody(Ptree::List(lineDirective(env,ofb),ofb));
+    member.SetFunctionBody(PtreeUtil::List(lineDirective(env,ofb),ofb));
   }
 }
 
@@ -52,37 +52,37 @@ void Wrapper::setupOrigMember(Environment *env,Member &member,Ptree *org_name)
 Ptree *Wrapper::isVariadic(Environment *env,Member &member)
 {
   Ptree *args = member.ArgumentList();
-  Ptree *last = args->Last();
-  if (last && last->Car()->Eq("...")) {
+  Ptree *last = PtreeUtil::Last(args);
+  if (last && PtreeUtil::Eq(last->Car(),"...")) {
     // Can't handle variadic functions directly.
     ErrorMessage(env,"Variadic members may not be directly wrapped.\n"
                  "Instead, create a method which takes a va_list-\n"
-                 "both variadic and va_list wrappers will be created.\n",nil,member.Name());
-    return nil;
-  } else if (last && last->Ca_ar()->Eq("va_list")) {
+                 "both variadic and va_list wrappers will be created.\n",0,member.Name());
+    return 0;
+  } else if (last && PtreeUtil::Eq(PtreeUtil::Ca_ar(last),"va_list")) {
     // Function takes a va_list, so we can create a variadic wrapper, as well
     // as the va_list version.
     Ptree *a = member.Arguments();
-    int length = a->Length();
+    int length = PtreeUtil::Length(a);
     if (length < 3) {
-      ErrorMessage("Found a varargs function with no initial non-ellipses parameter.",nil,member.Name());
-      return nil;
+      ErrorMessage("Found a varargs function with no initial non-ellipses parameter.",0,member.Name());
+      return 0;
     }
-    return a->Nth(length-3);
+    return PtreeUtil::Nth(a,length-3);
   }
   // Not variadic at all.
-  return nil;
+  return 0;
 }
 
 // Return arguments w/last argument replaced by "...";
 Ptree *Wrapper::variadicArgs(Ptree *args)
 {
   if (!args) {
-    return nil;
+    return 0;
   } else if (!args->Cdr()) {
-    return Ptree::List(Ptree::Make("..."));
+    return PtreeUtil::List(Ptree::Make("..."));
   } else {
-    return Ptree::List(args->Car(),variadicArgs(args->Cdr()));
+    return PtreeUtil::List(args->Car(),variadicArgs(args->Cdr()));
   }
 }
 
@@ -121,10 +121,10 @@ pair<Ptree*,Ptree*> Wrapper::makeWrapperBody(Environment *env,Member& member,
 {
   TypeInfo t;
 
-  Ptree *call_stmt = nil, *ret_stmt = nil;
+  Ptree *call_stmt = 0, *ret_stmt = 0;
   Ptree *call_expr = exprToCallOriginal(env, member, orig_name);
   if (!call_expr) {
-    return make_pair((Ptree*)nil,(Ptree*)nil);
+    return make_pair((Ptree*)0,(Ptree*)0);
   }
 
   // Get the return type.

@@ -7,7 +7,11 @@
 #ifndef _WRAPPER_H_
 #define _WRAPPER_H_
 
-#include "mop.h"
+#include <utility>
+
+#include "opencxx/mop2.h"
+
+using namespace Opencxx;
 
 // Wraps public member functions.  Derive from this and override
 // MakeWrapperBody() to generate the desired wrapper code.  It 
@@ -31,7 +35,9 @@ protected:
   // methods other than constructors and the destructor are wrapped.
   virtual bool wrapMember(Environment *env,Member &member) const;
   // Overload this to define the wrapper function.  Return (nil,nil) on error.
-  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* org_name,Ptree *variadic);
+  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,
+                                                                     Member& member, Ptree* org_name,
+                                                                     Ptree *variadic);
 
 private:
   void setupOrigMember(Environment *env,Member &member,Ptree *name);

@@ -94,6 +94,10 @@ fi
 AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
 
+AC_CONFIG_COMMANDS([ptree-gen],
+    [(cd opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],
+    [])
+
 # Generate configuration files.
 AC_CONFIG_FILES([\
    Makefile \

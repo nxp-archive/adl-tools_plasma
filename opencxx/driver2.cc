@@ -1,37 +1,44 @@
-/*
-  Copyright (C) 1997-2001 Shigeru Chiba, Tokyo Institute of Technology.
+//@beginlicenses@
+//@license{chiba-tokyo}{}@
+//@license{xerox}{}@
+//
+//  Copyright (C) 1997-2001 Shigeru Chiba, Tokyo Institute of Technology.
+//
+//  Permission to use, copy, distribute and modify this software and
+//  its documentation for any purpose is hereby granted without fee,
+//  provided that the above copyright notice appears in all copies and that
+//  both that copyright notice and this permission notice appear in
+//  supporting documentation.
+//
+//  Shigeru Chiba makes no representations about the suitability of this
+//  software for any purpose.  It is provided "as is" without express or
+//  implied warranty.
+//
+//  -----------------------------------------------------------------
+//
+//
+//  Copyright (c) 1995, 1996 Xerox Corporation.
+//  All Rights Reserved.
+//
+//  Use and copying of this software and preparation of derivative works
+//  based upon this software are permitted. Any copy of this software or
+//  of any derivative work must include the above copyright notice of   
+//  Xerox Corporation, this paragraph and the one after it.  Any
+//  distribution of this software or derivative works must comply with all
+//  applicable United States export control laws.
+//
+//  This software is made available AS IS, and XEROX CORPORATION DISCLAIMS
+//  ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE  
+//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR    
+//  PURPOSE, AND NOTWITHSTANDING ANY OTHER PROVISION CONTAINED HEREIN, ANY
+//  LIABILITY FOR DAMAGES RESULTING FROM THE SOFTWARE OR ITS USE IS
+//  EXPRESSLY DISCLAIMED, WHETHER ARISING IN CONTRACT, TORT (INCLUDING
+//  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF XEROX CORPORATION IS ADVISED
+//  OF THE POSSIBILITY OF SUCH DAMAGES.
+//
+//@endlicenses@
 
-  Permission to use, copy, distribute and modify this software and   
-  its documentation for any purpose is hereby granted without fee,        
-  provided that the above copyright notice appear in all copies and that 
-  both that copyright notice and this permission notice appear in 
-  supporting documentation.
-
-  Shigeru Chiba makes no representations about the suitability of this 
-  software for any purpose.  It is provided "as is" without express or
-  implied warranty.
-*/
-
-/*
-  Copyright (c) 1995, 1996 Xerox Corporation.
-  All Rights Reserved.
-
-  Use and copying of this software and preparation of derivative works
-  based upon this software are permitted. Any copy of this software or
-  of any derivative work must include the above copyright notice of
-  Xerox Corporation, this paragraph and the one after it.  Any
-  distribution of this software or derivative works must comply with all
-  applicable United States export control laws.
-
-  This software is made available AS IS, and XEROX CORPORATION DISCLAIMS
-  ALL WARRANTIES, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION THE
-  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-  PURPOSE, AND NOTWITHSTANDING ANY OTHER PROVISION CONTAINED HEREIN, ANY
-  LIABILITY FOR DAMAGES RESULTING FROM THE SOFTWARE OR ITS USE IS
-  EXPRESSLY DISCLAIMED, WHETHER ARISING IN CONTRACT, TORT (INCLUDING
-  NEGLIGENCE) OR STRICT LIABILITY, EVEN IF XEROX CORPORATION IS ADVISED
-  OF THE POSSIBILITY OF SUCH DAMAGES.
-*/
+#include <opencxx/driver2.h>
 
 #if defined(IRIX_CC)
 // for open()
@@ -40,22 +47,26 @@
 #include <fcntl.h>
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <string.h>
+#include <cstring>
 #include <fstream>
 #include <iostream>
-#include "types.h"
+#include <vector>
+#include <opencxx/MetacompilerConfiguration.h>
 
 #include <ltdl.h>	// libtool dlopen library
 
 using namespace std;
 
-BEGIN_OPENCXX_NAMESPACE
+static const int verbose = false;
 
-// g++ recognizes a .ii file as preprocessed C++ source code.
-// CC recognizes a .i file as preprocessed C++ source code.
+namespace Opencxx
+{
+
+  // g++ recognizes a .ii file as preprocessed C++ source code.
+  // CC recognizes a .i file as preprocessed C++ source code.
 
 #if defined(IRIX_CC)
 #define OUTPUT_EXT	".i"
@@ -67,270 +78,335 @@ BEGIN_OPENCXX_NAMESPACE
 #define SLIB_EXT	".so"
 #define OBJ_EXT		".o"
 
-extern "C" {
+  extern "C" {
 #if !defined(IRIX_CC) && !defined(__GLIBC__) && !defined(__STRICT_ANSI__)
     int execvp(...);
 #endif
     int wait(int*);
-}
+  }
 
 #if defined(IRIX_CC)
-const char* origCompilerName = "CC";
+  const char* compilerName = "CC";
 #else
-const char* origCompilerName = "g++";
+  const char* compilerName = "g++";
 #endif
-const char* linkerName = "ld";
-const char* opencxxErrorMessage = " Error(s).  OpenC++ stops.\n";
+  const char* linkerName = "ld";
+  const char* opencxxErrorMessage = " Error(s).  OpenC++ stops.\n";
 
-// By default, use the original compiler.  May be overrridden by
-// a user option.
-const char *compilerName = origCompilerName;
-
-// defined in driver.cc
-
-extern bool showProgram;
-extern bool doCompile;
-extern bool makeExecutable;
-extern bool doPreprocess;
-extern bool doTranslate;
-extern bool verboseMode;
-extern bool regularCpp;
-extern bool makeSharedLibrary;
-extern char* sharedLibraryName;
-extern bool preprocessTwice;
-
-extern const char* cppArgv[];
-extern const char* ccArgv[];
-
-extern void ParseCmdOptions(int from, int argc, char** argv, char*& source);
-extern void AddCppOption(const char* arg);
-extern void AddCcOption(const char* arg);
-extern void CloseCcOptions();
-extern void ShowCommandLine(const char* cmd, const char** args);
-
-bool ParseTargetSpecificOptions(char* arg, char*& source_file);
-void RunLinker();
-char* RunPreprocessor(const char* src);
-char* OpenCxxOutputFileName(const char* src);
-void RunCompiler(const char* src, const char* occsrc);
-void RunSoCompiler(const char* src_file);
-lt_dlhandle LoadSoLib(const char* file_name);
-void* LookupSymbol(lt_dlhandle handle, const char* symbol);
+  bool ParseTargetSpecificOptions(char* arg, char*& source_file);
+  void* LookupSymbol(lt_dlhandle handle, const char* symbol);
 
 #if !SHARED_OPTION
-static void RunSoLinker(const char* org_src, char* target);
+  static void RunSoLinker(const char* org_src, char* target);
 #endif
-static char* MakeTempFilename(const char* src, const char* suffix);
+  static char* MakeTempFilename(const char* src, const char* suffix);
 
 
-bool ParseTargetSpecificOptions(char*, char*&)
-{
-    return FALSE;
-}
+  bool ParseTargetSpecificOptions(char*, char*&)
+  {
+    return false;
+  }
 
-void RunLinker()
-{
-    if(!doCompile || !makeExecutable){
-	cerr << "OpenC++: no source file.\n";
-	return;
+  void ExecVp(const char* file, char *const argv[])
+  {
+    if (verbose) {
+      cerr << "EXECUTING: " << file;
+      int i = 0;
+      while (argv[i]) {
+        cerr << " " << argv[i];
+        ++i;
+      }
+      cerr << endl;
+    }
+    execvp(file, argv);
+  }
+
+  static void ShowCommandLine(const char*, const char** args)
+  {
+    while(*args != 0)
+      cerr << ' ' << *args++;
+  }
+
+  static void ShowCommandLine(const vector<string>& argv)
+  {
+    for(unsigned int i = 0; i < argv.size(); ++i) {
+      if (i) cerr << ' ';
+      cerr << argv[i];
+    }
+    cerr << endl;
+  }
+
+  void ExecVp(const string& file, std::vector<std::string>& argv)
+  {
+    using std::vector;
+    using std::string;
+    
+    if (verbose) {
+      cerr << "EXECUTING: " << file;
+      for(unsigned int i = 0; i < argv.size(); ++i)
+        {
+          cerr << " " << argv[i];
+        }
+      cerr << endl;
+    }
+    vector<char*> hardcoreArgv;
+    for(vector<string>::iterator iter = argv.begin(),
+          end  = argv.end();
+        iter != end;
+        ++iter)
+      {
+        hardcoreArgv.push_back(strdup((*iter).c_str()));
+      }
+    hardcoreArgv.push_back(0);
+    execvp(file.c_str(), &*(hardcoreArgv.begin()));
+  }
+
+  void RunLinker(const MetacompilerConfiguration& config)
+    // @todo Most likely we do not need to add options globally,
+    //       so in fact argv.push_back() is sufficient,
+    //       we don't need config.AddCcOption()
+  {
+    if (!config.DoCompile() || !config.MakeExecutable()) {
+      cerr << "OpenC++: no source file.\n";
+      return;
     }
 
-    const char* linker = compilerName;
-    char* slib = nil;
-    if(makeSharedLibrary){
+    string compiler(config.CompilerCommand());
+    vector<string> argv;
+    
+    argv.push_back("");
+
+    MetacompilerConfiguration::Iterator iter = config.CcOptions();
+    while (! iter.AtEnd()) {
+      argv.push_back(iter.Get());
+      iter.Advance();
+    }
+
+    string linker = config.CompilerCommand();
+    char* slib = 0;
+    if (config.MakeSharedLibrary()) {
 #if SHARED_OPTION
 #if ((defined __APPLE__) && (defined __MACH__))
-	AddCcOption("-dynamiclib");
-	AddCcOption("-flat_namespace");
-	AddCcOption("-undefined");
-	AddCcOption("suppress");
+      argv.push_back("-dynamiclib");
+      argv.push_back("-flat_namespace");
+      argv.push_back("-undefined");
+      argv.push_back("suppress");
 #else
 #if defined(IRIX_CC)
-	AddCcOption("-n32");
+      argv.push_back("-n32");
 #else
-	AddCcOption("-fPIC");
+      argv.push_back("-fPIC");
 #endif
-	AddCcOption("-shared");
+      argv.push_back("-shared");
 #endif
 #else /* SHARED_OPTION */
-	AddCcOption("-Bshareable");
-	linker = linkerName;
+      argv.push_back("-Bshareable");
+      linker = config.LinkerCommand();
 #endif
-	if(sharedLibraryName != nil && *sharedLibraryName != '\0'){
-	    slib = MakeTempFilename(sharedLibraryName, SLIB_EXT);
-	    AddCcOption("-o");
-	    AddCcOption(slib);
-	}
+      if(config.SharedLibraryName() != "") {
+	    slib = MakeTempFilename(config.SharedLibraryName().c_str(), SLIB_EXT);
+	    argv.push_back("-o");
+	    argv.push_back(slib);
+	    delete [] slib;
+      }
     }
 
-    ccArgv[0] = linker;
-    CloseCcOptions();
+    argv[0] = linker;
 
-    if(verboseMode){
-	cerr << "[Link... ";
-	ShowCommandLine(linker, ccArgv);
-	cerr << "]\n";
+    if (config.VerboseMode()) {
+      cerr << "[Link... ";
+      ShowCommandLine(argv);
+      cerr << "]\n";
     }
 
     if(fork() == 0){
-	execvp(linker, (char**)ccArgv);
-	perror("cannot invoke a compiler");
+      ExecVp(linker, argv);
+      perror("cannot invoke a compiler");
     }
     else{
-	int status;
+      int status;
 
-	wait(&status);
-	if(status != 0)
+      wait(&status);
+      if(status != 0)
 	    exit(1);
     }
+  }
 
-    delete [] slib;
-}
-
-char* RunPreprocessor(const char* src)
-{
+  char* RunPreprocessor(const char* src, 
+                        const MetacompilerConfiguration& config)
+  {
     char* dest = MakeTempFilename(src, CPP_EXT);
-    if(!regularCpp)
-	AddCppOption("-D__opencxx");
+    string compiler = config.CompilerCommand();
+    
+    vector<string> argv;
+    
+    argv.push_back(compiler);
 
-    AddCppOption("-E");
+    if(config.RecognizeOccExtensions())
+      argv.push_back("-D__opencxx");
+    
+    argv.push_back("-E");
 #if defined(IRIX_CC)
-    AddCppOption("-n32");
+    argv.push_back("-n32");
 #else
-    AddCppOption("-o");
-    AddCppOption(dest);
-    AddCppOption("-x");
-    AddCppOption("c++");
+    argv.push_back("-o");
+    argv.push_back(dest);
+    argv.push_back("-x");
+    argv.push_back("c++");
 #endif
-    AddCppOption(src);
-    AddCppOption((char*)0);
 
-    if(verboseMode){
-	cerr << "[Preprocess... ";
-	ShowCommandLine(compilerName, cppArgv);
+    MetacompilerConfiguration::Iterator iter = config.CppOptions();
+    while (! iter.AtEnd()) {
+      argv.push_back(iter.Get());
+      iter.Advance();
+    }
+
+    argv.push_back(src);
+
+    if (config.VerboseMode()) {
+      cerr << "[Preprocess... ";
+      ShowCommandLine(argv);
 #if defined(IRIX_CC)
-	cerr << " > " << dest;
+      cerr << " > " << dest;
 #endif
-	cerr << "]\n";
+      cerr << "]\n";
     }
 
     if(fork() == 0){
 #if defined(IRIX_CC)
-	int fd = open(dest, O_WRONLY | O_CREAT, 0666);
-	if (fd < 0) {
+      int fd = open(dest, O_WRONLY | O_CREAT, 0666);
+      if (fd < 0) {
 	    perror(dest);
 	    exit(1);
-	}
-	dup2(fd, 1);
+      }
+      dup2(fd, 1);
 #endif
-	execvp(compilerName, (char**)cppArgv);
-	perror("cannot invoke a compiler");
+      ExecVp(compiler, argv);
+      perror("cannot invoke a compiler");
     }
     else{
-	int status;
+      int status;
 
-	wait(&status);
-	if(status != 0)
+      wait(&status);
+      if(status != 0)
 	    exit(1);
     }
 
     return dest;
-}
+  }
 
-char* OpenCxxOutputFileName(const char* src)
-{
+  char* OpenCxxOutputFileName(const char* src)
+  {
     return MakeTempFilename(src, OUTPUT_EXT);
-}
+  }
 
-/*
-   To create a shared library foo.so from foo.cc,
+  /*
+    To create a shared library foo.so from foo.cc,
 
-   SunOS, Solaris, Linux (v2.0, gcc 2.7.2.2):
-		g++ -fPIC -shared -o foo.so foo.cc
+    SunOS, Solaris, Linux (v2.0, gcc 2.7.2.2):
+    g++ -fPIC -shared -o foo.so foo.cc
 
-   Irix with naitive CC:
-		CC -shared -n32 -o foo.so foo.cc
+    Irix with naitive CC:
+    CC -shared -n32 -o foo.so foo.cc
 
-   FreeBSD:	g++ -fPIC -c foo.cc
-		ld -Bshareable -o foo.so foo.o
+    FreeBSD:	g++ -fPIC -c foo.cc
+    ld -Bshareable -o foo.so foo.o
 
-*/
-void RunCompiler(const char* org_src, const char* occ_src)
-{
-    char* slib = nil;
-    if(makeSharedLibrary){
-	const char* name = org_src;
-	if(sharedLibraryName != nil && *sharedLibraryName != '\0')
-	    name = sharedLibraryName;
+  */
+  void RunCompiler(
+                   const char* org_src, const char* occ_src, 
+                   const MetacompilerConfiguration& config
+                   )
+  {
+    char* slib = 0;
+    
+    vector<string> argv;
+    string compiler = config.CompilerCommand();
+    argv.push_back(compiler);
+    MetacompilerConfiguration::Iterator iter = config.CcOptions();
+    while (! iter.AtEnd()) {
+      argv.push_back(iter.Get());
+      iter.Advance();
+    }
 
-	slib = MakeTempFilename(name, SLIB_EXT);
+    MetacompilerConfiguration::Iterator iter2 = config.Cc2Options();
+    while (! iter2.AtEnd()) {
+      argv.push_back(iter2.Get());
+      iter2.Advance();
+    }
+    
+    if (config.SharedLibraryName() != "") {
+
+      slib = MakeTempFilename(config.SharedLibraryName().c_str(), SLIB_EXT);
 #if SHARED_OPTION
 #if ((defined __APPLE__) && (defined __MACH__))
-	AddCcOption("-dynamiclib");
-	AddCcOption("-flat_namespace");
-	AddCcOption("-undefined");
-	AddCcOption("suppress");
+      argv.push_back("-dynamiclib");
+      argv.push_back("-flat_namespace");
+      argv.push_back("-undefined");
+      argv.push_back("suppress");
 #else
 #if defined(IRIX_CC)
-	AddCcOption("-n32");
+      argv.push_back("-n32");
 #else
-	AddCcOption("-fPIC");
+      argv.push_back("-fPIC");
 #endif
-	AddCcOption("-shared");
+      argv.push_back("-shared");
 #endif
-	if(makeExecutable){
-	    AddCcOption("-o");
-	    AddCcOption(slib);
-	}
-	else
-	    AddCcOption("-c");
+      if (config.MakeExecutable()) {
+	    argv.push_back("-o");
+	    argv.push_back(slib);
+      }
+      else
+	    argv.push_back("-c");
 #else /* SHARED_OPTION */
-	AddCcOption("-fPIC");
-	AddCcOption("-c");
+      argv.push_back("-fPIC");
+      argv.push_back("-c");
 #endif
     }
     else
-	if(!makeExecutable)
-	    AddCcOption("-c");
+      if(! config.MakeExecutable())
+	    argv.push_back("-c");
 
 #if !defined(IRIX_CC)
-    if(preprocessTwice){
-	AddCcOption("-x");
-	AddCcOption("c++");
+    if (config.PreprocessTwice()) {
+      argv.push_back("-x");
+      argv.push_back("c++");
     }
 #endif
 
-    AddCcOption(occ_src);
-    CloseCcOptions();
+    argv.push_back(occ_src);
 
-    if(verboseMode){
-	cerr << "[Compile... ";
-	ShowCommandLine(compilerName, ccArgv);
-	cerr << "]\n";
+    if (config.VerboseMode()) {
+      cerr << "[Compile... ";
+      ShowCommandLine(argv);
+      cerr << "]\n";
     }
 
-    if(fork() == 0){
-	execvp(compilerName, (char**)ccArgv);
-	perror("cannot invoke a compiler");
+    if (fork() == 0) {
+      ExecVp(compiler, argv);
+      perror("cannot invoke a compiler");
     }
     else{
-	int status;
+      int status;
 
-	wait(&status);
-	if(status != 0)
+      wait(&status);
+      if(status != 0)
 	    exit(1);
     }
 
 #if !SHARED_OPTION
-    if(makeSharedLibrary && makeExecutable)
-	RunSoLinker(org_src, slib);
+    if (config.MakeSharedLibrary() && config.MakeExecutable())
+      RunSoLinker(org_src, slib);
 #endif
 
     delete [] slib;
-}
+  }
 
-void RunSoCompiler(const char* src_file)
-{
+  void RunSoCompiler(
+                     const char* src_file
+                     , const MetacompilerConfiguration& config
+                     )
+  {
     const char* cc_argv[9];
     int i = 0;
 
@@ -359,21 +435,21 @@ void RunSoCompiler(const char* src_file)
     cc_argv[i++] = src_file;
     cc_argv[i] = (char*)0;
 
-    if(verboseMode){
-	cerr << "[Compile... ";
-	ShowCommandLine(compilerName, cc_argv);
-	cerr << "]\n";
+    if (config.VerboseMode()) {
+      cerr << "[Compile... ";
+      ShowCommandLine(compilerName, cc_argv);
+      cerr << "]\n";
     }
 
     if(fork() == 0){
-	execvp(compilerName, (char**)cc_argv);
-	perror("cannot invoke a compiler");
+      ExecVp(compilerName, (char**)cc_argv);
+      perror("cannot invoke a compiler");
     }
     else{
-	int status;
+      int status;
 
-	wait(&status);
-	if(status != 0)
+      wait(&status);
+      if(status != 0)
 	    exit(1);
     }
 
@@ -382,41 +458,13 @@ void RunSoCompiler(const char* src_file)
 #endif
 
     delete [] slib;
-}
+  }
 
-lt_dlhandle LoadSoLib(const char* file_name)
-{
-    lt_dlhandle handle = nil;
-#if USE_DLOADER
-    //handle = dlopen(file_name, RTLD_GLOBAL | RTLD_LAZY);
-    handle = lt_dlopen(file_name);
-    if(handle == NULL){
- 	cerr << "lt_dlopen(" << file_name << ") failed: " << lt_dlerror() << '\n';
- 	exit(1);
-    }
-#endif /* USE_DLOADER */
-
-    return handle;
-}
-
-void* LookupSymbol(lt_dlhandle handle, const char* symbol)
-{
-    void* func = nil;
-#if USE_DLOADER
-    func = lt_dlsym(handle, symbol);
-    if(func == NULL){
- 	cerr << "lt_dlsym() failed (non metaclass?): " << lt_dlerror() << '\n';
- 	exit(1);
-    }
-#endif
-    return func;
-}
-
-// RunSoLinker() is used only if SHARED_OPTION is false (FreeBSD).
+  // RunSoLinker() is used only if SHARED_OPTION is false (FreeBSD).
 #if !SHARED_OPTION
 
-static void RunSoLinker(const char* org_src, char* target)
-{
+  static void RunSoLinker(const char* org_src, char* target)
+  {
     const char* ld_argv[6];
     ld_argv[0] = linkerName;
     ld_argv[1] = "-Bshareable";
@@ -426,71 +474,52 @@ static void RunSoLinker(const char* org_src, char* target)
     ld_argv[5] = (char*)0;
 
     if(verboseMode){
-	cerr << "[Link... ";
-	ShowCommandLine(linkerName, ld_argv);
-	cerr << "]\n";
+      cerr << "[Link... ";
+      ShowCommandLine(linkerName, ld_argv);
+      cerr << "]\n";
     }
 
     if(fork() == 0){
-	execvp(linkerName, (char**)ld_argv);
-	perror("cannot invoke a linker");
+      ExecVp(linkerName, (char**)ld_argv);
+      perror("cannot invoke a linker");
     }
     else{
-	int status;
+      int status;
 
-	wait(&status);
-	if(status != 0)
+      wait(&status);
+      if(status != 0)
 	    exit(1);
     }
 
     unlink(ld_argv[4]);
     delete [] ld_argv[4];
-}
+  }
 #endif /* SHARED_OPTION */
 
-/*
-   For example, if src is "../foo.cc", MakeTempFilename() makes
-   "foo.<suffix>".
-*/
-static char* MakeTempFilename(const char* src, const char* suffix)
-{
+  /*
+    For example, if src is "../foo.cc", MakeTempFilename() makes
+    "foo.<suffix>".
+  */
+  static char* MakeTempFilename(const char* src, const char* suffix)
+  {
     const char* start;
     const char* end;
 
     start = strrchr(src, '/');
-    if(start == nil)
-	start = src;
+    if(start == 0)
+      start = src;
     else
-	++start;
+      ++start;
 
     end = strrchr(start, '.');
-    if(end == nil)
-	end = src + strlen(src);
+    if(end == 0)
+      end = src + strlen(src);
 
     char* result = new char[end - start + strlen(suffix) + 1];
     strncpy(result, start, end - start);
     result[end - start] = '\0';
     strcat(result, suffix);
     return result;
-}
+  }
 
-void
-InitDynamicLoader()
-{
-#if SHARED_OPTION
-    if (!lt_dlinit())
-    	lt_dladdsearchdir(".");
-    else
-        cerr << "occ: warning: cannot initialize dynamic loader" << endl;
-#endif
 }
-
-void
-ExitDynamicLoader()
-{
-#if SHARED_OPTION
-    lt_dlexit();
-#endif
-}
-
-END_OPENCXX_NAMESPACE

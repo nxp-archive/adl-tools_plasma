@@ -1,10 +1,5 @@
-## Process this file with automake to produce Makefile.in
-#
-# OpenC++
-# src/Makefile.am
-#
-# Copyright (C) 2001 Other Contributors.
-#
+## Makefile.am -- Process this file with automake to produce Makefile.in
+#-------------------------------------------------------------------------
 # Permission to use, copy, distribute and modify this software and its
 # documentation for any purpose is hereby granted without fee, provided that
 # the above copyright notice appear in all copies and that both that copyright
@@ -13,149 +8,263 @@
 # Other Contributors make no representations about the suitability of this
 # software for any purpose. It is provided "as is" without express or implied
 # warranty.
-# 
-# Other Contributors are: Grzegorz Jakacki.
-
-
 #
-# See 'info autoconf' for explanation on srcdir (source directory),
-# builddir (build directory, aka. objdir) and bindir, libdir, includedir
-# etc. (directories, in which the built things will be instaled).
-#
-# See 'info automake' for exaplanation on pkgincludedir, recursive
-# makefiles etc.
-#
-
-# Auxiliary definitions
-# =====================
-
-#
-# Those two are obvious
-#
-TOP_BUILDDIR = ..
-TOP_SRCDIR = @top_srcdir@
+# 2001-2003 (C) Copyright by Other Contributors.
+#-------------------------------------------------------------------------
+AUTOMAKE_OPTIONS = subdir-objects
 
 #
 # The directory to include gc.h and gc_cpp.h from
 #
-GC_INCLUDEDIR = $(TOP_SRCDIR)/gc
+GC_INCLUDEDIR = $(top_srcdir)/gc
 
 #
 # The location of libgc; 
 # note, that we are using libtool, so it is libgc.la, not libgc.a
 #
-LIBGC = $(TOP_BUILDDIR)/gc/libgc.la
+LIBGC = $(top_builddir)/gc/libgc.la
+
+BUILT_SOURCES = parser/ptree-generated.h parser/ptree-generated.cc
+
+pkginclude_HEADERS = \
+	parser/AbstractTranslatingWalker.h \
+	parser/AbstractTypingWalker.h \
+	parser/auxil.h \
+	parser/BigHashTable.h \
+	parser/CerrErrorLog.h \
+	parser/deprecated.h \
+	parser/DupLeaf.h \
+	parser/Encoding.h \
+	parser/ErrorLog.h \
+	parser/GC.h \
+	parser/HashTable.h \
+	parser/Leaf.h \
+	parser/LeafName.h \
+	parser/LeafReserved.h \
+	parser/LeafThis.h \
+	parser/Lex.h \
+	parser/MetaclassLoader.h \
+	parser/MopMsg.h \
+	parser/Msg.h \
+	parser/NonLeaf.h \
+	parser/NullMetaclassLoader.h \
+	parser/ParseErrorMsg.h \
+	parser/Parser.h \
+	parser/Program.h \
+	parser/ProgramFile.h \
+	parser/ProgramFromStdin.h \
+	parser/ProgramString.h \
+	parser/PtreeAccessDecl.h \
+	parser/PtreeAccessSpec.h \
+	parser/PtreeAndEncodingPrinter.h \
+	parser/PtreeArray.h \
+	parser/PtreeBlock.h \
+	parser/PtreeBrace.h \
+	parser/PtreeClassBody.h \
+	parser/PtreeClassSpec.h \
+	parser/PtreeConstants.h	\
+	parser/PtreeDeclaration.h \
+	parser/PtreeDeclarator.h \
+	parser/PtreeEnumSpec.h \
+	parser/PtreeExprStatement.h \
+	parser/PtreeExternTemplate.h \
+	parser/PtreeFstyleCastExpr.h \
+	parser/ptree-generated.h \
+	parser/ptreeAll.h \
+	parser/Ptree.h \
+	parser/PtreeLinkageSpec.h \
+	parser/PtreeMetaclassDecl.h \
+	parser/PtreeName.h \
+	parser/PtreeNamespaceAlias.h \
+	parser/PtreeNamespaceSpec.h \
+	parser/PtreeTemplateDecl.h \
+	parser/PtreeTemplateInstantiation.h \
+	parser/PtreeTypedef.h \
+	parser/PtreeUserAccessSpec.h \
+	parser/PtreeUserdefKeyword.h \
+	parser/PtreeUsing.h \
+	parser/PtreeUtil.h \
+	parser/SourceLocation.h \
+	parser/TheErrorLog.h \
+	parser/Token.h \
+	parser/token-names.h \
+	Bind.h					\
+	BindClassName.h				\
+	BindEnumName.h				\
+	BindTemplateClass.h			\
+	BindTemplateFunction.h			\
+	BindTypedefName.h			\
+	BindVarName.h				\
+	ChangedMemberList.h			\
+	Class.h					\
+	ClassArray.h				\
+	ClassBodyWalker.h			\
+	ClassWalker.h 				\
+	CliErrorMsg.h			\
+	defs.h					\
+	dloading.h			\
+	driver.h 				\
+	driver2.h			\
+	DynamicMopMetaclassLoader.h	\
+	EncodingUtil.h			\
+	Environment.h				\
+	GenericMsg.h				\
+	InfoMsg.h			\
+	memberAll.h				\
+	Member.h				\
+	MemberFunction.h			\
+	MemberList.h				\
+	Metaclass.h 				\
+	MetaclassRegistration.h 		\
+	MetaclassRegistry.h			\
+	MetacompilerConfiguration.h	\
+	mop.h					\
+	mop2.h					\
+	nil.h				\
+	OpencxxConfiguration.h		\
+	PtreeIter.h				\
+	PtreeMaker.h				\
+	PtreeTypeUtil.h			\
+	QuoteClass.h				\
+	TemplateClass.h				\
+	TheMetaclassRegistry.h			\
+	TypeInfo.h 				\
+	UnknownCliOptionException.h	\
+	Walker.h
+
+INCLUDES = -I$(top_builddir) -I$(GC_INCLUDEDIR) $(INCLTDL)
 
 #
-# all OpenC++ sources
-#
-SOURCES_all = buffer.cc hash.cc token.cc ptree.cc ptree-core.cc \
-	encoding.cc env.cc pattern.cc walker.cc typeinfo.cc parse.cc \
-	 main-con.cc mop.cc classwalk.cc metaclass.cc quote-class.cc \
-	member.cc driver.cc driver2.cc cbodywalk.cc
-
-#
-# all OpenC++ headers
-#
-HEADERS_all = \
-	buffer.h cbodywalk.h classwalk.h encoding.h env.h hash.h member.h\
-	metaclass.h mop.h parse.h ptree-core.h ptree.h quote-class.h \
-	token.h typeinfo.h types.h walker.h
-
-
-# Rules for 'occ'
-# ===============
-
-#
-# we are building excatly one executable, namely 'occ'
+# we are building exactly one executable, namely 'occ'
 # (the definition bellow means, that it will also be installed
 # by 'make install')
 #
-bin_PROGRAMS		= occ
+bin_PROGRAMS = occ
 
 occ_LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
 
 #
 # occ sources are:
 #
-occ_SOURCES		= $(SOURCES_all)
+occ_SOURCES		= MetaclassPreregistration.cc
 
-#
 # when linking occ we need to add libltdl (Libtool dlopen library)
 # and libgc (Boehm's Garbage Collector)
 #
-occ_LDADD		= $(LIBLTDL) $(LIBGC)
+occ_LDADD		= libocc.la
+
+# Installed library.
+lib_LTLIBRARIES = \
+	libocc.la
+
+# Main library that includes everything.
+libocc_la_SOURCES = \
+	empty_libocc.cc
+
+libocc_la_LIBADD = \
+		libocc_mop.la	\
+		$(LIBLTDL) 		\
+		$(LIBGC)
 
 #
-# :KLUDGE: object files are linked into occ executable
-#     and libocc library; libocc is linked with libtool;
-#     since version 1.6 Automake does not allow to
-#     link the same object file with and without libtool;
-#     we pretend, that compiling occ objects needs special
-#     flags, so that Automake creates two object files
-#     for each source---for linking with and without libtool;
-#     this kludge can be possibly fixed by rearranging linking
-#     process, so that executable is obtained from libtool library.
+# We also package everything up as libraries.
 #
-occ_CXXFLAGS		= $(CXXFLAGS)
+noinst_LTLIBRARIES = \
+	libocc_mop.la \
+	libocc_parser.la
 
-# Rules for 'libocc'
-# ==================
+# The MOP library:  Metaclass + Parser.
+libocc_mop_la_LIBADD 	= libocc_parser.la
 
-#
-# We want to make libtool library (.la)
-# (the definition below means, that it also will be installed
-# by 'make install')
-#
-lib_LTLIBRARIES		= libocc.la
+libocc_mop_la_SOURCES =	\
+	Bind.cc					\
+	BindClassName.cc			\
+	BindEnumName.cc				\
+	BindTemplateClass.cc			\
+	BindTemplateFunction.cc			\
+	BindTypedefName.cc			\
+	BindVarName.cc				\
+	ChangedMemberList.cc			\
+	Class.cc				\
+	ClassArray.cc				\
+	ClassBodyWalker.cc			\
+	ClassWalker.cc 				\
+	dloading.cc				\
+	driver.cc 				\
+	driver2.cc 				\
+	EncodingUtil.cc			        \
+	Environment.cc				\
+	main-con.cc			        \
+	Member.cc				\
+	MemberFunction.cc			\
+	MemberList.cc				\
+	Metaclass.cc 				\
+	MetaclassRegistry.cc			\
+	OpencxxConfiguration.cc			\
+	PtreeIter.cc				\
+        PtreeMaker.cc				\
+	PtreeTypeUtil.cc			\
+	QuoteClass.cc				\
+	TemplateClass.cc			\
+	TheMetaclassRegistry.cc			\
+	TypeInfo.cc 				\
+	Walker.cc
 
-#
-# libocc sources are:
-#
-libocc_la_SOURCES	= $(SOURCES_all)
+libocc_mop_la_DEPENDENCIES = Makefile.am libocc_parser.la
 
-#
-# when building libocc we need to add libltdl (Libtool dlopen library)
-# and libgc (Boehm's Garbage Collector)
-#
-libocc_la_LIBADD	= $(LIBLTDL) $(LIBGC)
+# Just the parser functionality.
+libocc_parser_la_SOURCES = \
+	parser/auxil.cc \
+	parser/BigHashTable.cc \
+	parser/CerrErrorLog.cc \
+	parser/deprecated.cc \
+	parser/DupLeaf.cc \
+	parser/Encoding.cc \
+	parser/HashTable.cc \
+	parser/Leaf.cc \
+	parser/LeafName.cc \
+	parser/LeafThis.cc \
+	parser/Lex.cc \
+	parser/NonLeaf.cc \
+	parser/Parser.cc \
+	parser/Program.cc \
+	parser/ProgramFile.cc \
+	parser/ProgramFromStdin.cc \
+	parser/ProgramString.cc \
+	parser/PtreeAccessDecl.cc \
+	parser/PtreeAccessSpec.cc \
+	parser/PtreeArray.cc \
+	parser/PtreeBlock.cc \
+	parser/PtreeBrace.cc \
+	parser/Ptree.cc \
+	parser/PtreeClassBody.cc \
+	parser/PtreeClassSpec.cc \
+	parser/PtreeDeclaration.cc \
+	parser/PtreeDeclarator.cc \
+	parser/PtreeEnumSpec.cc \
+	parser/PtreeExprStatement.cc \
+	parser/PtreeExternTemplate.cc \
+	parser/PtreeFstyleCastExpr.cc \
+	parser/PtreeConstants.cc \
+	parser/ptree-generated.cc \
+	parser/PtreeLinkageSpec.cc \
+	parser/PtreeMetaclassDecl.cc \
+	parser/PtreeName.cc \
+	parser/PtreeNamespaceAlias.cc \
+	parser/PtreeNamespaceSpec.cc \
+	parser/PtreeTemplateDecl.cc \
+	parser/PtreeTemplateInstantiation.cc \
+	parser/PtreeTypedef.cc \
+	parser/PtreeUserAccessSpec.cc \
+	parser/PtreeUserdefKeyword.cc \
+	parser/PtreeUsing.cc \
+	parser/PtreeUtil.cc \
+	parser/TheErrorLog.cc
 
+libocc_parser_la_DEPENDENCIES = Makefile.am
 
+parser/ptree-generated.cc: parser/ptree-generated.h parser/ptree-gen
+parser/ptree-generated.h: parser/ptree-gen
+	cd parser && chmod +x ptree-gen && ./ptree-gen
 
-# Installing
-# ==========
-
-#
-# the following headers have to be installed in the usual location
-# for headers with 'opencxx' (package name) appended, e.g.
-# '/usr/include/opencxx'
-#
-pkginclude_HEADERS	= env.h member.h mop.h \
-			  ptree-core.h ptree.h token.h buffer.h typeinfo.h types.h walker.h
-
-# Distribution
-# ============
-
-# Normally all sources and files, which we require to install go
-# into the distribution tarball (opencxx-<version>.tar.gz).
-# Nevertheless, the following files has to go there too:
-#
-EXTRA_DIST = $(HEADERS_all)
-
-
-# Additional dependencies
-# =======================
-
-#
-# We want the following declarations to be included verbatim in Makefile.in
-# (from which Autoconf will generate Makefile)
-#
-
-#
-# How to find Boehm's GC and Libtool's libltdl include files
-#
-INCLUDES = -I$(GC_INCLUDEDIR) $(INCLTDL)
-
-#
-# The End
-#
+check-header-completness: $(nobase_pkginclude_HEADERS:%=%.is-complete) $(noinst_HEADERS:%=%.is-complete)

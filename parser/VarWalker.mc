@@ -3,10 +3,9 @@
 #include <iostream>
 #include <vector>
 
-#include "mop.h"
-#include "ptree.h"
-
 #include "VarWalker.h"
+
+#include "opencxx/Bind.h"
 
 using namespace std;
 
@@ -20,7 +19,7 @@ Class *VarWalker::_plasma = 0;
 class TsLeaf : public Leaf {
 public:
   TsLeaf(Ptree *p) : Leaf(p->GetPosition(),p->GetLength()) {};
-  Ptree* Translate(Walker*);
+  Ptree* Translate(AbstractTranslatingWalker*);
   void Typeof(Walker*, TypeInfo&);
 };
 
@@ -28,7 +27,7 @@ public:
 class TsList : public NonLeaf {
 public:
   TsList(Ptree *p,Ptree *q) : NonLeaf(p,q) {};
-  Ptree *Translate(Walker *);
+  Ptree *Translate(AbstractTranslatingWalker *);
 
   static Ptree* List();
   static Ptree* List(Ptree*);
@@ -37,7 +36,7 @@ public:
   static Ptree* List(Ptree*, Ptree*, Ptree*, Ptree*);
 };
 
-Ptree* TsLeaf::Translate(Walker* w)
+Ptree* TsLeaf::Translate(AbstractTranslatingWalker* w)
 {
     return w->TranslateVariable(this);
 }
@@ -47,12 +46,12 @@ void TsLeaf::Typeof(Walker* w, TypeInfo& t)
     w->TypeofVariable(this, t);
 }
 
-Ptree *TsList::Translate(Walker *w)
+Ptree *TsList::Translate(AbstractTranslatingWalker *w)
 {
   Ptree *p1 = Car();
-  Ptree *p2 = w->Translate(p1);
+  Ptree *p2 = w->TranslateGeneric(p1);
   Ptree *q1 = Cdr();
-  Ptree *q2 = w->Translate(q1);
+  Ptree *q2 = w->TranslateGeneric(q1);
   if (p1 == p2 && q1 == q2) {
     return this;
   } else {
@@ -62,22 +61,22 @@ Ptree *TsList::Translate(Walker *w)
 
 Ptree* TsList::List()
 {
-    return nil;
+    return 0;
 }
 
 Ptree* TsList::List(Ptree* p)
 {
-    return new TsList(p, nil);
+    return new TsList(p, 0);
 }
 
 Ptree* TsList::List(Ptree* p, Ptree* q)
 {
-    return new TsList(p, new TsList(q, nil));
+    return new TsList(p, new TsList(q, 0));
 }
 
 Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3)
 {
-    return new TsList(p1, new TsList(p2, new TsList(p3, nil)));
+    return new TsList(p1, new TsList(p2, new TsList(p3, 0)));
 }
 
 Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3, Ptree* p4)
@@ -85,15 +84,14 @@ Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3, Ptree* p4)
     return new TsList(p1, TsList::List(p2, p3, p4));
 }
 
-
 Ptree *VarWalker::TranslateUserBlock(Ptree *s)
 {
-  Ptree *body = s->Second();
+  Ptree *body = PtreeUtil::Second(s);
   Ptree *body2 = Translate(body);
   if (body == body2) {
     return s;
   } else {
-    Ptree *rest = Ptree::ShallowSubst(body2,body,s->Cdr());
+    Ptree *rest = PtreeUtil::ShallowSubst(body2,body,s->Cdr());
     return new PtreeUserPlainStatement(s->Car(),rest);
   }
 }
@@ -101,20 +99,20 @@ Ptree *VarWalker::TranslateUserBlock(Ptree *s)
 Ptree *VarWalker::TranslateUserFor(Ptree *s)
 {
     NewScope();
-    Ptree* exp1 = s->Third();
+    Ptree* exp1 = PtreeUtil::Third(s);
     Ptree* exp1t = Translate(exp1);
-    Ptree* exp2 = s->Nth(3);
+    Ptree* exp2 = PtreeUtil::Nth(s,3);
     Ptree* exp2t = Translate(exp2);
-    Ptree* exp3 = s->Nth(5);
+    Ptree* exp3 = PtreeUtil::Nth(s,5);
     Ptree* exp3t = Translate(exp3);
-    Ptree* body = s->Nth(7);
+    Ptree* body = PtreeUtil::Nth(s,7);
     Ptree* body2 = Translate(body);
     ExitScope();
 
     if(exp1 == exp1t && exp2 == exp2t && exp3 == exp3t && body == body2)
 	return s;
     else{
-	Ptree* rest = Ptree::ShallowSubst(exp1t, exp1, exp2t, exp2,
+	Ptree* rest = PtreeUtil::ShallowSubst(exp1t, exp1, exp2t, exp2,
 					  exp3t, exp3, body2, body, s->Cdr());
 	return new PtreeUserPlainStatement(s->Car(), rest);
     }
@@ -129,21 +127,21 @@ Ptree *translateList(Walker *w,Ptree *s)
   if (a == a2 && rest == rest2) {
     return s;
   } else {
-    return Ptree::Cons(a2,rest2);
+    return PtreeUtil::Cons(a2,rest2);
   }
 }
 
 Ptree *VarWalker::TranslateUserWhile(Ptree *s)
 {
-  Ptree *exp = s->Third();
+  Ptree *exp = PtreeUtil::Third(s);
   Ptree *exp2 = translateList(this,exp);
-  Ptree *body = s->Nth(4);
+  Ptree *body = PtreeUtil::Nth(s,4);
   Ptree *body2 = Translate(body);
 
   if (exp == exp2 && body == body2) {
     return s;
   } else {
-    Ptree *rest = Ptree::ShallowSubst(exp2,exp,body2,body,s->Cdr());
+    Ptree *rest = PtreeUtil::ShallowSubst(exp2,exp,body2,body,s->Cdr());
     return new PtreeUserPlainStatement(s->Car(),rest);
   }
 }
@@ -158,18 +156,18 @@ Ptree *VarWalker::TranslateUserPlain(Ptree *exp)
 {
   Ptree *keyword = exp->Car();
 
-  if (keyword->Eq("par")) {
+  if (PtreeUtil::Eq(keyword,"par")) {
     return TranslateUserBlock(exp);
   }
-  else if (keyword->Eq("pfor")) {
+  else if (PtreeUtil::Eq(keyword,"pfor")) {
     return TranslateUserFor(exp);
   }
-  else if (keyword->Eq("alt") || keyword->Eq("prialt")) {
+  else if (PtreeUtil::Eq(keyword,"alt") || PtreeUtil::Eq(keyword,"prialt")) {
     return TranslateUserBlock(exp);
   }
-  else if (keyword->Eq("afor") || keyword->Eq("priafor")) {
+  else if (PtreeUtil::Eq(keyword,"afor") || PtreeUtil::Eq(keyword,"priafor")) {
     return TranslateUserFor(exp);
-  } else if (keyword->Eq("on")) {
+  } else if (PtreeUtil::Eq(keyword,"on")) {
     return TranslateUserWhile(exp);
   } else {
     return exp;
@@ -178,13 +176,13 @@ Ptree *VarWalker::TranslateUserPlain(Ptree *exp)
 
 Ptree *VarWalker::TranslateUserStatement(Ptree *exp)
 {
-  Ptree* object = exp->First();
-  Ptree* op = exp->Second();
-  Ptree* keyword = exp->Third();
-  Ptree* p1 = exp->Nth(3);
-  Ptree* args = exp->Nth(4);
-  Ptree* p2 = exp->Nth(5);
-  Ptree* body = exp->Nth(6);
+  Ptree* object = PtreeUtil::First(exp);
+  Ptree* op = PtreeUtil::Second(exp);
+  Ptree* keyword = PtreeUtil::Third(exp);
+  Ptree* p1 = PtreeUtil::Nth(exp,3);
+  Ptree* args = PtreeUtil::Nth(exp,4);
+  Ptree* p2 = PtreeUtil::Nth(exp,5);
+  Ptree* body = PtreeUtil::Nth(exp,6);
 
   Ptree *object2 = Translate(object);
   Ptree *args2 = Translate(args);
@@ -193,7 +191,7 @@ Ptree *VarWalker::TranslateUserStatement(Ptree *exp)
   if (object == object2 && args == args2 && body == body2) {
     return exp;
   } else {
-    return new PtreeUserStatementExpr(object2,Ptree::List(op,keyword,p1,args2,p2,body2));
+    return new PtreeUserStatementExpr(object2,PtreeUtil::List(op,keyword,p1,args2,p2,body2));
   } 
 }
 
@@ -203,7 +201,7 @@ void VarWalker::storeThis(Ptree *ctype)
   if (!_handledThis) {
     _argnames.push_back(ArgPair(Ptree::Make("this"),true,TypeInfo()));
     _argnames.back().setFwdDef(Ptree::qMake("class `ctype`"));
-    _args = Ptree::Cons(Ptree::qMake("`ctype` *_this"),_args);
+    _args = PtreeUtil::Cons(Ptree::qMake("`ctype` *_this"),_args);
     _handledThis = true;
   }
 }
@@ -218,7 +216,7 @@ Ptree *VarWalker::TranslateThis(Ptree *exp)
     // Have to get rid of qualified name if present (don't know why it's
     // qualified!).
     if (!ctype->IsLeaf()) {
-      ctype = ctype->Ca_ar();
+      ctype = PtreeUtil::Ca_ar(ctype);
     }
     storeThis(ctype);
     // We have to modify "this" to something else b/c it's a reserved word in
@@ -236,14 +234,14 @@ Ptree *VarWalker::TranslateThis(Ptree *exp)
 // This will act like LookupThis, but will ignore the Plasma metaclass.
 Class *VarWalker::findThis()
 {
-  for (Environment *e = env; e != nil; e = e->GetOuterEnvironment()) {
+  for (Environment *e = env; e != 0; e = e->GetOuterEnvironment()) {
     if (Class *c = e->IsClassEnvironment()) {
       if (c != _plasma) {
         return c;
       }
     }
   }
-  return nil;
+  return 0;
 }
 
 // Handles functions- if this is an implicit method, we translate it to an explicit
@@ -268,7 +266,7 @@ Ptree *VarWalker::handleFunction(Ptree *exp)
     }
     return exp;
   }
-  return nil;
+  return 0;
 }
 
 // Look for the variable in all environments from the current up to,
@@ -346,13 +344,13 @@ Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_in
       _argnames.push_back(ArgPair(exp,true,t));
       if (is_tsvar) {
         // Thread variable- treat as a void* w/appropriate casts when used.
-        _args = Ptree::Cons(Ptree::qMake("void *`exp`"),_args);
+        _args = PtreeUtil::Cons(Ptree::qMake("void *`exp`"),_args);
       } else {
         if (t.IsArray()) {
           t.Dereference();
-          _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
+          _args = PtreeUtil::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
         } else {
-          _args = Ptree::Cons(t.MakePtree(Ptree::qMake("`exp`")),_args);
+          _args = PtreeUtil::Cons(t.MakePtree(Ptree::qMake("`exp`")),_args);
         }
       }
     }
@@ -370,7 +368,7 @@ Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_in
     if (!_vhash.count(name)) {
       _vhash.insert(name);
       _argnames.push_back(ArgPair(exp,false,t));
-      _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
+      _args = PtreeUtil::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
     }
     if (_tsname) {
       Ptree *tmp1 = Ptree::qMake("(*(((`_tstype`*)");
