@@ -81,6 +81,7 @@ namespace Opencxx
     unsigned LineNumber(char*, char*&, int&);
 
     static bool RecordKeyword(char*, int);
+    static bool Reify(Ptree*, bool&);
     static bool Reify(Ptree*, unsigned int&);
     static bool Reify(Ptree* t, char*&);
 

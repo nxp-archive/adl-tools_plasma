@@ -30,6 +30,11 @@ my @Tests = (
 			  cmd  => "./parse-test -E in4.C",
 			  diff => "in4.regress",
 			 },
+			 # Test of booleans.
+			 {
+			  cmd  => "./parse-test -E in5.C",
+			  diff => "in5.regress",
+			 },
 			);
 
 doTest(\@Tests);

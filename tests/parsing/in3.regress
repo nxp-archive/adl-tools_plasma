@@ -19,8 +19,11 @@ Define statement:  ( reg foo1 ) {
 Define statement:  ( stuff bar ) {
     size = 20 ;
 }
-Other :  size = 20 ;
-String: 
+Key:  size
+Value:  20
+  Boolean: true
+  Integer: 20
+Stmt:  """
   Let the branch target effective address (BTEA) be calculated as follows:
 
   * For bcctrl[l], let BTEA be 32 Os concatencated with the contents of bits
@@ -30,9 +33,15 @@ String:
   must be met in order for the branch to be taken, as defined in `Branch
   Instructions`_. The sum BI+32 specified the bit of the Condition Register
   that is to be used.
-  
-Other :  i = 10 ;
-Other :  size = 10 ;
-Other :  define ( stuff bar ) {
+  """ ;
+Key:  i
+Value:  10
+  Boolean: true
+  Integer: 10
+Key:  size
+Value:  10
+  Boolean: true
+  Integer: 10
+Stmt:  define ( stuff bar ) {
     size = 20 ;
 }

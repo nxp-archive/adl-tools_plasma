@@ -1,3 +1,12 @@
+2005-03-16  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added a Ptree::Reify function to handle booleans and added to
+	tests/parsing to test this.
+
+	* Modified the SourceLocation function to recursively find the
+	first leaf- this is a better implementation than what I had
+	before.
+
         ====== plasma release 0.8.16 (v0_8_16) on Linux (cde-tx32-ldt189) ======
 
 2005-03-10  Brian Kahne  <bkahne@ibmoto.com>

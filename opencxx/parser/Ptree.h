@@ -39,16 +39,16 @@
 namespace Opencxx
 {
 
-class AbstractTranslatingWalker;
-class AbstractTypingWalker;
-class TypeInfo;
+  class AbstractTranslatingWalker;
+  class AbstractTypingWalker;
+  class TypeInfo;
 
 #ifdef __opencxx
-metaclass QuoteClass Ptree;           // get qMake() available
+  metaclass QuoteClass Ptree;           // get qMake() available
 #endif
 
-class Ptree : public LightObject {
-public:
+  class Ptree : public LightObject {
+  public:
 
     /** This returns true if the metaobject indicates a lexical token. */
     virtual bool IsLeaf() const = 0;
@@ -57,7 +57,7 @@ public:
     void Display(std::ostream&);
     void Display();
 
-public:
+  public:
 
     /** @todo document */
     virtual void Print(std::ostream&, int, int) = 0;
@@ -80,7 +80,7 @@ public:
 
     /** Returns position in the char buffer when the
         text parsed as <code>this</code> starts.
-         */
+    */
     char* GetPosition() { return data.leaf.position; }
 
     /** Returns the length of the text parsed as <code>this</code>. */
@@ -88,13 +88,13 @@ public:
 
 
     /**  */
-          Ptree* Car()       { return data.nonleaf.child; }
+    Ptree* Car()       { return data.nonleaf.child; }
 
     /**  */
     const Ptree* Car() const { return data.nonleaf.child; }
 
     /**  */
-          Ptree* Cdr()       { return data.nonleaf.next; }
+    Ptree* Cdr()       { return data.nonleaf.next; }
 
     /**  */
     const Ptree* Cdr() const { return data.nonleaf.next; }
@@ -109,7 +109,7 @@ public:
       return Cdr()->Cdr();
     }
 
-public:
+  public:
 
     /**  */
     void SetCar(Ptree* p) { data.nonleaf.child = p; }
@@ -117,7 +117,7 @@ public:
     /**  */
     void SetCdr(Ptree* p) { data.nonleaf.next = p; }
 
-public:
+  public:
     /**  */
     bool IsA(int);
 
@@ -135,17 +135,17 @@ public:
         depending on dynamic type of <code>this</code>.
         
         @note This is <i>Visit</i> function of <i>Visitor Pattern</i>.
-      */
+    */
     virtual Ptree* Translate(AbstractTranslatingWalker* walker);
 
     /** Calls appropriate Typeof... method in <code>walker</code>
         passing <code>ti</code> to it.
         
         @note This is <i>Visit</i> function of <i>Visitor Pattern</i>.
-      */
+    */
     virtual void Typeof(AbstractTypingWalker* walker, TypeInfo& ti);
 
-public:
+  public:
 
     /** 
         Makes a Ptree metaobject according to the format. The format is
@@ -153,7 +153,7 @@ public:
         (integer), %s (character string), and %p (Ptree) in the format are
         replaced with the values following the format. %% in the format is
         replaced with %. 
-      */
+    */
     static Ptree* Make(const char* pat, ...);
 
     /** Makes a Ptree metaobject that represents the text. Any C++
@@ -162,16 +162,21 @@ public:
         type of the expression must be Ptree*, int, or char*.
         
         @deprecated Use PtreeUtil 
-        */
+    */
     static Ptree* qMake(char*);
 
-public:
+  public:
+
+    /** Returns true if the metaobject represents a boolean.  We allow 'true'
+        and 'false', as well as an unsigned integer.
+    */
+    bool Reify(bool &value);
 
     /** Returns true if the metaobject represents an integer constant. The
         denoted value is stored in value. Note that the denoted value is
         always a positive number because a negative number such as -4
         generates two distinct tokens such as - and 4.
-     */
+    */
     bool Reify(unsigned int& value);
 
     /** Returns true if the metaobject represents a string literal. A
@@ -179,31 +184,31 @@ public:
         quotes ". The denoted null-terminated string is stored in string. It
         does not include the double quotes at the both ends. Also, the
         escape sequences are not expanded.
-     */
+    */
     bool Reify(char*& string);
 
-protected:
+  protected:
     union {
-	struct {
+      struct {
 	    Ptree* child;
 	    Ptree* next;
-	} nonleaf;
-	struct {
+      } nonleaf;
+      struct {
 	    char* position;
 	    int  length;
-	} leaf;
+      } leaf;
     }data;
 
     friend class NonLeaf;
-};
+  };
 
-/** The operator << can be used to write a Ptree object to an output stream. It is equivalent to Write() in terms of the result.
- */
-inline std::ostream& operator << (std::ostream& s, Ptree* p)
-{
+  /** The operator << can be used to write a Ptree object to an output stream. It is equivalent to Write() in terms of the result.
+   */
+  inline std::ostream& operator << (std::ostream& s, Ptree* p)
+  {
     p->Write(s);
     return s;
-}
+  }
 
 }
 

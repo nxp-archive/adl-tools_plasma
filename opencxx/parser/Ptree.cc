@@ -216,6 +216,11 @@ Ptree* Ptree::Make(const char* pat, ...)
     return result;
 }
 
+bool Ptree::Reify(bool& value)
+{
+    return Lex::Reify(this, value);
+}
+
 bool Ptree::Reify(unsigned int& value)
 {
     return Lex::Reify(this, value);

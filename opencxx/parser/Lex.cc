@@ -186,6 +186,33 @@ namespace Opencxx
       return bool(user_keywords->Peek(index) == (HashTable::Value)token);
   }
 
+  bool Lex::Reify(Ptree* t,bool &value)
+  {
+    value = false;
+    if(t == 0 || !t->IsLeaf())
+      return false;
+
+    const char* p = t->GetPosition();
+    int len = t->GetLength();
+
+    // First, can we match against true or false?
+    if (!strncmp(p,"true",len)) {
+      value = true;
+      return true;
+    } else if (!strncmp(p,"false",len)) {
+      value = false;
+      return true;
+    } else {
+      unsigned v;
+      if (!Reify(t,v)) {
+        return false;
+      } else {
+        value = v;
+        return true;
+      }
+    }
+  }
+
   bool Lex::Reify(Ptree* t, unsigned int& value)
   {
     if(t == 0 || !t->IsLeaf())

@@ -4848,19 +4848,29 @@ namespace Opencxx
     }
   }
 
+  // Tries to find a leaf in the given tree, returns 0 if not found.
+  Ptree *find_leaf(Ptree *p)
+  {
+    if (!p) {
+      return 0;
+    } else if (p->IsLeaf()) {
+      return p;
+    } else if (Ptree *l = find_leaf(p->Car())) {
+      return l;
+    } else {
+      return find_leaf(p->Cdr());
+    }
+  }
+
   // This tries to get the location by finding a leaf node then
   // looking for its location within the lexer.
   SourceLocation Parser::GetLocation(Ptree* ptree)
   {
     using namespace PtreeUtil;
 
-    Ptree *leaf = ptree;
-    while (ptree && (!leaf || !leaf->IsLeaf())) {
-      leaf = Ca_ar(ptree);
-      ptree = ptree->Cdr();
-    }
-    assert(leaf);
-    return GetSourceLocation(*this, leaf->GetPosition());
+    Ptree *leaf = find_leaf(ptree);
+    return (leaf) ? GetSourceLocation(*this,leaf->GetPosition())
+      : SourceLocation();
   }
 
   bool Parser::SyntaxError()

@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <iomanip>
 
 #include "opencxx/PtreeIter.h"
 
@@ -16,6 +17,9 @@ bool ParseTest::Initialize()
   SetMetaclassForPlain("ParseTest");
   RegisterNewClosureStatement("define");
   RegisterNewClosureStatement("func");
+  
+  cout.setf(ios_base::boolalpha);
+
   return true;
 }
 
@@ -27,12 +31,29 @@ Ptree* ParseTest::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* res
     TranslateExpression(env,body);
     PtreeIter iter(Second(body));
     Ptree *p;
+    
+    
+
     while ( (p = iter()) ) {
       char *str;
-      if (Ca_ar(p)->Reify(str)) {
-        cout << "String: " << str << endl;
+      unsigned ui;
+      bool     b;
+
+      Ptree *key,*value;
+
+      if (PtreeUtil::Match(p,"[ [%? = %?] ; ]",&key,&value)) {
+        cout << "Key:  " << key << "\n"
+             << "Value:  " << value << endl;
+        if (value->Reify(b)) {
+          cout << "  Boolean: " << b << endl;
+        }
+        if (value->Reify(str)) {
+          cout << "  String: " << str << endl;
+        } else if(value->Reify(ui)) {
+          cout << "  Integer: " << ui << endl;
+        }
       } else {
-        cout << "Other :  " << p << endl;
+        cout << "Stmt:  " << p << endl;
       }
     }
     return rest;

@@ -6,9 +6,11 @@ Define statement:  ( stuff bar ) {
          int i = 1 ;
     } ;
 }
-Other :  readhook = {
+Key:  readhook
+Value:  {
      int i = 1 ;
-} ;
-Other :  writehook = func ( intbv < 32 > val ) {
+}
+Key:  writehook
+Value:  func ( intbv < 32 > val ) {
      int i = 1 ;
-} ;
+}

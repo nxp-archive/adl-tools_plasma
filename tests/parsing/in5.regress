@@ -1,0 +1,20 @@
+Define statement:  ( reg foo1 ) {
+    size = 10 ;
+    sparse = true ;
+    otherstuff = false ;
+    foo = 1 ;
+}
+Key:  size
+Value:  10
+  Boolean: true
+  Integer: 10
+Key:  sparse
+Value:  true
+  Boolean: true
+Key:  otherstuff
+Value:  false
+  Boolean: false
+Key:  foo
+Value:  1
+  Boolean: true
+  Integer: 1

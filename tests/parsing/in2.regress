@@ -3,6 +3,7 @@ Define statement:  ( reg foo ) {
          int j = 10 ;
     } ;
 }
-Other :  readhook = func (  ) {
+Key:  readhook
+Value:  func (  ) {
      int j = 10 ;
-} ;
+}
