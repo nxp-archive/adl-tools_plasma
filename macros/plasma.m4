@@ -1,14 +1,20 @@
 ##
-## Configure a program to use plasma.
+## AM_PLASMA([version], [, action-if-found [,action-if-not-found]])
+##   Configure a program to use plasma.
 ##
-## Adds --with-plasma to let a user specify the location of the
-## plasma program.
+##   version:  Minimum require version.
+##   action-if-found:  Executed if plasma is found.
+##   action-if-not-found:  Executed if plasma is not found.
+##
+## Command-line options:
+##   --with-plasma to let a user specify the location of the plasma program.
 ##
 ## Output:
 ##
 ##   PLASMA:        The Plasma executable.
 ##   PLASMA_PATH:   The Plasma install prefix.
 ##   PLASMA_CFLAGS: Plasma cflags.
+##   PLASMA_LIBS:   Plasma link line.
 ##
 AC_DEFUN([AM_PLASMA],
 [
@@ -19,25 +25,39 @@ AC_DEFUN([AM_PLASMA],
   AC_PATH_PROG(PlasmaConfig, [plasma-config], no, $ac_plasma)
   AC_PATH_PROG(PLASMA, [plasma], no, $ac_plasma)
 
+  PlasmaExists=yes
   if [[ $PLASMA = "no" ]] ; then
-    AC_MSG_ERROR([Could not find plasma in the path.  Please modify your path or use the --with-plasma option.])
+    AC_MSG_WARN([Could not find plasma in the path.  Please modify your path or use the --with-plasma option.])
+	PlasmaExists=no
   fi 
   if [[ $PlasmaConfig = "no" ]] ; then
-    AC_MSG_ERROR([Could not find plasma-config in the path.  Please modify your path or use the --with-plasma option.])
+    AC_MSG_WARN([Could not find plasma-config in the path.  Please modify your path or use the --with-plasma option.])
+	PlasmaExists=no
   fi
 
-  PLASMA_PATH=`$PlasmaConfig --prefix`
-  PLASMA_CFLAGS=`$PlasmaConfig --cflags`
-  PLASMALIBS=`$PlasmaConfig --lib`
+  if [[ $PlasmaExists != "no" ]] ; then
+    PLASMA_PATH=`$PlasmaConfig --prefix`
+    PLASMA_CFLAGS=`$PlasmaConfig --cflags`
+    PLASMA_LIBS=`$PlasmaConfig --libs`
+    PLASMA_VERSION=`$PlasmaConfig --version`
 
-  AC_MSG_CHECKING([for plasma's version])
-  AC_MSG_RESULT($($PlasmaConfig --version))
+    AC_MSG_CHECKING([for plasma's version])
+    DPP_VERSION_CHECK([$PLASMA_VERSION], [$1], , [PlasmaExists=no])
 
-  AC_MSG_CHECKING([that we can compile a plasma program.])
-  ac_ext=pa
-  ac_compile='$PLASMA -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-  ac_link='$PLASMA -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-  AC_RUN_IFELSE([
+    if [[ $PlasmaExists = "no" ]] ; then	
+      AC_MSG_RESULT([Bad:  Found $PLASMA_VERSION but $1 is the minimum required.])
+    else
+      AC_MSG_RESULT([$PLASMA_VERSION (okay).])
+    fi
+
+  fi
+
+  if [[ $PlasmaExists != "no" ]] ; then
+    AC_MSG_CHECKING([that we can compile a plasma program.])
+    ac_ext=pa
+    ac_compile='$PLASMA -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+    ac_link='$PLASMA -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+    AC_RUN_IFELSE([
 
 #include "plasma/plasma.h"
 
@@ -50,10 +70,23 @@ AC_DEFUN([AM_PLASMA],
 	}
 	return 0;
     }
-  ],AC_MSG_RESULT([ok.]),AC_MSG_ERROR([failed.]))
+    ],AC_MSG_RESULT([ok.]),PlasmaExists=no)
+
+	if [[ $PlasmaExists = "no" ]] ; then
+      AC_MSG_WARN([failed.])
+    fi
+
+  fi
+
+  if [[ $PlasmaExists = yes ]]; then
+    ifelse([$2], , :, [$2])
+  else
+    ifelse([$3], , :, [$3])
+  fi
 
   AC_SUBST(PLASMA)
   AC_SUBST(PLASMA_PATH)
-  AC_SUBST(PLASMA_CFLAGS)	
+  AC_SUBST(PLASMA_CFLAGS)
+  AC_SUBST(PLASMA_LIBS)
 
 ])
