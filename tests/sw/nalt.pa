@@ -7,8 +7,8 @@
 using namespace plasma;
 using namespace std;
 
-const int num_terms = 10;
-const int count     = 5;  // number of messages to be sent on each channel.
+const int NumTerms = 10;
+const int Count     = 5;  // number of messages to be sent on each channel.
 
 Processor Cpu1;
 
@@ -46,7 +46,7 @@ struct Main {
           printf("Comm 0:  Chan Num=%d  ", i);
           cnt2 = cnt2 + 1;
           printf(" Rcvd msg num=%d\n", cnt2);
-          if (cnt2 >= (count * num_terms)) {
+          if (cnt2 >= (Count * NumTerms)) {
             printf ("Done.\n");
             pExit(0);
           }
@@ -64,15 +64,15 @@ void pSetup(ConfigParms &cp)
 int pMain(int,const char*[]) 
 {
   Main m;
-  Main::Chans terms_to_comms(num_terms);
+  Main::Chans terms_to_comms(NumTerms);
 
   par {
     on (Cpu1) {
       m.comms_in(terms_to_comms);
     }
-    pfor (int i = 0; i != num_terms; ++i) {
+    pfor (int i = 0; i != NumTerms; ++i) {
       on (Cpu1) { 
-        m.user(terms_to_comms[i], i, count);
+        m.user(terms_to_comms[i], i, Count);
       }
     }
   }

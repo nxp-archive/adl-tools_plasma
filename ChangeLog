@@ -1,3 +1,41 @@
+2004-12-03  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added support for multiple consumers to clocked channels.  You
+	can create a multi-consumer clocked channel by specifying
+	MultiConsumerClockChannel as the second template argument to a
+	ClockChan type.  Added clock7 and clock8 to test this.
+
+	* Timeout::ready() now returns true after a timeout as issued.
+	Get "consumes" this readiness, setting the ready state to false.
+	You can now call get() and it will sleep until the timeout issues,
+	so you can use a timeout outside of an alt, though it's pretty
+	much equivalent to just calling pDelay.
+
+	* Modified the code generated for an alt to handle multi-consumers
+	properly.  Once a thread has been awakened, each switch element,
+	before the get, calls ready on the channel.  If it's not ready
+	(somebody else consumed the data), then we jump back to the
+	beginning and start over.
+
+2004-11-30  Brian Kahne  <bkahne@ibmoto.com>
+
+	* spawn now supports void functions:  They're treated as returning
+	an int that's always 0.  So, the result object should be of type
+	int.  Since that's now the default type for Result, you can just
+	omit it and have an empty template declaration:
+
+	Result<> r = spawn(foo());
+
+	You can then wait or kill r if necessary.
+
+	* Refactored the channels to take advantage of common code.  Thus,
+	channels which allow for multiple producers inherit from
+	MultiProducerChannel.  Channels which have a single piece of data
+	inherit from SingleDataChannel.  There is also
+	SingleConsumerChannel and MultiConsumerChannel base classes, which
+	are now template arguments for Channel, QueueChan, and BusyChan.
+	This allows the channel to support multiple consumers, if desired.
+
         ======= plasma release 0.8.4 (v0_8_4) on Linux (cde-tx32-ldt189) =======
 
         ======= plasma release 0.8.4 (v0_8_4) on Linux (cde-tx32-ldt189) =======

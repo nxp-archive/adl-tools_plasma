@@ -311,23 +311,25 @@ sub check_sequence {
 # This takes a hash, where keys are IDs and values are array
 # refs to a sequence of time numbers.  We make sure that we find
 # the expected sequences.
+# arg0:  Regex string.  Must match the id, then the time.
+# arg1:  Hash.  Keys are ids, values are array refs of time sequences.
 sub check_time_seq {
-  my ($input,$seq) = (shift,shift);
+  my ($regex,$input,$seq) = (shift,shift,shift);
   my @lines = split /\n/,$input; 
 
   for (@lines) {
-    if ( /Id:\s+(\d+),\s+Time:\s+(\d+)/ ) {
+    if ( /$regex/ ) {
       my ($id,$t) = (eval $1,eval $2);
       my $ts = $seq->{$id};
       if (!$ts) {
-	die "Unknown id found:  $id\n";
+		die "Unknown id found:  $id\n";
       }
       if (! @$ts ) {
-	die "Extra time value ($t) found for id $id.\n";
+		die "Extra time value ($t) found for id $id.\n";
       } elsif ($ts->[0] == $t) {
-	shift @$ts;
+		shift @$ts;
       } else {
-	die "Bad time value found for id $id:  Found $t, expected $ts->[0].\n";
+		die "Bad time value found for id $id:  Found $t, expected $ts->[0].\n";
       }
     }
   }

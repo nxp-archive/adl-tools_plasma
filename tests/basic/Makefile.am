@@ -42,6 +42,8 @@ check_PROGRAMS = \
 	chan18 \
 	chan19 \
 	chan20 \
+	chan21 \
+	chan22 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -78,6 +80,8 @@ check_PROGRAMS = \
 	clock4 \
 	clock5 \
 	clock6 \
+	clock7 \
+	clock8 \
 	quantity1 \
 	gc1
 
@@ -179,6 +183,12 @@ chan19_DEPENDENCIES = $(DEPENDENCIES)
 
 chan20_SOURCES = chan20.pa
 chan20_DEPENDENCIES = $(DEPENDENCIES)
+
+chan21_SOURCES = chan21.pa
+chan21_DEPENDENCIES = $(DEPENDENCIES)
+
+chan22_SOURCES = chan22.pa
+chan22_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
@@ -292,6 +302,12 @@ clock5_DEPENDENCIES = $(DEPENDENCIES)
 clock6_SOURCES = clock6.pa
 clock6_DEPENDENCIES = $(DEPENDENCIES)
 
+clock7_SOURCES = clock7.pa
+clock7_DEPENDENCIES = $(DEPENDENCIES)
+
+clock8_SOURCES = clock8.pa
+clock8_DEPENDENCIES = $(DEPENDENCIES)
+
 quantity1_SOURCES = quantity1.pa
 quantity1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -331,6 +347,8 @@ include ./$(DEPDIR)/chan17.Po
 include ./$(DEPDIR)/chan18.Po
 include ./$(DEPDIR)/chan19.Po
 include ./$(DEPDIR)/chan20.Po
+include ./$(DEPDIR)/chan21.Po
+include ./$(DEPDIR)/chan22.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po
@@ -363,6 +381,8 @@ include ./$(DEPDIR)/clock3.Po
 include ./$(DEPDIR)/clock4.Po
 include ./$(DEPDIR)/clock5.Po
 include ./$(DEPDIR)/clock6.Po
+include ./$(DEPDIR)/clock7.Po
+include ./$(DEPDIR)/clock8.Po
 include ./$(DEPDIR)/quantity1.Po
 include ./$(DEPDIR)/gc1.Po
 

@@ -116,14 +116,14 @@ namespace plasma {
     return thecluster.sleep();
   }
 
-  void pWake(THandle t,HandleType h)
+  void pWake(pair<THandle,HandleType> p)
   {
-    thecluster.wake(t,h);
+    thecluster.wake(p.first,p.second);
   }
 
-  void pBusyWake(THandle t,HandleType h)
+  void pBusyWake(pair<THandle,HandleType> p)
   {
-    thecluster.busywake(t,h);
+    thecluster.busywake(p.first,p.second);
   }
 
   HandleType pHandle(THandle t)
@@ -186,141 +186,6 @@ namespace plasma {
   bool pIsLocked()
   {
     return thecluster.locked();
-  }
-
-  /////////////// Timeout ///////////////
-
-  void timeout(void *a)
-  {
-    Timeout *to = (Timeout *)a;
-    pDelay(to->delay());
-    pWake(to->reset(),to->_h);
-  }
-
-  THandle Timeout::clear_notify()
-  {
-    if (_writet) {
-      pTerminate(_writet);
-      _writet = 0;
-    }
-    return reset();
-  }
-
-  THandle Timeout::reset() 
-  { 
-    THandle t = _readt; 
-    _readt = 0; 
-    return t; 
-  };
-
-  void Timeout::set_notify(plasma::THandle t,plasma::HandleType h)
-  {
-    _readt = t;
-    _h = h;
-    assert(!_writet);
-    _writet = pSpawn(timeout,this,-1);
-  }
-
-  /////////////// ClockChan ///////////////
-
-  ClockChanImpl::ClockChanImpl(ptime_t p,ptime_t s) : 
-    _period(p), _skew(s), _size(0), _readt(0), _waket(0), _delay(0) 
-  {}
-
-  // Returns true if we're on a clock edge, given a clock period.
-  bool ClockChanImpl::is_phi() const
-  {
-    return (pTime() % _period) == _skew;
-  }
-
-  // Returns the time of the next clock cycle.  We compute the time of the 
-  // last edge, then add on the skew (or another cycle if no skew was specified)
-  // to get the next edge.
-  ptime_t ClockChanImpl::next_phi() const
-  {
-    //    return (pTime() / _period)*_period + ( (!_skew) ? _period : _skew);
-
-
-    return ( (((pTime()+_period)-_skew) / _period )*_period)+_skew;
-
-  }
-
-  THandle ClockChanImpl::reset() 
-  { 
-    THandle t = _readt; 
-    _readt = 0; 
-    _waket = 0;
-    return t; 
-  }
-
-  void ClockChanImpl::set_notify(THandle t,HandleType h) 
-  { 
-    assert(!_readt); 
-    _readt = t; 
-    _h = h; 
-    // If we have data, start the waker.  We don't need to check whether
-    // the data is current b/c we wouldn't be here if it weren't.
-    if (!empty()) {
-      start_waker();
-    }
-  }
-
-  void ClockChanImpl::cancel_waker()
-  {
-    if (_waket) {
-      pTerminate(_waket);
-      _waket = 0;
-    }
-  }
-
-  THandle ClockChanImpl::clear_notify()
-  {
-    cancel_waker();
-    return reset();
-  }
-
-  void delayed_waker(void *a)
-  {
-    ClockChanImpl *cc = (ClockChanImpl *)a;
-    pDelay(cc->_delay);
-    pWake(cc->reset(),cc->_h);
-  }
-
-  // Start a wake-up thread only if one doesn't already exist.
-  void ClockChanImpl::start_waker()
-  {
-    if (!_waket) {
-      _delay = next_phi() - pTime();
-      assert(!_waket);
-      _waket = pSpawn(delayed_waker,this,-1);
-    }
-  }
-
-  void ClockChanImpl::delayed_wakeup(bool current_data)
-  {
-    if (is_phi() && current_data) {
-      // We're on a clock edge- wake up thread.
-      // Cancel a waker thread if it exists.
-      cancel_waker();
-      pWake(reset(),_h);
-    } else {
-      // Not on a clock edge- schedule a thread to
-      // wake up the reader at the correct time.
-      start_waker();
-    }
-  }
-
-  void ClockChanImpl::delayed_reader_wakeup(bool have_data)
-  {
-    if (have_data) {
-      // We're not empty, so we're not ready b/c
-      // we're not on a clock edge.  Launch a
-      // wakeup thread if we don't have on already.
-      start_waker();
-    }
-    // We're empty- sleep until we get data.
-    set_notify(pCurThread(),HandleType());
-    pSleep();
   }
 
   //

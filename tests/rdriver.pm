@@ -176,7 +176,9 @@ $debug = 0;
 # These are global because Perl's closures are *broken*!!!!.
 $seed = 0;
 $cmd = "";
+$testindex;
 $fails = 0;
+@failedtests;
 $keepoutput = 0;
 $DontCare = 999;
 
@@ -184,13 +186,14 @@ sub error {
   print shift;
   print "  Executed command:  '$cmd'\n";
   ++$fails;
+  push @failedtests,$testindex;
   die;
 };
 
 use strict;
 use Data::Dumper;
 
-use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $keepoutput $debug $DontCare);
+use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $testindex @failedtests $keepoutput $debug $DontCare);
 
 # Main test code:  For each test, execute it, then scan the output for
 # the tags we look for.  After that, check everything.
@@ -203,9 +206,9 @@ sub doTest($) {
   print "\n";
   # We sort the keys of the hash here, numerically, so that
   # the user sees the tests execute in the expected order.
- TEST: for my $iter (sort { $a <=> $b} (keys %{$tests})) {
-    print " Test $iter...\n";
-    my $t = $$tests{$iter};
+ TEST: for $testindex (sort { $a <=> $b} (keys %{$tests})) {
+    print " Test $testindex...\n";
+    my $t = $$tests{$testindex};
     $cmd = $t->{cmd};
     $cmd =~ s/&seed/$seed/g;
     if ($t->{stderr}) {
@@ -259,7 +262,7 @@ sub doTest($) {
   if (!$fails) {
     print "\nRegression SUCCEEDED.\n";
   } else {
-    print "\nRegression FAILED:  $fails fails found.\n";
+    print "\nRegression FAILED:  $fails fails found:  @failedtests.\n";
     exit 1;
   }
 }

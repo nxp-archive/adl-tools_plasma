@@ -7,9 +7,10 @@
 #define _PLASMA_H_
 
 #include <stdarg.h>
-#include <assert.h>
 #include <vector>
 #include <list>
+
+#include "ChanSupport.h"
 
 namespace plasma {
 
@@ -24,39 +25,12 @@ namespace plasma {
   char *gc_strdup(const char *);
   char *gc_strdup(const std::string &s);
 
-  // Base class for simple channels.  An actual channel should
-  // inherit from this class and implement write, read, and get.
-  template <class Data>
-  class SimpleChannelBase {
-    typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
-  public:
-    SimpleChannelBase() : _ready(false), _readt(0) {};
-    bool ready() const { return _ready; };
-    void clear_ready() { pLock(); _ready = false; pUnlock(); };
-
-    // These are marked as non-mutex b/c they are used by alt, which already
-    // does the locking.
-    void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
-    THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
-  protected:
-    void set_writenotify(THandle t) { _writers.push_back(t); };
-    bool have_writers() const { return !_writers.empty(); };
-    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
-
-    Data       _data;
-    bool       _ready;
-    THandle    _readt;
-    Writers    _writers;
-    HandleType _h;
-  };
-
   // Basic channel class:  Stores only a single piece of data, so 
   // a second write before a read will block.  This is generally
   // used bya single producer to go to a single consumer, but it is
   // possible to have multiple producers.
-  template <class Data>
-  pTMutex class Channel : public SimpleChannelBase<Data> {
-    typedef SimpleChannelBase<Data> Base;
+  template <class Data,class Base = SingleConsumerChannel >
+  pTMutex class Channel : public Base, public SingleDataChannelBase {
   public:
     typedef Data value_type;
 
@@ -67,6 +41,8 @@ namespace plasma {
 
   private:
     Data read_internal(bool clear_ready);
+    
+    Data _data;
   };
 
   // This is similiar to Channel in that it stores a single item, but if a read
@@ -77,9 +53,8 @@ namespace plasma {
   // mean no timeslice.
   // Note:  This is not protected by mutex code b/c if we're in busy-okay mode,
   // we don't have preemption.
-  template <class Data>
-  class BusyChan : public SimpleChannelBase<Data> {
-    typedef SimpleChannelBase<Data> Base;
+  template <class Data,class Base = SingleConsumerChannel >
+  class BusyChan : public Base, public SingleDataChannelBase {
   public:
     typedef Data value_type;
 
@@ -91,6 +66,7 @@ namespace plasma {
   private:
     Data read_internal(bool clear_ready);
 
+    Data       _data;
     ptime_t    _timeslice;
   };
 
@@ -98,14 +74,14 @@ namespace plasma {
   // objects or a fixed number.  If a fixed number, a write will block if the
   // channel is full.  This is designed for multiple producers to feed data to
   // a single consumer.  If size is 0, then no max size exists.
-  template <typename Data,typename Container = std::list<Data,traceable_allocator<Data> > >
-  pTMutex class QueueChan {
+  template <typename Data,typename Base = SingleConsumerChannel,
+            typename Container = std::list<Data,traceable_allocator<Data> > >
+  pTMutex class QueueChan : public Base, public MultiProducerChannel {
     typedef Container Store;
-    typedef std::vector<THandle,traceable_allocator<THandle>> Writers;
   public:
     typedef Data value_type;
 
-    QueueChan(int size = 0) : _maxsize(size), _size(0), _readt(0) {};
+    QueueChan(int size = 0) : _maxsize(size), _size(0) {};
     void write(const Data &d);
     bool ready() const { return !empty(); };
     bool full() const { return _maxsize && _size >= _maxsize; };
@@ -117,21 +93,13 @@ namespace plasma {
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
 
-    pNoMutex void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
-    pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
-    void set_writenotify(THandle t) { _writers.push_back(t); };
-    bool have_writers() const { return !_writers.empty(); };
     void check_size() const { assert(!_maxsize || _size <= _maxsize); }
-    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
 
     unsigned   _maxsize;   // Max size.  If 0, no fixed size.
     unsigned   _size;      // Current size of queue.
     Store      _store;
-    THandle    _readt;     // A blocked read thread.
-    Writers    _writers;   // One or more blocked writers.
-    HandleType _h;
   };
 
   // This channel is used to interface with a spawned thread.  It is a read-only
@@ -164,44 +132,37 @@ namespace plasma {
 
   // Clocked channel class: This is a queued channel which only allows reading
   // every n time units.  This is useful for simulating a clocked design.
-  template <typename Data,typename Container = std::list<std::pair<Data,ptime_t>,traceable_allocator<std::pair<Data,ptime_t> > > >
-  pTMutex class ClockChan : ClockChanImpl {
+  template <typename Data,typename Base = SingleConsumerClockChannel,
+            typename Container = std::list<std::pair<Data,ptime_t>,traceable_allocator<std::pair<Data,ptime_t> > > >
+  pTMutex class ClockChan : Base, public MultiProducerChannel {
     typedef std::pair<Data,ptime_t> DP;
     typedef Container Store;
-    typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
   public:
     typedef Data value_type;
 
-    ClockChan(ptime_t p,ptime_t s = 0,int size = 1) : ClockChanImpl(p,s), _maxsize(size) {};
+    ClockChan(ptime_t p,ptime_t s = 0,int size = 1) : Base(p,s,size) {};
     void write(const Data &d);
-    bool ready() const { return current_data() && is_phi(); };
+    bool ready() const { return current_data() && Base::is_phi(); };
 
-    pNoMutex int maxsize() const { return _maxsize; };
-    void setMaxSize(int ms) { _maxsize = ms; }
-    bool full() const { return _maxsize && _size >= _maxsize; };
-
-    void clear_ready() { pLock(); if (!empty()) { --_size; _store.pop_back(); } pUnlock(); };
+    void clear_ready() { pLock(); if (!empty()) { Base::decr_size(); _store.pop_back(); } pUnlock(); };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
 
-    using ClockChanImpl::size;
-    using ClockChanImpl::empty;
-    using ClockChanImpl::clear_notify;
-    using ClockChanImpl::set_notify;
+    using Base::maxsize;
+    using Base::setMaxSize;
+    using Base::full;
+    using Base::size;
+    using Base::empty;
+    using Base::clear_notify;
+    using Base::set_notify;
 
   private:
     bool current_data() const;
-    void set_writenotify(THandle t) { _writers.push_back(t); };
-    bool have_writers() const { return !_writers.empty(); };
-    void check_size() const { assert(!_maxsize || _size <= _maxsize); }
-    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
     ptime_t curr_data_time() const { return _store.back().second; };
     ptime_t curr_time() const { return pTime(); };
 
-    unsigned   _maxsize;   // Max size.  If 0, no fixed size.
     Store      _store;
-    Writers    _writers;   // One or more blocked writers.
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -212,104 +173,107 @@ namespace plasma {
 
   /////////////// Channel ///////////////
 
-  template <class Data>
-  Data Channel<Data>::read_internal(bool clearready)
+  template <class Data,class Base>
+  Data Channel<Data,Base>::read_internal(bool clearready)
   {
     // We'll be consuming data, so if we have a waiting
     // writer, it's valid to wake it up.
-    if (Base::have_writers() && clearready) {
-      pAddReady(Base::next_writer());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }
-    if (!Base::_ready) {
-      // We don't have data, so the reader must
-      // block until the writer adds data.
+    while (!ready()) {
+      // We don't have data, so the reader must block until the writer adds
+      // data.  This is in a loop in order to handle the multi-consumer
+      // situation, where a consumer may be awakened, but finds that another
+      // consumer already got to the data first.
       Base::set_notify(pCurThread(),HandleType());
       pSleep();
+      Base::clear_notify();
     }
     if (clearready) {
-      Base::clear_ready();
+      set_ready(false);
     }
     // Reactivate a waiting writer if one appeared while we were asleep.
-    if (Base::have_writers() && clearready) {
-      pAddReady(Base::next_writer());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }    
-    return Base::_data;
+    return _data;
   }
 
-  template <class Data>
-  void Channel<Data>::write(const Data &d) 
+  template <class Data,class Base>
+  void Channel<Data,Base>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
-    if (Base::_readt) {
-      pWake(Base::clear_notify(),Base::_h);
+    if (Base::have_reader()) {
+      pWake(Base::notify_reader());
     }
-    while (Base::_ready) {
+    while (ready()) {
       // We already have data, so the write must block
       // until the reader consumes the data.
-      Base::set_writenotify(pCurThread());
+      set_writenotify(pCurThread());
       pSleep();
     }
     // Store data and set ready.
-    Base::_data = d;
-    Base::_ready = true;
+    _data = d;
+    set_ready(true);
     // Reactivate a reader if one appeared while we were asleep.
-    if (Base::_readt) {
-      pWake(Base::clear_notify(),Base::_h);
+    if (Base::have_reader()) {
+      pWake(Base::notify_reader());
     }    
   };
 
   /////////////// BusyChan ///////////////
 
-  template <class Data>
-  Data BusyChan<Data>::read_internal(bool clearready)
+  template <class Data,class Base>
+  Data BusyChan<Data,Base>::read_internal(bool clearready)
   {
     // We'll be consuming data, so if we have a waiting
     // writer, it's valid to wake it up.
-    if (Base::have_writers() && clearready) {
-      pAddReady(Base::next_writer());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }
-    if (!Base::_ready) {
+    if (!ready()) {
       // We don't have data, so the reader must
       // block until the writer adds data.
       Base::set_notify(pCurThread(),HandleType());
       pBusySleep(_timeslice);
     }
     if (clearready) {
-      Base::clear_ready();
+      set_ready(false);
     }
     // Reactivate a waiting writer if one appeared while we were asleep.
-    if (Base::have_writers() && clearready) {
-      pAddReady(Base::next_writer());
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
     }    
-    return Base::_data;
+    return _data;
   }
 
-  template <class Data>
-  void BusyChan<Data>::write(const Data &d) 
+  template <class Data,class Base>
+  void BusyChan<Data,Base>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
-    if (Base::_readt) {
-      pBusyWake(Base::clear_notify(),Base::_h);
+    if (Base::have_reader()) {
+      pBusyWake(Base::notify_reader());
     }
-    while (Base::_ready) {
+    while (ready()) {
       // We already have data, so the write must block
       // until the reader consumes the data.
-      Base::set_writenotify(pCurThread());
+      set_writenotify(pCurThread());
       pSleep();
     }
     // Store data and set ready.
-    Base::_data = d;
-    Base::_ready = true;
+    _data = d;
+    set_ready(true);
     // Reactivate a reader if one appeared while we were asleep.
-    if (Base::_readt) {
-      pBusyWake(Base::clear_notify(),Base::_h);
+    if (Base::have_reader()) {
+      pBusyWake(Base::notify_reader());
     }    
   };
 
   /////////////// QueueChan ///////////////
 
-  template <typename Data,typename Container>
-  Data QueueChan<Data,Container>::read_internal(bool clearready)
+  template <typename Data,typename Base,typename Container>
+  Data QueueChan<Data,Base,Container>::read_internal(bool clearready)
   {
     // If there's a waiting writer (queue is full) and we're
     // going to remove an item, then unblock the next writer here.
@@ -318,7 +282,7 @@ namespace plasma {
     }
     // If no data- sleep until we get some.
     if (!ready()) {
-      set_notify(pCurThread(),HandleType());
+      Base::set_notify(pCurThread(),HandleType());
       pSleep();
     }
     Data temp = _store.back();
@@ -331,12 +295,12 @@ namespace plasma {
     return temp;
   }
 
-  template <typename Data,typename Container>
-  void QueueChan<Data,Container>::write(const Data &d) 
+  template <typename Data,typename Base,typename Container>
+  void QueueChan<Data,Base,Container>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
-    if (_readt) {
-      pWake(clear_notify(),_h);
+    if (Base::have_reader()) {
+      pWake(Base::notify_reader());
     }
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
@@ -349,8 +313,8 @@ namespace plasma {
     ++_size;
     check_size();
     // Reactivate a reader if one appeared while we were asleep.
-    if (_readt) {
-      pWake(clear_notify(),_h);
+    if (Base::have_reader()) {
+      pWake(Base::notify_reader());
     }
   };
 
@@ -376,23 +340,22 @@ namespace plasma {
 
   /////////////// ClockChan ///////////////
 
-  template <typename Data,typename Container>
-  bool ClockChan<Data,Container>::current_data() const
+  template <typename Data,typename Base,typename Container>
+  bool ClockChan<Data,Base,Container>::current_data() const
   {
     return (!empty() && curr_data_time() < curr_time());
   }
 
-  template <typename Data,typename Container>
-  Data ClockChan<Data,Container>::read_internal(bool clearready)
+  template <typename Data,typename Base,typename Container>
+  Data ClockChan<Data,Base,Container>::read_internal(bool clearready)
   {
     // If there's a waiting writer (queue is full) and we're
     // going to remove an item, then unblock the next writer here.
-    bool r = ready();
-    if (r && have_writers() && clearready) {
+    if (ready() && have_writers() && clearready) {
       pAddReady(next_writer());
     }
     // If no data- sleep until we get some.
-    if (!r) {
+    while (!ready()) {
       delayed_reader_wakeup(!empty());
     }
     Data temp = _store.back().first;
@@ -405,27 +368,27 @@ namespace plasma {
     return temp;
   }
 
-  template <typename Data,typename Container>
-  void ClockChan<Data,Container>::write(const Data &d) 
+  template <typename Data,typename Base,typename Container>
+  void ClockChan<Data,Base,Container>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
-    if (_readt) {
-      delayed_wakeup(current_data());
+    if (Base::have_reader()) {
+      Base::delayed_wakeup(current_data());
     }
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
     // data to again fill the queue, the thread will again sleep.
-    while (full()) {
+    while (Base::full()) {
       set_writenotify(pCurThread());
       pSleep();
     }
     // Add data element w/time of next clock cycle.
     _store.push_front(std::make_pair(d,curr_time()));
-    ++_size;
-    check_size();
+    Base::incr_size();
+    Base::check_size();
     // Reactivate a reader if one appeared while we were asleep.
-    if (_readt) {
-      delayed_wakeup(current_data());
+    if (Base::have_reader()) {
+      Base::delayed_wakeup(current_data());
     }
   };
 

@@ -143,17 +143,17 @@ function, a method call, etc.  The list of supported types is:])
 
 )
 
-(p [The function's arguments are evaluated immediately; a thread is then launched
-of the function with its arguments.  The function itself must return some type
-of value; void functions are not allowed.  In addition, the result type must
-have a default constructor.])
+(p [The function's arguments are evaluated immediately; a thread is then
+launched of the function with its arguments.  The ,(b [spawn]) operator returns
+an object of type ,(code [Result<T>]), where ,(b [T]) is the return type of the
+invoked function.  Calling the ,(code [value()]) method returns the result of
+the thread; if the thread is not yet finished, it will block.  Calling ,(code
+[wait()]) will wait until the thread is finished and calling ,(code [kill()])
+will terminate the thread.  In the latter case, the result of the thread will be
+the default constructor value of the return type.])
 
-(p [The ,(b [spawn]) operator returns an object of type ,(code [Result<T>]), where ,(b [T]) is
-the return type of the invoked function.  Calling the ,(code [value()]) method returns
-the result of the thread; if the thread is not yet finished, it will block.
-Calling ,(code [wait()]) will wait until the thread is finished and calling ,(code [kill()])
-will terminate the thread.  In the latter case, the result of the thread will
-be the default constructor value of the return type.])
+(p [Note that in order for a function to be used with ,(code [spawn]), its
+return type must have a default constructor.])
 
 (p [A simple example is:])
 
@@ -177,6 +177,18 @@ int pMain(int argc,const char *argv\[\])
   return 0;
 }
  
+])
+
+(p [If the spawned function has a void return type, then the ,(code [Result]) type will be
+an integer and will always be 0.  Since ,(code [int]) is the default type for
+,(code [Result]), you can declare an object in this manner:])
+
+(cprog [
+
+void foo();
+
+Result<> r = spawn(foo());
+
 ])
 
 )
@@ -295,7 +307,7 @@ the only thread switches will be during alt, wait, delay, or busy commands.])
 
 (p [Lowest priority threads are time-sliced.  The time slice value is set by
 setting ,(code [ConfigParms::_simtimeslice]) in ,(code [pSetup()]).  What this means is that
-a busy command will be divided up until these timeslices, allowing the same
+a busy command will be divided up into these timeslices, allowing the same
 processor to squeeze in work from other threads.]))
 
 (item [,(code [pTime()]):  Returns the current system time.])
@@ -498,6 +510,9 @@ depending upon the channel definition.])
 
 (item [,(code [bool ready() const]): Returns true if the channel has a value.])
 
+(item [,(code [bool full() const]): Returns true if the channel would block if
+written to.])
+
 (item [,(code [void clear_ready()]): Clears the ready status, forcing the fetch
 of a new value.])
 
@@ -509,26 +524,39 @@ notification will take place if a value is written to the channel.  It must be
 possible to call ,(code [clear_notify()]) safely, e.g. this should not affect
 the behavior of a blocked writing thread.])
 
+(item [,(code [value_type]): A typedef for the data type of the channel.])
+
 )
 
-(p [Note that ,(code [write()]), ,(code [read()]), and ,(code [clear_ready()])
-are technically not required by ,(b [alt]) and ,(b [afor]).  Thus, it is possible to
-have a read-only channel.])
+(p [Note that ,(code [write()]), ,(code [read()]), ,(code [clear_ready()]), and
+,(code [full()]) are technically not required by ,(b [alt]) and ,(b [afor]).
+Thus, it is possible to have a read-only channel.])
 
 (p [Currently, Plasma contains the following channels.  These are declared in
 ,(code [plasma.h]).])
 
 (itemize
 
-(item [,(code [Channel<class Data>]): This is a typed channel which reads and
-writes an object of type ,(i [Data]).  It contains only a single copy of this
-object; a second write will block if the first write's data has not been read.
-It may be used with multiple producers, but only a single consumer is allowed.])
+(item [,(code [Channel<class Data,class Base = SingleConsumerChannel>]): This is
+a typed channel which reads and writes an object of type ,(i [Data]).  It
+contains only a single copy of this object; a second write will block if the
+first write's data has not been read.  It may be used with multiple producers.
+By default, only a single consumer is allowed.  To enable multiple consumers,
+specify ,(code [MultiConsumerChannel]) for the second template argument ,(i
+[Base]).])
 
-(item [,(code [QueueChan<class Data>]): This is a typed queued channel: It
-allows for multiple producers and requires a single consumer.  By default, the
-queue size is not fixed, but the user may set a maximum size by specifying it as
-the constructor argument.])
+(item [,(code [BusyChan Data,class Base = SingleConsumerChannel>]): This channel
+is similar to ,(code [Channel]), except that if a read blocks, it places the
+thread's processor into a busy state.  This can be used for when waiting on a
+resource holds up a task, e.g. a processor waiting on a load cannot do something
+else.  The user can specify a timeslice value in the constructor, or specify 0
+to mean no timeslicing.])
+
+(item [,(code [QueueChan<class Data,class Base = SingleConsumerChannel>]): This
+is a typed queued channel: It allows for multiple producers and supports
+multiple consumers if the ,(i [Base]) argument is set to ,(code
+[MultiConsumerChannel]).  By default, the queue size is not fixed, but the user
+may set a maximum size by specifying it as the constructor argument.])
 
 (item (p [,(code [Timeout]): Use this to break out of an ,(b [alt]) block after
 a specified amount of simulation time.  It uses ,(code [pDelay()]) to block for
@@ -550,15 +578,15 @@ alt {
 (p [In the above example, a ,(b [Timeout]) object is created which will awaken an
 alt block after 20 time units.]))
 
-(item (mark "clocked-chan") (p [,(code [ClockChan<class Data,class Container =
-list<Data> >]): Clocked channels allow for the easy modeling of clocked
-hardware.  The basic idea is that data may be written at any time, but the
-channel may only be read at certain intervals.  This interval is specified by
-the constructor.  For instance, a clocked channel with a period of 10 will block
-until the time is a multiple of 10.  This class can be used in a queued or
-non-queued manner, also specified by a constructor argument.  The second
-template parameter allows the user to specify an alternate container to hold the
-queued data.])
+(item (mark "clocked-chan") (p [,(code [ClockChan<class Data,,class Base =
+SingleConsumerClockChannel,class Container = list<Data> >]): Clocked channels
+allow for the easy modeling of clocked hardware.  The basic idea is that data
+may be written at any time, but the channel may only be read at certain
+intervals.  This interval is specified by the constructor.  For instance, a
+clocked channel with a period of 10 will block until the time is a multiple of
+10.  This class can be used in a queued or non-queued manner, also specified by
+a constructor argument.  The third template parameter allows the user to
+specify an alternate container to hold the queued data.])
     
 (p [The basic idea of clocked channels is to let the channel worry about time,
 rather than the user's code.  In other words, to model a pipeline, each pipeline
@@ -566,6 +594,10 @@ stage acts as a consumer of data from the prior stage and a producer for the
 next stage.  The communication occurs through clocked channels so that the
 timing is invisible to each stage, and is instead coordinated solely by the
 channels.])
+
+(p [Multiple producers are supported.  Multiple consumers may be allowed by
+specifying ,(code [MultiConsumerClockChannel]) for the second template
+argument.])
 
 )
 
@@ -663,6 +695,68 @@ par {
 
 (p [The data produced by the ,(code [producer]) function is sent to all of the
 ,(code [consumer]) functions via the ,(code [Tee]) structure.])
+
+(p [On the other hand, this only works if data may be replicated.  If this is
+not valid, e.g. a transaction should not be copied but instead should be
+consumed by any of several listening consumers, then it is necessary to
+configure a channel to allow multiple consumers.  This is done by specifying
+,(code [MultiConsumerChannel]) for the ,(i [Base]) template parameter of
+non-clocked channels and ,(code [MultiConsumerClockChannel]) for clocked
+channels.  This does impose some slight overhead for bookkeeping, so it is
+generally recommended to keep a channel as single-consumer only unless otherwise
+necessary.])
+
+(p [When a channel is configured as allowing multiple consumers, more than one
+thread may do a get from that channel, or use it in an alt statement.  For
+example:])
+
+(cprog [
+
+typedef ClockChan<int,MultiConsumerClockChannel> IntChan;
+
+void producer(int id,int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+  }
+  plasma::mprintf ("Done.\n");
+}
+
+void consumer(int id,IntChan &c0,IntChan &c1)
+{
+  int foo = 10;
+
+  while (true) {
+    alt {
+      c0.port(int d) {
+        cout << id << ":  Port 0, Time " << pTime() << ":  Got " << d << endl;
+      }
+      c1.port(int d) {
+        cout << id << ":  Port 1, Time " << pTime() << ":  Got " << d << endl;
+      }
+    }
+    pDelay(20);
+  }
+}
+
+int pMain(int argc,const char *argv\[\])
+{ 
+  IntChan chan0(5), chan1(5);
+
+  par {
+    producer(0,10,chan0);
+    producer(1,100,chan1);
+    consumer(0,chan0,chan1);
+    consumer(1,chan0,chan1);
+  }
+  return 0;
+}
+
+])
+
+(p [In the above example, two producers feed to two consumers.  Both consumers
+read from these channels.  This means that if the first consumer reads from
+,(code [c0]), then the second consumer will then read from,(code [c1]).])
 
 )
 

@@ -191,15 +191,14 @@ function, a method call, etc.  The list of supported types is:</p><ul class="ite
  <li>Static method call: <code>spawn(A::b());</code></li>
  <li>Method pointer w/reference: <code>p = &amp;A::b; spawn(a.*p());</code></li>
  <li>Method pointer w/pointer:  <code>p = &amp;A::b; spawn(a-&gt;*p());</code></li>
-</ul><p>The function's arguments are evaluated immediately; a thread is then launched
-of the function with its arguments.  The function itself must return some type
-of value; void functions are not allowed.  In addition, the result type must
-have a default constructor.</p><p>The <strong>spawn</strong> operator returns an object of type <code>Result&lt;T&gt;</code>, where <strong>T</strong> is
-the return type of the invoked function.  Calling the <code>value()</code> method returns
-the result of the thread; if the thread is not yet finished, it will block.
-Calling <code>wait()</code> will wait until the thread is finished and calling <code>kill()</code>
-will terminate the thread.  In the latter case, the result of the thread will
-be the default constructor value of the return type.</p><p>A simple example is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+</ul><p>The function's arguments are evaluated immediately; a thread is then
+launched of the function with its arguments.  The <strong>spawn</strong> operator returns
+an object of type <code>Result&lt;T&gt;</code>, where <strong>T</strong> is the return type of the
+invoked function.  Calling the <code>value()</code> method returns the result of
+the thread; if the thread is not yet finished, it will block.  Calling <code>wait()</code> will wait until the thread is finished and calling <code>kill()</code>
+will terminate the thread.  In the latter case, the result of the thread will be
+the default constructor value of the return type.</p><p>Note that in order for a function to be used with <code>spawn</code>, its
+return type must have a default constructor.</p><p>A simple example is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
 double foo(double a,double b)
@@ -220,6 +219,17 @@ int pMain(int argc,const char *argv[])
   <strong>return</strong> 0;
 <font color="red"><strong>}</strong></font>
  
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>If the spawned function has a void return type, then the <code>Result</code> type will be
+an integer and will always be 0.  Since <code>int</code> is the default type for
+<code>Result</code>, you can declare an object in this manner:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">void foo();
+
+Result&lt;&gt; r = spawn(foo());
+
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -305,7 +315,7 @@ processor is &quot;busy&quot; for this long.  In order to use <code>pBusy()</cod
 function is called.  If you are in the busy-mode then preemption is disabled;
 the only thread switches will be during alt, wait, delay, or busy commands.</p><p>Lowest priority threads are time-sliced.  The time slice value is set by
 setting <code>ConfigParms::_simtimeslice</code> in <code>pSetup()</code>.  What this means is that
-a busy command will be divided up until these timeslices, allowing the same
+a busy command will be divided up into these timeslices, allowing the same
 processor to squeeze in work from other threads.</p></li>
  <li><code>pTime()</code>:  Returns the current system time.</li>
 </ul><p>The user may declare multiple processors by declaring a <strong>Processor</strong> object,
@@ -473,6 +483,8 @@ return this same value.</li>
  <li><code>void write(T)</code>: Writes a value to the channel.  May block,
 depending upon the channel definition.</li>
  <li><code>bool ready() const</code>: Returns true if the channel has a value.</li>
+ <li><code>bool full() const</code>: Returns true if the channel would block if
+written to.</li>
  <li><code>void clear_ready()</code>: Clears the ready status, forcing the fetch
 of a new value.</li>
  <li><code>set_notify(Thread *t,int handle)</code>: Stores the thread and handle.
@@ -481,17 +493,26 @@ When the channel gets a value, it will wake this thread, giving it the handle.</
 notification will take place if a value is written to the channel.  It must be
 possible to call <code>clear_notify()</code> safely, e.g. this should not affect
 the behavior of a blocked writing thread.</li>
-</ul><p>Note that <code>write()</code>, <code>read()</code>, and <code>clear_ready()</code>
-are technically not required by <strong>alt</strong> and <strong>afor</strong>.  Thus, it is possible to
-have a read-only channel.</p><p>Currently, Plasma contains the following channels.  These are declared in
-<code>plasma.h</code>.</p><ul class="itemize"> <li><code>Channel&lt;class Data&gt;</code>: This is a typed channel which reads and
-writes an object of type <em>Data</em>.  It contains only a single copy of this
-object; a second write will block if the first write's data has not been read.
-It may be used with multiple producers, but only a single consumer is allowed.</li>
- <li><code>QueueChan&lt;class Data&gt;</code>: This is a typed queued channel: It
-allows for multiple producers and requires a single consumer.  By default, the
-queue size is not fixed, but the user may set a maximum size by specifying it as
-the constructor argument.</li>
+ <li><code>value_type</code>: A typedef for the data type of the channel.</li>
+</ul><p>Note that <code>write()</code>, <code>read()</code>, <code>clear_ready()</code>, and
+<code>full()</code> are technically not required by <strong>alt</strong> and <strong>afor</strong>.
+Thus, it is possible to have a read-only channel.</p><p>Currently, Plasma contains the following channels.  These are declared in
+<code>plasma.h</code>.</p><ul class="itemize"> <li><code>Channel&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This is
+a typed channel which reads and writes an object of type <em>Data</em>.  It
+contains only a single copy of this object; a second write will block if the
+first write's data has not been read.  It may be used with multiple producers.
+By default, only a single consumer is allowed.  To enable multiple consumers,
+specify <code>MultiConsumerChannel</code> for the second template argument <em>Base</em>.</li>
+ <li><code>BusyChan Data,class Base = SingleConsumerChannel&gt;</code>: This channel
+is similar to <code>Channel</code>, except that if a read blocks, it places the
+thread's processor into a busy state.  This can be used for when waiting on a
+resource holds up a task, e.g. a processor waiting on a load cannot do something
+else.  The user can specify a timeslice value in the constructor, or specify 0
+to mean no timeslicing.</li>
+ <li><code>QueueChan&lt;class Data,class Base = SingleConsumerChannel&gt;</code>: This
+is a typed queued channel: It allows for multiple producers and supports
+multiple consumers if the <em>Base</em> argument is set to <code>MultiConsumerChannel</code>.  By default, the queue size is not fixed, but the user
+may set a maximum size by specifying it as the constructor argument.</li>
  <li><p><code>Timeout</code>: Use this to break out of an <strong>alt</strong> block after
 a specified amount of simulation time.  It uses <code>pDelay()</code> to block for
 a given amount of time.  If nothing else has awakened the alt block thread
@@ -511,20 +532,22 @@ alt <font color="red"><strong>{</strong></font>
 </tbody></table></td></tr>
 </tbody></table><p>In the above example, a <strong>Timeout</strong> object is created which will awaken an
 alt block after 20 time units.</p></li>
- <li><a name="clocked-chan" class="mark"></a><p><code>ClockChan&lt;class Data,class Container =
-list&lt;Data&gt; &gt;</code>: Clocked channels allow for the easy modeling of clocked
-hardware.  The basic idea is that data may be written at any time, but the
-channel may only be read at certain intervals.  This interval is specified by
-the constructor.  For instance, a clocked channel with a period of 10 will block
-until the time is a multiple of 10.  This class can be used in a queued or
-non-queued manner, also specified by a constructor argument.  The second
-template parameter allows the user to specify an alternate container to hold the
-queued data.</p><p>The basic idea of clocked channels is to let the channel worry about time,
+ <li><a name="clocked-chan" class="mark"></a><p><code>ClockChan&lt;class Data,,class Base =
+SingleConsumerClockChannel,class Container = list&lt;Data&gt; &gt;</code>: Clocked channels
+allow for the easy modeling of clocked hardware.  The basic idea is that data
+may be written at any time, but the channel may only be read at certain
+intervals.  This interval is specified by the constructor.  For instance, a
+clocked channel with a period of 10 will block until the time is a multiple of
+10.  This class can be used in a queued or non-queued manner, also specified by
+a constructor argument.  The third template parameter allows the user to
+specify an alternate container to hold the queued data.</p><p>The basic idea of clocked channels is to let the channel worry about time,
 rather than the user's code.  In other words, to model a pipeline, each pipeline
 stage acts as a consumer of data from the prior stage and a producer for the
 next stage.  The communication occurs through clocked channels so that the
 timing is invisible to each stage, and is instead coordinated solely by the
-channels.</p></li>
+channels.</p><p>Multiple producers are supported.  Multiple consumers may be allowed by
+specifying <code>MultiConsumerClockChannel</code> for the second template
+argument.</p></li>
  <li><p><code>ResChan&lt;class Data&gt;</code>: The <strong>spawn</strong> operator may be
 interfaced to an <strong>alt</strong> construct by using this class.  This is a read-only
 channel which will return the result value of the spawned thread.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -616,7 +639,65 @@ par <font color="red"><strong>{</strong></font>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>The data produced by the <code>producer</code> function is sent to all of the
-<code>consumer</code> functions via the <code>Tee</code> structure.</p></div>
+<code>consumer</code> functions via the <code>Tee</code> structure.</p><p>On the other hand, this only works if data may be replicated.  If this is
+not valid, e.g. a transaction should not be copied but instead should be
+consumed by any of several listening consumers, then it is necessary to
+configure a channel to allow multiple consumers.  This is done by specifying
+<code>MultiConsumerChannel</code> for the <em>Base</em> template parameter of
+non-clocked channels and <code>MultiConsumerClockChannel</code> for clocked
+channels.  This does impose some slight overhead for bookkeeping, so it is
+generally recommended to keep a channel as single-consumer only unless otherwise
+necessary.</p><p>When a channel is configured as allowing multiple consumers, more than one
+thread may do a get from that channel, or use it in an alt statement.  For
+example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"><strong>typedef</strong> ClockChan&lt;int,MultiConsumerClockChannel&gt; IntChan;
+
+void producer(int id,int val,IntChan &amp;chan) 
+<font color="red"><strong>{</strong></font>
+  <strong>for</strong> (int i = 0; i != 10; ++i) <font color="red"><strong>{</strong></font>
+    chan.write(val+i);
+  <font color="red"><strong>}</strong></font>
+  plasma::mprintf (&quot;Done.
+&quot;);
+<font color="red"><strong>}</strong></font>
+
+void consumer(int id,IntChan &amp;c0,IntChan &amp;c1)
+<font color="red"><strong>{</strong></font>
+  int foo = 10;
+
+  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+    alt <font color="red"><strong>{</strong></font>
+      c0.port(int d) <font color="red"><strong>{</strong></font>
+        cout &lt;&lt; id &lt;&lt; &quot;:  Port 0, Time <font color="red">&quot; &lt;&lt; pTime() &lt;&lt; &quot;</font>:  Got <font color="red">&quot; &lt;&lt; d &lt;&lt; endl;</font>
+<font color="red">      }</font>
+<font color="red">      c1.port(int d) {</font>
+<font color="red">        cout &lt;&lt; id &lt;&lt; &quot;</font>:  Port 1, Time <font color="red">&quot; &lt;&lt; pTime() &lt;&lt; &quot;</font>:  Got &quot; &lt;&lt; d &lt;&lt; endl;
+      <font color="red"><strong>}</strong></font>
+    <font color="red"><strong>}</strong></font>
+    pDelay(20);
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
+
+int pMain(int argc,const char *argv[])
+<font color="red"><strong>{</strong></font> 
+  IntChan chan0(5), chan1(5);
+
+  par <font color="red"><strong>{</strong></font>
+    producer(0,10,chan0);
+    producer(1,100,chan1);
+    consumer(0,chan0,chan1);
+    consumer(1,chan0,chan1);
+  <font color="red"><strong>}</strong></font>
+  <strong>return</strong> 0;
+<font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above example, two producers feed to two consumers.  Both consumers
+read from these channels.  This means that if the first consumer reads from
+<code>c0</code>, then the second consumer will then read from<code>c1</code>.</p></div>
 <!-- Alt Blocks -->
 <a name="Alt-Blocks"></a>
 <div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.8 Alt Blocks</font>
@@ -1010,6 +1091,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Nov  9 08:28:21 2004</em>.</font></p></div>
+Last update <em>Fri Dec  3 11:56:20 2004</em>.</font></p></div>
 </body>
 </html>

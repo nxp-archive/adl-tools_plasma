@@ -9,7 +9,11 @@ void Wrapper::TranslateClass(Environment* env)
     Member member;
     int i = 0;
     while(NthMember(i++, member)) {
-      if(member.IsFunction() && wrapMember(env,member)){
+      // We only process members of this class- we don't want to process subclass elements.
+      // We also only want to handle functions.  The final test makes sure that we're dealing
+      // with functions we want- not constructors or destructors, etc.  This is virtual so that
+      // derived classes can filter in their own way.
+      if(member.Supplier() == this && member.IsFunction() && wrapMember(env,member)){
         Ptree* org_name = newMemberName(member.Name());
         // If function takes a va-list, create variadic wrapper, too.
         // This isn't perfect, but it gets around the issue of dealing

@@ -383,7 +383,7 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   // Extract arguments.
   switch (args->Length()) {
   case 1:
-    // No action taken- we will use the current prioriity.
+    // No action taken- we will use the current priority.
     args = args->First();
     break;
   case 3:
@@ -623,11 +623,12 @@ bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo t,Ptree *
   // the beginning of the block in order to get the function result.
   TypeInfo rt;
   t.Dereference(rt);
-  if (t.IsNoReturnType()) {
-    ErrorMessage(env,"Spawn's argument must return a value- void functions are not allowed.",nil,ufunc);
-    return false;
+  if (rt.IsBuiltInType() == VoidType) {
+    // If we get a void function, we treat it as an integer.
+    cur = lappend(cur,Ptree::qMake("int `resultName()`;\n"));
+  } else {
+    cur = lappend(cur,Ptree::qMake("`rt.MakePtree(resultName())`;\n"));
   }
-  cur = lappend(cur,Ptree::qMake("`rt.MakePtree(resultName())`;\n"));
 
   TypeInfo at;
   int numargs = t.NumOfArguments();
@@ -656,17 +657,34 @@ bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo t,Ptree *
 bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *targs,
                            Ptree *ufunc,Ptree *lfunc,Ptree *sfunc,bool proc)
 {
-  // Create the launcher function which calls the user function w/proper args.
-  Ptree *start = Ptree::qMake("inline void `lfunc`(void *args)\n"
-                              "{\n"
-                              "  ((`targs`*)args)->`resultName()` = ");
-  Ptree *cur = start;
-
   TypeInfo origt = t;
   bool fptr = false;
   if (isPtrType(t)) {
     fptr = true;
     t.Dereference();
+  }
+
+  // If the return type is void, set it to an integer, for now.
+  bool isvoid = false;
+  TypeInfo rt;
+  t.Dereference(rt);
+  if (rt.IsBuiltInType() == VoidType) {
+    rt.SetInt();
+    isvoid = true;
+  }
+
+  // Create the launcher function which calls the user function w/proper args.
+  Ptree *start = Ptree::qMake("inline void `lfunc`(void *args)\n{\n");
+  Ptree *cur = start;
+
+  // When we call the user function, we either want to same the result (normal
+  // case), or simply set it to 0- the latter is only applicable for void
+  // functions.  Sinc they do not return a value, we fake it by considering it
+  // to be an integer return which always has a value of 0.
+  if (isvoid) {
+    cur = lappend(cur,Ptree::qMake("  ((`targs`*)args)->`resultName()` = 0;\n  "));
+  } else {
+    cur = lappend(cur,Ptree::qMake("  ((`targs`*)args)->`resultName()` = "));
   }
 
   // Create invoker line- this calls the user function.  We must decide whether we're invoking a
@@ -696,9 +714,6 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   
   cur = lappend(cur,Ptree::Make(");\n}\n"));
   AppendAfterToplevel(env,start);
-
-  TypeInfo rt;
-  t.Dereference(rt);
 
   // Create the spawn function which launches the thread and returns
   // the result template.
@@ -838,6 +853,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
   Ptree *handle = Ptree::GenSym();
   Ptree *sindex = Ptree::GenSym();
   Ptree *uflag  = Ptree::GenSym();
+  Ptree *doover = Ptree::GenSym();
 
   PortList pv;
   flatten(pv,origpv);
@@ -850,7 +866,8 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
   Ptree *cur = start;
 
   cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
-                                 "plasma::HandleType `handle`(0,0);\n"));
+                                 "plasma::HandleType `handle`(0,0);\n"
+                                 "`doover`:\n"));
 
   // For each afor entry, write out initial statement loop statement.
   // Create auxiliary stack if needed.
@@ -952,7 +969,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
     }
   }
 
-  if ( (cur = generateAltBody(env,cur,label,handle,uflag,pv,defaultblock)) == nil) {
+  if ( (cur = generateAltBody(env,cur,label,handle,uflag,doover,pv,defaultblock)) == nil) {
     return nil;
   }
 
@@ -979,14 +996,13 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
 }
 
 // Generates the case statement for the alt action code.
-Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,Ptree *uflag,
-                               const PortList &pv,Ptree *defaultblock)
+Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,
+                               Ptree *uflag,Ptree *doover,const PortList &pv,Ptree *defaultblock)
 {
   // Unlock processors- may be redundant for some cases, but is needed
   // for default blocks and non-standard channels.
   // Jump to the code for the relevant handle.
   cur = lappend(cur,Ptree::qMake("`label`:\n"
-                                 "plasma::pUnlock();\n"
                                  "switch(`handle`.first) {\n"));
 
   // Handling code.  Each value should be a valid declaration.
@@ -1007,13 +1023,17 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
       }
       cur = lappend(cur,Ptree::qMake("}\n"));
     }
+    // Make sure that we still have data.  If somebody else grabbed it (only happens in
+    // a multi-consumer situation), then we have to start all over.
+    cur = lappend(cur,Ptree::qMake(" if ( !(`p.chan`) `p.op` ready()) { goto `doover`; }\n"));
     if (p.val) {
       if (p.val->Length() > 1) {
         ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",nil,p.val);
         return nil;
       }
       // User specified a type, so use it directly.
-      cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"));
+      cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"
+                                     " plasma::pUnlock();\n"));
       // Add it to the environment so that we can translate the body and it
       // will recognize it.
       Class *pclass = new Class(env,p.val->Ca_ar());
@@ -1031,7 +1051,8 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
 
   // Write the default block code, if present.
   if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"));
+    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"
+                                   " plasma::pUnlock();\n"));
     cur = lappend(cur,lineDirective(env,defaultblock));
     cur = lappend(cur,Ptree::qMake("`TranslateExpression(env,defaultblock)`\n"
                                    "} break;\n"));

@@ -1,0 +1,48 @@
+//
+// Test the functionality of multi-consumer channels.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int,MultiConsumerChannel> IntChan;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 100; ++i) {
+    chan.write(val+i);
+  }
+  cout << "Done." << endl;
+}
+
+void consumer(int id,IntChan &c0)
+{
+  while (true) {
+    int v = c0.get();
+    cout << id << ":  Time " << pTime() << ":  Got a value on 0:  " << v << endl;
+    pDelay(10);
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan chan;
+
+  par {
+    producer(10,chan);
+    consumer(0,chan);
+    consumer(1,chan);
+    consumer(2,chan);
+    consumer(3,chan);
+  }
+  return 0;
+}

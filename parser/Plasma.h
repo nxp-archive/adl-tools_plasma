@@ -76,7 +76,7 @@ private:
                        Environment *env,bool heapalloc);
   Ptree *generateAltBlock(Environment *env,const PortList &pv,Ptree *defaultblock);
   Ptree *generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,Ptree *uflag,
-                         const PortList &pv,Ptree *defaultblock);
+                         Ptree *doover,const PortList &pv,Ptree *defaultblock);
   bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
   bool parseAltBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &defaultblock,bool reverse);
   bool parseAforBody(Environment *env,Ptree *rest,PortList &pv,Ptree* &defaultblock);

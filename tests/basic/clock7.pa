@@ -1,0 +1,48 @@
+//
+// Simple test of clocked channels with multiple consumers.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef ClockChan<int,MultiConsumerClockChannel> IntChan;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 100; ++i) {
+    chan.write(val+i);
+  }
+  plasma::mprintf ("Done.\n");
+}
+
+void consumer(int id,IntChan &c)
+{
+  while (true) {
+    int d = c.get();
+    cout << id << ":  Port 0, Time " << pTime() << ":  Got " << d << endl;
+    pDelay(20);
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan chan(5);
+
+  par {
+    producer(10,chan);
+    consumer(0,chan);
+    consumer(1,chan);
+    consumer(2,chan);
+    consumer(3,chan);
+  }
+  return 0;
+}

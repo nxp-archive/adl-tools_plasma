@@ -65,7 +65,7 @@ private:
     _data = d;
     _ready = true;
     if (_readt) {
-      pWake(clear_notify(),HandleType(_h,0));
+      pWake(make_pair(clear_notify(),HandleType(_h,0)));
     }
     pUnlock();
   };

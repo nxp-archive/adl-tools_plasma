@@ -32,6 +32,11 @@ double pi()
   return 3.14159;
 }
 
+void voidtest()
+{
+  cout << "Result is:  69" << endl;
+}
+
 typedef double (*Fptr2)(double,double);
 typedef double (*Fptr0)();
 
@@ -40,10 +45,17 @@ int pMain(int argc,const char *argv[])
   Fptr2 a = foo;
   Fptr0 b = pi;
 
+   
   Result<double> r1 = spawn(foo(1.1,2.2));
   Result<double> r2 = spawn(foo(2.7,9.8));
   Result<double> r3 = spawn(foo(100.45,3.59));
   Result<double> r4 = spawn(pi());
+
+  // This just tests that we can spawn a void function.  The return type
+  // is an integer, which is always set to 0.
+  Result<> rv = spawn(voidtest());
+  rv.wait();
+
   cout << "Result is:  " << r1.value() << ", " << r2.value() << ", " << r3.value() << ", " << r4.value() << endl;
 
   Result<double> r5 = spawn(a(45.20,90.34));

@@ -15,12 +15,14 @@ libplasma_la_SOURCES = \
 	LcgRand.C \
 	KissRand.C \
 	MtRand.C \
-	Energy.C
+	Energy.C \
+	ChanSupport.C
 
 pkginclude_HEADERS = \
 	plasma-interface.h \
 	plasma.h \
 	Interface.h \
+	ChanSupport.h \
 	Random.h \
 	LcgRand.h \
 	KissRand.h \

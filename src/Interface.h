@@ -137,10 +137,10 @@ namespace plasma {
 
   // Wake the specified thread, giving it the handle values.  This switches
   // to this thread.
-  void pWake(THandle,HandleType);
+  void pWake(std::pair<THandle,HandleType>);
 
   // Wake a busy thread that was made busy by pBusySleep.
-  void pBusyWake(THandle,HandleType);
+  void pBusyWake(std::pair<THandle,HandleType>);
 
   // Return the thread's handle value (same as returned by pSleep()).
   HandleType pHandle(THandle);
@@ -211,7 +211,7 @@ namespace plasma {
   //
   // To use this with an alt block, use ResChan<R> instead.
   //
-  template<class R>
+  template<typename R = int>
   class Result {  
   public:
     Result() : _result(0), _t(0) {};
@@ -294,64 +294,6 @@ namespace plasma {
   typedef ValueCheckGen<bool>::type BoolCheck;
 
   inline BoolCheck make_boolcheck(bool value) { return make_valuecheck(value); };
-
-  //
-  // Timeout channel:  When used in an alt block, will set ready after a specified
-  // amount of simulation time.
-  //
-  class Timeout {
-  public:
-    Timeout(ptime_t d) : _delay(d), _readt(0), _writet(0) {};
-
-    ptime_t delay() const { return _delay; };
-    void setDelay(ptime_t d) { _delay = d; };
-
-    bool ready() const { return false; };
-    int get() { return 0; };
-
-    // These are marked as non-mutex b/c they are used by alt, which already
-    // does the locking.
-    void set_notify(THandle t,HandleType h);
-    THandle clear_notify();
-
-  private:
-    friend void timeout(void *a);
-    THandle reset();
-
-    ptime_t    _delay;
-    THandle    _readt;
-    THandle    _writet;
-    HandleType _h;
-  };
-
-  // Non-templated implementation class used by ClockChan- do not use this
-  // directly.
-  class ClockChanImpl {
-  public:
-    ClockChanImpl(ptime_t p,ptime_t s);
-
-    bool is_phi() const;
-    ptime_t next_phi() const;
-
-    bool empty() const { return _size == 0; };
-    int size() const { return _size; };
-
-    void set_notify(THandle t,HandleType h);
-    THandle reset();
-    void cancel_waker();
-    THandle clear_notify();
-    void delayed_wakeup(bool current_data);
-    void delayed_reader_wakeup(bool have_data);
-    void start_waker();
-
-    ptime_t    _period;    // Clock period.
-    ptime_t    _skew;      // Skew- offset from clock edge.
-    unsigned   _size;      // Number of items in channel.
-    THandle    _readt;     // Read thread.
-    THandle    _waket;     // Thread which wakes reader at the correct time.
-    int        _delay;     // Stores delay time for waker.
-    HandleType _h;
-  };
   
   //////////////////////////////////////////////////////////////////////////////
   //
