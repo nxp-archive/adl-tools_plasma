@@ -62,7 +62,7 @@ namespace plasma {
     }
   }
 
-  unsigned normalImpl(unsigned mean,double std_dev,double r1,double r2)
+  double normalImpl(unsigned mean,double std_dev,double r1,double r2)
   {
     static double value1 = 0.0;
     static double value2 = 0.0;
@@ -80,7 +80,7 @@ namespace plasma {
       value1 = 0.0;
       value2 = 0.0;
     }
-    return (unsigned)(mean + result + std_dev);
+    return (mean + result * std_dev);
   }
 
 }

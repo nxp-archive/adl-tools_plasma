@@ -1,5 +1,9 @@
 2004-07-09  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Fixed the distributions.  The one change is that exponential now
+	takes a scale parameter, giving you data in [0,scale], with lambda
+	describing the fall-off rate.
+
 	* We now support uniform, triangular, exponential, and normal
 	distributions.  The latter two, however, appear to be somewhat
 	broken- we'll fix it later.

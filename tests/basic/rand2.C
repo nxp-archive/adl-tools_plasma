@@ -18,6 +18,8 @@ void testTriangle(unsigned);
 void testExponential(unsigned);
 void testNormal(unsigned);
 
+void printDbl(unsigned);
+
 int main(int argc,const char *argv[])
 {
   unsigned seed = defaultSeed();
@@ -30,8 +32,10 @@ int main(int argc,const char *argv[])
   testDbl(seed);
   testUniform(seed);
   testTriangle(seed);
-  //  testExponential(seed);
-  //  testNormal(seed);
+  testExponential(seed);
+  testNormal(seed);
+
+//  printDbl(seed);
 }
 
 void testDbl(unsigned s)
@@ -157,13 +161,13 @@ void testExponential(unsigned seed)
   Rand r(1,seed);
 
   unsigned lc = 0, hc = 0;
-  for (int i = 0; i != N; ++i) {
-    unsigned p = r.exponential(0,1000,4);
-    cout << "p:  " << p << endl;
+  for (int i = 0; i != N*10; ++i) {
+    unsigned p = r.exponential(0,1000,5);
+    //cout << "p:  " << p << endl;
     if (p < 100) ++lc;
-    if (p > 1900) ++hc;
+    if (p > 500) ++hc;
   }
-  cout << "lc:  " << lc << ", hc:  " << hc << endl;
+  //cout << "lc:  " << lc << ", hc:  " << hc << endl;
   if (hc >= lc) {
     cerr << "exponential:  Failed distribution test." << endl;
     exit (1);
@@ -174,13 +178,69 @@ void testExponential(unsigned seed)
   cout << "exponential test passed." << endl;
 }
 
+// Not the greatest test in the world- might want to improve this later.
 void testNormal(unsigned seed)
 {
   Rand r(1,seed);
 
-  for (int i = 0; i != N; ++i) {
-    unsigned p = r.normal(0,100,32.0);
-    cout << "p:  " << p << endl;   
+  unsigned lc = 0, mc = 0, hc = 0;
+  for (int i = 0; i != N*10; ++i) {
+    unsigned p = r.normal(0,100,10);
+    //cout << "p:  " << p << endl;
+    if (p < 80) ++lc;
+    if (p > 95 && p < 105) ++mc;
+    if (p > 120) ++hc;
+  }
+  //cout << "lc:  " << lc << ", hc:  " << hc << endl;
+  if (hc >= mc || lc >= mc) {
+    cerr << "normal:  Failed distribution test." << endl;
+    exit (1);
+  }
+  if (!hc || !lc || !mc) {
+    cerr << "normal:  Bad counts." << endl;
+  }
+  cout << "normal test passed." << endl;
+}
+
+// Direct the output of this to a file and then
+// plot it with gnuplot, e.g.
+// # rand2 > tmp
+// # gnuplot
+// gnuplot> plot "tmp" smooth bezier
+void printDbl(unsigned seed)
+{
+  const unsigned B = 1000;
+  const unsigned N = 100000;
+  double buf[B];
+  double val[N];
+  for (unsigned i = 0; i != B; ++i) {
+    buf[i] = 0;
   }
 
+  Rand r(1,seed);
+
+  double min = 0, max = 0;
+  for (unsigned i = 0; i != N; ++i) {
+    //    double p = r.normal(0,1000,100);
+    double p = r.triangle(0,0,50,100);
+    val[i] = p;
+    //cout << "p:  " << p << endl;
+    if (p < min) min = p;
+    if (p > max) max = p;
+  }
+
+  double range = max - min;
+  double bin = range / B;
+  for (unsigned i = 0; i != N; ++i) {
+    unsigned x = (unsigned)((val[i]-min) / bin);
+    if (x >= 0 && x < B) {
+      ++buf[x];
+    }
+  }
+
+  double x = min;
+  for (unsigned i = 0; i != B; ++i) {
+    cout << x << "  " << buf[i] << endl;
+    x += bin;
+  }
 }

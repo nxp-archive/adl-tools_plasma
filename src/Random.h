@@ -57,8 +57,8 @@ namespace plasma {
     unsigned uniform(unsigned stream,unsigned base,unsigned limit);
     // Triangle distribution in [lower,upper).  Upper must be greater than lower.
     unsigned triangle(unsigned stream,unsigned lower,unsigned mode,unsigned upper);
-    // Exponential distribution.
-    unsigned exponential(unsigned stream,unsigned mean,double lambda);
+    // Exponential distribution.  Range is [0,scale], with lambda describing fall-off rate.
+    unsigned exponential(unsigned stream,unsigned scale,double lambda);
     // Normal distribution.
     unsigned normal(unsigned stream,unsigned mean,double std_dev);
     // Reset all generators back to original seed.
@@ -83,7 +83,7 @@ namespace plasma {
   unsigned defaultSeed();
   unsigned triangleImpl(unsigned lower,unsigned mode,unsigned upper,
                         bool upper_half,double r1,double r2);
-  unsigned normalImpl(unsigned mean,double std_dev,double r1,double r2);
+  double normalImpl(unsigned mean,double std_dev,double r1,double r2);
 
   template <class Gen>
   Random<Gen>::Random(unsigned num_streams,unsigned seed) : 
@@ -119,10 +119,11 @@ namespace plasma {
   }
 
   template <class Gen>
-  unsigned Random<Gen>::exponential(unsigned s,unsigned mean,double lambda)
+  unsigned Random<Gen>::exponential(unsigned s,unsigned scale,double lambda)
   {
-    double result = -log(gendbl(s));
-    return (lambda) ? (unsigned)(result/lambda)*((unsigned)-1) : (unsigned)-1;
+    assert(lambda);
+    double result = (-log(1-gendbl(s)))/lambda;
+    return (unsigned)(result * scale);
   }
 
   template <class Gen>
