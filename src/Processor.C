@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <assert.h>
+#include <stdexcept>
 
 #include "Machine.h"
 #include "Processor.h"
@@ -68,7 +69,9 @@ namespace plasma {
   static void preempt(int) 
   {
     resetalarm();                          // reset alarm timer
-    if (processor.locked()) {              // processor in kernel mode
+    if (!processor.ts_okay()) {
+      // processor in kernel mode or running
+      // non-preemptable task.
       return;
     }
     processor.lock();                      // prevent further preemption
@@ -106,14 +109,20 @@ namespace plasma {
       nopreempt();
     }
     _timeslice = cp._timeslice;
+    if (cp._priority_count < 1) {
+      throw runtime_error("Number of priorities must be greater than 0.");
+    }
+    _ready.resize(cp._priority_count);
     resetalarm();
   }
 
-  void print_ready()
+  void Processor::print_ready(ostream &o) const
   {
-    cout << "Ready queue:  ";
-    thesystem.print_ready(cout);
-    cout << endl;
+    o << "Ready queue:  ";
+    for (unsigned i = 0; i != _ready.size(); ++i) {
+      o << "  Priority " << i << ":  " << _ready[i] << endl;
+    }
+    o << endl;
   }
 
   // Poll for ready thread and bring it to execution.
@@ -135,9 +144,9 @@ namespace plasma {
       }
       // Try to get a ready thread.
       //    print_ready();
-      if (Thread *ready = thesystem.get_ready()) {
+      if (Thread *ready = get_ready()) {
         // Switch to thread from main thread.  We always save into
-        // _main, so we can clobber current.
+        // _main, so that we can clobber current.
         exec_ready(ready,&_main);
       } else {       
         // No thread available:  Exit.
@@ -146,13 +155,21 @@ namespace plasma {
     }
   }
 
+  // We can timeslice to another thread if we're not in kernel mode and
+  // our current thread is at the lowest priority (0).
+  inline bool Processor::ts_okay() const
+  {
+    return (!locked() && (_cur->priority() == 0));
+  }
+
   // Create a thread and add to ready queue.
   Thread *Processor::create(UserFunc *f,void  *arg)
   {
     lock();
     Thread *t = new Thread;
     t->realize(f,arg);
-    thesystem.add_ready(t);
+    t->setPriority(_cur->priority());
+    add_ready(t);
     unlock();
     return t;
   }
@@ -171,9 +188,10 @@ namespace plasma {
     // Argument to thread is pointer to free space.
     void *d = t->endspace();
     t->realize(f,d);
+    t->setPriority(_cur->priority());
     // Copy over data to free space.
     memcpy(d,args,nbytes);
-    thesystem.add_ready(t);
+    add_ready(t);
     unlock();
     return make_pair(t,d);
   }
@@ -214,16 +232,66 @@ namespace plasma {
     exec_ready(t,old);
   }
 
+  // This changes the priority, then yields so that the
+  // new priority will take effect.
+  void Processor::set_priority(unsigned p)
+  {
+    lock();
+    if (p >= _ready.size()) {
+      pAbort("Bad priority value");
+    }
+    _cur->setPriority( convert_priority(p) );
+    yield();
+    //runscheduler();
+  }
+
+  unsigned Processor::get_priority() const
+  {
+    return convert_priority(_cur->priority());
+  }
+
+  inline unsigned Processor::convert_priority(unsigned priority) const
+  {
+    int p = priority;
+    int s = _ready.size();
+    return (abs((p - (s - 1)) % s));
+  }
+
+  // Add thread to relevant ready queue, based upon its
+  // priority.  Thread is not added if marked as done.
   void Processor::add_ready(Thread *t)
   {
-    thesystem.add_ready(t);
+    if (!t->done()) {
+      _ready[t->priority()].add(t);
+    }
+  }
+
+  // Get next thread to execute.  Returns 0 if none available.
+  // Starts at highest priority and works downwards.
+  Thread *Processor::get_ready()
+  {
+    for (int i = _ready.size()-1; i >= 0; --i) {
+      if (Thread *next = _ready[i].get()) {
+        return next;
+      }
+    }
+    return 0;
+  }
+
+  // Searches for the specified thread and removes it from the
+  // ready queue.  Returns 0 if not found, otherwise the pointer
+  // to the thread.
+  Thread *Processor::get_ready(Thread *t)
+  {
+    int p = t->priority();
+    return _ready[p].get(t);
   }
 
   // Switch to next running thread from current thread.
   void Processor::yield()
   {
     lock();
-    Thread *ready = thesystem.get_ready();
+    Thread *ready = get_ready();
     Thread *old = _cur;
     exec_ready(ready,old);
   }
@@ -241,7 +309,7 @@ namespace plasma {
   {
     // Lock processor to prevent preemption.
     lock();
-    Thread *ready = thesystem.get_ready();
+    Thread *ready = get_ready();
     Thread *old = _cur;
     _cur = ready;
     QT_ABORT(switch_term, old, 0, ready->thread());
@@ -267,7 +335,8 @@ namespace plasma {
     }
 
     // Remove from ready queue if it's in there.
-    thesystem.get_ready(t);
+    get_ready(t);
+
     // Mark as done.
     t->destroy();
 
@@ -283,7 +352,7 @@ namespace plasma {
     // For every waiting thread, add it back to the ready queue.
     while (Thread *next = oldthread->get_waiter()) {
       next->setHandle(oldthread->handle());
-      thesystem.add_ready(next);
+      processor.add_ready(next);
     }
     if (!processor.in_scheduler()) {
       // If we're not in (switching to) the scheduler, make sure that preemption
@@ -314,7 +383,7 @@ namespace plasma {
   {
     Thread *oldthread = (Thread*)old;
     oldthread->save(sptr);                        // save stack pointer
-    thesystem.add_ready(oldthread);               // place in ready queue
+    processor.add_ready(oldthread);               // place in ready queue
     if (!processor.in_scheduler()) {
       // If we're not in (switching to) the scheduler, make sure that preemption
       // is on.  Otherwise, the scheduler will run and unlock the processor once
@@ -328,7 +397,7 @@ namespace plasma {
   // ready queue.
   inline void Processor::exec_block()
   {
-    Thread *newthread = thesystem.get_ready();
+    Thread *newthread = get_ready();
     Thread *old = _cur;
     _cur = newthread;
     QT_BLOCK(switch_block, 0, old, newthread->thread());

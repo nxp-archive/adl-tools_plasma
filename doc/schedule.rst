@@ -313,7 +313,7 @@ Thread Priorities
 
 Status:
 
-    TBD
+    Scheduled for 6/4/2004.
 
 Decription:
 
@@ -327,10 +327,11 @@ Decription:
     1. ``pSetPriority(int)``:  Set current thread's priority.  Spawned threads will
        run at their parents priority.
 
-    2. ``pNumPriorities()``:  Return number of allowed priorities n, where
-       priorities are (0..n-1).
+    2. ``pGetPriorities()``:  Return current thread's priority.
 
-    2. New config parameter in pSetup to set number of priorities.  Default is
+    3. ``pLowestPriority()``:  Lowest priority (timeslice queue).
+
+    4. New config parameter, ``_priority_count`` in pSetup to set number of priorities.  Default is
        32.
 
 Implementation:
@@ -338,9 +339,55 @@ Implementation:
     Array of thread queeues.  Scheduler will run high priority threads first.
     Timeslicing will only be turned on when running the lowest-priority threads.
 
-Dependencies:
+    To the user, 0 is the highest priority, but internally 0 represents the
+    lowest value and thus what we timeslice on.  
 
-    Add support for multiple processors first.  Do time model at same time.
+    The scheduler calls ``get_ready()``, which returns the next thread to run,
+    respecting priorities.  
+
+    The ``preempt()`` function calls ``Processor::ts_okay()``, which returns
+    false if we're in the kernel or we're in a non-timesliceable thread.
+
+Regressions:
+
+    pri1, pri2.
+
+Support For Multiple Processors
+-------------------------------
+
+Status:  
+
+    Scheduled for 6/4/2004.
+
+Description:
+
+    Users will be able to instantiate a **Processor** object.  A spawn
+    pseudo-method will allow them to launch a thread on that processor.  Using
+    an on-block, e.g.::
+
+      par {
+        on(<processor> [,<priority>]) { ... }
+      }
+
+    will allow for a similar feature using **par** blocks.  Support for **pfor**
+    will also be included.
+
+Implementation:
+
+    * Rename **Processor** to **Cluster**.
+
+    * A **Processor** object will be a handle around **Cluster**.
+
+    * A global variable will contain a pointer to the current **Cluster**.  Most of
+      the interface functions will use that value, except for some that take a
+      cluster.  A new interface function will return a **Cluster** object
+      pointing to the current cluster.
+
+    * The **System** object will have a queue of clusters.  Each cluster will
+      make one pass through its threads, then pass to the next cluster.
+
+    * Add spawn pseudo method and add support for optional second parameter
+      setting priority.
 
 Time Model
 ----------

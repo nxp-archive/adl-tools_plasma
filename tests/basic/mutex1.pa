@@ -14,12 +14,15 @@ using namespace plasma;
 
 pMutex class M {
 public:
-  static void msg(const char *fmt, va_list ap) {
+  static void msg(const char *fmt, va_list ap)
+    __attribute__((format(printf, 1, 2)))
+  {
     pLock();
     vprintf(fmt,ap);
     pUnlock();
   };
 };
+
 
 pMutex class Queue {
 public:

@@ -29,53 +29,77 @@ check_PROGRAMS = \
 	spawn2 \
 	spawn3 \
 	spawn4 \
-	mutex1
+	mutex1 \
+	pri1 \
+	pri2
 
-DEPENDENCIES = \
-	$(top_srcdir)/src/libplasma.a \
-	$(top_srcdir)/parser/Plasma.so \
-	$(top_srcdir)/parser/Wrapper.so \
-	$(top_srcdir)/parser/Mutex.so
+DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
 par1_SOURCES = par1.pa
+par1_DEPENDENCIES = $(DEPENDENCIES)
 
 par2_SOURCES = par2.pa
+par2_DEPENDENCIES = $(DEPENDENCIES)
 
 par3_SOURCES = par3.pa
+par3_DEPENDENCIES = $(DEPENDENCIES)
 
 qsort_SOURCES = qsort.pa
+qsort_DEPENDENCIES = $(DEPENDENCIES)
 
 chan1_SOURCES = chan1.C
+chan1_DEPENDENCIES = $(DEPENDENCIES)
 
 chan2_SOURCES = chan2.pa
+chan2_DEPENDENCIES = $(DEPENDENCIES)
 
 chan3_SOURCES = chan3.pa
+chan3_DEPENDENCIES = $(DEPENDENCIES)
 
 chan4_SOURCES = chan4.pa
+chan4_DEPENDENCIES = $(DEPENDENCIES)
 
 chan5_SOURCES = chan5.pa
+chan5_DEPENDENCIES = $(DEPENDENCIES)
 
 chan6_SOURCES = chan6.pa
+chan6_DEPENDENCIES = $(DEPENDENCIES)
 
 chan7_SOURCES = chan7.pa
+chan7_DEPENDENCIES = $(DEPENDENCIES)
 
 chan8_SOURCES = chan8.pa
+chan8_DEPENDENCIES = $(DEPENDENCIES)
 
 chan9_SOURCES = chan9.pa
+chan9_DEPENDENCIES = $(DEPENDENCIES)
 
 chan10_SOURCES = chan10.pa
+chan10_DEPENDENCIES = $(DEPENDENCIES)
 
 chan11_SOURCES = chan11.pa
+chan11_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn1_SOURCES = spawn1.C
+spawn1_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn2_SOURCES = spawn2.pa
+spawn2_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn3_SOURCES = spawn3.pa
+spawn3_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn4_SOURCES = spawn4.pa
+spawn4_DEPENDENCIES = $(DEPENDENCIES)
 
 mutex1_SOURCES = mutex1.pa
+mutex1_DEPENDENCIES = $(DEPENDENCIES)
+
+pri1_SOURCES = pri1.pa
+pri1_DEPENDENCIES = $(DEPENDENCIES)
+
+pri2_SOURCES = pri2.pa
+pri2_DEPENDENCIES = $(DEPENDENCIES)
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
@@ -99,7 +123,9 @@ DEP_FILES=\
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
 	./$(DEPDIR)/spawn4.Po \
-	./$(DEPDIR)/mutex1.Po
+	./$(DEPDIR)/mutex1.Po \
+	./$(DEPDIR)/pri1.Po \
+	./$(DEPDIR)/pri2.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -119,6 +145,8 @@ include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po
 include ./$(DEPDIR)/mutex1.Po
+include ./$(DEPDIR)/pri1.Po
+include ./$(DEPDIR)/pri2.Po
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

@@ -15,7 +15,8 @@ namespace plasma {
     _stacksize(8192),
     _verbose(false),
     _preempt(true),
-    _timeslice(50000)
+    _timeslice(50000),
+    _priority_count(32)
   {}
 
   // Create a new thread and make it ready.
@@ -93,6 +94,21 @@ namespace plasma {
   void pSetHandle(THandle t,HandleType h)
   {
     t->setHandle(h);
+  }
+
+  void pSetPriority(unsigned p)
+  {
+    processor.set_priority(p);
+  }
+
+  unsigned pGetPriority()
+  {
+    return processor.get_priority();
+  }
+
+  unsigned pLowestPriority()
+  {
+    return processor.lowest_priority();
   }
 
   // Lock processor.

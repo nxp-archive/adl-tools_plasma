@@ -49,14 +49,4 @@ namespace plasma {
     _stacks = st;
   }
 
-  // Place thread into ready queue.  If the
-  // thread is marked as donee, this operation
-  // will not do anything.
-  void System::add_ready(Thread *next)
-  {
-    if (!next->done()) {
-      _ready.add(next);
-    }
-  }
-
 }

@@ -6,6 +6,7 @@
 #define _THREADQ_H_
 
 #include <iosfwd>
+#include <vector>
 
 namespace plasma {
 
@@ -29,11 +30,13 @@ namespace plasma {
     // O(n) operation for size()!
     unsigned size() const;
 
-    void print(std::ostream &) const;
+    friend std::ostream &operator<<(std::ostream &,const ThreadQ &);
   private:
     Thread *_head; // Head of the queue.
     Thread *_tail; // Tail of the queue.
   };
+
+  typedef std::vector<ThreadQ> QVect;
 
 }
 

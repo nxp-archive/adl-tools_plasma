@@ -1,3 +1,14 @@
+2004-05-26  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added priorities to Plasma.  You can change the current thread's
+	priority by calling pSetPriority() and you can get the current
+	priority by calling pGetPriority().  Priorities are numbers 0 to
+	n-1, where n is set in pSetup and defaults to 32.  0 is the
+	highest priority, but internally 0 is the lowest, so that we can
+	easily tell whether we should timeslice or not.  The idea is that
+	we only timeslice on the lowest priority- all other threads run to
+	completion.
+
 2004-05-25  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Changed port statement syntax to be more clear.  Now, the format

@@ -1,0 +1,78 @@
+//
+// Priority test.
+//
+
+#include <stdio.h>
+
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._priority_count = 3;
+} 
+
+void delay(double x,int d = 10,int w = 10000000)
+{
+  for (int i = 0; i != d; ++i) {
+    int j = 0;
+    for (int i = 0; i != w; ++i) {
+      j += 1;
+    }
+    printf ("In block %.1f.\n",x);
+  }
+}
+
+int foo(double x,int priority)
+{
+  pSetPriority(priority);
+  delay(x);
+  printf ("Done with block %.1f.\n",x);
+  return 0;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    {
+      pSetPriority(0);
+      delay(1,20);
+      par {
+        {
+          delay(1.1,4);
+          printf ("Done with block 1.1.\n");
+        }
+        {
+          delay(1.2,4);
+          printf ("Done with block 1.2.\n");
+        }
+      }
+      printf ("Done with block 1.\n");
+    }
+    {
+      pSetPriority(1);
+      delay(2,20);
+      par {
+        {
+          delay(2.1,4);
+          printf ("Done with block 2.1.\n");
+        }
+        {
+          delay(2.2,4);
+          printf ("Done with block 2.2.\n");
+        }
+      }
+      printf ("Done with block 2.\n");
+    }
+    {
+      delay(3);
+      par { foo(3.1,1); }
+      printf ("Done with block 3.\n");
+    }
+    {
+      delay(4,15);
+      printf ("Done with block 4.\n");
+    }
+  }
+  return 0;
+}
+

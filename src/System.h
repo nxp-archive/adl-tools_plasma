@@ -19,13 +19,6 @@ namespace plasma {
     void init(const ConfigParms &);
     int stacksize() const;             // return default stacksize
 
-    bool have_ready() const;           // Return true iff thread available.
-    unsigned size_ready() const;       // Number of ready threads- O(n) operation.
-    void add_ready(Thread *next);      // Place thread into ready queue.
-    Thread *get_ready(void);           // Removes thread from ready queue and returns it.
-    Thread *get_ready(Thread *t);      // Removes thread from ready queue if it's in it.
-    void print_ready(std::ostream &) const;
-
     void *newstack();                  // return appropriate thread stack
     void dispose(void *stack);         // dispose stack for later reuse
 
@@ -36,8 +29,6 @@ namespace plasma {
     bool wantShutdown() const;
 
   private:
-    ThreadQ _ready;            // Queue of threads ready to execute.
-
     int     _size;             // Default stack size of threads
     void   *_stacks;           // Disposed thread stacks
     int     _code;             // Exit code.
@@ -49,16 +40,6 @@ namespace plasma {
     return _size; 
   }
 
-  inline bool System::have_ready() const
-  {
-    return !_ready.empty();
-  }
-
-  inline unsigned System::size_ready() const
-  {
-    return _ready.size();
-  }
-
   inline int System::retcode() const
   {
     return _code;
@@ -67,23 +48,6 @@ namespace plasma {
   inline bool System::wantShutdown() const
   {
     return _wantshutdown;
-  }
-
-  // Get thread from ready queue.  Returns 0 if 
-  // no threads are ready.
-  inline Thread *System::get_ready(void)
-  {
-    return _ready.get();
-  }
-
-  inline Thread *System::get_ready(Thread *t)
-  {
-    return _ready.get(t);
-  }
-
-  inline void System::print_ready(std::ostream &o) const
-  {
-    _ready.print(o);
   }
 
   // Main processor object (only one per system).

@@ -56,13 +56,14 @@ namespace plasma {
     return size;
   }
 
-  void ThreadQ::print(ostream &o) const
+  ostream &operator<<(ostream &o,const ThreadQ &q)
   {
     o << "[ ";
-    for (Thread *i = _head; i; i = i->getnext()) {
+    for (Thread *i = q._head; i; i = i->getnext()) {
       o << i << " ";
     }
     o << "]";
+    return o;
   }
 
 }

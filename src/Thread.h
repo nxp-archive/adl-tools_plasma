@@ -45,6 +45,9 @@ namespace plasma {
     HandleType handle() const { return _handle; };
     void setHandle(HandleType h) { _handle = h; };
 
+    unsigned priority() const { return _priority; };
+    void setPriority(unsigned p) { _priority = p; };
+
     void *endspace() const { return (void*)&_extraspace[0]; };
 
     static void *operator new(size_t sz) { return ::operator new(sz); };
@@ -57,6 +60,7 @@ namespace plasma {
     void       *_stack;            // Stack pointer.
     Thread     *_next;             // Next thread in queue.
     HandleType  _handle;           // Miscellaneous handle value.
+    unsigned    _priority;         // Current thread priority.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
@@ -64,7 +68,8 @@ namespace plasma {
     _done(false),
     _thread(0),
     _stack(0),
-    _next(0)
+    _next(0),
+    _priority(0)
   {
   }
 

@@ -24,13 +24,18 @@ namespace plasma {
   //
   struct ConfigParms
   {
-    int      _stacksize; // size of thread stack
-    bool     _verbose;   // verbosity flag
-    bool     _preempt;   // preemption allowed.
-    unsigned _timeslice; // Time slice length in usec.
+    int      _stacksize;      // size of thread stack
+    bool     _verbose;        // verbosity flag
+    bool     _preempt;        // preemption allowed.
+    unsigned _timeslice;      // Time slice length in usec.
+    int      _priority_count; // Number of supported priorities.
 
     ConfigParms();
   };
+
+  // The following threads relate to the "current" processor, unless
+  // a Cluster argument is supplied (assuming a function is used that
+  // takes one as an argument).
 
   // The basic thread entry point is a one-argument function.
   typedef void (UserFunc)(void *);
@@ -78,6 +83,17 @@ namespace plasma {
 
   // Set a thread's handle.
   void pSetHandle(THandle,HandleType);
+
+  // Set current thread's priority.  This has the effect of performing a thread
+  // swap so that the priority takes effect immediately.
+  // Note:  0 is highest priority.
+  void pSetPriority(unsigned);
+
+  // Return current thread's priority.
+  unsigned pGetPriority();
+
+  // Returns lowest (highest value) priority.
+  unsigned pLowestPriority();
 
   // Kill the current thread.
   void pTerminate();

@@ -140,23 +140,30 @@ int main(int argc,const char *argv[])
     return(code); // return to caller        
   }
 
-  // Run setup function.
-  pSetup(configParms);
+  try {
 
-  // Initialize process system.
-  thesystem.init(configParms);
-  processor.init(configParms);
+    // Run setup function.
+    pSetup(configParms);
 
-  sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
-  sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill
-  sig_segv = (void*)signal(SIGSEGV, SA_HANDLER(shutdown)); // segmentation violation
-  sig_bus  = (void*)signal(SIGBUS, SA_HANDLER(shutdown));  // bus error
-  sig_chld = (void*)signal(SIGCHLD, SA_HANDLER(shutdown)); // death of child
-  sig_hup  = (void*)signal(SIGHUP, SA_HANDLER(shutdown));  // termination triggered
+    // Initialize process system.
+    thesystem.init(configParms);
+    processor.init(configParms);
 
-  StartThread *st = new StartThread(argc,argv);
-  thesystem.add_ready(st);
-  processor.scheduler();             // execute thread scheduler 
-  delete st;
-  return (thesystem.retcode());
+    sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
+    sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill
+    sig_segv = (void*)signal(SIGSEGV, SA_HANDLER(shutdown)); // segmentation violation
+    sig_bus  = (void*)signal(SIGBUS, SA_HANDLER(shutdown));  // bus error
+    sig_chld = (void*)signal(SIGCHLD, SA_HANDLER(shutdown)); // death of child
+    sig_hup  = (void*)signal(SIGHUP, SA_HANDLER(shutdown));  // termination triggered
+
+    StartThread *st = new StartThread(argc,argv);
+    processor.add_ready(st);
+    processor.scheduler();             // execute thread scheduler 
+    delete st;
+    return (thesystem.retcode());
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    return 1;
+  }
 }
