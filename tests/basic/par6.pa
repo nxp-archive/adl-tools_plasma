@@ -1,0 +1,56 @@
+//
+// Tests nested par/pfor blocks.
+//
+#include <iostream>
+#include <iterator>
+
+using namespace std;
+using namespace plasma;
+
+typedef vector<pair<double,double> > Doubles;
+
+void a()
+{
+  Doubles results(5);
+  pfor (unsigned i = 0; i != results.size(); ++i) {
+    par {
+      {
+        results[i].first = (i+1)*10;
+      }
+      {
+        results[i].second = (i+1)*12.5;
+      }
+    }
+  }
+  cout << "Result is:  ";
+  for (unsigned i = 0; i != results.size(); ++i) {
+    cout << results[i].first << " " << results[i].second << " ";
+  }
+  cout << endl;
+}
+
+void b()
+{
+  Doubles results(5);
+  par {
+    pfor (unsigned i = 0; i != results.size(); ++i) {
+      results[i].first = (i+1)*10;
+    }
+    pfor (unsigned i = 0; i != results.size(); ++i) {
+      results[i].second = (i+1)*16.8;
+    }
+  }
+  cout << "Result is:  ";
+  for (unsigned i = 0; i != results.size(); ++i) {
+    cout << results[i].first << " " << results[i].second << " ";
+  }
+  cout << endl;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  a();
+  b();
+  cout << "Done." << endl;
+  return 0;
+}

@@ -22,16 +22,6 @@ public:
   void Typeof(Walker*, TypeInfo&);
 };
 
-Ptree* TsLeaf::Translate(Walker* w)
-{
-    return w->TranslateVariable(this);
-}
-
-void TsLeaf::Typeof(Walker* w, TypeInfo& t)
-{
-    w->TypeofVariable(this, t);
-}
-
 // This is just a list which calls translate on its constituent items.
 class TsList : public NonLeaf {
 public:
@@ -44,6 +34,16 @@ public:
   static Ptree* List(Ptree*, Ptree*, Ptree*);
   static Ptree* List(Ptree*, Ptree*, Ptree*, Ptree*);
 };
+
+Ptree* TsLeaf::Translate(Walker* w)
+{
+    return w->TranslateVariable(this);
+}
+
+void TsLeaf::Typeof(Walker* w, TypeInfo& t)
+{
+    w->TypeofVariable(this, t);
+}
 
 Ptree *TsList::Translate(Walker *w)
 {
@@ -118,6 +118,34 @@ Ptree *VarWalker::TranslateUserFor(Ptree *s)
     }
 }
 
+Ptree *translateList(Walker *w,Ptree *s)
+{
+  Ptree *a = s->Car();
+  Ptree *a2 = w->Translate(a);
+  Ptree *rest = s->Cdr();
+  Ptree *rest2 = (rest) ? translateList(w,rest) : rest;
+  if (a == a2 && rest == rest2) {
+    return s;
+  } else {
+    return Ptree::Cons(a2,rest2);
+  }
+}
+
+Ptree *VarWalker::TranslateUserWhile(Ptree *s)
+{
+  Ptree *exp = s->Third();
+  Ptree *exp2 = translateList(this,exp);
+  Ptree *body = s->Nth(4);
+  Ptree *body2 = Translate(body);
+
+  if (exp == exp2 && body == body2) {
+    return s;
+  } else {
+    Ptree *rest = Ptree::ShallowSubst(exp2,exp,body2,body,s->Cdr());
+    return new PtreeUserPlainStatement(s->Car(),rest);
+  }
+}
+
 // We need to make sure that nested constructs are translated.  All we do
 // is translate the constituent items, making sure that the construct is
 // preserved so that it is handled elsewhere.
@@ -139,9 +167,32 @@ Ptree *VarWalker::TranslateUserPlain(Ptree *exp)
   }
   else if (keyword->Eq("afor")) {
     return TranslateUserFor(exp);
+  } else if (keyword->Eq("on")) {
+    return TranslateUserWhile(exp);
   } else {
     return exp;
   }
+}
+
+Ptree *VarWalker::TranslateUserStatement(Ptree *exp)
+{
+  Ptree* object = exp->First();
+  Ptree* op = exp->Second();
+  Ptree* keyword = exp->Third();
+  Ptree* p1 = exp->Nth(3);
+  Ptree* args = exp->Nth(4);
+  Ptree* p2 = exp->Nth(5);
+  Ptree* body = exp->Nth(6);
+
+  Ptree *object2 = Translate(object);
+  Ptree *args2 = Translate(args);
+  Ptree *body2 = Translate(body);
+
+  if (object == object2 && args == args2 && body == body2) {
+    return exp;
+  } else {
+    return new PtreeUserStatementExpr(object2,Ptree::List(op,keyword,p1,args2,p2,body2));
+  } 
 }
 
 // Look for the variable in all environments from the current up to,

@@ -7,6 +7,7 @@
 #define _INTERFACE_H_
 
 #include "gc_cpp.h"
+#include "gc_allocator.h"
 
 #include <vector>
 #include <assert.h>
@@ -57,7 +58,7 @@ namespace plasma {
   // Vector of processors.  The idea is that you use
   // this, rather than just a standard container, so that
   // you get N unique Processor objects from the constructor.
-  struct Processors : public std::vector<Processor>
+  struct Processors : public std::vector<Processor,traceable_allocator<Processor> >
   {
     Processors() {};
     Processors(unsigned n);

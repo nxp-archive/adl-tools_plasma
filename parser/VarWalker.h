@@ -46,6 +46,7 @@ public:
 
   virtual Ptree* TranslateVariable(Ptree*);
   virtual Ptree* TranslateUserPlain(Ptree*);
+  virtual Ptree* TranslateUserStatement(Ptree*);
 
   void handleGuard(bool hg) { _inguard = hg; };
   void setnames(Ptree *tst,Ptree *tsn) { 
@@ -70,6 +71,7 @@ public:
 private:
   Ptree *TranslateUserBlock(Ptree *s);
   Ptree *TranslateUserFor(Ptree *s);
+  Ptree *TranslateUserWhile(Ptree *s);
 
   Ptree *recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_inguard);
 

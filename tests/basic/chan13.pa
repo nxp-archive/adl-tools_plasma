@@ -1,0 +1,62 @@
+//
+// Tests afor nested within par blocks.
+//
+#include <iostream>
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef vector<Channel<int> > Chans;
+
+struct Foo {
+
+  void a()
+  {
+    Chans chans(4);
+    par {
+      for (int i = 0; i != 12; ++i) {
+        afor (unsigned i = 0; i != chans.size(); ++i) {
+          chans[i].port(int x) {
+            cout << "Data from port " << i << ":  " << x << endl;
+          }
+        }
+      }
+      {
+        par {
+          {
+            chans[0].write(1);
+            chans[0].write(2);
+            chans[0].write(3);
+          }
+          {
+            chans[1].write(4);
+            chans[1].write(5);
+            chans[1].write(6);
+          }
+        }
+        par {
+          {
+            chans[2].write(7);
+            chans[2].write(8);
+            chans[2].write(9);
+          }
+          {
+            chans[3].write(10);
+            chans[3].write(11);
+            chans[3].write(12);
+          }
+        }
+      }
+    }
+  }
+
+};
+
+int pMain(int argc,const char *argv[])
+{
+  Foo f;
+  f.a();
+  cout << "Done." << endl;
+  return 0;
+}

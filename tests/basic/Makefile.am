@@ -15,6 +15,8 @@ check_PROGRAMS = \
 	par3 \
 	par4 \
 	par5 \
+	par6 \
+	par7 \
 	qsort \
 	chan1 \
 	chan2 \
@@ -28,6 +30,7 @@ check_PROGRAMS = \
 	chan10 \
 	chan11 \
 	chan12 \
+	chan13 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -63,6 +66,12 @@ par4_DEPENDENCIES = $(DEPENDENCIES)
 
 par5_SOURCES = par5.pa
 par5_DEPENDENCIES = $(DEPENDENCIES)
+
+par6_SOURCES = par6.pa
+par6_DEPENDENCIES = $(DEPENDENCIES)
+
+par7_SOURCES = par7.pa
+par7_DEPENDENCIES = $(DEPENDENCIES)
 
 qsort_SOURCES = qsort.pa
 qsort_DEPENDENCIES = $(DEPENDENCIES)
@@ -102,6 +111,9 @@ chan11_DEPENDENCIES = $(DEPENDENCIES)
 
 chan12_SOURCES = chan12.pa
 chan12_DEPENDENCIES = $(DEPENDENCIES)
+
+chan13_SOURCES = chan13.pa
+chan13_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
@@ -165,6 +177,8 @@ DEP_FILES=\
 	./$(DEPDIR)/par3.Po \
 	./$(DEPDIR)/par4.Po \
 	./$(DEPDIR)/par5.Po \
+	./$(DEPDIR)/par6.Po \
+	./$(DEPDIR)/par7.Po \
 	./$(DEPDIR)/qsort.Po \
 	./$(DEPDIR)/chan1.Po \
 	./$(DEPDIR)/chan2.Po \
@@ -178,6 +192,7 @@ DEP_FILES=\
 	./$(DEPDIR)/chan10.Po \
 	./$(DEPDIR)/chan11.Po \
 	./$(DEPDIR)/chan12.Po \
+	./$(DEPDIR)/chan13.Po \
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
@@ -202,6 +217,8 @@ include ./$(DEPDIR)/par2.Po
 include ./$(DEPDIR)/par3.Po
 include ./$(DEPDIR)/par4.Po
 include ./$(DEPDIR)/par5.Po
+include ./$(DEPDIR)/par6.Po
+include ./$(DEPDIR)/par7.Po
 include ./$(DEPDIR)/qsort.Po
 include ./$(DEPDIR)/chan2.Po
 include ./$(DEPDIR)/chan3.Po
@@ -214,6 +231,7 @@ include ./$(DEPDIR)/chan9.Po
 include ./$(DEPDIR)/chan10.Po
 include ./$(DEPDIR)/chan11.Po
 include ./$(DEPDIR)/chan12.Po
+include ./$(DEPDIR)/chan13.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po

@@ -1,5 +1,13 @@
 2004-06-25  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Fixed nested par blocks w/on statements.  I also made the
+	Processors array be a vector w/the traceable_allocator so that
+	Proc objects wouldn't be collected.
+
+	* Fixed some bugs so that alt/afor and pfor could be nested within
+	par blocks.  The alt fix was simply that I needed to have the
+	VarWalker handle user statements, e.g. port statements.
+
 	* Fixed problems w/nested par blocks.  Two problems were found:
 	The VarWalker class needed to overload TranslateUserPlain so that
 	par and alt blocks weren't opaque.  Second, the code that we were
