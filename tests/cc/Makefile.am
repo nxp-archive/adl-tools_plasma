@@ -6,8 +6,10 @@ check_PROGRAMS = minicc
 minicc_SOURCES = \
 	String.C \
 	Node.C \
+	SymTab.C \
 	main.pa \
 	CParser.pa \
+	Compiler.pa \
 	cparse.yy \
 	CLexer.pa \
 	clex.ll
@@ -19,13 +21,16 @@ DEP_FILES=\
 	./$(DEPDIR)/String.Po \
 	./$(DEPDIR)/CLexer.Po \
 	./$(DEPDIR)/CParser.Po \
+	./$(DEPDIR)/Compiler.Po \
 	./$(DEPDIR)/cparse.Po \
 	./$(DEPDIR)/clex.Po \
-	./$(DEPDIR)/Node.Po
+	./$(DEPDIR)/Node.Po \
+	./$(DEPDIR)/SymTab.Po
 
 include ./$(DEPDIR)/main.Po
 include ./$(DEPDIR)/CLexer.Po
 include ./$(DEPDIR)/CParser.Po
+include ./$(DEPDIR)/Compiler.Po
 
 BUILT_SOURCES = clex.cc
 

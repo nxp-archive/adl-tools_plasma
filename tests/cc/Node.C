@@ -10,6 +10,7 @@
 #include <assert.h>
 
 #include "Node.h"
+#include "SymTab.h"
 #include "cparse.h"
 
 using namespace std;
@@ -18,6 +19,7 @@ using namespace std;
 static const int Incr = 2;
 
 static int IndentIndex = ostream::xalloc();
+static int PrintSyms = ostream::xalloc();
 
 int curindent(ostream &o)
 {
@@ -46,6 +48,25 @@ ostream &decrindent(ostream &o)
 {
   o.iword(IndentIndex) -= Incr;
   return o;
+}
+
+// Indicate that symbols should be printed.
+ostream &printsyms(ostream &o)
+{
+  o.iword(PrintSyms) = true;
+  return o;
+}
+
+// Turn off symbol printing.
+ostream &noprintsyms(ostream &o)
+{
+  o.iword(PrintSyms) = false;
+  return o;
+}
+
+bool do_printsyms(ostream &o)
+{
+  return o.iword(PrintSyms);
 }
 
 // Doesn't do anything, but is sometimes required due to C++ bullshit.
@@ -93,6 +114,15 @@ std::ostream &operator<<(std::ostream &o,const Node *n)
   return o;
 }
 
+void Node::gensymtab()
+{
+  gensymtab(0);
+}
+
+void Node::gensymtab(SymTab *)
+{
+}
+
 NullNode::NullNode() : Node(0) 
 {}
 
@@ -100,6 +130,12 @@ void ArrayExpression::printdata(ostream &o) const
 {
   o << indent << "Expr : " << _expr
     << indent << "Index: " << _index;
+}
+
+void ArrayExpression::gensymtab(SymTab *p)
+{
+  _expr->gensymtab(p);
+  _index->gensymtab(p);
 }
 
 StringLiteral::StringLiteral(String s) : 
@@ -123,6 +159,17 @@ void Id::printdata(ostream &o) const
   o << indent << "Name:  " << _id;
 }
 
+void Id::gensymtab(SymTab *p)
+{
+  if (Node *s = p->find(_id)) {
+    _has_addr = true;
+    _symbol = s;
+    _symbol->set_used();
+  } else {
+    Error(this,"Unknown identifier " << _id);
+  }
+}
+
 void Const::printdata(ostream &o) const
 {
   o << indent << "Value:  " << _value;
@@ -143,6 +190,10 @@ void Unaryop::printdata(ostream &o) const
   o << indent << "Expr:  " << _expr;
 }
 
+void Unaryop::gensymtab(SymTab *p)
+{
+  _expr->gensymtab(p);
+}
 
 Node::Calc Negative::calculate() const
 {
@@ -271,11 +322,24 @@ void Binop::printdata(ostream &o) const
   o << indent << "Right:  " << _right;
 }
 
+void Binop::gensymtab(SymTab *p)
+{
+  _left->gensymtab(p);
+  _right->gensymtab(p);
+}
+
 void IfStatement::printdata(ostream &o) const
 {
   o << indent << "Expr:  " << _expr
     << indent << "Then:  " << _then
     << indent << "Else:  " << _else;
+}
+
+void IfStatement::gensymtab(SymTab *p)
+{
+  _expr->gensymtab(p);
+  _then->gensymtab(p);
+  _else->gensymtab(p);
 }
 
 void ForLoop::printdata(ostream &o) const
@@ -286,10 +350,24 @@ void ForLoop::printdata(ostream &o) const
     << indent << "Stmt :  " << _stmt;
 }
 
+void ForLoop::gensymtab(SymTab *p)
+{
+  _begin->gensymtab(p);
+  _expr->gensymtab(p);
+  _end->gensymtab(p);
+  _stmt->gensymtab(p);
+}
+
 void WhileLoop::printdata(ostream &o) const
 {
   o << indent << "Expr:" << _expr
     << indent << "Stmt:" << _stmt;
+}
+
+void WhileLoop::gensymtab(SymTab *p)
+{
+  _expr->gensymtab(p);
+  _stmt->gensymtab(p);
 }
 
 void NodeList::printdata(ostream &o) const
@@ -299,16 +377,44 @@ void NodeList::printdata(ostream &o) const
   }
 }
 
+void NodeList::gensymtab(SymTab *p)
+{
+  for (iterator i = begin(); i != end(); ++i) {
+    (*i)->gensymtab(p);
+  }
+}
+
 void FunctionExpression::printdata(ostream &o) const
 {
   o << indent << "Name:" << _function
     << indent << "Args:" << _arglist;
 }
 
+void FunctionExpression::gensymtab(SymTab *p)
+{
+  _function->gensymtab(p);
+  _arglist->gensymtab(p);
+}
+
 void CompoundStatement::printdata(ostream &o) const
 {
   o << indent << "Decls:" << _declaration_list
     << indent << "Stmts:" << _statement_list;
+  printsyms(o);
+}
+
+void SymNode::printsyms(ostream &o) const
+{
+  if (do_printsyms(o)) {
+    o << indent << incrindent << "Symbols:" << _symtab << decrindent;
+  }
+}
+
+void CompoundStatement::gensymtab(SymTab *p)
+{
+  _symtab = new SymTab(p);
+  _declaration_list->gensymtab(_symtab);
+  _statement_list->gensymtab(_symtab);
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -327,11 +433,27 @@ void FunctionDefn::printdata(ostream &o) const
     << indent << "Static:  " << _static
     << indent << "Name  :  " << _name
     << indent << "Body  :" << _body;
+  printsyms(o);
+}
+
+void FunctionDefn::gensymtab(SymTab *p)
+{
+  p->add(_name,this);
+  _symtab = new SymTab(p);
+  _type->gensymtab(_symtab);
+  _body->gensymtab(_symtab);
 }
 
 void ReturnStatement::printdata(ostream &o) const
 {
   o << indent << "Expr:  " << _expr;
+}
+
+void ReturnStatement::gensymtab(SymTab *p)
+{
+  if (_expr) {
+    _expr->gensymtab(p);
+  }
 }
 
 Declaration::Declaration (String n,Type *t) :
@@ -364,6 +486,25 @@ void Declaration::printdata(ostream &o) const
     << indent << "Name  :  " << _name;
 }
 
+void Declaration::gensymtab(SymTab *p)
+{
+  p->add(_name,this);
+}
+
+void TranslationUnit::printdata(std::ostream &o) const
+{
+  NodeList::printdata(o);
+  printsyms(o);
+}
+
+void TranslationUnit::gensymtab(SymTab *p)
+{
+  // This should be a top-level item w/no parent.
+  assert(!p);
+  _symtab = new SymTab();
+  NodeList::gensymtab(_symtab);
+}
+
 ostream &operator<<(ostream &o,const Type *t)
 {
   if (!t) {
@@ -387,6 +528,10 @@ void Type::set_base_type(Type *t)
   }
 }
 
+void Type::gensymtab(SymTab *parent)
+{
+}
+
 ostream &BaseType::print(ostream &o) const
 {
   switch (_type) {
@@ -398,6 +543,9 @@ ostream &BaseType::print(ostream &o) const
     break;
   case Double:
     o << "double";
+    break;
+  case None:
+    o << "<none>";
     break;
   }
   return o;
@@ -423,6 +571,11 @@ ostream &FunctionType::print(ostream &o) const
   return o;
 }
 
+void FunctionType::gensymtab(SymTab *p)
+{
+  _params->gensymtab(p);
+}
+
 ostream &FunctionType::print_outer(ostream &o) const
 {
   o << "function";
@@ -443,37 +596,3 @@ ostream &PointerType::print_outer(std::ostream &o) const
   return o;
 }
 
-//
-// List double-dispatch walk functions here.
-//
-
-#define WalkDefn(n)\
-  void n::walk(Visitor &x) { \
-    x.visit##n(this); \
-  }
-
-WalkDefn(NullNode);
-WalkDefn(ArrayExpression);
-WalkDefn(StringLiteral);
-WalkDefn(Id);
-WalkDefn(Const);
-WalkDefn(Unaryop);
-WalkDefn(Negative);
-WalkDefn(Pointer);
-WalkDefn(AddrOf);
-WalkDefn(Binop);
-WalkDefn(IfStatement);
-WalkDefn(BreakStatement);
-WalkDefn(ContinueStatement);
-WalkDefn(ReturnStatement);
-WalkDefn(ForLoop);
-WalkDefn(WhileLoop);
-WalkDefn(ArgumentList);
-WalkDefn(ParamList);
-WalkDefn(StatementList);
-WalkDefn(TranslationUnit);
-WalkDefn(DeclarationList);
-WalkDefn(FunctionExpression);
-WalkDefn(CompoundStatement);
-WalkDefn(FunctionDefn);
-WalkDefn(Declaration);

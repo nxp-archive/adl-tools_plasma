@@ -1,0 +1,59 @@
+//
+// This class takes ASTs and performs all of the compilation passes.
+//
+
+#include <iostream>
+#include <stdexcept>
+
+#include "Compiler.h"
+#include "SymTab.h"
+#include "Node.h"
+
+using namespace std;
+
+Compiler::Compiler( Nodes &asts) :
+  _asts(asts)
+{
+}
+
+// Each thread returns a boolean- false means that an error
+// was encountered.
+//typedef Result<bool> CompRes;
+
+//typedef vector<CompRes,traceable_allocator<ComRes> > Results;
+
+// Spawn off each translation-unit compilation phase as a separate thread.
+void Compiler::compile()
+{
+  pfor (Nodes::iterator i = _asts.begin(); i != _asts.end(); ++i) {
+    compile(*i);
+  }
+}
+
+// For each translation unit, compile it.
+void Compiler::compile(Node *tu)
+{
+  // First, we generate the symbol table.  This has to be done serially b/c of
+  // the sequential nature of C, i.e. symbols are visible in the order in which
+  // they appear in the file.
+  try {
+    tu->gensymtab();
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    _error = true;
+  }
+}
+
+void Compiler::print_ast_list(ostream &o,bool ps)
+{
+  if (ps) {
+    o << printsyms;
+  }
+  for (Nodes::const_iterator i = _asts.begin(); i != _asts.end(); ++i) {
+    o << "\nTranslation Unit\n"
+      << "================\n"
+      << (*i)
+      << endl;
+  }
+}

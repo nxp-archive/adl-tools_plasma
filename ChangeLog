@@ -1,18 +1,26 @@
+2004-08-19  Brian Kahne  <bkahne@ibmoto.com>
+
+	* minicc: Added symbol-table generation.  I decided to remove the
+	double-dispatch stuff, because it really doesn't work that well
+	(refer to "More Effective C++" for why the double-virtual function
+	call is not an idea solution).  Instead, I'm just using
+	single-dispatch with virtual functions in the Node class.
+
 2004-08-18  Brian Kahne  <bkahne@ibmoto.com>
 
-	* AST generation seems to be working; added regressions to test
-	this.
+	* minicc: AST generation seems to be working; added regressions to
+	test this.
 
 2004-08-11  Brian Kahne  <bkahne@ibmoto.com>
 
-	* Initial AST code done.
+	* minicc:  Initial AST code done.
 
 2004-08-10  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Modified lemon so that its suffix is .cc
 	
-	* Integrated in C grammar from mini-C.  I'm able to parse the
-	example C program provided by that program.
+	* minicc: Integrated in C grammar from mini-C.  I'm able to parse
+	the example C program provided by that program.
 
 2004-08-09  Brian Kahne  <bkahne@ibmoto.com>
 
@@ -25,15 +33,15 @@
 
 		http://sourceforge.net/project/showfiles.php?group_id=79320&package_id=124528
 
-	* Added a parsing class, which wraps a lemon parser.
+	* minicc:  Added a parsing class, which wraps a lemon parser.
 	Proof-of-concept lemon parser created which just parses simple
 	mathematical expressions.  It runs in its own thread and gets
 	tokens from the tokenizer thread.
 
-	* Implemented the tokenizer stage for the compiler.
+	* minicc: Implemented the tokenizer stage for the compiler.
 	
-	* Started on an example multithreaded C compiler.  The basic
-	architecture will be:
+	* minicc: Started on an example multithreaded C compiler.  The
+	basic architecture will be:
 
 	1.  Tokenizer implemented using flex.  This passes tokens via a
 	channel to the parser.

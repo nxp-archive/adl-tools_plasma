@@ -54,12 +54,3 @@ void CParser::add_translation_unit(Node *n)
   _asts.push_back(n);
 }
 
-void CParser::print_ast_list(ostream &o)
-{
-  for (Nodes::const_iterator i = _asts.begin(); i != _asts.end(); ++i) {
-    o << "\nTranslation Unit\n"
-      << "================\n"
-      << (*i)
-      << endl;
-  }
-}

@@ -5,6 +5,7 @@
 #include "CLexer.h"
 #include "CParser.h"
 #include "Channels.h"
+#include "Compiler.h"
 
 using namespace plasma;
 using namespace std;
@@ -16,11 +17,13 @@ void parse(TokChan &tc);
 struct Options {
   bool                 _debug; // Show parser debug info.
   bool                 _ast;   // Generate AST.
+  bool                 _syms;  // Print AST + symbols.
   vector<const char *> _files; // Files to parse.       
 
   Options() :
     _debug(false),
-    _ast(false)
+    _ast(false),
+    _syms(false)
   {};
 };
 
@@ -34,6 +37,10 @@ bool parseOptions(int argc,const char *argv[])
   for (int i = 1; i < argc; ++i) {
     if (!strcmp(argv[i],"-ast")) {
       options._ast = true;
+    }
+    if (!strcmp(argv[i],"-syms")) {
+      options._ast = true;
+      options._syms = true;
     }
     else if (!strcmp(argv[i],"-d")) {
       options._debug = true;
@@ -90,11 +97,20 @@ void parse(TokChan &tc)
       cp.reset();
     }
   }
+  // If we have a parsing error, exit.
   if (cp.error()) {
-    // If we have a parsing error, exit.
     pExit(1);
   }
+  // Do the compilation:  Give each translation unit
+  // to the compiler and tell it to go to work.
+  Compiler compiler(cp.translationUnits());
+  compiler.compile();
+  if (compiler.error()) {
+    pExit(2);
+  }
+  // Print ASTs, if so requested.
   if (options._ast) {
-    cp.print_ast_list(cout);
+    compiler.print_ast_list(cout,options._syms);
   }
 }
+

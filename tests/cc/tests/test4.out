@@ -1,0 +1,133 @@
+
+Translation Unit
+================
+
+  + 15TranslationUnit
+      + 11Declaration
+        Type-string:  int
+        Extern:  0
+        Static:  0
+        Used  :  0
+        Name  :  xx
+      + 11Declaration
+        Type-string:  int
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  yy
+      + 12FunctionDefn
+        Type-string:  function(int,pointer(pointer(char)))->int
+        Extern:  0
+        Static:  0
+        Name  :  main
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 15DeclarationList
+                  + 11Declaration
+                    Type-string:  int
+                    Extern:  0
+                    Static:  0
+                    Used  :  1
+                    Name  :  a
+            Stmts:
+              + 13StatementList
+                  + 17CompoundStatement
+                    Decls:
+                      + 15DeclarationList
+                          + 11Declaration
+                            Type-string:  int
+                            Extern:  0
+                            Static:  0
+                            Used  :  1
+                            Name  :  b
+                          + 11Declaration
+                            Type-string:  int
+                            Extern:  0
+                            Static:  0
+                            Used  :  0
+                            Name  :  c
+                    Stmts:
+                      + 13StatementList
+                          + 17CompoundStatement
+                            Decls:
+                              + 8NullNode
+                            Stmts:
+                              + 13StatementList
+                                  + 5Binop
+                                    Left:  
+                                      + 2Id
+                                        Name:  yy
+                                    Op  :  =
+                                    Right:  
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  10
+                                  + 5Binop
+                                    Left:  
+                                      + 2Id
+                                        Name:  b
+                                    Op  :  =
+                                    Right:  
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  1
+                                  + 5Binop
+                                    Left:  
+                                      + 2Id
+                                        Name:  a
+                                    Op  :  =
+                                    Right:  
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  2
+                            Symbols:
+                              Level 4
+                              Level 3
+                                b:  int
+                                c:  int
+                              Level 2
+                                a:  int
+                              Level 1
+                                argc:  int
+                                argv:  pointer(pointer(char))
+                              Level 0
+                                xx:  int
+                                yy:  int
+                                main:  function(int,pointer(pointer(char)))->int
+                    Symbols:
+                      Level 3
+                        b:  int
+                        c:  int
+                      Level 2
+                        a:  int
+                      Level 1
+                        argc:  int
+                        argv:  pointer(pointer(char))
+                      Level 0
+                        xx:  int
+                        yy:  int
+                        main:  function(int,pointer(pointer(char)))->int
+            Symbols:
+              Level 2
+                a:  int
+              Level 1
+                argc:  int
+                argv:  pointer(pointer(char))
+              Level 0
+                xx:  int
+                yy:  int
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+            argc:  int
+            argv:  pointer(pointer(char))
+          Level 0
+            xx:  int
+            yy:  int
+            main:  function(int,pointer(pointer(char)))->int
+    Symbols:
+      Level 0
+        xx:  int
+        yy:  int
+        main:  function(int,pointer(pointer(char)))->int

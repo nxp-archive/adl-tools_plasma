@@ -30,19 +30,19 @@ Translation Unit
         Type-string:  int
         Extern:  1
         Static:  0
-        Used  :  0
+        Used  :  1
         Name  :  a
       + 11Declaration
         Type-string:  int
         Extern:  1
         Static:  0
-        Used  :  0
+        Used  :  1
         Name  :  b
       + 11Declaration
         Type-string:  int
         Extern:  1
         Static:  0
-        Used  :  0
+        Used  :  1
         Name  :  c
       + 12FunctionDefn
         Type-string:  function()->int
