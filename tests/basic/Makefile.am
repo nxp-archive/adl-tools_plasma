@@ -19,6 +19,7 @@ check_PROGRAMS = \
 	par7 \
 	par8 \
 	par9 \
+	par10 \
 	qsort1 \
 	qsort2 \
 	chan1 \
@@ -108,6 +109,9 @@ par8_DEPENDENCIES = $(DEPENDENCIES)
 
 par9_SOURCES = par9.pa
 par9_DEPENDENCIES = $(DEPENDENCIES)
+
+par10_SOURCES = par10.pa
+par10_DEPENDENCIES = $(DEPENDENCIES)
 
 qsort1_SOURCES = qsort1.pa
 qsort1_DEPENDENCIES = $(DEPENDENCIES)
@@ -304,7 +308,8 @@ include ./$(DEPDIR)/par5.Po
 include ./$(DEPDIR)/par6.Po
 include ./$(DEPDIR)/par7.Po
 include ./$(DEPDIR)/par8.Po
-include ./$(DEPDIR)/par9.Po
+include ./$(DEPDIR)/par9.Po 
+include ./$(DEPDIR)/par10.Po 
 include ./$(DEPDIR)/qsort1.Po
 include ./$(DEPDIR)/qsort2.Po
 include ./$(DEPDIR)/chan2.Po

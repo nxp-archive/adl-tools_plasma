@@ -55,6 +55,10 @@ my @Tests = (
 			  cmd     => "./par9",
 			  checker => \&check_par8,
 			 },
+			 # Check that empty expressions in par statements don't cause problems.
+			 {
+			  cmd     => "./par10",
+			 },
 			 # Quicksort with parallel sorting of split elements.
 			 {
 			  cmd     => "./qsort1",

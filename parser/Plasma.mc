@@ -248,6 +248,11 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 
   assert(elist);
 
+  // Is this an empty statement?  If so, skip.
+  if (!expr->Car()) {
+    return;
+  }
+
   // Do we have a placement statement?  If so, proc will store the expression
   // which specifies the processor.  If not, this will be nil, so the evaluation
   // will produce an empty string.
