@@ -6,6 +6,7 @@
 #include "CParser.h"
 #include "Channels.h"
 
+using namespace plasma;
 using namespace std;
 
 void tokenize(int argc,const char *argv[],TokChan &tc);
@@ -42,9 +43,16 @@ void tokenize(int argc,const char *argv[],TokChan &tc)
 void parse(TokChan &tc)
 {
   CParser cp;
-  while(true) {
+  while(!cp.error()) {
     Tokens tk = tc.get();
     if (tk._tok < 0) break;
-    cp.parse(tk._tok,tk);
+    cp.parse(tk._tok,&tk);
+    if (!tk._tok) {
+      cp.reset();
+    }
+  }
+  if (cp.error()) {
+    // If we have a parsing error, exit.
+    pExit(1);
   }
 }

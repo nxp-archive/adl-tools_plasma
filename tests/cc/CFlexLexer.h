@@ -24,12 +24,12 @@ class CLexer : public cFlexLexer {
 public:
 
   CLexer(TokChan &);
-  CLexer(TokChan &,const std::string &filename);
+  CLexer(TokChan &,const char *filename);
   ~CLexer();
 
-  void reset(const std::string &filename);
+  void reset(const char *filename);
 
-  const std::string &filename() const { return _filename; };
+  const char *filename() const { return _filename; };
   unsigned linenumber() const { return _linenumber; };
 
   // Main parsing routine.
@@ -47,6 +47,8 @@ protected:
   void send_int();
   // Sends a floating-point constant.
   void send_float();
+  // Send a character constant.
+  void send_char();
   // Sends a string literal.  Currently this does not do 
   // any character translation- this needs to be fixed in the future.
   void send_string();
@@ -61,8 +63,8 @@ private:
   std::pair<const char *,int> convert_string(const char *str,int len);
   void closefile();
 
-  std::string   _filename;
-  unsigned      _linenumber;
+  const char *_filename;
+  unsigned    _linenumber;
 
   TokChan    &_chan;
 

@@ -39,7 +39,6 @@ clex_lflag = -Cfe
 
 %.cc : %.yy ;
 	$(LEMON) $<
-	mv $(patsubst %.yy,%.c,$<) $(patsubst %.yy,%.cc,$<)
 
 cparse.h: cparse.yy
 CLexer.o: cparse.h

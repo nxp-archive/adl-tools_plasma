@@ -15,7 +15,6 @@ String::String(Tokens &tk) :
   _ptr((char*)tk._str.p),
   _len(tk._str.l)
 {
-  assert(tk._tok == IDENTIFIER || tk._tok == STRING_LITERAL);
 }
 
 ostream &operator<< (ostream &o,const String &s)

@@ -16,7 +16,7 @@
 using namespace plasma;
 using namespace std;
 
-#define ERROR(x) { ostringstream ss; ss << x; throw runtime_error(ss.str()); }
+#define Error(x) { ostringstream ss; ss << x; throw runtime_error(ss.str()); }
 
 CLexer::CLexer(TokChan &c) :
   _linenumber(0),
@@ -30,7 +30,7 @@ CLexer::CLexer(TokChan &c) :
 {
 }
 
-CLexer::CLexer(TokChan &c,const string &filename) :
+CLexer::CLexer(TokChan &c,const char *filename) :
   yyFlexLexer(),
   _chan(c),
   _fd(-1)
@@ -51,7 +51,7 @@ void CLexer::closefile()
   }
 }
 
-void CLexer::reset(const string &filename)
+void CLexer::reset(const char *filename)
 {
   struct stat statbuf;
 
@@ -60,15 +60,15 @@ void CLexer::reset(const string &filename)
 
   closefile();
 
-  if ( (_fd = open(filename.c_str(),O_RDONLY)) < 0) {
-    ERROR("Can't open " << filename << " for reading.");
+  if ( (_fd = open(_filename,O_RDONLY)) < 0) {
+    Error("Can't open " << filename << " for reading.");
   }
   if (fstat(_fd,&statbuf) < 0) {
-    ERROR("Can't open " << filename << " for reading.");
+    Error("Can't open " << filename << " for reading.");
   }
   _size = statbuf.st_size;
   if ( (_base = (const char *)mmap(0,_size,PROT_READ,MAP_SHARED,_fd,0)) == (caddr_t)-1) {
-    ERROR("mmap error for input.");
+    Error("mmap error for input.");
   }
 
   _prevpos = _base;
@@ -107,6 +107,7 @@ void CLexer::tksetup(Tokens &tk,int t)
   memset(&tk,0,sizeof(Tokens));
   tk._tok = t;
   tk._ln = _linenumber;
+  tk._fn = _filename;
 }
 
 // Sends just a token.
@@ -142,6 +143,17 @@ void CLexer::send_float()
   Tokens tk;
   tksetup(tk,FPCONST);
   tk._fp = strtod(YYText(),0);
+  _chan.write(tk);
+}
+
+// Sends a character constant.  Error checking is not done here.
+void CLexer::send_char()
+{
+  pair<const char *,int> p = convert_string(yystr()+1,YYLeng()-2);
+  Tokens tk;
+  tksetup(tk,CHARCONST);
+  tk._str.p = p.first;
+  tk._str.l = p.second;
   _chan.write(tk);
 }
 

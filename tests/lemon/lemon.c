@@ -12,6 +12,8 @@
 #include <ctype.h>
 #include <stdlib.h>
 
+#define SUFFIX ".cc"
+
 #ifndef __WIN32__
 #   if defined(_WIN32) || defined(WIN32)
 #	define __WIN32__
@@ -3310,7 +3312,7 @@ int mhflag;     /* Output in makeheaders format if true */
 
   in = tplt_open(lemp);
   if( in==0 ) return;
-  out = file_open(lemp,".c","w");
+  out = file_open(lemp,SUFFIX,"w");
   if( out==0 ){
     fclose(in);
     return;

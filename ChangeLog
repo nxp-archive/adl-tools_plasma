@@ -1,3 +1,10 @@
+2004-08-10  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Modified lemon so that its suffix is .cc
+	
+	* Integrated in C grammar from mini-C.  I'm able to parse the
+	example C program provided by that program.
+
 2004-08-09  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added the lemon parser generator.  The source can be obtained
@@ -27,7 +34,7 @@
 	code-generator thread will be dispatched.
 
 	3.  Code generator implemented by copying mini-C (a sample Python
-	C compiler).
+	C compiler):  http://people.cs.uchicago.edu/~varmaa/mini_c/
 
 	4.  The top-level tree will be traversed and code will be written
 	out.  This will be the synchronization point, where we'll wait for
