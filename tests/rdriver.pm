@@ -212,34 +212,34 @@ sub doTest($) {
     my $failokay = ($t->{fail});
     #print "Output:\n\n$output\n\n";
     eval {
-	  my $fc = ($? >> 8);
+      my $fc = ($? >> 8);
       if ($fc) {
-		if (!($failokay)) {
-		  error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
-		} else {
-		  if ($failokay != $DontCare) {
-			if ($fc != $failokay) {
-			  error (" Test failed with a value of $fc, but $failokay was expected.");
-			}
-		  }
-		  print "  ...expected fail found.\n";
-		}
+	if (!($failokay)) {
+	  error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
+	} else {
+	  if ($failokay != $DontCare) {
+	    if ($fc != $failokay) {
+	      error (" Test failed with a value of $fc, but $failokay was expected.");
+	    }
+	  }
+	  print "  ...expected fail found.\n";
+	}
       } elsif ($failokay) {
-		error (" Test did not fail but was expected to.  Return code was $?. Output is:\n\n$output\n");
+	error (" Test did not fail but was expected to.  Return code was $?. Output is:\n\n$output\n");
       }
 
       if ( $t->{diff} ) {
-		error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{nocmts}));
+	error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{nocmts}));
       }
       if ($t->{checker}) {
-		# Call the check function.
-		my $checker = $t->{checker};
-		eval { &$checker($output) };
-		if ($@) {
-		  error ("  Failed checker:  $@\n");
-		  next TEST;
-		}
-		print "  ...checker test passed.\n";
+	# Call the check function.
+	my $checker = $t->{checker};
+	eval { &$checker($output) };
+	if ($@) {
+	  error ("  Failed checker:  $@\n");
+	  next TEST;
+	}
+	print "  ...checker test passed.\n";
       }
     };
     # Remove listed temporary files unless overridden by the user.

@@ -3,6 +3,7 @@
 // Miscellaneous user routines. 
 //
 
+#include <sstream>
 #include <stdarg.h>
 #include <string>
 
@@ -370,15 +371,26 @@ namespace plasma {
     _proc->setName(name);
   }
 
+  const char *make_procsname(const char *name,int index)
+  {
+    if (name) {
+      ostringstream ss;
+      ss << name << "[" << index << "]";
+      return gc_strdup(ss.str());
+    } else {
+      return 0;
+    }
+  }
+
   Processors::Processors(unsigned n,const char *name,bool shared)
   {
     Proc *p = 0;
     for (unsigned i = 0; i != n; ++i) {
       if (!i || !shared) {
-        push_back(Processor(name));
+        push_back(Processor(make_procsname(name,i)));
         p = back()();
       } else {
-        push_back(make_sharedproc(p));
+        push_back(make_sharedproc(make_procsname(name,i),p));
       }
     }
   }

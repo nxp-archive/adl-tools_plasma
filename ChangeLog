@@ -1,3 +1,27 @@
+2004-09-17  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed some scheduling bugs related to pooled processors:
+
+	1.  We used to throw out empty processors in
+	Cluster::update_proc().  However, this had the effect of getting
+	rid of pooled processors- they would never then be used.  Changed
+	this so that we no longer have a loop in update_proc.  Instead,
+	get_new_proc() calls ProcQ::get_non_empty() which scans the queue
+	for a proc w/threads.  If it doesn't find any then it advances
+	time.  I like to avoid loops, but this should almost never advance
+	beyond the first iteration- it'll only occur w/pooled processors
+	and only when few threads are present.
+
+	2.  Modified Cluster::busy() so that it removes the scheduling
+	thread, then finds the next processor (or updates time), then adds
+	in the scheduler.  This fixed the problem of switching to a
+	processor whose only thread is the scheduler.  When that happens,
+	update_proc gets called, which then finds that the processor is
+	empty and sets it to wait.  This way, if busy doesn't find
+	anything, it'll advance time.
+
+	I moved qsort to qsort1 and added qsort2 to test these changes.
+
 2004-09-15  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Moved thecluster and thesystem out of the plasma namespace to

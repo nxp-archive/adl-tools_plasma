@@ -273,12 +273,15 @@ namespace plasma {
       _cur->setProc(_curproc);
       // Add thread to system busy queue.  This also adds it back to the processor's busy queue.
       thesystem.add_busy(requested_time,_cur);
+      // We have to move the scheduling thread from the old processor to the
+      // new processor.  We do this *before* updating the processor so that we make
+      // our decision of whether to advance time or not based upon whether real threads exist,
+      // not just the scheduling thread.
+      _main.proc()->remove_ready(&_main);
       // Update- we know something is available b/c we just added something.
       // This updates the time.
       get_new_proc();
-      // We have to move the scheduling thread from the old processor to the
-      // new processor.
-      _main.proc()->remove_ready(&_main);
+      // Now add the scheduling thread back in to the new processor.
       _main.setProc(_curproc);
       _curproc->add_ready(&_main);
       // Switch to new item w/o adding current thread to ready queue.
@@ -370,10 +373,7 @@ namespace plasma {
   inline bool Cluster::update_proc()
   {
     assert(_curproc);
-    // The loop is only used in the case of shared schedules- it's possible
-    // that we might have a processor in the queue that suddenly doesn't have
-    // any more threads, so we have to advance time.
-    while (_curproc->empty()) {
+    if (_curproc->empty()) {
       // Update state.
       _curproc->setState(Proc::Waiting);
       if (!get_new_proc()) {
@@ -390,7 +390,15 @@ namespace plasma {
   {
     // No threads- get next processor.  We assume that this processor
     // is stored in some waiting thread, so we can clobber this pointer.
-    if (! (_curproc = _procs.get())) {
+    // If we don't get a processor that has a thread, we advance time.
+    // We call get_non_empty, rather than just get, b/c there might be processors
+    // w/o threads if we have processors sharing a common queue- our current
+    // processor might have used up the threads that the other processors thought
+    // they had.  However, we don't want to remove these processors b/c we want
+    // them available should a processor become busy.  Therefore, we leave them in.
+    // This looping shouldn't cause much of a performance issue b/c most of the time
+    // the first processor in the queue will have threads available.
+    if (! (_curproc = _procs.get_non_empty())) {
       // No new processors at this time, so try to advance time.  If that
       // fails, then we fail.
       return update_time();

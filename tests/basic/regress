@@ -57,8 +57,13 @@ my @Tests = (
 	     },
 	     # Quicksort with parallel sorting of split elements.
 	     {
-	      cmd     => "./qsort",
-	      checker => \&check_qsort,
+	      cmd     => "./qsort1",
+	      checker => \&check_qsort1,
+	     },
+	     # Quicksort w/busy statements.
+	     {
+	      cmd     => "./qsort2 && ./qsort2 2 && ./qsort2 10",
+	      checker => \&check_qsort2,
 	     },
 	     # Channel test directly using C++ interface.
 	     {
@@ -443,7 +448,7 @@ sub check_par8 {
 
 # Just make sure that we got the right number of messages.
 # The checking of the sorting is down by the program itself.
-sub check_qsort {
+sub check_qsort1 {
   my @lines = split /\n/,@_[0];
   my $elc = 25;
   my $lc = 0;
@@ -455,6 +460,23 @@ sub check_qsort {
   }
 }
 
+# We grab the runtime output- it should decrease as the number of processors
+# increases.
+sub check_qsort2 {
+  my @lines = split /\n/,@_[0];
+  my @times;
+  for (@lines) {
+    if ( /Finish time:\s+(\d+)/ ) {
+      push @times,(eval $1);
+    }
+  }
+  for my $i (0..$#times-1) {
+    if ( $times[$i] <= $times[$i+1] ) {
+      print "Error:  Time $i ($times[$i]) >= time ",$i+1," (",$times[$i+1],").\n";
+      die;
+    }
+  }
+}
 
 sub check_chan1 {
   my @data = ([10..19],[100..109],[1000..1009],[10000..10009]);

@@ -1,6 +1,6 @@
 //
-// Parallel qsort.  It generates a random array, sorts it, then
-// checks to make sure that it's sorted.
+// This implements a parallel qsort algorithm w/busy statements
+// in order to be able to see how adding processors affects performance.
 //
 
 #include <iostream>
@@ -11,7 +11,11 @@ using namespace plasma;
 
 typedef vector<unsigned> Data;
 
-const int MIN = 1000;
+// Minimum size below which we do not spawn new threads.
+const int MIN = 10;
+
+// Amount of computation attributed to the swap routine.
+const int Think = 100;
 
 // Swap two values
 static inline void swap(Data &a, int x, int y)
@@ -26,11 +30,13 @@ void split(Data &a, int l, int r, unsigned e, int *x0, int *y0)
 {
   int x = l;
   int y = r-1;
+  int c = 0;
   do {
     while (a[x] < e) x++;
     while (a[y] > e) y--;
     if (x < y) {
       swap(a, x, y);
+      ++c;
       x++; y--;
     }
     else if (x == y) {
@@ -40,6 +46,8 @@ void split(Data &a, int l, int r, unsigned e, int *x0, int *y0)
   while (x <= y);
   *x0 = x; 
   *y0 = y+1;
+  // We think based upon the number of swaps made.
+  pBusy(Think*c);
 }
 
 // Sort <a/l/r> sequentially.
@@ -76,50 +84,39 @@ void qsort(Data &a)
   qs(a, 0, a.size());
 }
 
-// Check sorting of <a>
-void check(Data &a)
-{
-  int n = a.size();
-  for (int i = 0; i != n-1; ++i) {
-    if (a[i] > a[i+1]) {
-      pAbort("sorting error");
-    }
-  }
-}
-
 void pSetup(ConfigParms &cp)
 {
-  cp._stacksize = 500000;
+  cp._numpriorities = 2;
+  cp._busyokay = true;
 }
 
-void print(Data &a,const char *msg)
-{
-  cout << msg << ":" << endl;
-  for (unsigned j = 0; j != a.size(); ++j) {
-    cout << "  " << j << ":  " << a[j] << endl;
-  }      
-}
-
-// Sorting main function
-int pMain(int,const char *[]) 
+int pMain(int argc,const char *argv[]) 
 {
   int S = 1000;
-  int N = 5;
+  int NP = 1;
 
-  for (int i = 0; i < N; i++) {
-    for (int k = 0; k < 5; k++) {
+  if (argc >= 2) {
+    if ( (NP = atoi(argv[1])) <= 0) {
+      cerr << "Usage:  " << argv[0] << " [num procs (default is 1)]\n";
+      return 1;
+    }
+  }
+
+  cout << "Number of processors:  " << NP << endl;
+  Processors procs(NP,"processors",true);
+
+  par {
+    on (procs[0],0) {
       cout << "Sorting with size " << S << endl;
       Data a(S);
       for (int j = 0; j < S; j++) {
         a[j] = rand();
       }
-      //print(a,"Original");
       qsort(a);
-      check(a);
-      //print(a,"Sorted");
     }
-    S *= 2;
   }
+
+  cout << "Finish time:  " << pTime() << endl;
 
   return 0;
 }

@@ -1,0 +1,120 @@
+//
+// Parallel qsort.  It generates a random array, sorts it, then
+// checks to make sure that it's sorted.
+//
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+using namespace plasma;
+
+typedef vector<unsigned> Data;
+
+const int MIN = 1000;
+
+// Swap two values
+static inline void swap(Data &a, int x, int y)
+{
+  unsigned z = a[x];
+  a[x] = a[y];
+  a[y] = z;
+}
+
+// Split <a/l/r> by pivot <e> into <a/l/x0> and <a/y0/r>
+void split(Data &a, int l, int r, unsigned e, int *x0, int *y0)
+{
+  int x = l;
+  int y = r-1;
+  do {
+    while (a[x] < e) x++;
+    while (a[y] > e) y--;
+    if (x < y) {
+      swap(a, x, y);
+      x++; y--;
+    }
+    else if (x == y) {
+      break;
+    }
+  }
+  while (x <= y);
+  *x0 = x; 
+  *y0 = y+1;
+}
+
+// Sort <a/l/r> sequentially.
+int qs0(Data &a, int l, int r)
+{
+  if (l < r) 
+    {
+      unsigned e = a[(l+r)/2];
+      int m0, m1;
+      split(a, l, r, e, &m0, &m1);
+      qs0(a, l, m0);
+      qs0(a, m1, r);
+    }
+  return(0);
+}
+
+// Sort <a/l/r> in parallel.
+int qs(Data &a, int l, int r)
+{
+  if (r-l < MIN) return(qs0(a, l, r));
+  unsigned e = a[(l+r)/2];
+  int m0, m1;
+  split(a, l, r, e, &m0, &m1);
+  par {
+    qs(a,l,m0);
+    qs(a,m1,r);
+  }
+  return(0);
+}
+
+// Sort <a>.
+void qsort(Data &a)
+{
+  qs(a, 0, a.size());
+}
+
+// Check sorting of <a>
+void check(Data &a)
+{
+  int n = a.size();
+  for (int i = 0; i != n-1; ++i) {
+    if (a[i] > a[i+1]) {
+      pAbort("sorting error");
+    }
+  }
+}
+
+void print(Data &a,const char *msg)
+{
+  cout << msg << ":\n";
+  for (unsigned j = 0; j != a.size(); ++j) {
+    cout << "  " << j << ":  " << a[j] << "\n";
+  }      
+}
+
+// Sorting main function
+int pMain(int,const char *[]) 
+{
+  int S = 1000;
+  int N = 5;
+
+  for (int i = 0; i < N; i++) {
+    for (int k = 0; k < 5; k++) {
+      cout << "Sorting with size " << S << endl;
+      Data a(S);
+      for (int j = 0; j < S; j++) {
+        a[j] = rand();
+      }
+      //print(a,"Original");
+      qsort(a);
+      check(a);
+      //print(a,"Sorted");
+    }
+    S *= 2;
+  }
+
+  return 0;
+}
