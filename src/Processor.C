@@ -196,7 +196,7 @@ namespace plasma {
     exec_block();
   }
 
-  int Processor::sleep()
+  HandleType Processor::sleep()
   {
     // Prevent preemption.
     lock();
@@ -206,7 +206,7 @@ namespace plasma {
     return _cur->handle();
   }
 
-  void Processor::wake(Thread *t,int h)
+  void Processor::wake(Thread *t,HandleType h)
   {
     lock();
     t->setHandle(h);

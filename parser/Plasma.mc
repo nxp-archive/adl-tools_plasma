@@ -1,7 +1,6 @@
 
 #include <assert.h>
 #include <iostream>
-#include <vector>
 #include "opencxx/mop.h"
 #include "opencxx/ptree-core.h"
 
@@ -212,321 +211,6 @@ void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args)
     }
     cur = lappend(cur,Ptree::qMake("};\n"));
     InsertBeforeToplevel(env,front);
-}
-
-// Translate an alt block.
-Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
-{
-  Ptree *body;
-
-  if(!Ptree::Match(rest, "[ %? ]", &body)){
-    ErrorMessage(env, "invalid alt statement", nil, keyword);
-    return nil;
-  }
-
-  // Ignore the braces.
-  body = body->Cadr();
-  
-  PortVect pv;
-  Ptree *defaultblock = nil;
-
-  if (!parseAltBlock(env,body,pv,defaultblock)) {
-    return nil;
-  }
-
-  Ptree *iname = Ptree::GenSym();  
-  Ptree *label = Ptree::GenSym();
-
-  // We put this inside of a try block if we don't have a default block,
-  // since we want to clear the notifications if an exception occurs.
-  Ptree *start = (!defaultblock) ? 
-    Ptree::List(Ptree::Make("try {\n")) :
-    Ptree::List(Ptree::Make("{\n"));
-  Ptree *cur = start;
-
-  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
-                                 "int `iname`;\n"));
-
-  // The first part of the alt block queries each channel to see
-  // if it has any data ready.
-  for (int index = 0; index != (int)pv.size(); ++index) {
-    const Port &port = pv[index];
-    cur = lappend(cur,Ptree::qMake("`iname` = `index`;\n"
-                                   "if ( (`port.chan`).ready() ) { goto `label`; }\n"));
-  }
-
-  // If we have a default block, this becomes the last index in our
-  // case statement.  We jump directly there if we reach this point.
-  if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("`iname` = `(int)(pv.size())`;\n"));
-  } else {
-
-    // This generated code is only reached if no ports were ready.
-    // In that case, we set each channel to notify us when it has data.
-    for (int index = 0; index != (int)pv.size(); ++index) {
-      const Port &port = pv[index];
-
-      cur = lappend(cur,Ptree::qMake("(`port.chan`).set_notify(plasma::pCurThread(),`index`);\n"));
-    }
-
-    // Next, we sleep.  When we wake up, we get the handle of the channel
-    // which awoke us.
-    cur = lappend(cur,Ptree::qMake("`iname` = plasma::pSleep();\n"
-                                   "plasma::pLock();\n"));
-
-    // Clear all notification, since we have a value.
-    for (unsigned index = 0; index != pv.size(); ++index) {
-      const Port &port = pv[index];
-      cur = lappend(cur,Ptree::qMake("(`port.chan`).clear_notify();\n"));
-    }
-
-  }
-
-  if ( (cur = generateAltBody(env,cur,label,iname,pv,defaultblock)) == nil) {
-    return nil;
-  }
-
-  // Finish try block with exception cleanup code.
-  cur = lappend(cur,Ptree::Make("}\n"));
-
-  // Exception cleanup code if no default block.
-  if (!defaultblock) {
-    cur = lappend(cur,Ptree::Make("catch (...) {\n"));
-    for (unsigned index = 0; index != pv.size(); ++index) {
-      const Port &port = pv[index];
-      cur = lappend(cur,Ptree::qMake("(`port.chan`).clear_notify();\n"));
-    }
-    cur = lappend(cur,Ptree::Make("}\n"));
-  }
-
-  return start;
-}
-
-// Translate an afor block.  This is similar to an alt block, except that
-// we loop over the port statements.
-Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
-{
-  Ptree *s1, *s2, *s3, *body;
-
-  if(!Ptree::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
-    ErrorMessage(env, "invalid afor statement", nil, keyword);
-    return nil;
-  }
-
-  // Ignore the braces.
-  body = body->Cadr();
-  
-  PortVect pv;
-  Ptree *defaultblock = nil;
-
-  if (!parseAltBlock(env,body,pv,defaultblock)) {
-    return nil;
-  }
-
-  if (pv.size() > 1) {
-    ErrorMessage(env,"more than one port statement in an afor block is currently not supported",nil,keyword);
-    return nil;
-  }
-
-  // We have to extract the iterator from the first statement in the afor loop.
-  // This means that it somewhat limits the generality of the for-loop style statement.
-  // We may have to address this issue later.
-  VarWalker *vw = new VarWalker(env->GetWalker()->GetParser(),env);
-  if (!parseAforCondition(vw,env,s1,s3)) {
-    return nil;
-  }
-
-  const ArgVect &argnames = vw->argnames();
-  // We just take the first declaration and assume that's the index variable for afor.
-  Ptree *index = argnames.front()._arg;
-  TypeInfo indextype = argnames.front()._type;
-  // This controls whether we can put the value into the channel's handle or if
-  // we need an auxiliary stack.
-  bool needstack = true;
-  if (int bt = indextype.IsBuiltInType()) {
-    if (bt & (CharType | IntType | ShortType | LongType | BooleanType)) {
-      needstack = false;
-    }
-  }
-
-  Ptree *iname  = Ptree::GenSym();
-  Ptree *sindex = Ptree::GenSym();
-  Ptree *stack  = Ptree::GenSym();
-  Ptree *label  = Ptree::GenSym();
-
-  const Port &port = pv.front();
-
-  // The first part of the afor block queries each channel to see
-  // if it has any data ready.  It's placed within the general afor
-  // for-loop.
-  Ptree *start = (!defaultblock) ? 
-    Ptree::List(Ptree::Make("try {\n")) :
-    Ptree::List(Ptree::Make("{\n"));
-  Ptree *cur = start;
-  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
-                                 "int `iname` = 0;\n"
-                                 "`s1`\n"));
-
-  // Create a stack of target types, and store indices to those values,
-  // only if we don't have a built-in type as an index variable.
-  if (needstack && !defaultblock) {
-    cur = lappend(cur,Ptree::qMake("std::vector<`indextype.MakePtree(0)`> `stack`;\n"
-                                   "int `sindex` = 0;\n"));
-  }
-
-  cur = lappend(cur,Ptree::qMake("for ( ; `s2` ; `s3`) {\n"
-                                 "if ( (`port.chan`).ready() ) { goto `label`; }\n"
-                                 "}\n"));
-  
-  // If we have a default block, we'll reach it if nothing is ready.
-  // We'll then jump past the sleep logic.
-  if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("`iname` = 1;\n"
-                                   "goto `label`;\n"));
-  } else {
-    // This generated code is only reached if no ports were ready.
-    // In that case, we set each channel to notify us when it has data.
-    // Next, we sleep.  When we wake up, we get the handle of the channel
-    // which woke us.
-    // If we have a non-builtin type as an index variable, we store each index
-    // variable in a vector and store the corresponding index.  When we wake up,
-    // we fetch that value and then use it.
-    if (needstack) {
-      cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
-                                     "(`port.chan`).set_notify(plasma::pCurThread(),`sindex`++);\n"
-                                     "`stack`.push_back(`index`);\n"
-                                     "}\n"
-                                     "`index` = `stack`[plasma::pSleep()];\n"
-                                     "plasma::pLock();\n"));
-    } else {
-      cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
-                                     "(`port.chan`).set_notify(plasma::pCurThread(),`index`);\n"
-                                     "}\n"
-                                     "`index` = ((`indextype.MakePtree(0)`) plasma::pSleep());\n"
-                                     "plasma::pLock();\n"));
-    }
-
-    // Clear all notification, since we have a value.
-    cur = lappend(cur,Ptree::qMake("for (`s1` `s2` ; `s3`) {\n"
-                                   "(`port.chan`).clear_notify();\n"
-                                   "}\n"));
-  }
-
-  if ( (cur = generateAltBody(env,cur,label,iname,pv,defaultblock)) == nil) {
-    return nil;
-  }
-
-  cur = lappend(cur,Ptree::Make("}\n"));
-
-  // Exception cleanup code if no default block.
-  if (!defaultblock) {
-    cur = lappend(cur,Ptree::qMake("catch (...) {\n"
-                                   "for (`s1` `s2` ; `s3`) {\n"
-                                   "(`port.chan`).clear_notify();\n"
-                                   "}\n"
-                                   "}\n"));
-  }
-
-  return start;
-}
-
-Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *iname,
-                               const PortVect &pv,Ptree *defaultblock)
-{
-  // Unlock processors- may be redundant for some cases, but is needed
-  // for default blocks and non-standard channels.
-  // Jump to the code for the relevant handle.
-  cur = lappend(cur,Ptree::qMake("`label`:\n"
-                                 "plasma::pUnlock();\n"
-                                 "switch(`iname`) {\n"));
-
-  // Handling code.  Each value should be a valid declaration.
-  // The second statement represents the channel to be queried.
-  for (int index = 0; index != (int)pv.size(); ++index) {
-    const Port &port = pv[index];
-    if (port.val) {
-      Ptree *val,*cv,*type;
-      if (Ptree::Match(port.val,"[%? %? %? ;]",&cv,&type,&val)) {
-        // User specified a type, so use it directly.
-        cur = lappend(cur,Ptree::qMake("case `index`: {\n"
-                                       "`cv``type``val` = (`port.chan`).get();\n"
-                                       "{\n"
-                                       "`port.body`\n"
-                                       "}\n"
-                                       "} break;\n"));
-      } else {
-        ErrorMessage(env,"Invalid value declaration for port statement",nil,port.val);
-        return nil;
-      }
-    } else {
-      // Simple case- no value, so just insert code.
-      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
-                                     "`port.body`\n"
-                                     "} break;\n"));      
-    }
-  }
-
-  // Write the default block code, if present.
-  if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"
-                                    "`defaultblock`\n"
-                                    "} break;\n"));
-  }
-
-  // End of switch statement.
-  cur = lappend(cur,Ptree::Make("}\n"));
-
-  return cur;
-}
-
-// This first parses the first expression in the afor statement, recording
-// any declarations.  It then parses the second statement- any variables used
-// there are recorded.  The first variable used in the third statement is
-// then considered to be the loop index that we use in the afor block.
-bool Plasma::parseAforCondition(VarWalker *vw,Environment *env,Ptree *s1,Ptree *s3)
-{
-  vw->handleGuard(true);
-  vw->Translate(s1);
-  vw->saveGuardEnv();
-  if (vw->guardEnvEmpty()) {
-    ErrorMessage(env,"afor statement declares no loop variables.",nil,s1);
-    return nil;
-  }
-  vw->handleGuard(false);
-  vw->Translate(s3);
-
-  if (vw->argnames().empty()) {
-    ErrorMessage(env,"afor statement does not use its iterator variable in its condition expression.",nil,s3);
-    return false;
-  }
-  return true;
-}
-
-bool Plasma::parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock)
-{
-  // Walk through the statements in the alt block.  Each should be a 
-  // case statement or a default statement.
-  for (PtreeIter i = body; !i.Empty(); ++i) {
-    Ptree *pval,*pchan,*pnil,*pbody;
-    if (Ptree::Match(*i,"[ port ( %? %? ; %? ) %? ]",&pval,&pchan,&pnil,&pbody)) {
-      if (pnil != nil) {
-        ErrorMessage(env,"bad port statement:  Nothing may appear after second semicolon.",nil,*i);
-      }
-      pv.push_back(Port(pchan,pval,pbody));
-    }
-    else if (Ptree::Match(*i,"[ { %* } ]")) {
-      defaultblock = *i;
-    } else {
-      ErrorMessage(env, "bad alt statement:  Only port blocks or a default block are allowed within the alt block.",nil,*i);
-      return false;
-    }
-  }
-
-  if (pv.empty()) {
-    ErrorMessage(env,"bad alt statement:  You must have at least one port or default block.",nil,body);
-    return false;
-  }
-  return true;
 }
 
 bool isPtrType(TypeInfo &t)
@@ -838,7 +522,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
 
   // Create the spawn function which launches the thread and returns
   // the result template.
-  Ptree *rtemplate = Ptree::qMake("Result<`rt.MakePtree(0)`>");
+  Ptree *rtemplate = Ptree::qMake("plasma::Result<`rt.MakePtree(0)`>");
   start = Ptree::qMake("inline `rtemplate` `sfunc`(");
   cur = start;
 
@@ -884,9 +568,383 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
 
   // Finally, we spawn the launch function.
   cur = lappend(cur,Ptree::qMake("};\n"
-                                 "return `rtemplate`(pSpawn(`lfunc`,sizeof(`targs`),&args));\n}\n"));
+                                 "return `rtemplate`(plasma::pSpawn(`lfunc`,sizeof(`targs`),&args));\n}\n"));
   
   InsertBeforeToplevel(env,start);
 
+  return true;
+}
+
+// Translate an alt block.
+Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  PortVect pv;
+  Ptree *defaultblock = nil;
+
+  if (!parseAltBody(env,rest,pv,defaultblock)) {
+    return false;
+  }
+
+  return generateAltBlock(env,pv,defaultblock);
+}
+
+// Translate an afor block.  This is similar to an alt block, except that
+// we loop over the port statements.
+Ptree* Plasma::TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  PortVect pv;
+  Ptree *defaultblock = nil;
+
+  if (!parseAforBody(env,rest,pv,defaultblock)) {
+    return false;
+  }
+
+  return generateAltBlock(env,pv,defaultblock);
+}
+
+// Main generation function for alt/afor blocks.  Given a list of
+// ports, constructs the necessary alt structure.
+Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defaultblock)
+{
+  Ptree *label  = Ptree::GenSym();
+  Ptree *handle = Ptree::GenSym();
+  Ptree *sindex = Ptree::GenSym();
+  Ptree *uflag  = Ptree::GenSym();
+
+  // We put this inside of a try block if we don't have a default block,
+  // since we want to clear the notifications if an exception occurs.
+  Ptree *start = (!defaultblock) ? 
+    Ptree::List(Ptree::Make("try {\n")) :
+    Ptree::List(Ptree::Make("{\n"));
+  Ptree *cur = start;
+
+  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
+                                 "plasma::HandleType `handle`(0,0);\n"));
+
+  // For each afor entry, write out initial statement loop statement.
+  // Create auxiliary stack if needed.
+  bool needsindex = false;
+  bool haveloops = false;
+  for (PortVect::const_iterator i = pv.begin(); i != pv.end(); ++i) {
+    const Port &p = *i;
+    if (p.isloop()) {
+      haveloops = true;
+      cur = lappend(cur,Ptree::qMake("`p.s1`\n"));
+      // Create a stack of target types, and store indices to those values,
+      // only if we don't have a built-in type as an index variable.
+      if (p.needstack() && !defaultblock) {
+        TypeInfo t = p.indextype;
+        cur = lappend(cur,Ptree::qMake("std::vector<`t.MakePtree(0)`> `p.stack`;\n"));
+        needsindex = true;
+      }
+    }
+  }
+
+  // If we have any loops then we need an update flag.
+  if (haveloops) {
+    cur = lappend(cur,Ptree::qMake("bool `uflag` = false;\n"));
+  }
+
+  // If needed, create index variable for use w/auxiliary stacks.
+  if (needsindex) {
+    cur = lappend(cur,Ptree::qMake("int `sindex` = 0;\n"));
+  }
+
+  // For each entry, write out ready-query logic.
+  for (int index = 0; index != (int)pv.size(); ++index) {
+    const Port &p = pv[index];
+    cur = lappend(cur,Ptree::qMake("`handle`.first = `index`;\n"));
+    if (p.isloop()) {
+      // Afor code.
+      cur = lappend(cur,Ptree::qMake("for ( ; `p.s2` ; `p.s3`) {\n"
+                                     "if ( (`p.chan`).ready() ) { goto `label`; }\n"
+                                     "}\n"));
+    } else {
+      // Alt code.
+      cur = lappend(cur,Ptree::qMake("if ( (`p.chan`).ready() ) { goto `label`; }\n"));
+    }
+  }
+
+  // If we have a default block, this becomes the last index in our
+  // case statement.  We jump directly there if we reach this point.
+  if (defaultblock) {
+    cur = lappend(cur,Ptree::qMake("`handle`.first = `(int)(pv.size())`;\n"));
+  } else {
+    // This generated code is only reached if no ports were ready.
+    // In that case, we set each channel to notify us when it has data.
+    for (int index = 0; index != (int)pv.size(); ++index) {
+      const Port &p = pv[index];
+      if (p.isloop()) {
+        // If we have a non-builtin type as an index variable, we store each index
+        // variable in a vector and store the corresponding index.  When we wake up,
+        // we fetch that value and then use it.
+        if (p.needstack()) {
+          cur = lappend(cur,Ptree::qMake("`sindex` = 0;\n"
+                                         "for (`p.s1` `p.s2` ; `p.s3`) {\n"
+                                         "(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,`sindex`++));\n"
+                                         "`p.stack`.push_back(`p.loopvar`);\n"
+                                         "}\n"));
+        } else {
+          cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
+                                         "(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,(int)`p.loopvar`));\n"
+                                         "}\n"));
+        }        
+      } else {
+        cur = lappend(cur,Ptree::qMake("(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,0));\n"));
+      }
+    }
+
+    // If we have any loops, then toggle the update flag to truee here- when we
+    // wake up and jump to the proper case spot, this will tell us to update the
+    // loop variable from the second element of the handle.
+    if (haveloops) {
+      cur = lappend(cur,Ptree::qMake("`uflag` = true;\n"));
+    }
+
+    // Next, we sleep.  When we wake up, we get the handle of the channel
+    // which awoke us.
+    cur = lappend(cur,Ptree::qMake("`handle` = plasma::pSleep();\n"
+                                   "plasma::pLock();\n"));
+
+    // Clear all notification, since we have a value.
+    for (unsigned index = 0; index != pv.size(); ++index) {
+      const Port &p = pv[index];
+      if (p.isloop()) {
+        cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
+                                       "(`p.chan`).clear_notify();\n"
+                                       "}\n"));        
+      } else {
+        cur = lappend(cur,Ptree::qMake("(`p.chan`).clear_notify();\n"));
+      }
+    }
+  }
+
+  if ( (cur = generateAltBody(env,cur,label,handle,uflag,pv,defaultblock)) == nil) {
+    return nil;
+  }
+
+  cur = lappend(cur,Ptree::Make("}\n"));
+
+  // Exception cleanup code if no default block.
+  if (!defaultblock) {
+    cur = lappend(cur,Ptree::Make("catch (...) {\n"));
+    for (PortVect::const_iterator i = pv.begin(); i != pv.end(); ++i) {
+      const Port &p = *i;
+      if (p.isloop()) {
+        cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
+                                       "  (`p.chan`).clear_notify();\n"
+                                       "}\n"));
+      } else {
+        cur = lappend(cur,Ptree::qMake("(`p.chan`).clear_notify();\n"));
+      }
+    }
+    cur = lappend(cur,Ptree::qMake("}\n"));
+  }
+
+  return start;
+
+}
+
+// Generates the case statement for the alt action code.
+Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,Ptree *uflag,
+                               const PortVect &pv,Ptree *defaultblock)
+{
+  // Unlock processors- may be redundant for some cases, but is needed
+  // for default blocks and non-standard channels.
+  // Jump to the code for the relevant handle.
+  cur = lappend(cur,Ptree::qMake("`label`:\n"
+                                 "plasma::pUnlock();\n"
+                                 "switch(`handle`.first) {\n"));
+
+  // Handling code.  Each value should be a valid declaration.
+  // The second statement represents the channel to be queried.
+  for (int index = 0; index != (int)pv.size(); ++index) {
+    const Port &p = pv[index];
+    if (p.val) {
+      Ptree *val,*cv,*type;
+      if (Ptree::Match(p.val,"[%? %? %? ;]",&cv,&type,&val)) {
+        // User specified a type, so use it directly.
+        cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
+        // If we have a loop, we copy the handle's second item to the loopvar so
+        // that it can be used by the body of the code.
+        if (p.isloop() && !defaultblock) {
+          cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
+          if (p.needstack()) {
+            cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
+          } else {
+            TypeInfo t = p.indextype;
+            cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
+          }
+          cur = lappend(cur,Ptree::qMake("}\n"));
+        }
+        cur = lappend(cur,Ptree::qMake("`cv``type``val` = (`p.chan`).get();\n"
+                                       "{\n"
+                                       "`p.body`\n"
+                                       "}\n"
+                                       "} break;\n"));
+      } else {
+        ErrorMessage(env,"Invalid value declaration for port statement",nil,p.val);
+        return nil;
+      }
+    } else {
+      // Simple case- no value, so just insert code.
+      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
+                                     "`p.body`\n"
+                                     "} break;\n"));      
+    }
+  }
+
+  // Write the default block code, if present.
+  if (defaultblock) {
+    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"
+                                    "`defaultblock`\n"
+                                    "} break;\n"));
+  }
+
+  // End of switch statement.
+  cur = lappend(cur,Ptree::Make("}\n"));
+
+  return cur;
+}
+
+// Parses an alt's body.
+bool Plasma::parseAltBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock)
+{
+  Ptree *body;
+  if(!Ptree::Match(rest, "[ %? ]", &body)){
+    ErrorMessage(env, "invalid alt statement", nil, rest);
+    return false;
+  }
+
+  // Ignore the braces.
+  body = body->Cadr();
+
+  // Parse the body of the alt.
+  if (!parseAltBlock(env,body,false,pv,defaultblock)) {
+    return false;
+  }
+
+  return true;
+}
+
+// This first parses the first expression in the afor statement, recording
+// any declarations.  It then parses the second statement- any variables used
+// there are recorded.  The first variable used in the third statement is
+// then considered to be the loop index that we use in the afor block.
+bool Plasma::parseAforCondition(VarWalker *vw,Environment *env,Ptree *s1,Ptree *s3)
+{
+  vw->handleGuard(true);
+  vw->Translate(s1);
+  vw->saveGuardEnv();
+  if (vw->guardEnvEmpty()) {
+    ErrorMessage(env,"afor statement declares no loop variables.",nil,s1);
+    return nil;
+  }
+  vw->handleGuard(false);
+  vw->Translate(s3);
+
+  if (vw->argnames().empty()) {
+    ErrorMessage(env,"afor statement does not use its iterator variable in its condition expression.",nil,s3);
+    return false;
+  }
+  return true;
+}
+
+// Parses an afor block.
+bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &defaultblock)
+{
+  Ptree *s1, *s2, *s3, *body;
+
+  if(!Ptree::Match(rest, "[ ( %? %? ; %? ) %? ]", &s1,&s2,&s3,&body)) {
+    ErrorMessage(env, "invalid afor statement", nil, rest);
+    return false;
+  }
+
+  int pvsize = pv.size();
+
+  // Ignore the braces.
+  body = body->Cadr();
+  
+  if (!parseAltBlock(env,body,true,pv,defaultblock)) {
+    return false;
+  }
+
+  if ((int)pv.size() > pvsize+1) {
+    ErrorMessage(env,"more than one port statement in an afor block is currently not supported",nil,rest);
+    return false;
+  }
+
+  Port &p = pv.back();
+  // Store afor information in channel object.
+  p.s1 = s1;
+  p.s2 = s2;
+  p.s3 = s3;
+
+  // We have to extract the iterator from the first statement in the afor loop.
+  // This means that it somewhat limits the generality of the for-loop style statement.
+  // We may have to address this issue later.
+  VarWalker *vw = new VarWalker(env->GetWalker()->GetParser(),env);
+  if (!parseAforCondition(vw,env,s1,s3)) {
+    return false;
+  }
+
+  const ArgVect &argnames = vw->argnames();
+  // We just take the first declaration and assume that's the index variable for afor.
+  p.loopvar = argnames.front()._arg;
+  p.indextype = argnames.front()._type;
+  // This controls whether we can put the value into the channel's handle or if
+  // we need an auxiliary stack.
+  bool needstack = true;
+  if (int bt = p.indextype.IsBuiltInType()) {
+    if (bt & (CharType | IntType | ShortType | LongType | BooleanType)) {
+      needstack = false;
+    }
+  }
+  if (needstack) {
+    p.stack  = Ptree::GenSym();
+  }
+
+  return true;
+}
+
+// Scans for alt, afor, or port constructs.
+bool Plasma::parseAltBlock(Environment *env,Ptree *body,bool isloop,PortVect &pv,Ptree* &defaultblock)
+{
+  // Walk through the statements in the alt block.  Each should be a 
+  // case statement or a default statement.
+  for (PtreeIter i = body; !i.Empty(); ++i) {
+    Ptree *pval,*pchan,*pnil,*pbody;
+    if ((*i)->Car()->Eq("port")) {
+      if (Ptree::Match(*i,"[ port ( %? %? ; %? ) %? ]",&pval,&pchan,&pnil,&pbody)) {
+        if (pnil != nil) {
+          ErrorMessage(env,"bad port statement:  Nothing may appear after second semicolon.",nil,*i);
+        }
+        pv.push_back(Port(isloop,pchan,pval,pbody));
+      } else {
+        ErrorMessage(env,"bad port statement syntex.",nil,*i);
+      }
+    }
+    else if ((*i)->Car()->Eq("alt")) {
+      parseAltBody(env,(*i)->Cdr(),pv,defaultblock);
+    }
+    else if ((*i)->Car()->Eq("afor")) {
+      parseAforBody(env,(*i)->Cdr(),pv,defaultblock);
+    }
+    else if (Ptree::Match(*i,"[ { %* } ]")) {
+      if (defaultblock) {
+        ErrorMessage(env, "bad alt/afor block:  Only one default block is allowed.",nil,*i);
+        return false;
+      }
+      defaultblock = *i;
+    } else {
+      ErrorMessage(env, "bad alt/afor block:  Only port, afor, alt, or a default block are allowed within an alt/afor block.",nil,*i);
+      return false;
+    }
+  }
+
+  if (pv.empty()) {
+    ErrorMessage(env,"bad alt/afor block:  You must have at least one port or default block.",nil,body);
+    return false;
+  }
   return true;
 }

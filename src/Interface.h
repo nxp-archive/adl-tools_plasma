@@ -7,6 +7,7 @@
 #define _INTERFACE_H_
 
 #include <vector>
+#include <assert.h>
 
 namespace plasma {
 
@@ -15,6 +16,8 @@ namespace plasma {
   typedef std::vector<Thread *> TVect;
 
   typedef Thread * THandle;
+
+  typedef std::pair<int,int> HandleType;
 
   //
   // This defines parameters that are adjustable by the user.
@@ -64,17 +67,17 @@ namespace plasma {
 
   // Put the current thread to sleep.  When it wakes, it is returned a handle
   // passed by pWake.
-  int pSleep();
+  HandleType pSleep();
 
-  // Wake the specified thread, giving it the handle value.  This switches
+  // Wake the specified thread, giving it the handle values.  This switches
   // to this thread.
-  void pWake(THandle,int);
+  void pWake(THandle,HandleType);
 
   // Return the thread's handle value (same as returned by pSleep()).
-  int pHandle(THandle);
+  HandleType pHandle(THandle);
 
   // Set a thread's handle.
-  void pSetHandle(THandle,int);
+  void pSetHandle(THandle,HandleType);
 
   // Kill the current thread.
   void pTerminate();
@@ -112,6 +115,7 @@ namespace plasma {
   template<class R>
   class Result {  
   public:
+    Result() : _result(0), _t(0) {};
     Result(std::pair<THandle,void *> a) : _result((R*)a.second),_t(a.first) {}; 
 
     // Get the thread's result.
@@ -140,6 +144,7 @@ namespace plasma {
   template <typename R>
   R Result<R>::value() const
   {
+    assert(_t);
     wait();
     return *_result;
   }
@@ -147,6 +152,7 @@ namespace plasma {
   template <typename R>
   void Result<R>::wait() const
   {
+    assert(_t);
     if (!pDone(_t)) {
       pWait(_t);
     }
@@ -155,6 +161,7 @@ namespace plasma {
   template <typename R>
   void Result<R>::kill()
   {
+    assert(_t);
     if (!pDone(_t)) {
       pTerminate(_t);
     }

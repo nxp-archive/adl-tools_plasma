@@ -75,22 +75,22 @@ namespace plasma {
     processor.terminate(t);
   }
 
-  int pSleep()
+  HandleType pSleep()
   {
     return processor.sleep();
   }
 
-  void pWake(THandle t,int h)
+  void pWake(THandle t,HandleType h)
   {
     processor.wake(t,h);
   }
 
-  int pHandle(THandle t)
+  HandleType pHandle(THandle t)
   {
     return t->handle();
   }
 
-  void pSetHandle(THandle t,int h)
+  void pSetHandle(THandle t,HandleType h)
   {
     t->setHandle(h);
   }

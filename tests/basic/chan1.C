@@ -28,11 +28,11 @@ private:
   THandle clear_writenotify() { THandle t = _writet; _writet = 0; return t; };
   Data read_internal(bool clear_ready);
 
-  Data    _data;
-  bool    _ready;
-  THandle _readt;
-  THandle _writet;
-  int     _h;
+  Data       _data;
+  bool       _ready;
+  THandle    _readt;
+  THandle    _writet;
+  int        _h;
 };
 
   template <class Data>
@@ -65,7 +65,7 @@ private:
     _data = d;
     _ready = true;
     if (_readt) {
-      pWake(clear_notify(),_h);
+      pWake(clear_notify(),HandleType(_h,0));
     }
     pUnlock();
   };
@@ -135,7 +135,7 @@ void consumer(void *a)
         channels[j].set_notify(pCurThread(),j);
       }
     }
-    j = pSleep();
+    j = pSleep().first;
     pLock();
   DataReady:
     for ( int i = 0; i != NumChan; ++i) {

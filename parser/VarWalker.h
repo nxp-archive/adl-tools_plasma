@@ -42,6 +42,7 @@ public:
     _args(0),
     _inguard(false)
   {}
+  virtual ~VarWalker() {};
 
   virtual Ptree* TranslateVariable(Ptree*);
 

@@ -1,3 +1,4 @@
+
 //
 // Basic thread primitive.
 //
@@ -41,8 +42,8 @@ namespace plasma {
     Thread *getnext() const;
     void setnext(Thread *);
 
-    int handle() const { return _handle; };
-    void setHandle(int h) { _handle = h; };
+    HandleType handle() const { return _handle; };
+    void setHandle(HandleType h) { _handle = h; };
 
     void *endspace() const { return (void*)&_extraspace[0]; };
 
@@ -50,21 +51,20 @@ namespace plasma {
     static void *operator new(size_t sz,void *p) { return ::operator new(sz,p); };
 
   private:
-    bool    _done;             // True when thread is done executing.
-    ThreadQ _waiters;          // Threads waiting on this thread.
-    qt_t   *_thread;           // Thread handle.
-    void   *_stack;            // Stack pointer.
-    Thread *_next;             // Next thread in queue.
-    int     _handle;           // Miscellaneous handle value.
-    char    _extraspace[];     // Allows for extra space to be allocated at end.
+    bool        _done;             // True when thread is done executing.
+    ThreadQ     _waiters;          // Threads waiting on this thread.
+    qt_t       *_thread;           // Thread handle.
+    void       *_stack;            // Stack pointer.
+    Thread     *_next;             // Next thread in queue.
+    HandleType  _handle;           // Miscellaneous handle value.
+    char        _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
   inline Thread::Thread() :
     _done(false),
     _thread(0),
     _stack(0),
-    _next(0),
-    _handle(0)
+    _next(0)
   {
   }
 

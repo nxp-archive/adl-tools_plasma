@@ -1,3 +1,38 @@
+2004-05-25  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Re-did alt/afor blocks.  You can now nest alt and afor blocks
+	and we'll block on all of these items.  You can put and alt or an
+	aforr inside of another alt, but only a single port statement may
+	go inside of an afor, e.g.
+
+	alt {
+	  port () {
+	  }
+	  afor () {
+	    port() {
+	    }
+	  }
+	  alt {
+	  }
+	}
+
+	We will treat this as one big alt block, allowing you to wait on
+	multiple data structures and combine data structures with single
+	elements.  This meant that I had to change the handle type used by
+	pSleep and pWake from an integer to HandleType which is currently
+	a pair of integers:  The first element designates the port block
+	(case statement item) and the second element refers to the loop
+	index (if an afor- ignored if an alt).
+
+	I refactored the code so that generateAltBlock() generates all
+	code, given a PortVect object.  This object is populated by a call
+	to parseAltBody() or parseAforBody().  They call parseAltBlock(),
+	which may recursively call the two parse-body functions.  Then,
+	generateAltBlock() writes the setup code and calls
+	generateAltBody(), which writes the case statement.
+
+	Added chan10 to test the above.
+
 2004-05-20  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added exception safety to locking mechanism.

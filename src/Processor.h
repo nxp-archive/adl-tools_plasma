@@ -46,10 +46,10 @@ namespace plasma {
     // Current thread sleeps.  When awakened, gets handle value sent by
     // wake command.  Note:  You *must* have some other storage of this thread,
     // since it's removed from the ready queue.
-    int sleep();
+    HandleType sleep();
 
     // Wake specified thread, switching to it and supplying specified handle.
-    void wake(Thread *t,int h);
+    void wake(Thread *t,HandleType h);
 
     // Explicitly switch to the scheduler thread.
     // Caller must lock processor.

@@ -6,6 +6,7 @@
 use lib "..";
 use rdriver;
 use strict;
+use Data::Dumper;
 
 my @Tests = (
 	     # Basic par block test.
@@ -72,6 +73,11 @@ my @Tests = (
 	     {
 	      cmd     => "./chan9",
 	      checker => \&check_chan9,
+	     },
+	     # Channel test w/multiple afor and alts in an alt.
+	     {
+	      cmd     => "./chan10",
+	      checker => \&check_chan10,
 	     },
 	     # Spawn test- C++ only.
 	     {
@@ -201,11 +207,20 @@ sub check_qsort {
 
 # Make sure that all expected integers are received.
 sub check_channel {
-  my ($input,$regex,$data,$expNumFinish,$expstr) = (shift,shift,shift,shift,shift);
-  my %exphash = ();
-  for my $i ( @{ $expstr } ) {
-    $exphash{$i} = 0;
+  my ($input,$regex,$odata,$expNumFinish,$expstr) = (shift,shift,shift,shift,shift);
+  # Store expected expressions in a hash.
+  my %exphash;
+  if ($expstr) {
+    @exphash{@$expstr} = (0) x @$expstr;
   }
+  # Convert array of arrays into an array of hashes.
+  my @data;
+  for my $i ( @{ $odata } ) {
+    my %hash;
+    @hash{@$i} = (1) x @$i;
+    push @data,\%hash;
+  }
+  dprint "Expected data:  ",Dumper(\@data),"\n";
   my @lines = split /\n/,$input;
   my $max = 10;
   my $numFinish = 0;
@@ -213,14 +228,13 @@ sub check_channel {
   for (@lines) {
     dprint "Line:  $_\n";
     if ( /$regex/ ) {
-      my $chan = $1;
-      my $val = $2;
+      my ($chan,$val) = (eval $1,eval $2);
       dprint "Read $val from channel $chan.\n";
-      if ($val >= $data->[$chan]->[0] && $val < ($data->[$chan]->[0]+$max)) {
-	--($data->[$chan]->[1]);
+      if ( exists $data[$chan]->{$val} ) {
+	delete $data[$chan]->{$val};
       } else {
-	print "Data out of bound for channel $chan:  Got $val, expected value in [",
-	  $data->[$chan]->[0],":",($data->[$chan]->[0]+$max),").\n";
+	print "Data out of bound for channel $chan:  Got $val, expected data left:  ",
+	  join(',',keys(%{ $data[$chan] })),"\n";
 	die;
       }
     } elsif ( /(Producer|Consumer) done./ ) {
@@ -238,9 +252,9 @@ sub check_channel {
       die;
     }
   }
-  for my $i (0..(scalar @{$data} - 1)) {
-    if ($data->[$i]->[1]) {
-      print "Not all data was found for channel $i.\n";
+  for my $i (0..$#data) {
+    if (keys(%{$data[$i]})) {
+      print "Not all data was found for channel $i:  ",join(',',keys(%{ $data[$i] })),"\n";
       die;
     }
   }
@@ -252,49 +266,14 @@ sub check_channel {
   }
 }
 
-sub check_chan1 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
-  check_channel (@_[0],"Data read from channel (\\d+):\\s+(\\d+)",\@data,5);
-}
-
-sub check_chan2 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
-  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
-}
-
-sub check_chan3 {
-  my @data = ([10,10]);
-  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,2,[ "No value present."]);
-}
-
-sub check_chan4 {
-  my @data = ([20,10],[200,10],[2000,10],[20000,10],[200000,10],[2000000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
-}
-
-sub check_chan5 {
-  my @data = ([30,10],[300,10],[3000,10],[30000,10],[300000,10],[3000000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
-}
-
-sub check_chan6 {
-  my @data = ([20,10],[200,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,3,[ "No value present."]);
-}
-
-sub check_chan7 {
-  my @data = ([30,10],[300,10],[3000,10]);
-  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,4,[ "No value present."]);
-}
-
 # Make sure that all expected integers are received.
 sub check_qchannel {
   my ($input,$regex,$data,$expNumFinish,$expregex,$expmax) = (shift,shift,shift,shift,shift,shift);
 
   my %alldata = ();
-  foreach (@{$data}) {
-    for (my $i = 0; $i != $_->[1]; ++$i) {
-      $alldata{$_->[0] + $i} = 1;
+  for my $i (@$data) {
+    for my $j (@$i) {
+      $alldata{$j} = 1;
     }
   }
 
@@ -308,8 +287,12 @@ sub check_qchannel {
   for (@lines) {
     dprint "Line:  $_\n";
     if ( /$regex/ ) {
-      my $val = $1;
+      my $val = eval $1;
       dprint "Read $val from channel.\n";
+      if (!(exists $alldata{$val})) {
+	print "Found unexpected data value $val.\n";
+	die;
+      }
       delete $alldata{$val};
     } elsif ( /(Producer|Consumer) done./ ) {
       ++$numFinish;
@@ -335,14 +318,65 @@ sub check_qchannel {
   }
 }
 
+sub check_chan1 {
+  my @data = ([10..19],[100..109],[1000..1009],[10000..10009]);
+  check_channel (@_[0],"Data read from channel (\\d+):\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan2 {
+  my @data = ([10..19],[100..109],[1000..1009],[10000..10009]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan3 {
+  my @data = ([10..19]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,2,[ "No value present."]);
+}
+
+sub check_chan4 {
+  my @data = ([20..29],[200..209],[2000..2009],[20000..20009],[200000..200009],[2000000..2000009]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan5 {
+  my @data = ([30..39],[300..309],[3000..3009],[30000..30009],[300000..300009],[3000000..3000009]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,7);
+}
+
+sub check_chan6 {
+  my @data = ([20..29],[200..209]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,3,[ "No value present."]);
+}
+
+sub check_chan7 {
+  my @data = ([30..39],[300..309],[3000..3009]);
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+)",\@data,4,[ "No value present."]);
+}
+
 sub check_chan8 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  my @data = ([10..19],[100..109],[1000..1009],[10000..10009]);
   check_qchannel (@_[0],"Read a value:\\s+(\\d+)",\@data,5);
 }
 
 sub check_chan9 {
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  my @data = ([10..19],[100..109],[1000..1009],[10000..10009]);
   check_qchannel (@_[0],"Read a value:\\s+(\\d+)",\@data,5,"Queue size:\\s+(\\d+)",3);
+}
+
+sub check_chan10 {
+  my @data = ([60..69],
+	      [20..29],
+	      [200..209],
+	      [2000..2009],
+	      [20000..20009],
+	      [200000..200009],
+	      [2000000..2000009],
+	      [2.3, 3.3, 4.3, 5.3, 6.3, 7.3, 8.3, 9.3, 10.3, 11.3 ],
+	      [3.45, 4.45, 5.45, 6.45, 7.45, 8.45, 9.45, 10.45, 11.45, 12.45],
+	      [5.175, 6.175, 7.175, 8.175, 9.175, 10.175, 11.175, 12.175, 13.175, 14.175],
+	      [7.7625, 8.7625, 9.7625, 10.7625, 11.7625, 12.7625, 13.7625, 14.7625, 15.7625, 16.7625]
+	      );
+  check_channel (@_[0],"Got a value from port (\\d+):\\s+(\\d+\.?\\d*)",\@data,12);
 }
 
 # Makes sure expected results are found.

@@ -27,18 +27,18 @@ namespace plasma {
 
     // These are marked as non-mutex b/c they are used by alt, which already
     // does the locking.
-    pNoMutex void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+    pNoMutex void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
     pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
     void set_writenotify(THandle t) { assert(!_writet); _writet = t; };
     THandle clear_writenotify() { THandle t = _writet; _writet = 0; return t; };
     Data read_internal(bool clear_ready);
 
-    Data    _data;
-    bool    _ready;
-    THandle _readt;
-    THandle _writet;
-    int     _h;
+    Data       _data;
+    bool       _ready;
+    THandle    _readt;
+    THandle    _writet;
+    HandleType _h;
   };
 
   // Queued channel class:  The class may store either an arbitrary number of
@@ -59,19 +59,19 @@ namespace plasma {
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
 
-    pNoMutex void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+    pNoMutex void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
     pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
 
-    int     _maxsize;   // Max size.  If -1, no fixed size.
-    int     _size;      // Current size of queue.
-    Store   _store;
-    THandle _readt;     // A blocked read thread.
-    Writers _writers;   // One or more blocked writers.
-    int     _h;
+    int        _maxsize;   // Max size.  If -1, no fixed size.
+    int        _size;      // Current size of queue.
+    Store      _store;
+    THandle    _readt;     // A blocked read thread.
+    Writers    _writers;   // One or more blocked writers.
+    HandleType _h;
   };
 
   // This channel is used to interface with a spawned thread.  It is a read-only
@@ -92,7 +92,7 @@ namespace plasma {
     Data get() { _read = true; return value(); };
     void clear_ready() { _read = false; };
 
-    pNoMutex void set_notify(THandle t,int h);
+    pNoMutex void set_notify(THandle t,HandleType h);
     pNoMutex THandle clear_notify();
   private:
     THandle _rt;
@@ -111,7 +111,7 @@ namespace plasma {
   Data Channel<Data>::read_internal(bool clearready)
   {
     if (!_ready) {
-      set_notify(pCurThread(),0);
+      set_notify(pCurThread(),HandleType());
       pSleep();
     }
     if (_writet) {
@@ -144,7 +144,7 @@ namespace plasma {
   {
     // If no data- sleep until we get some.
     if (!ready()) {
-      set_notify(pCurThread(),0);
+      set_notify(pCurThread(),HandleType());
       pSleep();
     }
     // If there's a waiting writer (queue is full) and we're
@@ -181,7 +181,7 @@ namespace plasma {
   /////////////// ResChan ///////////////
 
   template <class Data>
-  void ResChan<Data>::set_notify(THandle t,int h) 
+  void ResChan<Data>::set_notify(THandle t,HandleType h) 
   { 
     assert(!_rt); 
     _rt = t; 
