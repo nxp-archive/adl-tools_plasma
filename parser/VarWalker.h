@@ -9,10 +9,10 @@
 
 #include <vector>
 
-#include "gc_cpp.h"
-#include "gc_allocator.h"
+#include "gc/gc_cpp.h"
+#include "gc/gc_allocator.h"
 
-#include "opencxx-bk/walker.h"
+#include "walker.h"
 # include <ext/hash_set>
 using namespace __gnu_cxx;
 

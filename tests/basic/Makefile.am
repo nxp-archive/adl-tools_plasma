@@ -358,7 +358,7 @@ connect1_DEPENDENCIES = $(DEPENDENCIES)
 gc1_SOURCES = gc1.pa
 gc1_DEPENDENCIES = $(DEPENDENCIES)
 
-AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
+AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po

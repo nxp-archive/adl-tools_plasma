@@ -27,7 +27,8 @@
 # include <ext/hash_map>
 using namespace __gnu_cxx;
 
-#include "gc_cpp.h"
+#include "gc/gc_cpp.h"
+
 #include "String.h"
 
 struct SymHash : public gc, public hash_map<String,int,StringHash,equal_to<String> > {

@@ -8,7 +8,7 @@
 
 #include <iosfwd>
 
-#include "opencxx-bk/ptree.h"
+#include "ptree.h"
 
 namespace Opencxx {
   class Environment;

@@ -1,6 +1,6 @@
 
 
-SUBDIRS = macros scripts qt gc src parser $(DOCDIR) tests
+SUBDIRS = macros scripts qt gc libltdl opencxx src parser tests $(DOCDIR)
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -8,4 +8,4 @@ AUTOMAKE_OPTIONS = foreign
 # configure.in, then type "make".  What happens is that configure
 # captures the state of the variable and substitutes it into the
 # final Makefile.
-ACLOCAL_AMFLAGS = -I ./macros
+ACLOCAL_AMFLAGS = -I ./macros -I ./libltdl

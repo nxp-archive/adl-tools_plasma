@@ -1,18 +1,16 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.13])
+AC_INIT([plasma],[0.8.14])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
 AC_CANONICAL_BUILD
 AC_PROG_CC
 AC_PROG_CXX
-AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 AC_STDC_HEADERS
 AC_LANG_CPLUSPLUS
 AM_PROG_AS
 AC_PROG_LEX
-AC_PROG_YACC
 AM_CPP_SETUP(3,2)
 
 #########################################################################
@@ -48,11 +46,27 @@ fi
 AC_PATH_PROG(CXXPROG,$CXX)
 echo "Compiler is located at:  $CXXPROG"
 
+##
+## Libtool ltdl library will be built as "convenience library"
+## (see Autobook for more info)
+##
+# We want to use our version of libltdl.
+export enable_ltdl_install=yes
+AC_LIBLTDL_INSTALLABLE
+
+## Setup to use libtool.
+AC_PROG_LIBTOOL
+
+##
+## Configure libltdl
+##
+AC_LTDL_ENABLE_INSTALL
+AC_LIB_LTDL
+AC_SUBST(LIBLTDL)
+AC_SUBST(INCLTDL)
+
 ## Configure Quickthreads.
 AM_QT
-
-## Configure OpenC++
-AM_OCC
 
 ## Configure Skribe and Latex.
 AM_SKRIBE
@@ -88,6 +102,7 @@ AC_CONFIG_FILES([\
    qt/Makefile \
    qt/md/Makefile \
    src/Makefile \
+   opencxx/Makefile \
    parser/Makefile \
    doc/Makefile \
    tests/Makefile \
@@ -108,6 +123,6 @@ AC_CONFIG_FILES([\
 
 # We always want to enable C++ support (argument taken by GC library).
 export enable_cplusplus=yes
-AC_CONFIG_SUBDIRS(gc)
+AC_CONFIG_SUBDIRS(gc libltdl)
 
 AC_OUTPUT

@@ -72,9 +72,12 @@ BUILT_SOURCES = clex.cc
 
 EXTRA_DIST = compile_check.pm.in regress
 
-LEMON = ../lemon/lemon
+# We use the lemon parser generator, but we assign it to YACC
+# so that automake won't bitch about seeing a .yy file and not
+# having YACC defined.
+YACC = ../lemon/lemon
 
-AM_CXXFLAGS = -I$(top_srcdir)/gc/include
+AM_CXXFLAGS = -I$(top_srcdir)/gc
 
 minicc_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 
@@ -90,7 +93,7 @@ foo: tests/foo.c tests/foo_lib.c minicc
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $(@:.cc=.ll)
 
 %.cc : %.yy ;
-	$(LEMON) $<
+	$(YACC) $<
 
 cparse.h: cparse.cc
 CLexer.o: cparse.h

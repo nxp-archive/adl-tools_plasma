@@ -8,7 +8,7 @@
 #ifndef _QUEUE_H_
 #define _QUEUE_H_
 
-#include "gc_cpp.h"
+#include "gc/gc_cpp.h"
 
 #include <iosfwd>
 

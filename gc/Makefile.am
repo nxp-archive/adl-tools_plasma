@@ -32,11 +32,11 @@ extra =
 endif
 lib_LTLIBRARIES = libgc.la $(extra) 
 
-include_HEADERS = include/gc.h include/gc_local_alloc.h \
-include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/leak_detector.h include/gc_typed.h @addincludes@
+#include_HEADERS = include/gc.h include/gc_local_alloc.h \
+#include/gc_pthread_redirects.h include/gc_config_macros.h \
+#include/leak_detector.h include/gc_typed.h @addincludes@
 
-EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
+#EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
 
 if POWERPC_DARWIN
 asm_libgc_sources = powerpc_darwin_mach_dep.s
@@ -180,3 +180,9 @@ EXTRA_DIST += libtool.m4
 # it will not remove dest if building fails
 .S.s:
 	if $(CPP) $< >$@ ; then :; else rm -f $@; fi
+
+# This is so that our includes look the same in the workspace
+# and in the install tree.
+all: all-recursive
+	ln -sf include gc
+

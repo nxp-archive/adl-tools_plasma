@@ -173,7 +173,7 @@ if (!$devel) {
 } else {
   # Development mode:  Run using development layout.
   $base  = $devel;
-  $pincs = "-d-include$base/src/plasma-interface.h -I$base/src -I$base/gc/include";
+  $pincs = "-d-include$base/src/plasma-interface.h -I$base/src -I$base/gc";
   $plibs = "-L$base/src/.libs -Wl,-R$base/src/.libs " .
            "-L$base/qt/.libs -Wl,-R$base/qt/.libs " .
            "-L$base/gc/.libs -Wl,-R$base/gc/.libs $baselibs";

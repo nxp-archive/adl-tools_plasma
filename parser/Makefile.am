@@ -1,4 +1,12 @@
 
+OccBuildDir = $(top_builddir)/opencxx
+OccSrcDir = $(top_srcdir)/opencxx
+GcBuildDir = $(top_builddir)/gc
+GcSrcDir = $(top_srcdir)/gc
+
+OCC = $(OccBuildDir)/occ
+OCCFLAGS = -I$(OccSrcDir) -I$(GcSrcDir)
+
 bin_PROGRAMS = plasma-comp
 
 plasma_comp_SOURCES = \
@@ -9,7 +17,7 @@ plasma_comp_SOURCES = \
 	TMutex.mc
 
 plasma_comp_LDADD = \
-	$(OCCLIBS)
+	$(OccBuildDir)/libocc.la $(LIBLTDL)
 
 plasma_comp_LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
 

@@ -9,8 +9,8 @@
 
 #include "Types.h"
 
-#include "gc_cpp.h"
-#include "gc_allocator.h"
+#include "gc/gc_cpp.h"
+#include "gc/gc_allocator.h"
 
 class Node;
 class CodeGen;

@@ -6,7 +6,8 @@
 #include <stdexcept>
 #include <iostream>
 
-#include "gc_cpp.h"
+#include "gc/gc_cpp.h"
+
 #include "Interface.h"
 #include "System.h"
 #include "Thread.h"

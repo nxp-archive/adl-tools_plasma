@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#include "gc_cpp.h"
-#include "gc_allocator.h"
+#include "gc/gc_cpp.h"
+#include "gc/gc_allocator.h"
 
 #include "String.h"
 

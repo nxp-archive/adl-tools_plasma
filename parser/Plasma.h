@@ -8,7 +8,7 @@
 
 #include <list>
 
-#include "gc_cpp.h"
+#include "gc/gc_cpp.h"
 
 // This stuff is used for alt/afor processing.
 struct Port : public gc {

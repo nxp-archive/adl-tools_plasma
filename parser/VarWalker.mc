@@ -3,8 +3,8 @@
 #include <iostream>
 #include <vector>
 
-#include "opencxx-bk/mop.h"
-#include "opencxx-bk/ptree.h"
+#include "mop.h"
+#include "ptree.h"
 
 #include "VarWalker.h"
 

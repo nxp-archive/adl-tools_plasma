@@ -1,8 +1,8 @@
 
 #include <assert.h>
 #include <iostream>
-#include "opencxx-bk/mop.h"
-#include "opencxx-bk/ptree-core.h"
+#include "mop.h"
+#include "ptree-core.h"
 
 #include "VarWalker.h"
 #include "Plasma.h"
