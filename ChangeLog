@@ -1,3 +1,14 @@
+2004-06-25  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed problems w/nested par blocks.  Two problems were found:
+	The VarWalker class needed to overload TranslateUserPlain so that
+	par and alt blocks weren't opaque.  Second, the code that we were
+	producing was created as a simple string, so that a nested par
+	block, when we scanned it for variables, didn't have any
+	translated b/c they weren't stored as variables.  This was fixed
+	by creating a new Ptree derived object with a proper Translate
+	method.  Added par5 to test this.
+
 2004-06-23  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed problems w/having plasma statements in inlined-methods.

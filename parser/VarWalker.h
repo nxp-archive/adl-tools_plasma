@@ -45,11 +45,13 @@ public:
   virtual ~VarWalker() {};
 
   virtual Ptree* TranslateVariable(Ptree*);
+  virtual Ptree* TranslateUserPlain(Ptree*);
 
   void handleGuard(bool hg) { _inguard = hg; };
   void setnames(Ptree *tst,Ptree *tsn) { 
     _tsname = tsn; 
     _tstype = tst;
+    _tsvars.insert(tsn->ToString());
   };
   void reset() { 
     _inguard = false;
@@ -66,6 +68,9 @@ public:
   bool guardEnvEmpty() const { return _genv->IsEmpty(); };
 
 private:
+  Ptree *TranslateUserBlock(Ptree *s);
+  Ptree *TranslateUserFor(Ptree *s);
+
   Ptree *recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_inguard);
 
   Ptree       *_tsname;  // Name of thread structure.
@@ -74,10 +79,12 @@ private:
   Environment *_penv;    // Parent scope.
   Environment *_benv;    // Bottom (global) scope.
   Environment *_genv;    // Guard scope (declarations in the condition).
-  Ptree       *_args;
-  ArgVect      _argnames;
-  StrHash      _vhash;
+  Ptree       *_args;    // Stores members of the future thread structure.
+  ArgVect      _argnames;// Stores argument information.
+  StrHash      _vhash;   // Tracks variables we've seen already.
   bool         _inguard;
+
+  static StrHash _tsvars; // Stores all thread-structure variables used so far.
 };
 
 #endif

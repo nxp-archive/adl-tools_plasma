@@ -67,6 +67,24 @@ Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
   return nil;
 }
 
+void dumpEnv(Environment *env)
+{
+  int i = 0;
+  cerr << "-------------" << endl;
+  while (env) {
+    cerr << i << ":  " << env << ":  ";
+    Environment *nenv = env->GetOuterEnvironment();
+    if (!nenv) {
+      cerr << "<outer>" << endl;
+    } else {
+      env->Dump();
+    }
+    env = nenv;
+    ++i;
+  }
+  cerr << "-------------" << endl;
+}
+
 // This translates plain par statements.  The semantics are that each expression
 // is launched as a separate thread.  All threads must finish before the par block
 // is completed and execution continues.
@@ -84,6 +102,8 @@ Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
 
   Ptree *start = Ptree::List(Ptree::qMake("//Begin par block\n"));
   Ptree *cur = start;
+
+  //  dumpEnv(env);
 
   // This walker will be used to walk each expression that's an element of
   // the par block.  It just records what variables are used that occur in the
@@ -206,6 +226,10 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   vw->setnames(tstype,tsname);              
   Ptree *nexpr = vw->Translate(expr);    // Translate expression, scanning for variables.
   Ptree *args = vw->args();
+
+  // Register this variable so that nested par blocks will see the parm structure.
+  Class *tsclass = new Class(env,tstype);
+  env->RecordPointerVariable(tsname->ToString(),tsclass);
 
   thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
 

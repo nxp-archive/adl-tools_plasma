@@ -315,7 +315,7 @@ const int32 Read = 0, Write_synch = 1, Write_asynch = 2;
 class DiskManager {
 
   // a sequential buffer implementation
-  void drive_buffer(int32 buff_size, Chans &in, Chans &out, int32 number) 
+  void drive_buffer(int32 buff_size, Chan &in, Chan &out, int32 number) 
   {
     IntVect stuff(buff_size);
 
@@ -349,7 +349,7 @@ class DiskManager {
         while(1) {
           // first see if we got any data
           if (out_asleep) {
-            any = in_to_out.gete();	// wait for stuff
+            any = in_to_out.get();	// wait for stuff
           }
           data = stuff[outptr];
           out.write(data);
@@ -414,12 +414,12 @@ class DiskManager {
   ///////////////////////// manager /////////////////////////
 	
   // Accepts commands from tp agents and sends to drives
-  void manager(int32 mips, int32 disks, Chan &commands, Chan &to_drives)
+  void manager(int32 mips, int32 disks, Chans &commands, Chans &to_drives)
   {  
     int32 cmnd, agent, drivenum, composite;
     say("\nDisk manager starting");	
     while(1) {
-      afor(int i = 0; i != commands.size(); ++i) {
+      afor(unsigned i = 0; i != commands.size(); ++i) {
         commands[i].port(int v) {
           cmnd = v;
           agent = i;
@@ -437,11 +437,11 @@ class DiskManager {
 
   // the disk interrupt handler; catches 'done' messages from disks,
   // sends signal to appropriate tp agent
-  void responder(int32 mips, Chan &to_agents, Chan &from_disks) 
+  void responder(int32 mips, Chans &to_agents, Chans &from_disks) 
   {
     int32 agent;
     while(1) {
-      afor (int i = 0; i != from_disks.size(); ++i) {
+      afor (unsigned i = 0; i != from_disks.size(); ++i) {
         from_disks[i].port(int v) {
           agent = v;
         }
@@ -457,6 +457,10 @@ public:
   void operator()(int32 mips, int32 buff_size, int32 disks, Chans &in, Chans &out) 
   {
     Chans to_drives(disks), from_drives(disks), buff_to_drives(disks);
+
+    par {
+      manager(to_drives);
+    }
 	
     par {
       par {
