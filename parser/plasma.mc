@@ -44,8 +44,9 @@ private:
   bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
   bool parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock);
 
-  bool makeSpawnStruct(Environment *env,TypeInfo &,Ptree *);
-  bool makeSpawnFunc(Environment *env,TypeInfo &,Ptree *,Ptree *,Ptree *,Ptree *);
+  bool checkForMemberCall(Environment *,Class* &,Environment* &,Ptree* &,Ptree* &);
+  bool makeSpawnStruct(Environment *env,Class *,TypeInfo &,Ptree *);
+  bool makeSpawnFunc(Environment *env,Class *,TypeInfo &,Ptree *,Ptree *,Ptree *,Ptree *);
 };
 
 bool Plasma::Initialize()
@@ -574,20 +575,21 @@ bool Plasma::parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &def
 // call or member invocation.  The arguments are evaluated immediately, then a thread is
 // launched of that function call.  The return value is a ResChannel object which contains the
 // result of the function.  Trying to read the result before it's finished will block the thread.
-Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* preargs)
+Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* preargs)
 {
-  if (!compare(object,"spawn")) {
-    ErrorMessage(env,"bad spawn class- make sure that you haven't used the pSpawner keyword erroneously.",nil,object);
+  if (!compare(spawnobj,"spawn")) {
+    ErrorMessage(env,"bad spawn class- make sure that you haven't used the pSpawner keyword erroneously.",nil,spawnobj);
     return nil;
   }
 
   Ptree *args = TranslateArguments(env,preargs)->Cadr();
 
   if (args->Length() > 1) {
-    ErrorMessage(env,"The spawn operator accepts only one argument.",nil,object);
+    ErrorMessage(env,"The spawn operator accepts only one argument.",nil,spawnobj);
     return nil;
   }
 
+  // User function and its arguments.
   Ptree *ufunc,*uargs;
 
   // Try to extract a function call.
@@ -596,14 +598,30 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* prea
     return nil;
   }
 
+  // Will store object's class if a member call.
+  Class *objclass = nil;
+
+  // Will store object pointer expression if a member call.
+  Ptree *objptr = nil;
+
+  // Environment of the invoked type.  The main environment if a function, otherwise
+  // environment of the class defining the member.
+  Environment *callenv = env;
+
+  // Function or member call's type.
+  TypeInfo t;
+
+  // If we're dealing with a member call, setup stuff appropriately.
+  if (!checkForMemberCall(env,objclass,callenv,ufunc,objptr)) {
+    return nil;;
+  }
+
   // The argument type must be a function call.  Its return type will indicate
   // the type of the result channel object.
-  TypeInfo t;
-  if (!env->Lookup(ufunc,t)) {
+  if (!callenv->Lookup(ufunc,t)) {
     ErrorMessage(env,"Could not lookup spawn argument.",nil,ufunc);
     return nil;
   }
-
   if (!t.IsFunction()) {
     ErrorMessage(env,"Spawn argument must be a function call.",nil,ufunc);
     return nil;
@@ -614,19 +632,98 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* prea
   Ptree *lfunc  = Ptree::GenSym();
 
   // Create temporary argument storage structure.
-  if (!makeSpawnStruct(env,t,targs)) {
+  if (!makeSpawnStruct(env,objclass,t,targs)) {
     return nil;
   }
 
   // Create spawn function- this will take the function and its arguments
   // and launch a thread, returning a result structure w/a pointer to the
   // result data.
-  if (!makeSpawnFunc(env,t,targs,ufunc,lfunc,sfunc)) {
+  if (!makeSpawnFunc(env,objclass,t,targs,ufunc,lfunc,sfunc)) {
     return nil;
   }
 
   // Finally, replace spawn operator w/call to spawn function.
-  return Ptree::qMake("`sfunc`(`uargs`)");
+  Ptree *start = Ptree::qMake("`sfunc`(");
+  Ptree *cur = start;
+
+  if (objptr) {
+    cur = lappend(cur,objptr);
+    if (uargs) {
+      cur = lappend(cur,Ptree::Make(","));
+    }
+  }
+  cur = lappend(cur,Ptree::qMake("`uargs`)"));
+  return start;
+}
+
+bool Plasma::checkForMemberCall(Environment *env,Class* &objclass,
+                                 Environment* &callenv,Ptree* &ufunc,Ptree* &objptr)
+{
+  // Are we dealing with a pointer or reference to a member?
+  bool deref = false;
+  bool mhandled = false;
+  Ptree *object, *member;
+  if (Ptree::Match(ufunc,"[ %? . %? ]",&object,&member)) {
+    // Member call with reference of object.
+    objptr = Ptree::qMake("&(`object`)");
+    mhandled = true;
+  } else if (Ptree::Match(ufunc,"[ %? -> %? ]",&object,&member)) {
+    // Member call with pointer to object.
+    objptr = object;
+    deref = true;
+    mhandled = true;
+  } else if (Ptree::Match(ufunc,"[ %? :: %? ]",&object,&member)) {
+    // Call to static- handle as a function.
+    object = nil;
+    member = nil;
+    objptr = nil;
+    mhandled = true;
+  } else {
+    // Not a member call with an explicit object.
+    object = nil;
+    member = nil;
+    objptr = nil;
+  }
+
+  // Explicit object was found- find its environment.
+  if (object) {
+    TypeInfo pt;
+    if (!env->Lookup(object,pt)) {
+      ErrorMessage(env,"Could not lookup member call class.",nil,object);
+      return false;
+    }
+    if (deref) {
+      pt.Dereference();
+    }
+    if (!(objclass = pt.ClassMetaobject())) {
+      ErrorMessage("Could not find class's type.",nil,object);
+      return false;
+    }
+    ufunc = member;
+    callenv = objclass->GetEnvironment();
+  }
+
+  // Is this an implicit member call?  If so, we need to add the this pointer
+  // as an argument.
+  if (!mhandled) {
+    if (Environment *menv = env->IsMember(ufunc)) {
+      // Is a member- get type.
+      if (!(objclass = menv->LookupThis())) {
+        ErrorMessage(env,"Could not find member function's class.",nil,ufunc);
+        return false;
+      }
+      callenv = menv;
+      objptr = Ptree::Make("this");
+    }
+  }
+
+  return true;
+}
+
+Ptree *className()
+{
+  return Ptree::Make("_class");
 }
 
 Ptree *resultName()
@@ -642,11 +739,13 @@ Ptree *argName(int i)
 }
 
 // Creates a structure for storing a spawned thread's result and arguments.
-bool Plasma::makeSpawnStruct(Environment *env,TypeInfo &t,Ptree *targs)
+bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo &t,Ptree *targs)
 {
   Ptree *start = Ptree::qMake("struct `targs` {\n");
   Ptree *cur = start;
 
+  // Note:  The result ***must*** go first because we point the Result object to
+  // the beginning of the block in order to get the function result.
   TypeInfo rt;
   t.Dereference(rt);
   cur = lappend(cur,Ptree::qMake("`rt.MakePtree(resultName())`;\n"));
@@ -656,6 +755,11 @@ bool Plasma::makeSpawnStruct(Environment *env,TypeInfo &t,Ptree *targs)
     t.NthArgument(i,at);
     cur = lappend(cur,Ptree::qMake("`at.MakePtree(argName(i))`;\n"));
   }
+
+  // If we have a object class pointer, create pointer to store it.
+  if (objclass) {
+    cur == lappend(cur,Ptree::qMake("`objclass->Name()` *`className()`;\n"));
+  }
   
   cur = lappend(cur,Ptree::Make("};\n"));
   InsertBeforeToplevel(env,start);
@@ -663,13 +767,20 @@ bool Plasma::makeSpawnStruct(Environment *env,TypeInfo &t,Ptree *targs)
 }
 
 // Creates the launcher function and spawn function for a spawn operator.
-bool Plasma::makeSpawnFunc(Environment *env,TypeInfo &t,Ptree *targs,Ptree *ufunc,Ptree *lfunc,Ptree *sfunc)
+bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo &t,Ptree *targs,
+                           Ptree *ufunc,Ptree *lfunc,Ptree *sfunc)
 {
   // Create the launcher function which calls the user function w/proper args.
   Ptree *start = Ptree::qMake("inline void `lfunc`(void *args)\n"
                               "{\n"
-                              "  ((`targs`*)args)->`resultName()` = `ufunc`(");
+                              "  ((`targs`*)args)->`resultName()` = ");
   Ptree *cur = start;
+
+  if (objclass) {
+    cur = lappend(cur,Ptree::qMake("((`targs`*)args)->`className()`->`ufunc`("));
+  } else {
+    cur = lappend(cur,Ptree::qMake("`ufunc`("));
+  }
 
   int numargs = t.NumOfArguments();
 
@@ -692,6 +803,13 @@ bool Plasma::makeSpawnFunc(Environment *env,TypeInfo &t,Ptree *targs,Ptree *ufun
   start = Ptree::qMake("inline `rtemplate` `sfunc`(");
   cur = start;
 
+  if (objclass) {
+    cur = lappend(cur,Ptree::qMake("`objclass->Name()` *`className()`"));
+    if (numargs) {
+      cur = lappend(cur,Ptree::qMake(","));
+    }
+  }
+
   TypeInfo at;
   for (int i = 0; i != numargs; ++i) {
     if (i) {
@@ -706,6 +824,9 @@ bool Plasma::makeSpawnFunc(Environment *env,TypeInfo &t,Ptree *targs,Ptree *ufun
                                  "`targs` args = {`rt.MakePtree(emptyarg)`"));
   for (int i = 0; i != numargs; ++i) {
     cur = lappend(cur,Ptree::qMake(",`argName(i)`"));
+  }
+  if (objclass) {
+    cur = lappend(cur,Ptree::qMake(",`className()`"));
   }
   
   cur = lappend(cur,Ptree::qMake("};\n"

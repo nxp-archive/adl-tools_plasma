@@ -14,7 +14,8 @@ check_PROGRAMS = \
 	chan6 \
 	chan7 \
 	spawn1 \
-	spawn2
+	spawn2 \
+	spawn3
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a $(top_srcdir)/parser/Plasma.so
 
@@ -43,6 +44,8 @@ chan7_SOURCES = chan7.pa
 spawn1_SOURCES = spawn1.C
 
 spawn2_SOURCES = spawn2.pa
+
+spawn3_SOURCES = spawn3.pa
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 

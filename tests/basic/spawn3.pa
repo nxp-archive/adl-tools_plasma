@@ -1,0 +1,49 @@
+//
+// C++-only sample implementation of a result thread.
+//
+#include <iostream>
+#include <iomanip>
+
+using namespace std;
+using namespace plasma;
+
+using namespace std;
+
+struct TrySpawn {
+
+  double foo(double a,double b)
+  {
+    for (int i = 0; i != 100000000; ++i) {
+      int xx = 10;
+    }
+    return a*a + b*b;
+  }
+
+  static double pi()
+  {
+    return 3.14159;
+  }
+
+  void start();
+};
+
+void TrySpawn::start()
+{ 
+  Result<double> result1 = spawn(foo(1.1,2.2));
+  Result<double> result2 = spawn(foo(2.7,9.8));
+  Result<double> result3 = spawn(foo(100.45,3.59));
+  Result<double> result4 = spawn(pi());
+  printf("Result is:  %f, %f, %f, %f\n",result1.value(),result2.value(),result3.value(),result4.value());
+}
+
+int pMain(int,const char *[])
+{
+  TrySpawn ts;
+  ts.start();
+  TrySpawn *pts = &ts;
+  Result<double> r1 = spawn(ts.foo(3.0,4.0));
+  Result<double> r2 = spawn(pts->foo(100.1,200.2));
+  Result<double> r3 = spawn(TrySpawn::pi());
+  printf("Result is:  %f, %f, %f\n",r1.value(),r2.value(),r3.value());
+  return 0;
+}
