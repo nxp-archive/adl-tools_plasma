@@ -9,6 +9,7 @@
 #include "gc_cpp.h"
 #include "gc_allocator.h"
 
+#include <functional>
 #include <vector>
 #include <assert.h>
 
@@ -174,6 +175,7 @@ namespace plasma {
   // Abort program immediately with error message and return exit code -1.
   void pPanic(const char *);
 
+  //
   // A result class is returned by the spawn operator.  It acts like the
   // "futures" feature MultiLisp:  The spawn operator initiates a thread; to
   // get the thread's value, call the value() method.  If the thread is
@@ -183,6 +185,7 @@ namespace plasma {
   // equal to the value supplied by the default constructor of the return type.
   //
   // To use this with an alt block, use ResChan<R> instead.
+  //
   template<class R>
   class Result {  
   public:
@@ -206,8 +209,71 @@ namespace plasma {
     THandle  _t;      // Thread returning a result.
   };
 
+  // The code below implements a common idiom of the spawn function: Collecting
+  // up a bunch of values and then applying a predicate.  The most general case follows:
+  // This collects a series of Result objects of a given type.  You then apply a predicate
+  // by calling check().  If the predicate fails, check() returns false.  False is returned
+  // immediately, meaning that an unchecked result may still have a running thread.
+
+  template <typename R,typename Pred>
+  struct ResultCheck {
+    typedef Pred Predicate;
+    typedef plasma::Result<R> ResType;
+    
+    ResultCheck(Pred p) : _pred(p) {};
+    void push_back(ResType r) { _results.push_back(r); };
+    void clear() { _results.clear(); };
+    bool check();
+  private:
+    typedef std::vector<ResType,traceable_allocator<ResType> > ResStore;
+    
+    Predicate _pred;
+    ResStore  _results;
+  };
+
+  // A common case is where the predicate tests that each Result object returns an expected
+  // value, e.g. true.  If that is not true, e.g. a thread returns false, we expect check to
+  // fail.  The following type generator produces such a type.  You use it like this:
+  //
+  // ValueCheckGen<Foo> results(make_valuecheck(foo));
+  //
+  // Where Foo is a type and foo is an instance of the type, e.g. bool and true.
+  //
+  // You then add threads like this:
+  //
+  // results.push_back(spawn(myfunc(1,2,3)));
+  //
+  // And check the results like this:
+  //
+  // if (!results.check()) { return false; };
+  //
+  // You can reuse it by calling clear:
+  //
+  // results.clear();
+
+  template <typename T>
+  struct ValueCheckGen {
+    typedef ResultCheck<T,std::binder2nd<std::equal_to<T> > > type;
+  };
+
+  template <typename T>
+  typename ValueCheckGen<T>::type make_valuecheck(T value) { return typename ValueCheckGen<T>::type(std::bind2nd(std::equal_to<T>(),value)); };
+
+  // A common case for the above is to test a boolean, e.g. all threads return true.  The
+  // code below implements this.  You use it like this:
+  //
+  // BoolCheck results(make_boolcheck(true));
+  //
+  // Every thread must return true, or else check will fail.
+
+  typedef ValueCheckGen<bool>::type BoolCheck;
+
+  inline BoolCheck make_boolcheck(bool value) { return make_valuecheck(value); };
+
+  //
   // Timeout channel:  When used in an alt block, will set ready after a specified
   // amount of simulation time.
+  //
   class Timeout {
   public:
     Timeout(ptime_t d) : _delay(d), _readt(0), _writet(0) {};
@@ -290,6 +356,17 @@ namespace plasma {
     if (!pDone(_t)) {
       pTerminate(_t);
     }
+  }
+
+  template <class R,class Pred> bool ResultCheck<R,Pred>::check()
+  {
+    typename ResStore::iterator i = _results.begin();
+    for (; i != _results.end(); ++i) {
+      if ( !_pred(i->value()) ) {
+        return false;
+      }
+    }  
+    return true;
   }
 
 }

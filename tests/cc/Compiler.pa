@@ -35,15 +35,13 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
   }
   // Now we spawn off threads to do the checking phases.
   TranslationUnit &turef = ncastr<TranslationUnit>(tu);
-  Results results;
+  BoolCheck results(make_boolcheck(true));
   for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
     results.push_back(spawn(dochecks( *i, check_only )));
   }
   // If any of the results are false, we've got an error.
-  for (Results::iterator i = results.begin(); i != results.end(); ++i) {
-    if ( !i->value() ) {
-      return false;
-    }
+  if (!results.check()) {
+    return false;
   }
   if (check_only) {
     return true;
@@ -63,10 +61,8 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
       results.push_back(spawn(gencode(maingen,*i)));
     }
     // If any of the results are false, we've got an error.
-    for (Results::iterator i = results.begin(); i != results.end(); ++i) {
-      if ( !i->value() ) {
-        return false;
-      }
+    if (!results.check()) {
+      return false;
     }
     
     // Create output name from input name.

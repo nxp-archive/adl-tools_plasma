@@ -105,7 +105,7 @@ void parse(TokChan &tc)
 {
   Compiler compiler;
   CParser parser(options._debug);
-  Results results;
+  BoolCheck results(make_boolcheck(true));
   while(!parser.error()) {
     Tokens tk = tc.get();
     if (tk._tok < 0) break;
@@ -123,10 +123,8 @@ void parse(TokChan &tc)
   }
   // Synchronize by making sure all compile threads are done.
   // Exit w/error if any report an error.
-  for (Results::iterator i = results.begin(); i != results.end(); ++i) {
-    if ( !i->value() ) {
-      pExit(2);
-    }
+  if (!results.check()) {
+    pExit(2);
   }
   // Print ASTs, if so requested.
   if (options._ast) {
