@@ -1,0 +1,42 @@
+Define statement:  ( reg foo1 ) {
+    size = 10 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Other :  size = 20 ;
+Other :  size = 10 ;
+Other :  define ( stuff bar ) {
+    size = 20 ;
+}
+Define statement:  ( reg foo2 ) {
+    size = 30 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Other :  size = 20 ;
+Other :  size = 30 ;
+Other :  define ( stuff bar ) {
+    size = 20 ;
+}
+Define statement:  ( reg foo3 ) {
+    size = 30 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Other :  size = 20 ;
+Other :  size = 30 ;
+Other :  define ( stuff bar ) {
+    size = 20 ;
+}

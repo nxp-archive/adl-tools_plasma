@@ -11,6 +11,7 @@
 ##
 ## Output:
 ##
+##   OCC:           OpenC++ executable.
 ##   PLASMA:        The Plasma executable.
 ##   PLASMA_PATH:   The Plasma install prefix.
 ##   PLASMA_CFLAGS: Plasma cflags.
@@ -24,12 +25,13 @@ AC_DEFUN([AM_PLASMA],
   fi
   AC_PATH_PROG(PlasmaConfig, [plasma-config], no, $ac_plasma)
   AC_PATH_PROG(PLASMA, [plasma], no, $ac_plasma)
+  AC_PATH_PROG(OCC, [occ], no, $ac_plasma)
 
   PlasmaExists=yes
   if [[ $PLASMA = "no" ]] ; then
     AC_MSG_WARN([Could not find plasma in the path.  Please modify your path or use the --with-plasma option.])
 	PlasmaExists=no
-  fi 
+  fi
   if [[ $PlasmaConfig = "no" ]] ; then
     AC_MSG_WARN([Could not find plasma-config in the path.  Please modify your path or use the --with-plasma option.])
 	PlasmaExists=no
@@ -84,6 +86,7 @@ AC_DEFUN([AM_PLASMA],
     ifelse([$3], , :, [$3])
   fi
 
+  AC_SUBST(OCC)
   AC_SUBST(PLASMA)
   AC_SUBST(PLASMA_PATH)
   AC_SUBST(PLASMA_CFLAGS)

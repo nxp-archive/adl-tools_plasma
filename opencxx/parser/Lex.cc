@@ -70,7 +70,7 @@ using namespace std;
 namespace Opencxx
 {
 
-static void InitializeOtherKeywords(bool);
+  static void InitializeOtherKeywords(bool);
 
 #ifdef TEST
 
@@ -86,368 +86,368 @@ static void InitializeOtherKeywords(bool);
 
 #endif
 
-// class Lex
+  // class Lex
 
-HashTable* Lex::user_keywords = 0;
-Ptree* Lex::comments = 0;
+  HashTable* Lex::user_keywords = 0;
+  Ptree* Lex::comments = 0;
 
-Lex::Lex(Program* aFile, bool wchars, bool recognizeOccExtensions) 
+  Lex::Lex(Program* aFile, bool wchars, bool recognizeOccExtensions) 
     : file(aFile)
     , fifo(this)
     , wcharSupport(wchars)
-{
+  {
     file->Rewind();
     last_token = '\n';
     tokenp = 0;
     token_len = 0;
 
     InitializeOtherKeywords(recognizeOccExtensions);
-}
+  }
 
-char* Lex::Save()
-{
+  char* Lex::Save()
+  {
     char* pos;
     int len;
 
     fifo.Peek(0, pos, len);
     return pos;
-}
+  }
 
-void Lex::Restore(char* pos)
-{
+  void Lex::Restore(char* pos)
+  {
     last_token = '\n';
     tokenp = 0;
     token_len = 0;
     fifo.Clear();
     Rewind(pos);
-}
+  }
 
-// ">>" is either the shift operator or double closing brackets.
+  // ">>" is either the shift operator or double closing brackets.
 
-void Lex::GetOnlyClosingBracket(Token& t)
-{
+  void Lex::GetOnlyClosingBracket(Token& t)
+  {
     Restore(t.ptr + 1);
-}
+  }
 
-unsigned Lex::LineNumber(char* pos, char*& ptr, int& len)
-{
+  unsigned Lex::LineNumber(char* pos, char*& ptr, int& len)
+  {
     return file->LineNumber(pos, ptr, len);
-}
+  }
 
-int Lex::GetToken(Token& t)
-{
+  int Lex::GetToken(Token& t)
+  {
     t.kind = fifo.Pop(t.ptr, t.len);
     return t.kind;
-}
+  }
 
-int Lex::LookAhead(int offset)
-{
+  int Lex::LookAhead(int offset)
+  {
     return fifo.Peek(offset);
-}
+  }
 
-int Lex::LookAhead(int offset, Token& t)
-{
+  int Lex::LookAhead(int offset, Token& t)
+  {
     t.kind = fifo.Peek(offset, t.ptr, t.len);
     return t.kind;
-}
+  }
 
-char* Lex::TokenPosition()
-{
+  char* Lex::TokenPosition()
+  {
     return (char*)file->Read(Tokenp());
-}
+  }
 
-char Lex::Ref(unsigned i)
-{
+  char Lex::Ref(unsigned i)
+  {
     return file->Ref(i);
-}
+  }
 
-void Lex::Rewind(char* p)
-{
+  void Lex::Rewind(char* p)
+  {
     file->Rewind(p - file->Read(0));
-}
+  }
 
-bool Lex::RecordKeyword(char* keyword, int token)
-{
+  bool Lex::RecordKeyword(char* keyword, int token)
+  {
     int index;
     char* str;
 
     if(keyword == 0)
-	return false;
+      return false;
 
     str = new(GC) char[strlen(keyword) + 1];
     strcpy(str, keyword);
 
     if(user_keywords == 0)
-	user_keywords = new HashTable;
+      user_keywords = new HashTable;
 
     if(user_keywords->AddEntry(str, (HashTable::Value)token, &index) >= 0)
-	return true;
+      return true;
     else
-	return bool(user_keywords->Peek(index) == (HashTable::Value)token);
-}
+      return bool(user_keywords->Peek(index) == (HashTable::Value)token);
+  }
 
-bool Lex::Reify(Ptree* t, unsigned int& value)
-{
+  bool Lex::Reify(Ptree* t, unsigned int& value)
+  {
     if(t == 0 || !t->IsLeaf())
-	return false;
+      return false;
 
     char* p = t->GetPosition();
     int len = t->GetLength();
     value = 0;
     if(len > 2 && *p == '0' && is_xletter(p[1])){
-	for(int i = 2; i < len; ++i){
+      for(int i = 2; i < len; ++i){
 	    char c = p[i];
 	    if(is_digit(c))
-		value = value * 0x10 + (c - '0');
+          value = value * 0x10 + (c - '0');
 	    else if('A' <= c && c <= 'F')
-		value = value * 0x10 + (c - 'A' + 10);
+          value = value * 0x10 + (c - 'A' + 10);
 	    else if('a' <= c && c <= 'f')
-		value = value * 0x10 + (c - 'a' + 10);
+          value = value * 0x10 + (c - 'a' + 10);
 	    else if(is_int_suffix(c))
-		break;
+          break;
 	    else
-		return false;
-	}
+          return false;
+      }
 
-	return true;
+      return true;
     }
     else if(len > 0 && is_digit(*p)){
-	for(int i = 0; i < len; ++i){
+      for(int i = 0; i < len; ++i){
 	    char c = p[i];
 	    if(is_digit(c))
-		value = value * 10 + c - '0';
+          value = value * 10 + c - '0';
 	    else if(is_int_suffix(c))
-		break;
+          break;
 	    else
-		return false;
-	}
+          return false;
+      }
 
-	return true;
+      return true;
     }
     else
-	return false;
-}
+      return false;
+  }
 
-// Reify() doesn't interpret an escape character.
+  // Reify() doesn't interpret an escape character.
 
-bool Lex::Reify(Ptree* t, char*& str)
-{
+  bool Lex::Reify(Ptree* t, char*& str)
+  {
     if(t == 0 || !t->IsLeaf())
-	return false;
+      return false;
 
     char* p = t->GetPosition();
     int length = t->GetLength();
     if(*p != '"')
-	return false;
+      return false;
     else{
-	str = new(GC) char[length];
-	char* sp = str;
-	for(int i = 1; i < length; ++i)
+      str = new(GC) char[length];
+      char* sp = str;
+      for(int i = 1; i < length; ++i)
 	    if(p[i] != '"'){
-		*sp++ = p[i];
-		if(p[i] == '\\' && i + 1 < length)
+          *sp++ = p[i];
+          if(p[i] == '\\' && i + 1 < length)
 		    *sp++ = p[++i];
 	    }
 	    else
-		while(++i < length && p[i] != '"')
+          while(++i < length && p[i] != '"')
 		    ;
 
-	*sp = '\0';
-	return true;
+      *sp = '\0';
+      return true;
     }
-}
+  }
 
-// class TokenFifo
+  // class TokenFifo
 
-Lex::TokenFifo::TokenFifo(Lex* l)
-{
+  Lex::TokenFifo::TokenFifo(Lex* l)
+  {
     lex = l;
     size = 16;
     ring = new (GC) Slot[size];
     head = tail = 0;
-}
+  }
 
-Lex::TokenFifo::~TokenFifo()
-{
+  Lex::TokenFifo::~TokenFifo()
+  {
     // delete [] ring;
-}
+  }
 
-void Lex::TokenFifo::Clear()
-{
+  void Lex::TokenFifo::Clear()
+  {
     head = tail = 0;
-}
+  }
 
-void Lex::TokenFifo::Push(int token, char* pos, int len)
-{
+  void Lex::TokenFifo::Push(int token, char* pos, int len)
+  {
     const int Plus = 16;
     ring[head].token = token;
     ring[head].pos = pos;
     ring[head].len = len;
     head = (head + 1) % size;
     if(head == tail){
-	Slot* ring2 = new (GC) Slot[size + Plus];
-        int i = 0;
-	do{
+      Slot* ring2 = new (GC) Slot[size + Plus];
+      int i = 0;
+      do{
 	    ring2[i++] = ring[tail];
 	    tail = (tail + 1) % size;
-	} while(head != tail);
-	head = i;
-	tail = 0;
-	size += Plus;
-	// delete [] ring;
-	ring = ring2;
+      } while(head != tail);
+      head = i;
+      tail = 0;
+      size += Plus;
+      // delete [] ring;
+      ring = ring2;
     }
-}
+  }
 
-int Lex::TokenFifo::Pop(char*& pos, int& len)
-{
+  int Lex::TokenFifo::Pop(char*& pos, int& len)
+  {
     if(head == tail)
-	return lex->ReadToken(pos, len);
+      return lex->ReadToken(pos, len);
 
     int t = ring[tail].token;
     pos = ring[tail].pos;
     len = ring[tail].len;
     tail = (tail + 1) % size;
     return t;
-}
+  }
 
-int Lex::TokenFifo::Peek(int offset)
-{
+  int Lex::TokenFifo::Peek(int offset)
+  {
     return ring[Peek2(offset)].token;
-}
+  }
 
-int Lex::TokenFifo::Peek(int offset, char*& pos, int& len)
-{
+  int Lex::TokenFifo::Peek(int offset, char*& pos, int& len)
+  {
     int cur = Peek2(offset);
     pos = ring[cur].pos;
     len = ring[cur].len;
     return ring[cur].token;
-}
+  }
 
-int Lex::TokenFifo::Peek2(int offset)
-{
+  int Lex::TokenFifo::Peek2(int offset)
+  {
     int i;
     int cur = tail;
 
     for(i = 0; i <= offset; ++i){
-	if(head == cur){
+      if(head == cur){
 	    while(i++ <= offset){
-		char* p;
-		int   l;
-		int t = lex->ReadToken(p, l);
-		Push(t, p, l);
+          char* p;
+          int   l;
+          int t = lex->ReadToken(p, l);
+          Push(t, p, l);
 	    }
 
 	    break;
-	}
+      }
 
-	cur = (cur + 1) % size;
+      cur = (cur + 1) % size;
     }
 
     return (tail + offset) % size;
-}
+  }
 
-/*
-  Lexical Analyzer
-*/
+  /*
+    Lexical Analyzer
+  */
 
-int Lex::ReadToken(char*& ptr, int& len)
-{
+  int Lex::ReadToken(char*& ptr, int& len)
+  {
     int t;
 
     for(;;){
-	t = ReadLine();
+      t = ReadLine();
 
-        if(t == Ignore)
+      if(t == Ignore)
 	    continue;
 
-	last_token = t;
+      last_token = t;
 
 #if (defined __GNUC__) || (defined _GNUC_SYNTAX)
-	if(t == ATTRIBUTE){
+      if(t == ATTRIBUTE){
 	    SkipAttributeToken();
 	    continue;
-	}
-	else if(t == EXTENSION){
+      }
+      else if(t == EXTENSION){
 	    t = SkipExtensionToken(ptr, len);
 	    if(t == Ignore)
-		continue;
+          continue;
 	    else
-		return t;
-	}
+          return t;
+      }
 #endif
 #if defined(_MSC_VER)
-        if(t == ASM){
-            SkipAsmToken();
+      if(t == ASM){
+        SkipAsmToken();
 	    continue;
-	}
-        else if(t == DECLSPEC){
+      }
+      else if(t == DECLSPEC){
 	    SkipDeclspecToken();
 	    continue;
-	}
+      }
 #endif
-	if(t != '\n')
+      if(t != '\n')
 	    break;
     }
 
     ptr = TokenPosition();
     len = TokenLen();
     return t;
-}
+  }
 
-//   SkipAttributeToken() skips __attribute__(...), __asm__(...), ...
+  //   SkipAttributeToken() skips __attribute__(...), __asm__(...), ...
 
-void Lex::SkipAttributeToken()
-{
+  void Lex::SkipAttributeToken()
+  {
     char c;
 
     do{
-	c = file->Get();
+      c = file->Get();
     }while(c != '(' && c != '\0');
 
     int i = 1;
     do{
-	c = file->Get();
-	if(c == '(')
+      c = file->Get();
+      if(c == '(')
 	    ++i;
-	else if(c == ')')
+      else if(c == ')')
 	    --i;
-	else if(c == '\0')
+      else if(c == '\0')
 	    break;
     } while(i > 0);
-}
+  }
 
-// SkipExtensionToken() skips __extension__(...).
+  // SkipExtensionToken() skips __extension__(...).
 
-int Lex::SkipExtensionToken(char*& ptr, int& len)
-{
+  int Lex::SkipExtensionToken(char*& ptr, int& len)
+  {
     ptr = TokenPosition();
     len = TokenLen();
 
     char c;
 
     do{
-	c = file->Get();
+      c = file->Get();
     }while(is_blank(c) || c == '\n');
 
     if(c != '('){
-	file->Unget();
-	return Ignore;		// if no (..) follows, ignore __extension__
+      file->Unget();
+      return Ignore;		// if no (..) follows, ignore __extension__
     }
 
     int i = 1;
     do{
-	c = file->Get();
-	if(c == '(')
+      c = file->Get();
+      if(c == '(')
 	    ++i;
-	else if(c == ')')
+      else if(c == ')')
 	    --i;
-	else if(c == '\0')
+      else if(c == '\0')
 	    break;
     } while(i > 0);
 
     return Identifier;	// regards it as the identifier __extension__
-}
+  }
 
 #if defined(_MSC_VER)
 
@@ -458,102 +458,102 @@ int Lex::SkipExtensionToken(char*& ptr, int& len)
 	    return; \
 	}
 
-/* SkipAsmToken() skips __asm ...
-   You can have the following :
+  /* SkipAsmToken() skips __asm ...
+     You can have the following :
 
-   Just count the '{' and '}' and it should be ok
-   __asm { mov ax,1
-           mov bx,1 }
+     Just count the '{' and '}' and it should be ok
+     __asm { mov ax,1
+     mov bx,1 }
 
-   Stop when EOL found. Note that the first ';' after
-   an __asm instruction is an ASM comment !
-   int v; __asm mov ax,1 __asm mov bx,1; v=1;
+     Stop when EOL found. Note that the first ';' after
+     an __asm instruction is an ASM comment !
+     int v; __asm mov ax,1 __asm mov bx,1; v=1;
 
-   Stop when '}' found
-   if (cond) {__asm mov ax,1 __asm mov bx,1}
+     Stop when '}' found
+     if (cond) {__asm mov ax,1 __asm mov bx,1}
 
-   and certainly more...
-*/
-void Lex::SkipAsmToken()
-{
+     and certainly more...
+  */
+  void Lex::SkipAsmToken()
+  {
     char c;
 
     do{
-	c = file->Get();
-	CHECK_END_OF_INSTRUCTION(c, "");
+      c = file->Get();
+      CHECK_END_OF_INSTRUCTION(c, "");
     }while(is_blank(c) || c == '\n');
 
     if(c == '{'){
-        int i = 1;
-        do{
+      int i = 1;
+      do{
 	    c = file->Get();
 	    CHECK_END_OF_INSTRUCTION(c, "");
 	    if(c == '{')
-	        ++i;
+          ++i;
 	    else if(c == '}')
-	        --i;
-        } while(i > 0);
+          --i;
+      } while(i > 0);
     }
     else{
-        for(;;){
+      for(;;){
 	    CHECK_END_OF_INSTRUCTION(c, "}\n");
 	    c = file->Get();
-        }
+      }
     }
-}
+  }
 
-//   SkipDeclspecToken() skips __declspec(...).
+  //   SkipDeclspecToken() skips __declspec(...).
 
-void Lex::SkipDeclspecToken()
-{
+  void Lex::SkipDeclspecToken()
+  {
     char c;
 
     do{
-	c = file->Get();
-	CHECK_END_OF_INSTRUCTION(c, "");
+      c = file->Get();
+      CHECK_END_OF_INSTRUCTION(c, "");
     }while(is_blank(c));
 
     if (c == '(') {
-        int i = 1;
-        do{
+      int i = 1;
+      do{
 	    c = file->Get();
 	    CHECK_END_OF_INSTRUCTION(c, "};");
 	    if(c == '(')
-	        ++i;
+          ++i;
 	    else if(c == ')')
-	        --i;
-        }while(i > 0);
+          --i;
+      }while(i > 0);
     }
-}
+  }
 
 #undef CHECK_END_OF_INSTRUCTION
 
 #endif /* _MSC_VER */
 
-char Lex::GetNextNonWhiteChar()
-{
+  char Lex::GetNextNonWhiteChar()
+  {
     char c;
 
     for(;;){
-        do{
+      do{
 	    c = file->Get();
-        }while(is_blank(c));
+      }while(is_blank(c));
 
-        if(c != '\\')
+      if(c != '\\')
 	    break;
 
-        c = file->Get();
-        if(c != '\n' && c!= '\r') {
+      c = file->Get();
+      if(c != '\n' && c!= '\r') {
 	    file->Unget();
 	    break;
-	}
+      }
     }
 
     return c;
-}
+  }
 
-int Lex::ReadLine()
-{
+  int Lex::ReadLine()
+  {
     char c;
     unsigned top;
 
@@ -561,44 +561,45 @@ int Lex::ReadLine()
 
     tokenp = top = file->GetCurPos();
     if(c == '\0'){
-	file->Unget();
-	return '\0';
+      file->Unget();
+      return '\0';
     }
     else if(c == '\n')
-	return '\n';
+      return '\n';
     else if(c == '#' && last_token == '\n'){
-	if(ReadLineDirective())
+      if(ReadLineDirective())
 	    return '\n';
-	else{
+      else{
 	    file->Rewind(top + 1);
 	    token_len = 1;
 	    return SingleCharOp(c);
-	}
+      }
     }
     else if(c == '\'' || c == '"'){
-	if(c == '\''){
+      if(c == '\''){
 	    if(ReadCharConst(top))
-		return token(CharConst);
-	}
-	else{
-	    if(ReadStrConst(top))
-		return token(StringL);
-	}
+          return token(CharConst);
+      }
+      else{
+        if(ReadStrConst(top)) {
+          return token(StringL);
+        }
+      }
 
-	file->Rewind(top + 1);
-	token_len = 1;
-	return SingleCharOp(c);
+      file->Rewind(top + 1);
+      token_len = 1;
+      return SingleCharOp(c);
     }
     else if(is_digit(c))
-	return ReadNumber(c, top);
+      return ReadNumber(c, top);
     else if(c == '.'){
-	c = file->Get();
-	if(is_digit(c))
+      c = file->Get();
+      if(is_digit(c))
 	    return ReadFloat(top);
-	else{
+      else{
 	    file->Unget();
 	    return ReadSeparator('.', top);
-	}
+      }
     }
 
 #if 1  // for wchar constants !!! 
@@ -606,21 +607,21 @@ int Lex::ReadLine()
     else if(is_letter(c)) {
 
       if (c == 'L') {
-	c = file->Get();
-	if (c == '\'' || c == '"') {
-	  if (c == '\'') {
-	    if (ReadCharConst(top+1)) {
-	      // cout << "WideCharConst" << endl;
-	      return token(WideCharConst);
-	    }
-	  } else {
-	    if(ReadStrConst(top+1)) {
-	      // cout << "WideStringL" << endl;	      
-	      return token(WideStringL);
-	    }
-	  }
-	}
-	file->Rewind(top);
+        c = file->Get();
+        if (c == '\'' || c == '"') {
+          if (c == '\'') {
+            if (ReadCharConst(top+1)) {
+              // cout << "WideCharConst" << endl;
+              return token(WideCharConst);
+            }
+          } else {
+            if(ReadStrConst(top+1)) {
+              // cout << "WideStringL" << endl;	      
+              return token(WideStringL);
+            }
+          }
+        }
+        file->Rewind(top);
       }
       
       return ReadIdentifier(top);
@@ -632,165 +633,217 @@ int Lex::ReadLine()
 #else
     
     else if(is_letter(c)) 
-	return ReadIdentifier(top);
+      return ReadIdentifier(top);
     else
-	return ReadSeparator(c, top);
+      return ReadSeparator(c, top);
 
 #endif
-}
+  }
 
-bool Lex::ReadCharConst(unsigned top)
-{
+  bool Lex::ReadCharConst(unsigned top)
+  {
     char c;
 
     for(;;){
-	c = file->Get();
-	if(c == '\\'){
+      c = file->Get();
+      if(c == '\\'){
 	    c = file->Get();
 	    if(c == '\0')
-		return false;
-	}
-	else if(c == '\''){
+          return false;
+      }
+      else if(c == '\''){
 	    token_len = int(file->GetCurPos() - top + 1);
 	    return true;
-	}
-	else if(c == '\n' || c == '\0')
+      }
+      else if(c == '\n' || c == '\0')
 	    return false;
     }
-}
+  }
 
-/*
-  If text is a sequence of string constants like:
+  /*
+    Main routine for lexing a string- if it's triple quote delimited, then we
+    switch over to parsing a long string.  Otherwise, we parse normal strings.
+  */
+  bool Lex::ReadStrConst(unsigned top)
+  {
+    if (file->Get() == '"') {
+      if (file->Get() == '"') {
+        if (ReadLongStrConst(top)) {
+          return token(StringL);
+        }
+      } else {
+        file->Unget();
+        file->Unget();
+      }
+    } else {
+      file->Unget();
+    }
+    return ReadShortStrConst(top);
+  }
+
+  /*
+    If text is a sequence of string constants like:
 	"string1" "string2"
-  then the string constants are delt with as a single constant.
-*/
-bool Lex::ReadStrConst(unsigned top)
-{
+    then the string constants are delt with as a single constant.
+  */
+  bool Lex::ReadShortStrConst(unsigned top)
+  {
     char c;
 
     for(;;){
-	c = file->Get();
-	if(c == '\\'){
+      c = file->Get();
+      if(c == '\\'){
 	    c = file->Get();
 	    if(c == '\0')
-		return false;
-	}
-	else if(c == '"'){
+          return false;
+      }
+      else if(c == '"'){
 	    unsigned pos = file->GetCurPos() + 1;
 	    int nline = 0;
 	    do{
-		c = file->Get();
-		if(c == '\n')
+          c = file->Get();
+          if(c == '\n')
 		    ++nline;
 	    } while(is_blank(c) || c == '\n');
 
 	    if(c == '"')
-		/* line_number += nline; */ ;
+          /* line_number += nline; */ ;
 	    else{
-		token_len = int(pos - top);
-		file->Rewind(pos);
-		return true;
+          token_len = int(pos - top);
+          file->Rewind(pos);
+          return true;
 	    }
-	}
-	else if(c == '\n' || c == '\0')
+      }
+      else if(c == '\n' || c == '\0')
 	    return false;
     }
-}
+  }
 
-int Lex::ReadNumber(char c, unsigned top)
-{
+  /*
+    Reads a long string constant, which is a triple-quote delimited string:  """...""".
+    We don't handle automatic string concatenation for long strings.
+  */
+  bool Lex::ReadLongStrConst(unsigned top)
+  {
+    char c;
+
+    for(;;){
+      c = file->Get();
+      if(c == '\\'){
+	    c = file->Get();
+	    if(c == '\0')
+          return false;
+      }
+      else if(c == '"') {
+        if (file->Get() == '"') {
+          if (file->Get() == '"') {
+            token_len = int(file->GetCurPos()-top+1);
+            return true;
+          } else {
+            file->Unget();
+            file->Unget();
+          }
+        } else {
+          file->Unget();
+        }
+      }
+    }
+  }
+
+  int Lex::ReadNumber(char c, unsigned top)
+  {
     char c2 = file->Get();
 
     if(c == '0' && is_xletter(c2)){
-	do{
+      do{
 	    c = file->Get();
-	} while(is_hexdigit(c));
-	while(is_int_suffix(c))
+      } while(is_hexdigit(c));
+      while(is_int_suffix(c))
 	    c = file->Get();
 
-	file->Unget();
-	token_len = int(file->GetCurPos() - top + 1);
-	return token(Constant);
+      file->Unget();
+      token_len = int(file->GetCurPos() - top + 1);
+      return token(Constant);
     }
 
     while(is_digit(c2))
-	c2 = file->Get();
+      c2 = file->Get();
 
     if(is_int_suffix(c2))
-	do{
+      do{
 	    c2 = file->Get();
-	}while(is_int_suffix(c2));
+      }while(is_int_suffix(c2));
     else if(c2 == '.')
-	return ReadFloat(top);
+      return ReadFloat(top);
     else if(is_eletter(c2)){
-	file->Unget();
-	return ReadFloat(top);
+      file->Unget();
+      return ReadFloat(top);
     }
 
     file->Unget();
     token_len = int(file->GetCurPos() - top + 1);
     return token(Constant);
-}
+  }
 
-int Lex::ReadFloat(unsigned top)
-{
+  int Lex::ReadFloat(unsigned top)
+  {
     char c;
 
     do{
-	c = file->Get();
+      c = file->Get();
     }while(is_digit(c));
     if(is_float_suffix(c))
-	do{
+      do{
 	    c = file->Get();
-	}while(is_float_suffix(c));
+      }while(is_float_suffix(c));
     else if(is_eletter(c)){
-	unsigned p = file->GetCurPos();
-	c = file->Get();
-	if(c == '+' || c == '-'){
-	     c = file->Get();
-	     if(!is_digit(c)){
-		file->Rewind(p);
-		token_len = int(p - top);
-		return token(Constant);
+      unsigned p = file->GetCurPos();
+      c = file->Get();
+      if(c == '+' || c == '-'){
+        c = file->Get();
+        if(!is_digit(c)){
+          file->Rewind(p);
+          token_len = int(p - top);
+          return token(Constant);
 	    }
-	}
-	else if(!is_digit(c)){
+      }
+      else if(!is_digit(c)){
 	    file->Rewind(p);
 	    token_len = int(p - top);
 	    return token(Constant);
-	}
+      }
 
-	do{
+      do{
 	    c = file->Get();
-	}while(is_digit(c));
+      }while(is_digit(c));
 
-	while(is_float_suffix(c))
+      while(is_float_suffix(c))
 	    c = file->Get();
     }
 
     file->Unget();
     token_len = int(file->GetCurPos() - top + 1);
     return token(Constant);
-}
+  }
 
-// ReadLineDirective() simply ignores a line beginning with '#'
+  // ReadLineDirective() simply ignores a line beginning with '#'
 
-bool Lex::ReadLineDirective()
-{
+  bool Lex::ReadLineDirective()
+  {
     char c;
 
     do{
-	c = file->Get();
+      c = file->Get();
     }while(c != '\n' && c != '\0');
     return true;
-}
+  }
 
-int Lex::ReadIdentifier(unsigned top)
-{
+  int Lex::ReadIdentifier(unsigned top)
+  {
     char c;
 
     do{
-	c = file->Get();
+      c = file->Get();
     }while(is_letter(c) || is_digit(c));
 
     unsigned len = file->GetCurPos() - top;
@@ -798,16 +851,16 @@ int Lex::ReadIdentifier(unsigned top)
     file->Unget();
 
     return Screening((char*)file->Read(top), int(len));
-}
+  }
 
-/*
-  This table is a list of reserved key words.
-  Note: alphabetical order!
-*/
-static struct rw_table {
+  /*
+    This table is a list of reserved key words.
+    Note: alphabetical order!
+  */
+  static struct rw_table {
     char*	name;
     long	value;
-} table[] = {
+  } table[] = {
 #if (defined __GNUC__) || (defined _GNUC_SYNTAX)
     { "__alignof", token(SIZEOF) },
     { "__alignof__", token(SIZEOF) },
@@ -891,51 +944,51 @@ static struct rw_table {
     { "volatile",		token(VOLATILE) },
     { "while",		token(WHILE) },
     /* NULL slot */
-};
+  };
 
 #ifndef NDEBUG
 
-class rw_table_sanity_check
-{
-public:
+  class rw_table_sanity_check
+  {
+  public:
     rw_table_sanity_check(const rw_table table[])
     {
-    	 unsigned n = (sizeof table)/(sizeof table[0]);
+      unsigned n = (sizeof table)/(sizeof table[0]);
         
-        if (n < 2) return;
+      if (n < 2) return;
 
-        for (const char* old = (table++)->name; --n; old = (table++)->name)
-            if (strcmp(old, table->name) >= 0) {
-                cerr << "FAILED: '" << old << "' < '"
-                     << table->name << "'" << endl;
-                assert(! "invalid order in presorted array");
+      for (const char* old = (table++)->name; --n; old = (table++)->name)
+        if (strcmp(old, table->name) >= 0) {
+          cerr << "FAILED: '" << old << "' < '"
+               << table->name << "'" << endl;
+          assert(! "invalid order in presorted array");
         }
     }
-};
+  };
 
-rw_table_sanity_check rw_table_sanity_check_instance(table);
+  rw_table_sanity_check rw_table_sanity_check_instance(table);
 
 #endif
 
-static void InitializeOtherKeywords(bool recognizeOccExtensions)
-{
+  static void InitializeOtherKeywords(bool recognizeOccExtensions)
+  {
     static bool done = false;
 
     if(done)
-	return;
+      return;
     else
-	done = true;
+      done = true;
 
     if (! recognizeOccExtensions)
-	for(unsigned int i = 0; i < sizeof(table) / sizeof(table[0]); ++i)
+      for(unsigned int i = 0; i < sizeof(table) / sizeof(table[0]); ++i)
 	    if(table[i].value == METACLASS){
-		table[i].value = Identifier;
-		break;
+          table[i].value = Identifier;
+          break;
 	    }
 
 #if defined(_MSC_VER)
 
-// by JCAB
+    // by JCAB
 #define verify(c) do { const bool cond = (c); assert(cond); } while (0)
 
     verify(Lex::RecordKeyword("cdecl", Ignore));
@@ -965,184 +1018,184 @@ static void InitializeOtherKeywords(bool recognizeOccExtensions)
     verify(Lex::RecordKeyword("__int32", INT));
     verify(Lex::RecordKeyword("__int64",  INT64));
 #endif
-}
+  }
 
-int Lex::Screening(char *identifier, int len)
-{
+  int Lex::Screening(char *identifier, int len)
+  {
     struct rw_table	*low, *high, *mid;
     int			c, token;
 
     if (wcharSupport && !strncmp("wchar_t", identifier, len))
-    	return token(WCHAR);
+      return token(WCHAR);
 
     low = table;
     high = &table[sizeof(table) / sizeof(table[0]) - 1];
     while(low <= high){
-	mid = low + (high - low) / 2;
-	if((c = strncmp(mid->name, identifier, len)) == 0)
+      mid = low + (high - low) / 2;
+      if((c = strncmp(mid->name, identifier, len)) == 0)
 	    if(mid->name[len] == '\0')
-		return mid->value;
+          return mid->value;
 	    else
-		high = mid - 1;
-	else if(c < 0)
+          high = mid - 1;
+      else if(c < 0)
 	    low = mid + 1;
-	else
+      else
 	    high = mid - 1;
     }
 
     if(user_keywords == 0)
-	user_keywords = new HashTable;
+      user_keywords = new HashTable;
 
     if(user_keywords->Lookup(identifier, len, (HashTable::Value*)&token))
-	return token;
+      return token;
 
     return token(Identifier);
-}
+  }
 
-int Lex::ReadSeparator(char c, unsigned top)
-{
+  int Lex::ReadSeparator(char c, unsigned top)
+  {
     char c1 = file->Get();
 
     token_len = 2;
     if(c1 == '='){
-	switch(c){
-	case '*' :
-	case '/' :
-	case '%' :
-	case '+' :
-	case '-' :
-	case '&' :
-	case '^' :
-	case '|' :
+      switch(c){
+      case '*' :
+      case '/' :
+      case '%' :
+      case '+' :
+      case '-' :
+      case '&' :
+      case '^' :
+      case '|' :
 	    return token(AssignOp);
-	case '=' :
-	case '!' :
+      case '=' :
+      case '!' :
 	    return token(EqualOp);
-	case '<' :
-	case '>' :
+      case '<' :
+      case '>' :
 	    return token(RelOp);
-	default :
+      default :
 	    file->Unget();
 	    token_len = 1;
 	    return SingleCharOp(c);
-	}
+      }
     }
     else if(c == c1){
-	switch(c){
-	case '<' :
-	case '>' :
+      switch(c){
+      case '<' :
+      case '>' :
 	    if(file->Get() != '='){
-		file->Unget();
-		return token(ShiftOp);
+          file->Unget();
+          return token(ShiftOp);
 	    }
 	    else{
-		token_len = 3;
-		return token(AssignOp);
+          token_len = 3;
+          return token(AssignOp);
 	    }
-	case '|' :
+      case '|' :
 	    return token(LogOrOp);
-	case '&' :
+      case '&' :
 	    return token(LogAndOp);
-	case '+' :
-	case '-' :
+      case '+' :
+      case '-' :
 	    return token(IncOp);
-	case ':' :
+      case ':' :
 	    return token(Scope);
-	case '.' :
+      case '.' :
 	    if(file->Get() == '.'){
-		token_len = 3;
-		return token(Ellipsis);
+          token_len = 3;
+          return token(Ellipsis);
 	    }
 	    else
-		file->Unget();
-	case '/' :
+          file->Unget();
+      case '/' :
 	    return ReadComment(c1, top);
-	default :
+      default :
 	    file->Unget();
 	    token_len = 1;
 	    return SingleCharOp(c);
-	}
+      }
     }
     else if(c == '.' && c1 == '*')
-	return token(PmOp);
+      return token(PmOp);
     else if(c == '-' && c1 == '>')
-	if(file->Get() == '*'){
+      if(file->Get() == '*'){
 	    token_len = 3;
 	    return token(PmOp);
-	}
-	else{
+      }
+      else{
 	    file->Unget();
 	    return token(ArrowOp);
-	}
+      }
     else if(c == '/' && c1 == '*')
-	return ReadComment(c1, top);
+      return ReadComment(c1, top);
     else{
-	file->Unget();
-	token_len = 1;
-	return SingleCharOp(c);
+      file->Unget();
+      token_len = 1;
+      return SingleCharOp(c);
     }
 
     cerr << "*** An invalid character has been found! ("
-	 << (int)c << ',' << (int)c1 << ")\n";
+         << (int)c << ',' << (int)c1 << ")\n";
     return token(BadToken);
-}
+  }
 
-int Lex::SingleCharOp(unsigned char c)
-{
-			/* !"#$%&'()*+,-./0123456789:;<=>? */
+  int Lex::SingleCharOp(unsigned char c)
+  {
+    /* !"#$%&'()*+,-./0123456789:;<=>? */
     static char valid[] = "x   xx xxxxxxxx          xxxxxx";
 
     if('!' <= c && c <= '?' && valid[c - '!'] == 'x')
-	return c;
+      return c;
     else if(c == '[' || c == ']' || c == '^')
-	return c;
+      return c;
     else if('{' <= c && c <= '~')
-	return c;
+      return c;
     else
-	return token(BadToken);
-}
+      return token(BadToken);
+  }
 
-int Lex::ReadComment(char c, unsigned top) {
+  int Lex::ReadComment(char c, unsigned top) {
     unsigned len = 0;
     if (c == '*') {	// a nested C-style comment is prohibited.
-	do {
+      do {
 	    c = file->Get();
 	    if (c == '*') {
-		c = file->Get();
-		if (c == '/') {
+          c = file->Get();
+          if (c == '/') {
 		    len = 1;
 		    break;
-		}
-		else {
+          }
+          else {
 		    file->Unget();
-		}
+          }
 	    }
-        } 
-        while(c != '\0');
+      } 
+      while(c != '\0');
     }
     else {
-        assert(c == '/');
-	do {
+      assert(c == '/');
+      do {
 	    c = file->Get();
-	}
-	while(c != '\n' && c != '\0');
+      }
+      while(c != '\n' && c != '\0');
     }
     len += file->GetCurPos() - top;
     token_len = int(len);
     Leaf* node = new Leaf((char*)file->Read(top), int(len));
     comments = PtreeUtil::Snoc(comments, node);
     return Ignore;
-}
+  }
 
-Ptree* Lex::GetComments() {
+  Ptree* Lex::GetComments() {
     Ptree* c = comments;
     comments = 0;
     return c;
-}
+  }
 
-Ptree* Lex::GetComments2() {
+  Ptree* Lex::GetComments2() {
     return comments;
-}
+  }
 }
 
 #ifdef TEST
@@ -1153,26 +1206,26 @@ using namespace Opencxx;
 
 int main()
 {
-    int   i = 0;
-    Token token;
+  int   i = 0;
+  Token token;
 
-    Lex lex(new ProgramFromStdin);
-    for(;;){
-//	int t = lex.GetToken(token);
+  Lex lex(new ProgramFromStdin);
+  for(;;){
+    //	int t = lex.GetToken(token);
 	int t = lex.LookAhead(i++, token);
 	if(t == 0)
-	    break;
+      break;
 	else if(t < 128)
-	    printf("%c (%x): ", t, t);
+      printf("%c (%x): ", t, t);
 	else
-	    printf("%-10.10s (%x): ", (char*)t, t);
+      printf("%-10.10s (%x): ", (char*)t, t);
 
 	putchar('"');
 	while(token.len-- > 0)
-	    putchar(*token.ptr++);
+      putchar(*token.ptr++);
 
 	puts("\"");
-    };
+  };
 }
 #endif
 

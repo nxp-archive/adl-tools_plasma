@@ -1,0 +1,44 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+# Tests used in this regression.
+
+use lib "..";
+use rdriver;
+use regress_utils;
+use strict;
+use Data::Dumper;
+
+my @Tests = (
+			 # Test of user-defined statements in outer-most scope.
+			 {
+			  cmd  => "./parse-test -E in1.C",
+			  diff => "in1.regress",
+			 },
+			 # Test of lambda functions (func).
+			 {
+			  cmd  => "./parse-test -E in2.C",
+			  diff => "in2.regress",
+			 },
+			 # Test of long-strings.
+			 {
+			  cmd  => "./parse-test -E in3.C",
+			  diff => "in3.regress",
+			 },
+			 # Another test of lambda functions.
+			 {
+			  cmd  => "./parse-test -E in4.C",
+			  diff => "in4.regress",
+			 },
+			);
+
+doTest(\@Tests);
+
+##
+## Place test routines here.
+## <TESTS>
+##
+
+##
+## </TESTS>
+##

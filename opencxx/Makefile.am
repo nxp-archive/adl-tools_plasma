@@ -13,6 +13,7 @@
 #-------------------------------------------------------------------------
 AUTOMAKE_OPTIONS = subdir-objects
 
+pkincludedir = $(includedir)/opencxx
 #
 # The directory to include gc.h and gc_cpp.h from
 #
@@ -26,7 +27,7 @@ LIBGC = $(top_builddir)/gc/libgc.la
 
 BUILT_SOURCES = parser/ptree-generated.h parser/ptree-generated.cc
 
-pkginclude_HEADERS = \
+nobase_pkinclude_HEADERS = \
 	parser/AbstractTranslatingWalker.h \
 	parser/AbstractTypingWalker.h \
 	parser/auxil.h \

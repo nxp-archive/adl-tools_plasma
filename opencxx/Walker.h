@@ -219,6 +219,7 @@ namespace Opencxx
     static bool MatchedDeclarator(Ptree*, char*, int, char*, Environment*);
     static bool WhichDeclarator(Ptree*, Ptree*, int&, Environment*);
 
+    void FatalMessage(char*, Ptree*, Ptree*);
     void ErrorMessage(char*, Ptree*, Ptree*);
     void WarningMessage(char*, Ptree*, Ptree*);
 

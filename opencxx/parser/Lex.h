@@ -59,13 +59,13 @@
 namespace Opencxx
 {
 
-class Program;
-class Token;
-class Ptree;
-class HashTable;
+  class Program;
+  class Token;
+  class Ptree;
+  class HashTable;
 
-class Lex : public Object {
-public:
+  class Lex : public Object {
+  public:
     Lex(Program*, bool wchars = false, bool recognizeOpencxxExtensions = true);
     int GetToken(Token&);
     int LookAhead(int);
@@ -84,27 +84,27 @@ public:
     static bool Reify(Ptree*, unsigned int&);
     static bool Reify(Ptree* t, char*&);
 
-private:
+  private:
     class TokenFifo {
     public:
-	TokenFifo(Lex*);
-	~TokenFifo();
-	void Clear();
-	void Push(int, char*, int);
-	int Pop(char*&, int&);
-	int Peek(int);
-	int Peek(int, char*&, int&);
+      TokenFifo(Lex*);
+      ~TokenFifo();
+      void Clear();
+      void Push(int, char*, int);
+      int Pop(char*&, int&);
+      int Peek(int);
+      int Peek(int, char*&, int&);
     private:
-	int Peek2(int);
-	Lex* lex;
-	int head;
-	int tail;
-	int size;
-	struct Slot {
+      int Peek2(int);
+      Lex* lex;
+      int head;
+      int tail;
+      int size;
+      struct Slot {
 	    int token;
 	    char* pos;
 	    int len;
-	}* ring;
+      }* ring;
     };
 
     friend class TokenFifo;
@@ -128,6 +128,8 @@ private:
     int ReadLine();
     bool ReadCharConst(unsigned top);
     bool ReadStrConst(unsigned top);
+    bool ReadLongStrConst(unsigned top);
+    bool ReadShortStrConst(unsigned top);
     int ReadNumber(char c, unsigned top);
     int ReadFloat(unsigned top);
     bool ReadLineDirective();
@@ -137,7 +139,7 @@ private:
     int SingleCharOp(unsigned char c);
     int ReadComment(char c, unsigned top);
     
-private:
+  private:
     Program* file;
     TokenFifo fifo;
     unsigned tokenp;
@@ -148,7 +150,7 @@ private:
     static Ptree* comments;
     
     bool wcharSupport;
-};
+  };
 
 }
 

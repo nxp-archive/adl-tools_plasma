@@ -107,6 +107,7 @@ namespace Opencxx
     | using.declaration
     | extern.template.decl
     | declaration
+    | user statement
   */
   bool Parser::rDefinition(Ptree*& p)
   {
@@ -130,6 +131,25 @@ namespace Opencxx
       res = rNamespaceSpec(p);
     else if(t == USING)
       res = rUsing(p);
+    else if (t == UserKeyword6) {
+      Ptree *exp;
+      if (!rUserdefBlock(exp)) {
+        return false;
+      }
+      p = new PtreeUserPlainStatement(PtreeUtil::First(exp),PtreeUtil::Rest(exp));
+      res = true;
+    }
+    // Bug?  It looks like the same keyword is used for while statements as for
+    // class modifiers, causing a parse error.  For now, we'll only allow closures
+    // and blocks at the top level.
+    else if (t == UserKeyword2) {
+      Ptree *exp;
+      if (!rUserdefStatement(exp)) {
+        return false;
+      }
+      p = new PtreeUserPlainStatement(PtreeUtil::First(exp),PtreeUtil::Rest(exp));
+      res = true;
+    }
     else {
       Ptree* c = lex->GetComments2();
       if (res = rDeclaration(p))
@@ -3413,7 +3433,7 @@ namespace Opencxx
 	    if(lex->GetToken(cp) == ')'){
           exp = new PtreeTypeofExpr(new Leaf(tk),
                                     PtreeUtil::List(new Leaf(op), tname,
-                                                new Leaf(cp)));
+                                                    new Leaf(cp)));
           return true;
 	    }
       lex->Restore(pos);
@@ -3422,8 +3442,8 @@ namespace Opencxx
 	    if(lex->GetToken(cp) == ')'){
           exp = new PtreeTypeofExpr(new Leaf(tk), 
                                     PtreeUtil::List(
-                                                PtreeUtil::List(new Leaf(op), subexp, new Leaf(cp))
-                                                ));
+                                                    PtreeUtil::List(new Leaf(op), subexp, new Leaf(cp))
+                                                    ));
           return true;
 	    }
       lex->Restore(pos);
@@ -3891,9 +3911,25 @@ namespace Opencxx
 	    return true;
       }
       else{
-	    if(!rVarName(exp))
-          return false;
+        switch (lex->LookAhead(0)) {
+        case '{':
+          return rCompoundStatement(exp);
+        case UserKeyword:
+        case UserKeyword2:
+        case UserKeyword3:
+          // It might be a bare user-expression.
+          if (!rUserdefStatement(exp2)) {
+            return false;
+          }
+          exp = new PtreeUserPlainStatement(PtreeUtil::First(exp2),PtreeUtil::Rest(exp2));
+          return true;
+        }
 
+        // Wasn't a bare user expression, so see if it's one that is
+        // qualified with a variable or class name.
+        if(!rVarName(exp)) {
+          return false;
+        }
 	    if(lex->LookAhead(0) == Scope){
           lex->GetToken(tk);
           if(!rUserdefStatement(exp2))
@@ -4711,15 +4747,40 @@ namespace Opencxx
       return true;
     }
     else{
-      if(!rDeclarators(decl, type_encode, false, true))
+      if(!rDeclarators(decl, type_encode, false, true)) {
 	    return false;
+      }
 
+      // Define if nested functions are allowed.  Otherwise, they will cause
+      // a parse error.
+#     ifdef NESTED_FUNCS_OKAY
+      if(lex->LookAhead(0) == ';') {
+        lex->GetToken(tk);
+        statement = new PtreeDeclaration(head, PtreeUtil::List(integral, decl,                                                                
+                                                               new Leaf(tk)));
+        return true;
+      } else {
+	    Ptree* body;
+	    if(!rFunctionBody(body))
+          return false;
+
+	    if(PtreeUtil::Length(decl) != 1)
+          return false;
+
+	    statement = new PtreeDeclaration(head,
+                                         PtreeUtil::List(integral,
+                                                         decl->Car(), body));
+	    return true;
+      }
+#     else
       if(lex->GetToken(tk) != ';')
-	    return false;
-	    
+        return false;
+
       statement = new PtreeDeclaration(head, PtreeUtil::List(integral, decl,
                                                              new Leaf(tk)));
       return true;
+#     endif
+
     }
   }
 

@@ -1852,6 +1852,11 @@ namespace {
 
 }
 
+void Walker::FatalMessage(char* msg, Ptree* name, Ptree* where)
+{
+    Message(Msg::Fatal, parser, msg, name, where);
+}
+
 void Walker::ErrorMessage(char* msg, Ptree* name, Ptree* where)
 {
     Message(Msg::Error, parser, msg, name, where);

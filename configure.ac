@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.15])
+AC_INIT([plasma],[0.8.16])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -110,6 +110,7 @@ AC_CONFIG_FILES([\
    parser/Makefile \
    doc/Makefile \
    tests/Makefile \
+   tests/parsing/Makefile \
    tests/basic/Makefile \
    tests/sw/Makefile \
    tests/eav/Makefile \

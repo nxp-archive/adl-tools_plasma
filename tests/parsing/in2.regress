@@ -1,0 +1,8 @@
+Define statement:  ( reg foo ) {
+    readhook = func (  ) {
+         int j = 10 ;
+    } ;
+}
+Other :  readhook = func (  ) {
+     int j = 10 ;
+} ;

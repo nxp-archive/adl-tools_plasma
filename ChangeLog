@@ -1,3 +1,21 @@
+2005-03-09  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Enhanced the parser to accept several new things:
+
+	Multi-line quotes are now supported using Python's doc-string
+	format:  """ string """.
+
+	Nested code blocks are allowed:
+
+	foo = { ... };
+
+	Bare user-statements are allowed in expressions:
+
+	foo = func(int i) { ... };
+
+	Support for nested functions was added, but is currently commented
+	out in Parser.cc.
+
         ====== plasma release 0.8.15 (v0_8_15) on Linux (cde-tx32-ldt189) ======
 
 2005-02-22  Brian Kahne  <bkahne@ibmoto.com>
