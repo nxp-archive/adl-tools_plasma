@@ -45,6 +45,35 @@ my @Tests = (
 			  stderr  => 1,
 			  fail    => 1,
 			 },
+			 # Symbol table for big input file.
+			 {
+			  cmd     => "./minicc -syms tests/in4.c",
+			  diff    => "tests/test10.out",
+			 },
+			 # Type-checking test.
+			 {
+			  cmd     => "./minicc -check tests/in8.c",
+			  diff    => "tests/test7.out",
+			  stderr  => 1,
+			  fail    => 1,
+			 },			 
+			 # Type-checking test.
+			 {
+			  cmd     => "./minicc -check tests/in9.c",
+			  diff    => "tests/test8.out",
+			  stderr  => 1,
+			  fail    => 1,
+			 },
+			 # Flow control test.
+			 {
+			  cmd     => "./minicc -check tests/in10.c",
+			  diff    => "tests/test9.out",
+			  stderr  => 1,
+			 },
+			 # Full check on big input file (test should just not fail).
+			 {
+			  cmd     => "./minicc -check tests/in4.c",
+			 },
 	    );
 
 doTest(\@Tests);

@@ -20,8 +20,12 @@ class SymTab;
 
 #define Error(n,x) { \
   ostringstream ss; \
-  ss << n->filename() << ":" << n->linenumber() << ":  " << x; \
+  ss << n->filename() << ":" << n->linenumber() << ":  Error:  " << x; \
   throw runtime_error(ss.str()); \
+}
+
+#define Warn(n,x) { \
+  cerr << n->filename() << ":" << n->linenumber() << ":  Warning:  " << x; \
 }
 
 struct Type;
@@ -42,7 +46,7 @@ std::ostream &incrindent(std::ostream &o);
 std::ostream &decrindent(std::ostream &o);
 
 struct Node : public gc {
-  Node(Type *t = 0) : _has_addr(false), _output_addr(0), _type(t), _filename(0), _linenumber(0) {};
+  Node(Type *t = 0);
   virtual ~Node();
   // Return true if we're a null class (leaf node).
   virtual bool is_null() const { return false; };
@@ -52,10 +56,19 @@ struct Node : public gc {
   virtual bool has_address() const { return _has_addr; };
   // Specifies that we have an address.
   virtual void set_has_address() { _has_addr = true; };
+  // Getter/setter for has-return-stmt.
+  bool has_return_stmt() const { return _has_return_stmt; };
+  void set_has_return_stmt(bool h) { _has_return_stmt = h; };
+  // Getter/setter for output_addr.
+  int output_addr() const { return _output_addr; };
+  void set_output_addr(int oa) { _output_addr = oa; };
   // Getter/setter for whether a variable is used.  Overload
   // to provide functionality.
   virtual bool is_used() const { return false; };
   virtual void set_used() { };
+  // Getter/setter for coerce-to-type.
+  Type *coerce_to_type() const { return _coerce_to_type; };
+  void set_coerce_to_type(Type *t) { _coerce_to_type = t; };
   // Item's name, if applicable.
   virtual String name() const { return String(); };
   // Returns the node's type.
@@ -77,6 +90,8 @@ struct Node : public gc {
   int linenumber() const { return _linenumber; };
   const char *filename() const { return _filename; };
 
+  // These are the main "services" which traverse the ATS,
+  // performing various compiler passes.
 
   // Print to the specified stream.  Argument is number of 
   // characters to indent.
@@ -85,18 +100,29 @@ struct Node : public gc {
   // symbol tables as we go.  Throws a runtime_error if errors
   // are encountered.
   void gensymtab();
+  // Perform type checking.  Throws a runtime_error if errors
+  // are encountered.
+  virtual void typecheck();  
+  // Perform flow-control checking:  Makes sure that all
+  // branches of a function return a value, check break/continue
+  // statements, etc.
+  virtual void flowcontrol();
 
-  // Traversal function for generating symbol tables.  Called by
-  // other Node objects- don't call this directly.
-  virtual void gensymtab(SymTab *parent);
-
+  // Used internally- don't call directly.
+  virtual void gensymtab(SymTab *);
+  // Used internally- don't call directly.
+  virtual void typecheck(Node *);
+  // Used internally- don't call directly.
+  virtual void flowcontrol(Node *,bool);
 protected:
   // This prints class-specific information.
   virtual void printdata(std::ostream &) const;
 
+  bool        _has_return_stmt;
   bool        _has_addr;
   int         _output_addr;
   Type       *_type;
+  Type       *_coerce_to_type;
   const char *_filename;
   int         _linenumber;
 };
@@ -113,7 +139,8 @@ struct NullNode : public Node {
 struct ArrayExpression : public Node {
   ArrayExpression(Node *expr, Node *index) :
     _expr(expr), _index(index) {}
-  void gensymtab(SymTab *p);
+  void gensymtab(SymTab *);
+  void typecheck(Node *);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -139,7 +166,9 @@ struct Id : public Node {
 
   String id() const { return _id; };
   Node *symbol() const { return _symbol; };
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -168,7 +197,9 @@ Node *get_calculated(Node *);
 struct Unaryop : public Node {
   Unaryop(Node *expr) : _expr(expr) {};
   Node *expr() const { return _expr; };
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
 protected:
   virtual void printdata(std::ostream &) const;  
 
@@ -179,16 +210,19 @@ protected:
 struct Negative : public Unaryop {
   Negative(Node *expr) : Unaryop(expr) {};
   Calc calculate() const;
+  virtual void typecheck(Node *curr_func);
 };
 
 // A pointer dereference, e.g. *a.
 struct Pointer : public Unaryop {
   Pointer(Node *expr) : Unaryop(expr) {};
+  virtual void typecheck(Node *curr_func);
 };
 
 // An address-of operator, e.g. &a.
 struct AddrOf : public Unaryop {
   AddrOf(Node *expr) : Unaryop(expr) {};
+  virtual void typecheck(Node *curr_func);
 };
 
 // Any binary operator, such as that for arithmetic
@@ -197,8 +231,11 @@ struct AddrOf : public Unaryop {
 struct Binop : public Node {
   Binop(Node *l,int op,Node *r) : _left(l), _right(r), _op(op) {};
   Calc calculate() const;
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
 protected:
+  bool is_assign_op() const;
   virtual void printdata(std::ostream &) const;
 private:
   Node *_left;
@@ -210,7 +247,10 @@ private:
 struct IfStatement : public Node {
   IfStatement(Node *e,Node *t,Node *el = 0) :
     _expr(e), _then(t), _else(el) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -221,16 +261,21 @@ private:
 
 // A break statement.
 struct BreakStatement : public Node {
+  virtual void flowcontrol(Node *,bool);
 };
 
 // A continue statement.
 struct ContinueStatement : public Node {
+  virtual void flowcontrol(Node *,bool);
 };
 
 // A return statement.
 struct ReturnStatement : public Node {
   ReturnStatement(Node *expr = 0) : _expr(expr) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -241,7 +286,10 @@ private:
 struct ForLoop : public Node {
   ForLoop(Node *b,Node *expr,Node *e,Node *s) :
     _begin(b), _expr(expr), _end(e), _stmt(s) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -255,7 +303,10 @@ private:
 struct WhileLoop : public Node {
   WhileLoop(Node *expr,Node *stmt) :
     _expr(expr), _stmt(stmt) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -268,7 +319,9 @@ struct NodeList : public Node, public std::vector<Node *,traceable_allocator<Nod
   NodeList() {};
   NodeList (Node *n) { push_back(n); };
   virtual void add(Node *n) { push_back(n); };
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
 protected:
   virtual void printdata(std::ostream &) const;
 };
@@ -296,6 +349,8 @@ private:
 struct StatementList : public NodeList {
   StatementList() {};
   StatementList(Node *n) : NodeList(n) {};
+
+  virtual void flowcontrol(Node *,bool);
 };
 
 // Inherit from this if you have a symbol table.
@@ -311,7 +366,8 @@ protected:
 struct TranslationUnit : public NodeList, public SymNode {
   TranslationUnit() {};
   TranslationUnit(Node *n) : NodeList(n) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
 protected:
   virtual void printdata(std::ostream &) const;
 };
@@ -327,7 +383,9 @@ struct DeclarationList : public NodeList {
 struct FunctionExpression : public Node {
   FunctionExpression(Node *f,Node *a) :
     _function(f), _arglist(a) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -339,7 +397,10 @@ private:
 struct CompoundStatement : public Node, public SymNode {
   CompoundStatement(Node *d,Node *s) :
     _declaration_list(d), _statement_list(s) {};
-  virtual void gensymtab(SymTab *parent);
+
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -357,7 +418,9 @@ struct FunctionDefn : public Node, public SymNode {
   bool is_extern() const { return _extern; };
   bool is_static() const { return _static; };
 
-  virtual void gensymtab(SymTab *parent);
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void flowcontrol(Node *,bool);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -386,7 +449,7 @@ struct Declaration : public Node {
   void set_extern() { _extern = true; };
   void set_static() { _static = true; };
 
-  virtual void gensymtab(SymTab *parent);
+  virtual void gensymtab(SymTab *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -407,6 +470,7 @@ private:
 struct Type {
   Type();
   Type(Type *t) : _child(t) {};
+  Type *child() const { return _child; };
   // Set the base (innermost) type ofa type.  For instance,
   // calling this with a pointer(int) type on a pointer() type
   // will give you a pointer(pointer(int)).
@@ -419,7 +483,7 @@ struct Type {
   virtual std::ostream &print_outer(std::ostream &o) const = 0;
 
   // Traversal function for generating symbol tables.
-  virtual void gensymtab(SymTab *parent);
+  virtual void gensymtab(SymTab *);
 
 protected:
 
@@ -452,7 +516,7 @@ struct FunctionType : public Type {
   virtual std::ostream &print(std::ostream &o) const;
   virtual std::ostream &print_outer(std::ostream &o) const;
 
-  virtual void gensymtab(SymTab *parent);
+  virtual void gensymtab(SymTab *);
 private:
   Node *_params;
 };
@@ -481,6 +545,12 @@ template <class T>
 T *tcast(Type *t)
 {
   return dynamic_cast<T *>(t);
+}
+
+template <class T>
+T &tcastr(Type *t)
+{
+  return dynamic_cast<T &>(*t);
 }
 
 #endif

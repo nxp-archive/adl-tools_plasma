@@ -8,6 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 #include <assert.h>
+#include <iostream>
 
 #include "Node.h"
 #include "SymTab.h"
@@ -69,6 +70,129 @@ bool do_printsyms(ostream &o)
   return o.iword(PrintSyms);
 }
 
+BaseType::Type intType(Type *t)
+{
+  if (BaseType *bt = tcast<BaseType>(t)) {
+    return bt->type();
+  }
+  return BaseType::None;
+}
+
+// Returns true if the object has an integer type (int or char).
+bool isIntType(Type *t)
+{
+  switch (intType(t)) {
+  case BaseType::None:
+    return false;
+  default:
+    return true;
+  }
+}
+
+// Returns true if the object has an integer type (int or char).
+bool isIntType(Node *n)
+{
+  return isIntType(n->type());
+}
+
+// Returns true if we have a pointer type.
+bool isPtrType(Type *t)
+{
+  return (tcast<PointerType>(t));
+}
+
+bool isPtrType(Node *n)
+{
+  return isPtrType(n->type());
+}
+
+// If the given type is a constant, coerce it to the
+// given type.
+void coerce_const(Node *n,Type *t)
+{
+  if (n->is_const() && isIntType(t)) {
+    n->set_type(t);
+  }
+}
+
+// Given two typed terminals, sees if one is a constant.
+// If it is, tries to coerce it to the type of the other.
+void coerce_consts(Node *n1,Node *n2)
+{
+  if (n1->is_const()) {
+    coerce_const(n1,n2->type());
+  } else if (n2->is_const()) {
+    coerce_const(n2,n1->type());
+  }
+}
+
+// Checks the given integeral constant to make sure it is
+// within the bounds of the given type.
+bool check_const_range(Node *n,Type *t)
+{
+  if (Const *c = ncast<Const>(n)) {
+    int value = c->value();
+    switch (intType(t)) {
+    case BaseType::Char:
+      return (value >= -128 && value <= 127);
+    default:
+      break;
+    }
+  }
+  return true;
+}
+
+// Compares two types to see if it's possible to perform
+// a binary operation on them.  If it is not, then the 
+// appopriate error/warnings are raised, unless raise_errors is
+// false, in which case the return code is:
+// 0:  Success
+// 1:  Warning
+// 2:  Error
+int compare_types(Node *name,Type *from,Type *to,bool raise = true)
+{
+  const int Warning = 1, Error = 2;
+  int conflict = 0;
+  BaseType::Type from_t = intType(from);
+  BaseType::Type to_t = intType(to);
+  if (from_t != to_t) {
+    if (from_t == BaseType::Char) {
+      if (to_t == BaseType::Int) {
+        conflict = 0;
+      } else {
+        conflict = Error;
+      }
+    } else if (from_t == BaseType::Int) {
+      if (to_t == BaseType::Char) {
+        conflict = Warning;
+      } else {
+        conflict = Error;
+      }
+    } else {
+      conflict = Error;
+    }
+  }
+  if (!raise) {
+    return conflict;
+  }
+  if (conflict == Warning) {
+    Warn(name,"Conversion from " << from << " to " << to << " may result in data loss.");
+  } else if (conflict == Error) {
+    Error(name,"Cannot convert from " << from << " to " << to);
+  }
+  return conflict;
+}
+
+Node::Node(Type *t) : 
+  _has_return_stmt(false),
+  _has_addr(false), 
+  _output_addr(0), 
+  _type(t), 
+  _coerce_to_type(0), 
+  _filename(0), 
+  _linenumber(0) 
+{};
+
 // Doesn't do anything, but is sometimes required due to C++ bullshit.
 Node::~Node()
 {
@@ -119,7 +243,25 @@ void Node::gensymtab()
   gensymtab(0);
 }
 
+void Node::typecheck()
+{
+  typecheck(0);
+}
+
+void Node::flowcontrol()
+{
+  flowcontrol(0,false);
+}
+
 void Node::gensymtab(SymTab *)
+{
+}
+
+void Node::typecheck(Node *)
+{
+}
+
+void Node::flowcontrol(Node *,bool)
 {
 }
 
@@ -136,6 +278,20 @@ void ArrayExpression::gensymtab(SymTab *p)
 {
   _expr->gensymtab(p);
   _index->gensymtab(p);
+}
+
+void ArrayExpression::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+  _index->typecheck(curr_func);
+  if (!isIntType(_index)) {
+    Error(_index,"Array index is not an int or char.");
+  } else if (!isPtrType(_expr)) {
+    Error(_expr,"Array expression is not a pointer.");
+  } else {
+    _type = _expr->type()->child();
+    set_has_address();
+  }
 }
 
 StringLiteral::StringLiteral(String s) : 
@@ -170,6 +326,12 @@ void Id::gensymtab(SymTab *p)
   }
 }
 
+void Id::typecheck(Node *curr_func)
+{
+  assert(_symbol);
+  _type = _symbol->type();
+}
+
 void Const::printdata(ostream &o) const
 {
   o << indent << "Value:  " << _value;
@@ -202,6 +364,39 @@ Node::Calc Negative::calculate() const
     return make_pair(-cr.first,true);
   } else {
     return cr;
+  }
+}
+
+void Unaryop::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+}
+
+void Negative::typecheck(Node *curr_func)
+{
+  Unaryop::typecheck(curr_func);
+  _type = _expr->type();
+}
+
+void AddrOf::typecheck(Node *curr_func)
+{
+  Unaryop::typecheck(curr_func);
+  if (!_expr->has_address()) {
+    Error(this,"Address-of (&) target has no address.");
+  } else {
+    _expr->set_output_addr(1);
+    _type = new PointerType(_expr->type());
+  }
+}
+
+void Pointer::typecheck(Node *curr_func)
+{
+  Unaryop::typecheck(curr_func);
+  if (PointerType *pt = tcast<PointerType>(_expr->type())) {
+    _type = pt->child();
+    set_has_address();
+  } else {
+    Error(this,"Pointer dereference (*) target is not a pointer.");
   }
 }
 
@@ -286,6 +481,9 @@ void Binop::printdata(ostream &o) const
   case MODULO:
     o << "%";
     break;
+  case ASSIGN:
+    o << "=";
+    break;
   case ADD_ASSIGN:
     o << "+=";
     break;
@@ -310,9 +508,6 @@ void Binop::printdata(ostream &o) const
   case GREATER_EQ:
     o << ">=";
     break;
-  case ASSIGN:
-    o << "=";
-    break;
   default: {
     ostringstream ss;
     ss << "Unknown binary operator " << _op;
@@ -328,6 +523,50 @@ void Binop::gensymtab(SymTab *p)
   _right->gensymtab(p);
 }
 
+bool Binop::is_assign_op() const
+{
+  switch (_op) {
+  case ASSIGN:
+  case ADD_ASSIGN:
+  case SUB_ASSIGN:
+    return true;
+  default:
+    return false;
+  }
+}
+
+void Binop::typecheck(Node *curr_func)
+{
+  _left->typecheck(curr_func);
+  _right->typecheck(curr_func);
+  if (is_assign_op()) {
+    if (!_left->has_address()) {
+      Error(this,"Invalid lvalue:  Not an address.");
+    }
+    _left->set_output_addr(1);
+    coerce_const(_right,_left->type());
+    compare_types(_left,_right->type(),_left->type());
+    _right->set_coerce_to_type(_left->type());
+    _type = _left->type();
+  } else {
+    coerce_consts(_left,_right);
+    bool left_conflicts = compare_types(_left,_left->type(),_right->type(),false);
+    bool right_conflicts = compare_types(_right,_right->type(),_left->type(),false);
+    Node *from, *to;
+    if (left_conflicts < right_conflicts) {
+      from = _right;
+      to = _left;
+    } else {
+      from = _left;
+      to = _right;
+    }
+    compare_types(from,from->type(),to->type());
+    from->set_coerce_to_type(to->type());
+    to->set_coerce_to_type(to->type());
+    _type = to->type();
+  }
+}
+
 void IfStatement::printdata(ostream &o) const
 {
   o << indent << "Expr:  " << _expr
@@ -340,6 +579,47 @@ void IfStatement::gensymtab(SymTab *p)
   _expr->gensymtab(p);
   _then->gensymtab(p);
   _else->gensymtab(p);
+}
+
+// Simple type checking on an expression used by a statement
+// that expects a boolean value, e.g. if, while, etc.  Throws
+// an exception if there's a typing problem.
+void process_conditional(Node *expr)
+{
+  if (!isIntType(expr)) {
+    Error(expr,"Expression must be coercable to a boolean (must be int or char).");
+  }
+}
+
+void IfStatement::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+  process_conditional(_expr);
+  _then->typecheck(curr_func);
+  _else->typecheck(curr_func);
+}
+
+void IfStatement::flowcontrol(Node *curr_func,bool in_loop)
+{
+  _then->flowcontrol(curr_func,in_loop);
+  _else->flowcontrol(curr_func,in_loop);
+  if (_then->has_return_stmt() && _else->has_return_stmt()) {
+    set_has_return_stmt(true);
+  }
+}
+
+void BreakStatement::flowcontrol(Node *,bool in_loop)
+{
+  if (!in_loop) {
+    Error(this,"Break statement outside of any loop.");
+  }
+}
+
+void ContinueStatement::flowcontrol(Node *,bool in_loop)
+{
+  if (!in_loop) {
+    Error(this,"Continue statement outside of any loop.");
+  }
 }
 
 void ForLoop::printdata(ostream &o) const
@@ -358,6 +638,21 @@ void ForLoop::gensymtab(SymTab *p)
   _stmt->gensymtab(p);
 }
 
+void ForLoop::typecheck(Node *curr_func)
+{
+  _begin->typecheck(curr_func);
+  _expr->typecheck(curr_func);
+  process_conditional(_expr);
+  _end->typecheck(curr_func);
+  _stmt->typecheck(curr_func);
+}
+
+void ForLoop::flowcontrol(Node *curr_func,bool in_loop)
+{
+  _stmt->flowcontrol(curr_func,true);
+  set_has_return_stmt(_stmt->has_return_stmt());
+}
+
 void WhileLoop::printdata(ostream &o) const
 {
   o << indent << "Expr:" << _expr
@@ -368,6 +663,19 @@ void WhileLoop::gensymtab(SymTab *p)
 {
   _expr->gensymtab(p);
   _stmt->gensymtab(p);
+}
+
+void WhileLoop::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+  process_conditional(_expr);
+  _stmt->typecheck(curr_func);
+}
+
+void WhileLoop::flowcontrol(Node *curr_func,bool in_loop)
+{
+  _stmt->flowcontrol(curr_func,true);
+  set_has_return_stmt(_stmt->has_return_stmt());
 }
 
 void NodeList::printdata(ostream &o) const
@@ -384,6 +692,13 @@ void NodeList::gensymtab(SymTab *p)
   }
 }
 
+void NodeList::typecheck(Node *curr_func)
+{
+  for (iterator i = begin(); i != end(); ++i) {
+    (*i)->typecheck(curr_func);
+  }  
+}
+
 void FunctionExpression::printdata(ostream &o) const
 {
   o << indent << "Name:" << _function
@@ -396,11 +711,63 @@ void FunctionExpression::gensymtab(SymTab *p)
   _arglist->gensymtab(p);
 }
 
-void CompoundStatement::printdata(ostream &o) const
+// This must be called with a node that has a
+// function type.
+Type *get_return_type(Node *n)
 {
-  o << indent << "Decls:" << _declaration_list
-    << indent << "Stmts:" << _statement_list;
-  printsyms(o);
+  FunctionType &ft = tcastr<FunctionType>(n->type());
+  return ft.get_return_type();
+}
+
+ParamList *get_params(Node *n)
+{
+  FunctionType &ft = tcastr<FunctionType>(n->type());
+  return &(ncastr<ParamList>(ft.get_params()));
+}
+
+int nlsize(Node *n)
+{
+  NodeList &nl = ncastr<NodeList>(n);
+  return nl.size();
+}
+
+Node *getsymbol(Node *n)
+{
+  Id &id = ncastr<Id>(n);
+  return id.symbol();
+}
+
+void FunctionExpression::typecheck(Node *curr_func)
+{
+  _function->typecheck(curr_func);
+  if (!_function->type()->is_function()) {
+    Error(_function,"Target of function expression is not a function!");
+  }
+  Node *symbol = getsymbol(_function);
+  _type = get_return_type(symbol);
+  _arglist->typecheck(curr_func);
+  ParamList *params = get_params(symbol);
+  int num_args = nlsize(_arglist);
+  int num_params = nlsize(params);
+  if (!params->has_ellipsis() && num_args > num_params) {
+    Error(this,"Too many arguments passed to function.");
+  } else if (num_args < num_params) {
+    Error(this,"Too few arguments passed to function.");
+  }
+  NodeList &args = ncastr<NodeList>(_arglist);
+  NodeList::iterator param = params->begin();
+  NodeList::iterator arg = args.begin();
+  for (; param != params->end(); ++arg, ++param) {
+    coerce_const(*arg,(*param)->type());
+    compare_types(this,(*arg)->type(),(*param)->type());
+    (*arg)->set_coerce_to_type((*param)->type());
+  }
+  // Deal with variable number of arguments here.
+  if (params->has_ellipsis() && (num_args > num_params)) {
+    for ( ; arg != args.end(); ++arg) {
+      (*arg)->set_coerce_to_type((*arg)->type());
+    }
+  }
 }
 
 void SymNode::printsyms(ostream &o) const
@@ -410,11 +777,29 @@ void SymNode::printsyms(ostream &o) const
   }
 }
 
+void CompoundStatement::printdata(ostream &o) const
+{
+  o << indent << "Decls:" << _declaration_list
+    << indent << "Stmts:" << _statement_list;
+  printsyms(o);
+}
+
 void CompoundStatement::gensymtab(SymTab *p)
 {
   _symtab = new SymTab(p);
   _declaration_list->gensymtab(_symtab);
   _statement_list->gensymtab(_symtab);
+}
+
+void CompoundStatement::typecheck(Node *curr_func)
+{
+  _statement_list->typecheck(curr_func);
+}
+
+void CompoundStatement::flowcontrol(Node *curr_func,bool in_loop)
+{
+  _statement_list->flowcontrol(curr_func,in_loop);
+  set_has_return_stmt(_statement_list->has_return_stmt());
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -444,6 +829,19 @@ void FunctionDefn::gensymtab(SymTab *p)
   _body->gensymtab(_symtab);
 }
 
+void FunctionDefn::typecheck(Node *curr_func)
+{
+  _body->typecheck(this);
+}
+
+void FunctionDefn::flowcontrol(Node *curr_func,bool in_loop)
+{
+  _body->flowcontrol(this,false);
+  if (!_body->has_return_stmt()) {
+    Warn(this,"Function " << name() << " does not return through all branches.");
+  }
+}
+
 void ReturnStatement::printdata(ostream &o) const
 {
   o << indent << "Expr:  " << _expr;
@@ -451,9 +849,21 @@ void ReturnStatement::printdata(ostream &o) const
 
 void ReturnStatement::gensymtab(SymTab *p)
 {
-  if (_expr) {
-    _expr->gensymtab(p);
-  }
+  _expr->gensymtab(p);
+}
+
+void ReturnStatement::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+  Type *return_type = get_return_type(curr_func);
+  coerce_const(_expr,return_type);
+  compare_types(this,_expr->type(),return_type);
+  _expr->set_coerce_to_type(return_type);
+}
+
+void ReturnStatement::flowcontrol(Node *curr_func,bool in_loop)
+{
+  set_has_return_stmt(true);
 }
 
 Declaration::Declaration (String n,Type *t) :
@@ -489,6 +899,19 @@ void Declaration::printdata(ostream &o) const
 void Declaration::gensymtab(SymTab *p)
 {
   p->add(_name,this);
+}
+
+void StatementList::flowcontrol(Node *curr_func,bool in_loop)
+{
+  for (iterator i = begin(); i != end(); ++i) {
+    if ( has_return_stmt() ) {
+      Warn(this,"Function " << curr_func->name() << " has at least one unreachable statement.");
+    }
+    (*i)->flowcontrol(curr_func,in_loop);
+    if ( (*i)->has_return_stmt() ) {
+      set_has_return_stmt(true);
+    }
+  }
 }
 
 void TranslationUnit::printdata(std::ostream &o) const

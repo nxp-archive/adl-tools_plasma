@@ -1,0 +1,1039 @@
+
+Translation Unit
+================
+
+  + 15TranslationUnit
+      + 11Declaration
+        Type-string:  function(pointer(char))->int
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  printf
+      + 11Declaration
+        Type-string:  function(int)->pointer(char)
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  malloc
+      + 11Declaration
+        Type-string:  function(pointer(char))->int
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  free
+      + 11Declaration
+        Type-string:  int
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  stuff_count
+      + 11Declaration
+        Type-string:  function()->int
+        Extern:  1
+        Static:  0
+        Used  :  1
+        Name  :  increment_stuff_count
+      + 11Declaration
+        Type-string:  int
+        Extern:  0
+        Static:  0
+        Used  :  1
+        Name  :  fib_count
+      + 12FunctionDefn
+        Type-string:  function(int)->int
+        Extern:  0
+        Static:  1
+        Name  :  fib
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 8NullNode
+            Stmts:
+              + 13StatementList
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  fib_count
+                    Op  :  +=
+                    Right:  
+                      + 5Const
+                        Type-string:  int
+                        Value:  1
+                  + 11IfStatement
+                    Expr:  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  i
+                        Op  :  ==
+                        Right:  
+                          + 5Const
+                            Type-string:  int
+                            Value:  1
+                    Then:  
+                      + 17CompoundStatement
+                        Decls:
+                          + 8NullNode
+                        Stmts:
+                          + 13StatementList
+                              + 15ReturnStatement
+                                Expr:  
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  1
+                        Symbols:
+                          Level 3
+                          Level 2
+                          Level 1
+                            i:  int
+                          Level 0
+                            printf:  function(pointer(char))->int
+                            malloc:  function(int)->pointer(char)
+                            free:  function(pointer(char))->int
+                            stuff_count:  int
+                            increment_stuff_count:  function()->int
+                            fib_count:  int
+                            fib:  function(int)->int
+                            show_fib:  function(int)->int
+                            set_a:  function(pointer(char))->int
+                            get_literal:  function()->pointer(char)
+                            main:  function(int,pointer(pointer(char)))->int
+                    Else:  
+                      + 17CompoundStatement
+                        Decls:
+                          + 8NullNode
+                        Stmts:
+                          + 13StatementList
+                              + 11IfStatement
+                                Expr:  
+                                  + 5Binop
+                                    Left:  
+                                      + 2Id
+                                        Name:  i
+                                    Op  :  ==
+                                    Right:  
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  0
+                                Then:  
+                                  + 17CompoundStatement
+                                    Decls:
+                                      + 8NullNode
+                                    Stmts:
+                                      + 13StatementList
+                                          + 15ReturnStatement
+                                            Expr:  
+                                              + 5Const
+                                                Type-string:  int
+                                                Value:  0
+                                    Symbols:
+                                      Level 4
+                                      Level 3
+                                      Level 2
+                                      Level 1
+                                        i:  int
+                                      Level 0
+                                        printf:  function(pointer(char))->int
+                                        malloc:  function(int)->pointer(char)
+                                        free:  function(pointer(char))->int
+                                        stuff_count:  int
+                                        increment_stuff_count:  function()->int
+                                        fib_count:  int
+                                        fib:  function(int)->int
+                                        show_fib:  function(int)->int
+                                        set_a:  function(pointer(char))->int
+                                        get_literal:  function()->pointer(char)
+                                        main:  function(int,pointer(pointer(char)))->int
+                                Else:  
+                                  + 17CompoundStatement
+                                    Decls:
+                                      + 8NullNode
+                                    Stmts:
+                                      + 13StatementList
+                                          + 15ReturnStatement
+                                            Expr:  
+                                              + 5Binop
+                                                Left:  
+                                                  + 18FunctionExpression
+                                                    Name:
+                                                      + 2Id
+                                                        Name:  fib
+                                                    Args:
+                                                      + 12ArgumentList
+                                                          + 5Binop
+                                                            Left:  
+                                                              + 2Id
+                                                                Name:  i
+                                                            Op  :  -
+                                                            Right:  
+                                                              + 5Const
+                                                                Type-string:  int
+                                                                Value:  1
+                                                Op  :  +
+                                                Right:  
+                                                  + 18FunctionExpression
+                                                    Name:
+                                                      + 2Id
+                                                        Name:  fib
+                                                    Args:
+                                                      + 12ArgumentList
+                                                          + 5Binop
+                                                            Left:  
+                                                              + 2Id
+                                                                Name:  i
+                                                            Op  :  -
+                                                            Right:  
+                                                              + 5Const
+                                                                Type-string:  int
+                                                                Value:  2
+                                    Symbols:
+                                      Level 4
+                                      Level 3
+                                      Level 2
+                                      Level 1
+                                        i:  int
+                                      Level 0
+                                        printf:  function(pointer(char))->int
+                                        malloc:  function(int)->pointer(char)
+                                        free:  function(pointer(char))->int
+                                        stuff_count:  int
+                                        increment_stuff_count:  function()->int
+                                        fib_count:  int
+                                        fib:  function(int)->int
+                                        show_fib:  function(int)->int
+                                        set_a:  function(pointer(char))->int
+                                        get_literal:  function()->pointer(char)
+                                        main:  function(int,pointer(pointer(char)))->int
+                        Symbols:
+                          Level 3
+                          Level 2
+                          Level 1
+                            i:  int
+                          Level 0
+                            printf:  function(pointer(char))->int
+                            malloc:  function(int)->pointer(char)
+                            free:  function(pointer(char))->int
+                            stuff_count:  int
+                            increment_stuff_count:  function()->int
+                            fib_count:  int
+                            fib:  function(int)->int
+                            show_fib:  function(int)->int
+                            set_a:  function(pointer(char))->int
+                            get_literal:  function()->pointer(char)
+                            main:  function(int,pointer(pointer(char)))->int
+            Symbols:
+              Level 2
+              Level 1
+                i:  int
+              Level 0
+                printf:  function(pointer(char))->int
+                malloc:  function(int)->pointer(char)
+                free:  function(pointer(char))->int
+                stuff_count:  int
+                increment_stuff_count:  function()->int
+                fib_count:  int
+                fib:  function(int)->int
+                show_fib:  function(int)->int
+                set_a:  function(pointer(char))->int
+                get_literal:  function()->pointer(char)
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+            i:  int
+          Level 0
+            printf:  function(pointer(char))->int
+            malloc:  function(int)->pointer(char)
+            free:  function(pointer(char))->int
+            stuff_count:  int
+            increment_stuff_count:  function()->int
+            fib_count:  int
+            fib:  function(int)->int
+            show_fib:  function(int)->int
+            set_a:  function(pointer(char))->int
+            get_literal:  function()->pointer(char)
+            main:  function(int,pointer(pointer(char)))->int
+      + 12FunctionDefn
+        Type-string:  function(int)->int
+        Extern:  0
+        Static:  1
+        Name  :  show_fib
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 8NullNode
+            Stmts:
+              + 13StatementList
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "fib(%d) is %d.
+"
+                          + 2Id
+                            Name:  i
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  fib
+                            Args:
+                              + 12ArgumentList
+                                  + 2Id
+                                    Name:  i
+                  + 15ReturnStatement
+                    Expr:  
+                      + 5Const
+                        Type-string:  int
+                        Value:  0
+            Symbols:
+              Level 2
+              Level 1
+                i:  int
+              Level 0
+                printf:  function(pointer(char))->int
+                malloc:  function(int)->pointer(char)
+                free:  function(pointer(char))->int
+                stuff_count:  int
+                increment_stuff_count:  function()->int
+                fib_count:  int
+                fib:  function(int)->int
+                show_fib:  function(int)->int
+                set_a:  function(pointer(char))->int
+                get_literal:  function()->pointer(char)
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+            i:  int
+          Level 0
+            printf:  function(pointer(char))->int
+            malloc:  function(int)->pointer(char)
+            free:  function(pointer(char))->int
+            stuff_count:  int
+            increment_stuff_count:  function()->int
+            fib_count:  int
+            fib:  function(int)->int
+            show_fib:  function(int)->int
+            set_a:  function(pointer(char))->int
+            get_literal:  function()->pointer(char)
+            main:  function(int,pointer(pointer(char)))->int
+      + 12FunctionDefn
+        Type-string:  function(pointer(char))->int
+        Extern:  0
+        Static:  1
+        Name  :  set_a
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 8NullNode
+            Stmts:
+              + 13StatementList
+                  + 5Binop
+                    Left:  
+                      + 7Pointer
+                        Expr:  
+                          + 2Id
+                            Name:  c
+                    Op  :  =
+                    Right:  
+                      + 5Const
+                        Type-string:  char
+                        Value:  97
+                  + 15ReturnStatement
+                    Expr:  
+                      + 5Const
+                        Type-string:  int
+                        Value:  0
+            Symbols:
+              Level 2
+              Level 1
+                c:  pointer(char)
+              Level 0
+                printf:  function(pointer(char))->int
+                malloc:  function(int)->pointer(char)
+                free:  function(pointer(char))->int
+                stuff_count:  int
+                increment_stuff_count:  function()->int
+                fib_count:  int
+                fib:  function(int)->int
+                show_fib:  function(int)->int
+                set_a:  function(pointer(char))->int
+                get_literal:  function()->pointer(char)
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+            c:  pointer(char)
+          Level 0
+            printf:  function(pointer(char))->int
+            malloc:  function(int)->pointer(char)
+            free:  function(pointer(char))->int
+            stuff_count:  int
+            increment_stuff_count:  function()->int
+            fib_count:  int
+            fib:  function(int)->int
+            show_fib:  function(int)->int
+            set_a:  function(pointer(char))->int
+            get_literal:  function()->pointer(char)
+            main:  function(int,pointer(pointer(char)))->int
+      + 12FunctionDefn
+        Type-string:  function()->pointer(char)
+        Extern:  0
+        Static:  1
+        Name  :  get_literal
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 8NullNode
+            Stmts:
+              + 13StatementList
+                  + 15ReturnStatement
+                    Expr:  
+                      + 13StringLiteral
+                        Type-string:  pointer(char)
+                        Data:  "blah
+"
+            Symbols:
+              Level 2
+              Level 1
+              Level 0
+                printf:  function(pointer(char))->int
+                malloc:  function(int)->pointer(char)
+                free:  function(pointer(char))->int
+                stuff_count:  int
+                increment_stuff_count:  function()->int
+                fib_count:  int
+                fib:  function(int)->int
+                show_fib:  function(int)->int
+                set_a:  function(pointer(char))->int
+                get_literal:  function()->pointer(char)
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+          Level 0
+            printf:  function(pointer(char))->int
+            malloc:  function(int)->pointer(char)
+            free:  function(pointer(char))->int
+            stuff_count:  int
+            increment_stuff_count:  function()->int
+            fib_count:  int
+            fib:  function(int)->int
+            show_fib:  function(int)->int
+            set_a:  function(pointer(char))->int
+            get_literal:  function()->pointer(char)
+            main:  function(int,pointer(pointer(char)))->int
+      + 12FunctionDefn
+        Type-string:  function(int,pointer(pointer(char)))->int
+        Extern:  0
+        Static:  0
+        Name  :  main
+        Body  :
+          + 17CompoundStatement
+            Decls:
+              + 15DeclarationList
+                  + 11Declaration
+                    Type-string:  char
+                    Extern:  0
+                    Static:  0
+                    Used  :  1
+                    Name  :  c
+                  + 11Declaration
+                    Type-string:  int
+                    Extern:  0
+                    Static:  0
+                    Used  :  1
+                    Name  :  i
+            Stmts:
+              + 13StatementList
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  c
+                    Op  :  =
+                    Right:  
+                      + 5Const
+                        Type-string:  char
+                        Value:  104
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  fib_count
+                    Op  :  =
+                    Right:  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  stuff_count
+                        Op  :  =
+                        Right:  
+                          + 5Const
+                            Type-string:  int
+                            Value:  0
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "My executable name is %s.
+"
+                          + 7Pointer
+                            Expr:  
+                              + 2Id
+                                Name:  argv
+                  + 7ForLoop
+                    Begin:  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  i
+                        Op  :  =
+                        Right:  
+                          + 5Const
+                            Type-string:  int
+                            Value:  0
+                    Expr :  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  i
+                        Op  :  <
+                        Right:  
+                          + 2Id
+                            Name:  argc
+                    End  :  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  i
+                        Op  :  +=
+                        Right:  
+                          + 5Const
+                            Type-string:  int
+                            Value:  1
+                    Stmt :  
+                      + 17CompoundStatement
+                        Decls:
+                          + 8NullNode
+                        Stmts:
+                          + 13StatementList
+                              + 18FunctionExpression
+                                Name:
+                                  + 2Id
+                                    Name:  printf
+                                Args:
+                                  + 12ArgumentList
+                                      + 13StringLiteral
+                                        Type-string:  pointer(char)
+                                        Data:  "  argv[%d] is: %s    argv[%d][0] is: %c
+"
+                                      + 2Id
+                                        Name:  i
+                                      + 15ArrayExpression
+                                        Expr : 
+                                          + 2Id
+                                            Name:  argv
+                                        Index: 
+                                          + 2Id
+                                            Name:  i
+                                      + 2Id
+                                        Name:  i
+                                      + 15ArrayExpression
+                                        Expr : 
+                                          + 15ArrayExpression
+                                            Expr : 
+                                              + 2Id
+                                                Name:  argv
+                                            Index: 
+                                              + 2Id
+                                                Name:  i
+                                        Index: 
+                                          + 5Const
+                                            Type-string:  int
+                                            Value:  0
+                              + 18FunctionExpression
+                                Name:
+                                  + 2Id
+                                    Name:  increment_stuff_count
+                                Args:
+                                  + 12ArgumentList
+                        Symbols:
+                          Level 3
+                          Level 2
+                            i:  int
+                            c:  char
+                          Level 1
+                            argc:  int
+                            argv:  pointer(pointer(char))
+                          Level 0
+                            printf:  function(pointer(char))->int
+                            malloc:  function(int)->pointer(char)
+                            free:  function(pointer(char))->int
+                            stuff_count:  int
+                            increment_stuff_count:  function()->int
+                            fib_count:  int
+                            fib:  function(int)->int
+                            show_fib:  function(int)->int
+                            set_a:  function(pointer(char))->int
+                            get_literal:  function()->pointer(char)
+                            main:  function(int,pointer(pointer(char)))->int
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  i
+                    Op  :  =
+                    Right:  
+                      + 5Const
+                        Type-string:  int
+                        Value:  0
+                  + 9WhileLoop
+                    Expr:
+                      + 5Const
+                        Type-string:  int
+                        Value:  1
+                    Stmt:
+                      + 17CompoundStatement
+                        Decls:
+                          + 8NullNode
+                        Stmts:
+                          + 13StatementList
+                              + 18FunctionExpression
+                                Name:
+                                  + 2Id
+                                    Name:  show_fib
+                                Args:
+                                  + 12ArgumentList
+                                      + 2Id
+                                        Name:  i
+                              + 5Binop
+                                Left:  
+                                  + 2Id
+                                    Name:  i
+                                Op  :  +=
+                                Right:  
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  1
+                              + 11IfStatement
+                                Expr:  
+                                  + 5Binop
+                                    Left:  
+                                      + 2Id
+                                        Name:  i
+                                    Op  :  >
+                                    Right:  
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  5
+                                Then:  
+                                  + 14BreakStatement
+                                Else:  
+                                  + 17ContinueStatement
+                        Symbols:
+                          Level 3
+                          Level 2
+                            i:  int
+                            c:  char
+                          Level 1
+                            argc:  int
+                            argv:  pointer(pointer(char))
+                          Level 0
+                            printf:  function(pointer(char))->int
+                            malloc:  function(int)->pointer(char)
+                            free:  function(pointer(char))->int
+                            stuff_count:  int
+                            increment_stuff_count:  function()->int
+                            fib_count:  int
+                            fib:  function(int)->int
+                            show_fib:  function(int)->int
+                            set_a:  function(pointer(char))->int
+                            get_literal:  function()->pointer(char)
+                            main:  function(int,pointer(pointer(char)))->int
+                  + 5Binop
+                    Left:  
+                      + 2Id
+                        Name:  stuff_count
+                    Op  :  =
+                    Right:  
+                      + 5Binop
+                        Left:  
+                          + 2Id
+                            Name:  stuff_count
+                        Op  :  *
+                        Right:  
+                          + 5Const
+                            Type-string:  int
+                            Value:  2
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "fib_count is %d.
+"
+                          + 2Id
+                            Name:  fib_count
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "stuff_count is %d.
+"
+                          + 2Id
+                            Name:  stuff_count
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "before set_a(&c), c == '%c'
+"
+                          + 2Id
+                            Name:  c
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  set_a
+                    Args:
+                      + 12ArgumentList
+                          + 6AddrOf
+                            Expr:  
+                              + 2Id
+                                Name:  c
+                  + 17CompoundStatement
+                    Decls:
+                      + 15DeclarationList
+                          + 11Declaration
+                            Type-string:  int
+                            Extern:  0
+                            Static:  0
+                            Used  :  1
+                            Name  :  a
+                          + 11Declaration
+                            Type-string:  char
+                            Extern:  0
+                            Static:  0
+                            Used  :  1
+                            Name  :  b
+                          + 11Declaration
+                            Type-string:  int
+                            Extern:  0
+                            Static:  0
+                            Used  :  1
+                            Name  :  c
+                    Stmts:
+                      + 13StatementList
+                          + 5Binop
+                            Left:  
+                              + 2Id
+                                Name:  a
+                            Op  :  =
+                            Right:  
+                              + 8Negative
+                                Expr:  
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  1
+                          + 5Binop
+                            Left:  
+                              + 2Id
+                                Name:  b
+                            Op  :  =
+                            Right:  
+                              + 2Id
+                                Name:  a
+                          + 5Binop
+                            Left:  
+                              + 2Id
+                                Name:  c
+                            Op  :  =
+                            Right:  
+                              + 2Id
+                                Name:  b
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  printf
+                            Args:
+                              + 12ArgumentList
+                                  + 13StringLiteral
+                                    Type-string:  pointer(char)
+                                    Data:  "  a = %d
+"
+                                  + 2Id
+                                    Name:  a
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  printf
+                            Args:
+                              + 12ArgumentList
+                                  + 13StringLiteral
+                                    Type-string:  pointer(char)
+                                    Data:  "  b = %d
+"
+                                  + 2Id
+                                    Name:  b
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  printf
+                            Args:
+                              + 12ArgumentList
+                                  + 13StringLiteral
+                                    Type-string:  pointer(char)
+                                    Data:  "  c = %d
+"
+                                  + 2Id
+                                    Name:  c
+                    Symbols:
+                      Level 3
+                        c:  int
+                        a:  int
+                        b:  char
+                      Level 2
+                        i:  int
+                        c:  char
+                      Level 1
+                        argc:  int
+                        argv:  pointer(pointer(char))
+                      Level 0
+                        printf:  function(pointer(char))->int
+                        malloc:  function(int)->pointer(char)
+                        free:  function(pointer(char))->int
+                        stuff_count:  int
+                        increment_stuff_count:  function()->int
+                        fib_count:  int
+                        fib:  function(int)->int
+                        show_fib:  function(int)->int
+                        set_a:  function(pointer(char))->int
+                        get_literal:  function()->pointer(char)
+                        main:  function(int,pointer(pointer(char)))->int
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "after set_a(&c), c == '%c'
+"
+                          + 2Id
+                            Name:  c
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "get_literal() = %s
+"
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  get_literal
+                            Args:
+                              + 12ArgumentList
+                  + 18FunctionExpression
+                    Name:
+                      + 2Id
+                        Name:  printf
+                    Args:
+                      + 12ArgumentList
+                          + 13StringLiteral
+                            Type-string:  pointer(char)
+                            Data:  "get_literal()[3] = %c
+"
+                          + 15ArrayExpression
+                            Expr : 
+                              + 18FunctionExpression
+                                Name:
+                                  + 2Id
+                                    Name:  get_literal
+                                Args:
+                                  + 12ArgumentList
+                            Index: 
+                              + 5Const
+                                Type-string:  int
+                                Value:  3
+                  + 17CompoundStatement
+                    Decls:
+                      + 15DeclarationList
+                          + 11Declaration
+                            Type-string:  pointer(char)
+                            Extern:  0
+                            Static:  0
+                            Used  :  1
+                            Name  :  c
+                    Stmts:
+                      + 13StatementList
+                          + 5Binop
+                            Left:  
+                              + 2Id
+                                Name:  c
+                            Op  :  =
+                            Right:  
+                              + 18FunctionExpression
+                                Name:
+                                  + 2Id
+                                    Name:  malloc
+                                Args:
+                                  + 12ArgumentList
+                                      + 5Const
+                                        Type-string:  int
+                                        Value:  30
+                          + 5Binop
+                            Left:  
+                              + 15ArrayExpression
+                                Expr : 
+                                  + 2Id
+                                    Name:  c
+                                Index: 
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  0
+                            Op  :  =
+                            Right:  
+                              + 5Const
+                                Type-string:  char
+                                Value:  104
+                          + 5Binop
+                            Left:  
+                              + 15ArrayExpression
+                                Expr : 
+                                  + 2Id
+                                    Name:  c
+                                Index: 
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  1
+                            Op  :  =
+                            Right:  
+                              + 5Const
+                                Type-string:  char
+                                Value:  105
+                          + 5Binop
+                            Left:  
+                              + 15ArrayExpression
+                                Expr : 
+                                  + 2Id
+                                    Name:  c
+                                Index: 
+                                  + 5Const
+                                    Type-string:  int
+                                    Value:  2
+                            Op  :  =
+                            Right:  
+                              + 5Const
+                                Type-string:  int
+                                Value:  0
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  printf
+                            Args:
+                              + 12ArgumentList
+                                  + 13StringLiteral
+                                    Type-string:  pointer(char)
+                                    Data:  "array-built string is: %s
+"
+                                  + 2Id
+                                    Name:  c
+                          + 18FunctionExpression
+                            Name:
+                              + 2Id
+                                Name:  free
+                            Args:
+                              + 12ArgumentList
+                                  + 2Id
+                                    Name:  c
+                    Symbols:
+                      Level 3
+                        c:  pointer(char)
+                      Level 2
+                        i:  int
+                        c:  char
+                      Level 1
+                        argc:  int
+                        argv:  pointer(pointer(char))
+                      Level 0
+                        printf:  function(pointer(char))->int
+                        malloc:  function(int)->pointer(char)
+                        free:  function(pointer(char))->int
+                        stuff_count:  int
+                        increment_stuff_count:  function()->int
+                        fib_count:  int
+                        fib:  function(int)->int
+                        show_fib:  function(int)->int
+                        set_a:  function(pointer(char))->int
+                        get_literal:  function()->pointer(char)
+                        main:  function(int,pointer(pointer(char)))->int
+                  + 15ReturnStatement
+                    Expr:  
+                      + 5Const
+                        Type-string:  int
+                        Value:  0
+            Symbols:
+              Level 2
+                i:  int
+                c:  char
+              Level 1
+                argc:  int
+                argv:  pointer(pointer(char))
+              Level 0
+                printf:  function(pointer(char))->int
+                malloc:  function(int)->pointer(char)
+                free:  function(pointer(char))->int
+                stuff_count:  int
+                increment_stuff_count:  function()->int
+                fib_count:  int
+                fib:  function(int)->int
+                show_fib:  function(int)->int
+                set_a:  function(pointer(char))->int
+                get_literal:  function()->pointer(char)
+                main:  function(int,pointer(pointer(char)))->int
+        Symbols:
+          Level 1
+            argc:  int
+            argv:  pointer(pointer(char))
+          Level 0
+            printf:  function(pointer(char))->int
+            malloc:  function(int)->pointer(char)
+            free:  function(pointer(char))->int
+            stuff_count:  int
+            increment_stuff_count:  function()->int
+            fib_count:  int
+            fib:  function(int)->int
+            show_fib:  function(int)->int
+            set_a:  function(pointer(char))->int
+            get_literal:  function()->pointer(char)
+            main:  function(int,pointer(pointer(char)))->int
+    Symbols:
+      Level 0
+        printf:  function(pointer(char))->int
+        malloc:  function(int)->pointer(char)
+        free:  function(pointer(char))->int
+        stuff_count:  int
+        increment_stuff_count:  function()->int
+        fib_count:  int
+        fib:  function(int)->int
+        show_fib:  function(int)->int
+        set_a:  function(pointer(char))->int
+        get_literal:  function()->pointer(char)
+        main:  function(int,pointer(pointer(char)))->int

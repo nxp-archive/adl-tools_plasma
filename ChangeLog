@@ -1,3 +1,9 @@
+2004-08-20  Brian Kahne  <bkahne@ibmoto.com>
+
+	* minicc: Added type-checking and flow-control analysis passes.
+	These are done in parallel across all top-level items in a
+	translation unit.
+
 2004-08-19  Brian Kahne  <bkahne@ibmoto.com>
 
 	* minicc: Fixed bug: I wasn't calling setinfo on all of the Node

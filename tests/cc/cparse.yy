@@ -337,7 +337,7 @@ statement(A) ::= jump_statement(B). {
 }
 
 jump_statement(A) ::= RETURN SEMICOLON. { 
-  A = new ReturnStatement; 
+  A = new ReturnStatement(new NullNode()); 
   cp->setinfo(A); 
 }
 jump_statement(A) ::= RETURN expression(B) SEMICOLON. { 

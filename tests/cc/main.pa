@@ -18,12 +18,14 @@ struct Options {
   bool                 _debug; // Show parser debug info.
   bool                 _ast;   // Generate AST.
   bool                 _syms;  // Print AST + symbols.
+  bool                 _check; // Stop after checking phase.
   vector<const char *> _files; // Files to parse.       
 
   Options() :
     _debug(false),
     _ast(false),
-    _syms(false)
+    _syms(false),
+    _check(false)
   {};
 };
 
@@ -38,9 +40,12 @@ bool parseOptions(int argc,const char *argv[])
     if (!strcmp(argv[i],"-ast")) {
       options._ast = true;
     }
-    if (!strcmp(argv[i],"-syms")) {
+    else if (!strcmp(argv[i],"-syms")) {
       options._ast = true;
       options._syms = true;
+    }
+    else if (!strcmp(argv[i],"-check")) {
+      options._check = true;
     }
     else if (!strcmp(argv[i],"-d")) {
       options._debug = true;
@@ -49,6 +54,9 @@ bool parseOptions(int argc,const char *argv[])
       int len = strlen(argv[i]);
       if (len > 2 && !strcmp(&argv[i][len-2],".c")) {
         options._files.push_back(argv[i]);
+      } else {
+        cerr << "Error:  Unknown option " << argv[i] << "\n\n";
+        return false;
       }
     }
   }
@@ -62,7 +70,7 @@ bool parseOptions(int argc,const char *argv[])
 int pMain(int argc,const char *argv[])
 {
   if (!parseOptions(argc,argv)) {
-    cerr << "Usage:  " << argv[0] << " <filename>" << endl;
+    cerr << "Usage:  " << argv[0] << " <filename | options>... " << endl;
     return 1;
   }
 
@@ -72,6 +80,7 @@ int pMain(int argc,const char *argv[])
     tokenize(tc);
     parse(tc);
   }
+  cerr << "\nCompile succeeded." << endl;
   return 0;
 }
 
@@ -104,7 +113,7 @@ void parse(TokChan &tc)
   // Do the compilation:  Give each translation unit
   // to the compiler and tell it to go to work.
   Compiler compiler(cp.translationUnits());
-  compiler.compile();
+  compiler.compileUnits(options._ast,options._check);
   if (compiler.error()) {
     pExit(2);
   }

@@ -1,0 +1,1 @@
+tests/in9.c:10:  Error:  Cannot convert from pointer(int) to int
