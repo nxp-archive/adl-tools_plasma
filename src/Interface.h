@@ -54,6 +54,15 @@ namespace plasma {
     Proc *_proc;
   };
 
+  // Vector of processors.  The idea is that you use
+  // this, rather than just a standard container, so that
+  // you get N unique Processor objects from the constructor.
+  struct Processors : public std::vector<Processor>
+  {
+    Processors() {};
+    Processors(unsigned n);
+  };
+
   // The following threads relate to the "current" processor, unless
   // a Cluster argument is supplied (assuming a function is used that
   // takes one as an argument).

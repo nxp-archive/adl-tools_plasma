@@ -33,11 +33,15 @@ namespace plasma {
     // have already been realized.
     void add_ready(THandle t);
     // Get next available thread, respecting priorities.
-    Thread *get_ready();    
+    THandle get_ready();    
     // Try to remove thread from ready queue (if it exists).
     THandle get_ready(THandle t);
     // Pointer to next avail thread- does not remove.
     THandle next_ready() const;
+
+    // Remove thread.  Use with care, as we can't know if
+    // the item is actually in the queue.
+    void remove_ready(THandle t);
 
     // Processor state.
     State state() const { return _state; };

@@ -118,6 +118,15 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
     return nil;
   }
 
+  // Bit of a hack here- if we have a on-block, we need to remove the outer
+  // brackets so that convertToThread will see it.  Otherwise, we have to keep
+  // the braces, so that it will be handled as a single expression and be
+  // properly translated.
+  //  if (body->Second()->Ca_ar()->Eq("on")) {
+  if (Ptree::Match(body,"[ { [ [ on %_ ] ] } ]")) {
+    body = body->Cadr()->Car();
+  }
+
   // This walker will be used to walk each expression that's an element of
   // the par block.  It just records what variables are used that occur in the
   // parent scope.
@@ -172,17 +181,11 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 
   assert(elist);
 
-  vw->setnames(tstype,tsname);              
-  Ptree *nexpr = vw->Translate(expr);    // Translate expression, scanning for variables.
-  Ptree *args = vw->args();
-
-  thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
-
   // Do we have a placement statement?  If so, proc will store the expression
   // which specifies the processor.  If not, this will be nil, so the evaluation
   // will produce an empty string.
   Ptree *proc = nil,*pri = nil,*tproc = nil,*tpri = nil,*tbody = nil,*onarg = nil;
-  if (Ptree::Match(nexpr,"[ on ( %? ) %? ]",&onarg,&tbody)) {
+  if (Ptree::Match(expr,"[ on ( %? ) %? ]",&onarg,&tbody)) {
     // Check to see if we have two arguments.  If so, first is the
     // processor, second is the priority.  Otherwise, priority defaults
     // to -1, which means priority of current thread.
@@ -191,12 +194,20 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     } else {
       tproc = onarg;
     }
-    nexpr = tbody;
+    expr = tbody;
     proc = Ptree::qMake("(`tproc`)(),");
   }
   if (!pri) {
     pri = Ptree::Make("-1");
   }
+
+  // We must do this after checking for the on-statement, since "on" is not valid C++
+  // and the translation step would thus return nil in error.
+  vw->setnames(tstype,tsname);              
+  Ptree *nexpr = vw->Translate(expr);    // Translate expression, scanning for variables.
+  Ptree *args = vw->args();
+
+  thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
 
   if (args) {
     // Arguments exist- we have to create a structure in which

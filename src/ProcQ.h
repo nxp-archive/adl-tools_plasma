@@ -21,6 +21,8 @@ namespace plasma {
     // Get if it exists in queue.  Removes it.
     // Returns 0 if not in queue.
     Proc *get(Proc *t) { return reinterpret_cast<Proc*>(Queue::get(reinterpret_cast<QBase*>(t))); };
+    // Removes item.
+    void remove(Proc *t) { Queue::remove(reinterpret_cast<QBase*>(t)); };
     // Top of queue- does not remove item.
     Proc *front() const { return reinterpret_cast<Proc*>(Queue::front()); };
     Proc *back() const { return reinterpret_cast<Proc*>(Queue::back()); };

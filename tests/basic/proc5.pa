@@ -1,0 +1,32 @@
+//
+// Test of the "on" block for specifying a target processor with a pfor block.
+// This tests to make sure that pDelay works in such a case.
+// 
+#include <iostream>
+#include <stdarg.h>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  Processors procs(10);
+
+  pfor (int i = 0; i != (int)procs.size(); ++i) {
+    on (procs[i]) {
+      mprintf ("Block %d start:  %ld.\n",i,pTime());
+      pDelay(i*20);
+      mprintf ("Block %d done:  %ld.\n",i,pTime());
+    }
+  }
+
+  mprintf ("Done.\n");
+  return 0;
+}

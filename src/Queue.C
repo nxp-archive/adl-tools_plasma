@@ -13,21 +13,29 @@ namespace plasma {
   void Queue::add(QBase *next)
   {
     next->setnext(0);        // last thread in queue
-    if (_tail)               // there was a previous thread in queue
+    if (_tail) {             // there was a previous thread in queue
       _tail->setnext(next);  // link previous thread with thread
-    else                     // no previous thread in queue
+      next->setprev(_tail);
+    } else {                 // no previous thread in queue
       _head = next;          // this is the first thread in queue
+      next->setprev(0);
+    }
     _tail = next;            // this is the last thread in queue
   }
 
   QBase *Queue::get()
   {
-    if (!_head) return(0);        // cheap test first
+    if (!_head) return(0);       // cheap test first
     QBase *next = _head;         // first thread in queue
-    _head = next->getnext();      // next thread in queue
-    if (!_head) _tail = 0;        // queue is empty
+    _head = next->getnext();     // next thread in queue
+    if (!_head) {
+      _tail = 0;                 // queue is empty
+    } else {
+      _head->setprev(0);
+    }
+    next->setprev(0);
     next->setnext(0);
-    return(next);                 // return thread
+    return(next);                // return thread
   }
 
   QBase *Queue::get(QBase *t)
@@ -49,6 +57,26 @@ namespace plasma {
       cur = next;
     }
     return 0;                     // Not found.
+  }
+
+  void Queue::remove(QBase *x)
+  {
+    if (!x->getprev()) {
+      // Is head of queue- normal remove case.
+      // Also handles case where there's only a single element.
+      get();
+      return;
+    } 
+    // Middle or tail case- remove x from queue.
+    // No need to adjust head or tail.
+    x->getprev()->setnext(x->getnext());
+    if (!x->getnext()) {
+      // Tail case.
+      _tail = x->getprev();
+    }
+    // For safety.
+    x->setnext(0);
+    x->setprev(0);
   }
 
   unsigned Queue::size() const

@@ -38,6 +38,8 @@ check_PROGRAMS = \
 	proc1 \
 	proc2 \
 	proc3 \
+	proc4 \
+	proc5 \
 	time1 \
 	time2 \
 	time3 \
@@ -53,6 +55,9 @@ par2_DEPENDENCIES = $(DEPENDENCIES)
 
 par3_SOURCES = par3.pa
 par3_DEPENDENCIES = $(DEPENDENCIES)
+
+#par4_SOURCES = par4.pa
+#par4_DEPENDENCIES = $(DEPENDENCIES)
 
 qsort_SOURCES = qsort.pa
 qsort_DEPENDENCIES = $(DEPENDENCIES)
@@ -129,6 +134,12 @@ proc2_DEPENDENCIES = $(DEPENDENCIES)
 proc3_SOURCES = proc3.pa
 proc3_DEPENDENCIES = $(DEPENDENCIES)
 
+proc4_SOURCES = proc4.pa
+proc4_DEPENDENCIES = $(DEPENDENCIES)
+
+proc5_SOURCES = proc5.pa
+proc5_DEPENDENCIES = $(DEPENDENCIES)
+
 time1_SOURCES = time1.pa
 time1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -172,6 +183,8 @@ DEP_FILES=\
 	./$(DEPDIR)/proc1.Po \
 	./$(DEPDIR)/proc2.Po \
 	./$(DEPDIR)/proc3.Po \
+	./$(DEPDIR)/proc4.Po \
+	./$(DEPDIR)/proc5.Po \
 	./$(DEPDIR)/time1.Po \
 	./$(DEPDIR)/time2.Po \
 	./$(DEPDIR)/time3.Po \
@@ -202,12 +215,15 @@ include ./$(DEPDIR)/pri3.Po
 include ./$(DEPDIR)/pri4.Po
 include ./$(DEPDIR)/proc2.Po
 include ./$(DEPDIR)/proc3.Po
+include ./$(DEPDIR)/proc4.Po
+include ./$(DEPDIR)/proc5.Po
 include ./$(DEPDIR)/time1.Po
 include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po
 include ./$(DEPDIR)/time4.Po
 
-LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs -lgc -ldl
+AM_LDFLAGS = -L$(top_srcdir)/src -L$(top_srcdir)/qt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
+LDADD =  -lplasma -lqt  -lgc -ldl
 
 CXXLD = $(CXX)
 LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@

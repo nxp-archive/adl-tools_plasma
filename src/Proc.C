@@ -116,6 +116,14 @@ namespace plasma {
     return next;
   }
 
+  void Proc::remove_ready(THandle t)
+  {
+    assert(t->proc() == this);
+    int p = t->priority();
+    _ready[p].remove(t);
+    --_numthreads;
+  }
+
   // We return the busy time of the highest priority thread in the system.
   // We look at the back of the queue b/c we assume that the busy thread is
   // the one that was just added back to the system.

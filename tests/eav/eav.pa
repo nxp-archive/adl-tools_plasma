@@ -1,0 +1,774 @@
+//
+// eav.sw: a simplistic model of the eav
+//
+
+#include <vector>
+
+#include "plasma.h"
+
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+//	this model says the eav is 
+//	a set of user processes who squirt messages every now and then
+//		to a comms multiplexer
+//	a comms multiplexer who passes the messages on to a free transaction
+//		agent (there are fewer agents than terminals) 
+//	tp agents who call upon database routines to effect transactions and
+//		who pass messages on to a memory manager 
+//	the memory manager plays with journals and records and so forth, waiting
+//		for access to complete when needed.
+//	the system behavior is explored by having the memory manager sometimes use
+//		fast memory for storage and sometimes use a disk manager; the ratio 
+//		between the two is a cache hit rate (ignoring writethru) and on an
+//		enterprise attack vehicle the hit rate is assumed to be 100%
+//	this version doesn't worry about contention for record locks between
+//		transactions
+//	this version uses a TP-1 like transaction - two reads and a write
+
+// bkahne 21 june 2004
+//      conversion to plasma
+//
+// pete 26 july 1990
+//      modified june 3 1994: change to order of summary tps computation
+
+
+// timeunits.sw
+// names for the base values of time
+
+typedef int int32;
+
+const int32 musec = 1;
+const int32 msec  = musec * 1000;
+const int32 sec	  = msec * 1000;
+const int32 minute= sec * 60;
+const int32 hour  = minute * 60;
+const int32 day	  = hour * 24;
+
+// configuration
+
+const int32 ThinkTime = 1000;		// average think time for user(msec)
+const int32 ThinkVar  = 250;		// half the think range(msec)
+
+// Instruction Path Lengths for Various Things
+// these numbers are from Tony Pizzarello's figures
+
+const int32 ReadPath		= 25000;	// transaction path length (read)
+const int32 WritePath 		= 25000;	// .. after a write to db
+const int32 TermInPath 		= 1500;		// read message from terminal
+const int32 TermOutPath 	= 1500;		// send message to terminal
+const int32 DiskCmndPath 	= 900;		// instrucs to launch disk access
+const int32 DiskResponsePath    = 1200;	        // to read stuff back
+const int32 LockPath		= 7500;		// to set a lock
+const int32 UnlockPath		= 500;		// to unset a lock
+
+const int32 VT100 = 0;
+const int32 SuperMIPS = 1;
+const int32 Interphase = 2;
+const int32 num_terminals = 1000;		// max number of terminals
+const int32 num_drives	= 100;			// max number of drives
+
+typedef vector<int> IntVect;
+typedef Channel<int32> Chan;
+typedef vector<Chan> Chans;
+
+Processors terminals(num_terminals);
+Processor mainframe;
+Processors diskdrives(num_drives);
+
+// Random number generation.
+Random Random(1);
+
+//
+// Miscellaneous output routines to mirror those of sw.
+//
+
+void say(const char *s)
+{
+  mprintf ("%s",s);
+}
+
+void saynum(int32 d)
+{
+  mprintf ("%d",d);
+}
+
+void sayflush()
+{
+  fflush(stdout);
+}
+
+// prints out x/y to 2 decimal places when x>=0 and y>=0
+void printfixed(int32 x, int32 y) 
+{
+  if (x == 0) {
+    mprintf("0.00");
+  } if (y == 0) {
+    mprintf("Infinity");
+  } else {
+    int32 vi = x/y;
+    int32 vf = vi * y;
+    vf = x - vf;
+    if (vf > 20000000) {
+      y = y/100;
+    } else {
+      vf = vf * 100;
+    }
+    vf = vf / y;
+    mprintf ("%ld.%02ld", vi, vf);
+  }
+}
+
+//////////////////////////// think /////////////////////////////// 
+
+// uses up compute time for the right number of microseconds
+// given the number of instructions and the MIPS rate
+void think(int32 mips, int32 instructions) 
+{
+  pDelay(instructions/mips);
+}
+
+//////////////////////////// user //////////////////////////////////
+
+// a user
+void user(Chan &in, Chan &out, int32 usernum, int32 max_in,
+          int32 &transactions1, int32 &times1, int32 &transactions, int32 &times)
+{
+  int32 sigma_t = 0, dt;
+  int32 count = 0;
+  pDelay(Random.uniform(0, 0, ThinkTime * msec)); //stagger the start-ups of the users
+  ptime_t now, max = max_in;
+  while ((now = pTime()) < max) {
+    int32 dummy, t;
+    t = now;
+    out.write(usernum);
+    dummy = in.get();
+    dt = (now - t)/msec;			// delta t in milliseconds
+    count = count + 1;				// number of transactions
+    sigma_t = sigma_t + dt;			// total response time
+    transactions1 = transactions1 + 1;		// global transaction sigma
+    times1 = times1 + dt;					// global response time sigma
+    pDelay(Random.uniform(0, (ThinkTime - ThinkVar) * msec, 
+                 (ThinkTime + ThinkVar) * msec));
+  }
+  transactions = transactions + count;
+  times = times + sigma_t;
+}
+
+///////////////////////// curr_stats ////////////////////////
+
+void curr_stats(int32 maxtime, int32 &transactions, int32 &time) 
+{
+  say("\n..");
+  printfixed(pTime(), sec);
+  say(" secs of ");
+  printfixed(maxtime, sec);
+  say(" did ");
+  saynum(transactions);
+  say(" = ");
+  printfixed(time, transactions);
+  say("ms/t;");
+}
+	
+////////////////////////////// dots ////////////////////////////////
+
+// simply prints a dot every dt time units
+void dots(int32 dt) 
+{
+  if (dt <= 0) {
+    dt = 1;
+  }
+  while(1) {
+    say(".");
+    sayflush();
+    pDelay(dt);
+  }
+}
+
+//////////////////////////// timestamp /////////////////////////////
+
+// simply prints time every dt units
+void timestamp(int32 dt, int32 maxtime, int32 &transactions, int32 &time) 
+{
+  int32 newtime = 0;
+  ptime_t EndTime;
+  int32 LastCount = 0, LastTime = 0;
+  int32 newtrans, newdt, oldtrans = 0, olddt = 0;
+	
+  EndTime = (maxtime + (10 * ((ThinkTime + ThinkVar)* msec)));
+  if (maxtime < 0) {
+    maxtime = 0x7fffffff;
+  }
+  if (EndTime < 0) {
+    EndTime = 0x7fffffff;
+  }
+  while(1) {
+    if (pTime() > EndTime) {
+      say("\n====Running much longer than expected; asked-for time is ");
+      printfixed(maxtime, msec);
+      say("\n\tmsec and now is ");
+      saynum(pTime()/msec);
+      say(" msec.\n\n");
+      curr_stats(maxtime, transactions, time);
+      pExit(1);
+    }
+    
+    curr_stats(maxtime, transactions, time);
+    // now give average msec/transaction since last time
+    newtrans = transactions - LastCount;
+    newdt	= time - LastTime;
+    if (newtrans > 0) {	
+      int32 n, t;	
+      say(" (");
+      t = (newdt + olddt)/2;
+      n = (newtrans + oldtrans)/2;
+      printfixed(t, n);
+      olddt = t;
+      oldtrans = n;
+      LastCount = transactions;
+      LastTime	= time; 
+      say("ms/t)");
+    }
+  
+    say("->");
+    printfixed(newtrans, dt/sec);
+    say("tps.");
+    sayflush();
+    pDelay((newtime + dt) - pTime());
+    newtime = newtime + dt;
+  }
+}	
+	
+/////////////////////////// comms_in //////////////////////////
+
+// comms_in listens to the terminals and sends their messages on to
+//	one of the available transaction processes
+
+void comms_in(int32 mips, Chans &in, Chans &out, Chans &free) 
+{
+  int32 terminal, tp;
+  say("\nComms starting..");
+  while (1) {
+    afor (int i = 0; i != (int)in.size(); ++i) {
+      in[i].port(int v) {
+        // Drain a value from the input channels.
+        terminal = v;
+      }
+    }
+    // Got input from a terminal; now find a free tp process
+    afor (int i = 0; i != (int)free.size(); ++i) {
+      free[i].port() {
+        tp = i;
+      }
+    }
+    // Compute.
+    think(mips, TermInPath);
+    // Send value.
+    out[tp].write(terminal);
+  }
+}
+
+/////////////////////////////// comms_out /////////////////////////
+
+// This collects up the outputs from the tp agents and sends them
+// back out to the terminals	
+void comms_out(int32 mips, Chans &from_agents, Chans &to_terminals)
+{
+  int32 terminal;
+  while(1) {
+    afor(unsigned i = 0; i != from_agents.size(); ++i) {
+      from_agents[i].port(int v) {
+        terminal = v;
+      }
+    }
+    // ok, got the value back from the system. give it to a terminal
+    think(mips, TermOutPath);
+    to_terminals[terminal].write(terminal);
+  }
+}
+	
+//////////////////////// transaction routines /////////////////////
+
+// these routines 'do transactions'; they call upon the memory manager
+//	(who can be in essence a ram manager or a disk manager) to read,
+//	lock, write, free etc things, and they wait for writes to complete
+//	appropriately thus getting the right amount of performance-sapping
+//	synchronisation
+
+//	in this version, everybody just tosses pennies; there's no representation
+//	of real records. also, we assume no contention for records for the moment
+//	and further, we assume that no record is locked over multiple terminal
+//	requests.
+
+///////////////////////// DISKS ////////////////////////////////
+
+const int32 Read = 0, Write_synch = 1, Write_asynch = 2;
+
+//////////////////////// disk_manager //////////////////////////
+
+// the disk manager listens to all the tp agents who may sometimes
+// call upon him to do disk accesses
+// the disk manager runs a number of disks, which he chooses between 
+// at random for a request. each disk is represented by a process
+class DiskManager {
+
+  // a sequential buffer implementation
+  void drive_buffer(int32 buff_size, Chans &in, Chans &out, int32 number) 
+  {
+    IntVect stuff(buff_size);
+
+    Chan in_to_out, out_to_in;
+    bool in_asleep = false, out_asleep = true;
+    int32 inptr = 0, outptr = 0, count = 0;
+
+    // the input handler	
+    par {
+      {
+        int32 any;
+        while(1) {
+          int32 data = in.get();
+          stuff[inptr] = data;
+          inptr = (inptr + 1) % buff_size;	// increment in pointer
+          count = count + 1;			// increment count
+          if (out_asleep) {
+            out_asleep = false;
+            in_to_out.write(any);
+          }
+          if (count == buff_size) {
+            // buffer is full
+            in_asleep = true;
+            any = out_to_in.get();
+          }
+        }
+      }
+      {
+        // the output handler	
+        int32 data, any;
+        while(1) {
+          // first see if we got any data
+          if (out_asleep) {
+            any = in_to_out.gete();	// wait for stuff
+          }
+          data = stuff[outptr];
+          out.write(data);
+          outptr = (outptr + 1) % buff_size;
+          count = count - 1;
+          if (in_asleep) {
+            // in has gone to sleep
+            in_asleep = false;
+            out_to_in.write(any);	// wake him up
+          }
+          if (count == 0) {
+            out_asleep = true;
+          }
+        }    
+      }
+    }
+  }
+
+  //////////////////////// drive /////////////////////////
+
+  void drive(Chan &in, Chan &out, int32 n) 
+  {
+    int32 cmnd;
+    const int32 rotation_time = 10 * msec;
+    const int32 seek_time = 100 * musec;	// per track
+    const int32 settling_time = 1 * msec;
+    const int32 num_tracks	= 100;
+    // these disks have a rotation speed of 10 msec, a head movement and
+    // settling time of 100musec/track + 1 msec, 100 tracks, and are 
+    // unsynchronised.
+	
+    int32 agent;
+    int32 track = 0;
+    int32 newtrack = 0;
+    int32 dtrack;
+	
+    pDelay(Random.uniform(0, 10 * msec, 20 * msec));
+    while(1) {
+      int32 wait_time;
+      
+      cmnd = in.get();		       // get the composite command
+      agent = cmnd >> 16;	       // resolve into agent number
+      cmnd = cmnd & 255;	       // ..and command
+      newtrack = Random.uniform(0, 0, num_tracks);
+      if (newtrack < track) {
+	dtrack = track - newtrack;
+      } else {
+        dtrack = newtrack - track;
+      }
+      wait_time = Random.uniform(0, 0, rotation_time) + // rotate latency
+        (dtrack * seek_time) +		// seek latency
+        settling_time;
+      pDelay(wait_time);
+      // synchronous command?
+      if ((cmnd == Read) || (cmnd == Write_synch)) {
+	out.write(agent);
+      }
+      pDelay(100 * musec);
+    }
+  }
+
+  ///////////////////////// manager /////////////////////////
+	
+  // Accepts commands from tp agents and sends to drives
+  void manager(int32 mips, int32 disks, Chan &commands, Chan &to_drives)
+  {  
+    int32 cmnd, agent, drivenum, composite;
+    say("\nDisk manager starting");	
+    while(1) {
+      afor(int i = 0; i != commands.size(); ++i) {
+        commands[i].port(int v) {
+          cmnd = v;
+          agent = i;
+        }
+      }
+      // got a request from a tp agent; assign it to a drive
+      drivenum = Random.uniform(0, 0, disks);	// chooses rv in 0..disks-1
+      composite = cmnd + (agent << 16);
+      think(mips, DiskCmndPath);		// IO-issuing path length
+      to_drives[drivenum].write(composite);
+    }
+  }
+
+  ///////////////////////// responder ////////////////////////////
+
+  // the disk interrupt handler; catches 'done' messages from disks,
+  // sends signal to appropriate tp agent
+  void responder(int32 mips, Chan &to_agents, Chan &from_disks) 
+  {
+    int32 agent;
+    while(1) {
+      afor (int i = 0; i != from_disks.size(); ++i) {
+        from_disks[i].port(int v) {
+          agent = v;
+        }
+      }
+      to_agents[agent].write(agent);
+      think(mips, DiskResponsePath);			
+    }
+  }
+
+public:
+  // Now, the body of the disk manager just runs the manager on the
+  // computer and the drives on themselves
+  void operator()(int32 mips, int32 buff_size, int32 disks, Chans &in, Chans &out) 
+  {
+    Chans to_drives(disks), from_drives(disks), buff_to_drives(disks);
+	
+    par {
+      par {
+        on (mainframe) {
+          manager(mips, disks, in, to_drives);
+        }
+        on (mainframe) {
+          responder(mips, out, from_drives);
+        }
+      }
+      pfor (int i = 0; i != disks; ++i) {
+        on (diskdrives[i]) {
+          drive(buff_to_drives[i], from_drives[i], i);
+        }
+      }
+      pfor (int i = 0; i != disks; ++i) {      
+        on (diskdrives[i]) {
+          drive_buffer(buff_size, to_drives[i], buff_to_drives[i], i); 
+        }
+      }
+    }
+  }
+
+};
+
+// reads a block from disk by sending the disk manager a message	
+void disk_read(Chan &to_disks, Chan &from_disks) 
+{
+  int32 any;
+  to_disks.write(Read);
+  int32 = from_disks.get();
+}
+
+// writes a block to the disk controller
+void disk_write_asynch(chan to_disks, from_disks) 
+{
+  to_disks.write(Write_asynch);
+}
+	
+// writes a block to the disk
+void disk_write_synch(chan to_disks, from_disks) 
+{
+  to_disks.write(Write_synch);
+  from_disks.get();
+}
+
+//////////////////////////// MEMORY /////////////////////////////
+
+// asks for stuff from the memory system; in a normal system, this means
+// going to a disk; in a giant memory system, it means reading memory. we
+// treat the thing as cached, with a supplied hit rate. with 100% hit, we
+// always go to memory; with 90% hit rate we go to disk 10% of the time
+void mem_read(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  if (Random.uniform(0, 0, 1000) > hit_rate) {
+    // hit_rate is an integer in 0..999; if our rv is larger than hitrate
+    //then we have a MISS	
+    disk_read(to_disks, from_disks);
+  } else {
+    // memory read; this is quick; assume 10 microseconds
+    pDelay(15 * musec);
+  }
+}
+	
+void mem_write_synch(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  // gives stuff to the memory system and waits for write to finish
+  if (Random.uniform(0, 0, 1000) > hit_rate) {
+    // hit_rate is an integer in 0..999; if our rv is larger than hitrate
+    // then we have a MISS
+    disk_write_synch(to_disks, from_disks);
+  } else {
+    // memory write; this is quick; assume 10 microseconds
+    pDelay(15 * musec);
+  }
+}
+	
+void mem_write_asynch(Chan &to_disks, Chan &from_disks, int32 hit_rate)
+{
+  // gives stuff to the memory system
+  if (Random.uniform(0, 0, 1000) > hit_rate) {
+    disk_write_asynch(to_disks, from_disks);
+  } else {
+    // memory write; this is quick; assume 10 microseconds
+    pDelay(15 * musec);
+  }
+}
+
+//////////////////// RECORDS AND JOURNALS /////////////////////////
+
+void before_journal(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  // this writes an entry to the before journal; no synchronisation is needed
+  //say("\n\tBeforeJrnl");
+  mem_write_asynch(to_disks, from_disks, hit_rate);
+}
+	
+void after_journal(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  // this write an entry to the after journal; must wait until complete
+  mem_write_synch(to_disks, from_disks, hit_rate);
+}
+	
+void get_record(Chan to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  // reads a record from the database
+  mem_read(to_disks, from_disks, hit_rate);
+}
+	
+void put_record(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
+{
+  // synchronised write to memory
+  mem_write_synch(to_disks, from_disks, hit_rate);
+}
+
+void read_record(int32 mips, Chan &to_disks, Chan &from_disks, int32 hit_rate)
+{
+  // this routine does a read operation on one record
+  before_journal(to_disks, from_disks, hit_rate);
+  think(mips, ReadPath);
+  get_record(to_disks, from_disks, hit_rate);
+}
+	
+void update_record(int32 mips, Chan &to_disks, Chan &from_disks, int32 hit_rate)
+{
+  // this does a write operation to one record
+  before_journal(to_disks, from_disks, hit_rate);
+  think(mips, WritePath);
+  put_record(to_disks, from_disks, hit_rate);
+  after_journal(to_disks, from_disks, hit_rate);
+}
+		
+///////////////////////// TP /////////////////////////////
+
+// the tp process does all the transaction work. there are multiple
+//	instantiations; each catches stuff on its in, passes stuff on through
+//	its out and signals its free to the comms mux via the free channel
+
+class Agents {
+ 
+  void lock_record(int32 mips) 
+  {
+    // we simply compute a bit -	locks are in memory
+    think(mips, LockPath);			
+  }
+	
+  void unlock_record(int32 mips) 
+  {
+    // same again
+    think(mips, UnlockPath);
+  }
+
+  void tp_agent(int32 mips, Chan &in, Chan &out, Chan &free, Chan &to_disks, Chan &from_disks,
+                int32 tp_num, int32 hit_rate)
+  {
+    int32 terminal;
+		
+    CurrPriority = 3;	        // lower priority
+    while(1) {
+      free.write(terminal);	// signal i'm free
+      terminal = in.get();	// get some input
+      lock_record(mips);	// lock all the records
+      lock_record(mips);
+      lock_record(mips);
+			
+      read_record(mips, to_disks, from_disks, hit_rate);
+      read_record(mips, to_disks, from_disks, hit_rate);
+      update_record(mips, to_disks, from_disks, hit_rate);
+      
+      out.write(terminal);		// provide results to terminal
+			
+      unlock_record(mips);
+      unlock_record(mips);
+      unlock_record(mips);
+    }
+  }
+
+public:
+  void operator()(int32 mips, Chans &in, Chans &out, Chans &free, Chans &to_disks, Chans &from_disks, 
+         int32 num_agents, hit_rate) 
+  {
+    //	the body, forking the agents..
+    say("\nThe TP agent starting up..");
+    pfor (int i = 0; i != num_agents; ++i) {
+      tp_agent(mips, in[i], out[i], free[i], to_disks[i], from_disks[i], i, hit_rate);
+    }
+  }
+
+};
+	
+/////////////////////////// mainbody ////////////////////////////////////
+
+int pMain(int argc,const char *argv) 
+{		
+  int32 actual_users, hit_rate, mips, buff_size, disks, tp_agents, SimulationTime, ReportInterval;
+  
+  int32 transactions = 0, times = 0, sigma_transac = 0, sigma_response = 0;
+
+  // main body	
+  mprintf("\nThe Enterprise Attack Vehicle MkII (v1.01) lifts off..\nWe have some arguments: %ld", argc);
+		
+  if (argc < 2) {
+    // no arguments offered at all; use defaults
+    actual_users = 100; // 10
+    hit_rate = 15;
+    mips = 10; // 10
+    buff_size = 128;
+    disks = 40;	// 4
+    tp_agents = 4;		// 4
+    SimulationTime = 500; // 50;
+    ReportInterval = 50; // 5
+  } else if (argc < 9) {
+    // wrong number offered
+    mprintf("\nEAV: usage");
+    mprintf("\n\tNum Users [0..%ld]", num_terminals);
+    mprintf("\n\tDiskCache HitRate [0..1000]");
+    mprintf("\n\tProcessor speed in Mips");
+    mprintf("\n\tPer-Disk Command buffer size [0..]");
+    mprintf("\n\tNumber of Disks [0..%ld]", num_drives);
+    mprintf("\n\tNumber of TP daemons [1..]");
+    mprintf("\n\tMax Simulation Time in seconds [0..1500]");
+    mprintf("\n\tReporting interval in seconds [0..1500]");
+    mprintf("\nSimulation will halt almost immediately.\n\n");
+    StopSim;
+    wait(10);
+  } else {
+    // Init parms.
+    int i = 1;
+    actual_users = atoi(argv[i++]);
+    hit_rate = atoi(argv[i++]);
+    mips = atoi(argv[i++]);
+    buff_size = atoi(argv[i++]);
+    disks = atoi(argv[i++]);
+    tp_agents = atoi(argv[i++]);
+    SimulationTime = atoi(argv[i++]);
+    ReportInterval = atoi(argv[i++]);
+  }
+
+  if (actual_users > num_terminals) {
+    actual_users = num_terminals;
+  }
+  
+  mprintf("\n\tActual Number of users	= %ld", actual_users);
+  mprintf("\n\tUser Think time (msec)	= %ld", ThinkTime);
+  mprintf("\n\tNumber of TP Agents	= %ld", tp_agents);
+  mprintf("\n\tProcessor speed (mips) = %ld", mips);
+  mprintf("\n\tDisk Buffer Hit Rate	= ");
+  mprintfixed(hit_rate, 10);
+  mprintf(" percent");
+  if (disks > num_drives) {
+    disks = num_drives;
+  }
+  mprintf("\n\tNumber of Disks		= %ld", disks);
+  mprintf("\n\tPer Disk Buffer size	= %ld commands", buff_size);
+  mprintf("\n\tSimulation will run for %ld simulated seconds", SimulationTime);
+  if (ReportInterval <= 0) {
+    ReportInterval = 1;
+  }
+  mprintf("\n\tProgress reports every %ld seconds\n", ReportInterval);
+  ReportInterval = ReportInterval * sec;
+
+  // create the dynamically-sized interconnect
+  Chans 
+    terms_to_comms(actual_users), 
+    comms_to_terms(actual_users),
+    comms_to_tp(tp_agents),
+    tp_to_comms(tp_agents),
+    free(tp_agents),
+    tp_to_disks(tp_agents),
+    disks_to_tp(tp_agents);
+	
+  int32 t, rate;
+  par {
+    par {
+      on (mainframe) {
+        comms_in(mips, terms_to_comms, comms_to_tp, free);
+      }
+      on (mainframe) {
+        comms_out(mips, tp_to_comms, comms_to_terms);
+      }
+      on (mainframe) {
+        DiskManager disk_manager;
+        disk_manager(mips, buff_size, disks, tp_to_disks, disks_to_tp);
+      }
+      on (mainframe) {
+        Agents agents;
+        agents(mips, comms_to_tp, tp_to_comms, free, 
+               tp_to_disks, disks_to_tp, tp_agents, hit_rate);
+      }
+      on (mainframe) {
+        timestamp(ReportInterval, SimulationTime * sec, 
+                  transactions, times);
+      }
+    }
+    {
+      pfor (int i = 0; i != actual_users; ++i) {
+        on (terminals[i]) {
+          user(comms_to_terms[i], terms_to_comms[i],
+               i, SimulationTime * sec, transactions, times, 
+               sigma_transac, sigma_response);
+        }
+      }
+      
+      say("\nThe users have all finished..\nTotal of ");
+      saynum(transactions);
+      say(" in ");
+      printfixed(Now, sec);
+      say(" seconds for a transaction rate of ");
+      //mprintfixed(transactions * sec, Now);
+      printfixed(transactions, Now/sec);
+      say (" tps\n");
+      pExit(0);
+    }
+  }
+}

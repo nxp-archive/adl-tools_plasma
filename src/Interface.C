@@ -248,4 +248,11 @@ namespace plasma {
     return c;
   }
 
+  Processors::Processors(unsigned n)
+  {
+    for (unsigned i = 0; i != n; ++i) {
+      push_back(Processor());
+    }
+  }
+
 }

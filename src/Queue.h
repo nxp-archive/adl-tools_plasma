@@ -19,13 +19,16 @@ namespace plasma {
   // pointers.  Also note that Queue objects are garbage collected.
   class QBase : public gc {
   public:
-    QBase() : _next(0) {};
+    QBase() : _prev(0), _next(0) {};
 
-    // Access to queue pointer.
+    // Access to queue pointers.
+    QBase *getprev() const;
+    void setprev(QBase *);
     QBase *getnext() const;
     void setnext(QBase *);
 
   private:
+    QBase *_prev;
     QBase *_next;
   };
 
@@ -38,9 +41,11 @@ namespace plasma {
 
     // Get from head- removes item from queue.
     QBase *get();
-    // Get if it exists in queue.  Removes it.
-    // Returns 0 if not in queue.
+    // Get item from queue if it exists, returns 0 otherwise.
+    // Linear-time algorithm.
     QBase *get(QBase *t);
+    // Removes item from queue.
+    void remove(QBase *t);
     // Get ptr to top item, or 0 if queue is empty.
     // Does not remove it from the queue.
     QBase *front() const;
@@ -57,6 +62,16 @@ namespace plasma {
     QBase *_head; // Head of the queue.
     QBase *_tail; // Tail of the queue.
   };
+
+  inline QBase *QBase::getprev() const
+  {
+    return _prev;
+  }
+
+  inline void QBase::setprev(QBase *t)
+  {
+    _prev = t;
+  }
 
   inline QBase *QBase::getnext() const
   {

@@ -236,6 +236,11 @@ namespace plasma {
       // Update- we know something is available b/c we just added something.
       // This updates the time.
       get_new_proc();
+      // We have to move the scheduling thread from the old processor to the
+      // new processor.
+      _main.proc()->remove_ready(&_main);
+      _main.setProc(_curproc);
+      _curproc->add_ready(&_main);
       // Switch to new item w/o adding current thread to ready queue.
       exec_block();
       // Update time remaining- loop if we still have busy stuff to do.

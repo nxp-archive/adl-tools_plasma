@@ -84,7 +84,8 @@ AC_CONFIG_FILES([\
    parser/Makefile \
    doc/Makefile \
    tests/Makefile \
-   tests/basic/Makefile
+   tests/basic/Makefile \
+   tests/eav/Makefile
 ])
 
 AC_OUTPUT

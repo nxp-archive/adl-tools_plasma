@@ -1,3 +1,22 @@
+2004-06-22  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed bugs:
+
+	1. We weren't migrating the scheduling thread from a busy
+	processor to the new processor chosen.  Fixed this by adding to
+	QBase a prev pointer and adding a remove function to Queue that
+	lets a thread be removed in O(1) time.  This allows Cluster::busy
+	to remove the scheduling thread from where it was and add it to
+	the new processor.
+
+	2. Fixed bug w/pfor:  We weren't supporting on blocks.
+
+	3. Added a Processors class, which is just a vector of Processor
+	objects.  However, the constructor lets you create N unique
+	processors.  Just creating a vector and giving it Processor() as
+	an argument means that you'd end up with an array all pointing to
+	the same Proc.
+
 2004-06-18  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added mutex I/O routines which mirror the printf suite.  Still
