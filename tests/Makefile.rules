@@ -12,6 +12,8 @@ CXXLD = $(CXX)
 LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 
+DEPENDENCIES = $(top_srcdir)/src/.libs/libplasma.a
+
 # Use this for libtool linking- I didn't want the wrapper scripts, so I just do it manually.
 #LDADD = $(top_srcdir)/src/libplasma.la $(top_srcdir)/qt/libqt.la $(top_srcdir)/gc/libgc.la -ldl
 #LINK = $(LIBTOOL) --mode=link $(CXX) -o $@

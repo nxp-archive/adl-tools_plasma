@@ -64,8 +64,6 @@ check_PROGRAMS = \
 	clock2 \
 	clock3
 
-DEPENDENCIES = $(top_srcdir)/src/libplasma.a
-
 par1_SOURCES = par1.pa
 par1_DEPENDENCIES = $(DEPENDENCIES)
 

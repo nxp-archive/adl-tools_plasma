@@ -21,8 +21,6 @@ check_PROGRAMS = \
 	example \
 	cim
 
-DEPENDENCIES = $(top_srcdir)/src/libplasma.a
-
 alt_SOURCES = alt.pa
 alt_DEPENDENCIES = $(DEPENDENCIES)
 

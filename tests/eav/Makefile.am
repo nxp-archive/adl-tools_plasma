@@ -7,8 +7,6 @@ TESTS = regress
 check_PROGRAMS = \
 	eav
 
-DEPENDENCIES = $(top_srcdir)/src/libplasma.a
-
 eav_SOURCES = eav.pa 
 eav_DEPENDENCIES = $(DEPENDENCIES)
 
