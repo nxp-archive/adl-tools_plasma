@@ -1,0 +1,64 @@
+//
+// Priority test.  Makes sure that all lower priority threads
+// run after a high priority thread has preempted the others and
+// then finished.
+//
+
+#include <stdio.h>
+
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._priority_count = 3;
+} 
+
+void delay(double x,int d = 10,int w = 10000000)
+{
+  for (int i = 0; i != d; ++i) {
+    int j = 0;
+    for (int i = 0; i != w; ++i) {
+      j += 1;
+    }
+    printf ("In block %.1f.\n",x);
+  }
+}
+
+void sdelay(double x,int d = 10,int w = 10000000)
+{
+  for (int i = 0; i != d; ++i) {
+    int j = 0;
+    for (int i = 0; i != w; ++i) {
+      j += 1;
+    }
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    {
+      delay(1);
+      printf ("Done with block 1.\n");
+    }
+    {
+      sdelay(2,2);
+      pSetPriority(1);
+      // Cheesy way to test the priority-query function.
+      delay(pGetPriority()+1,30);
+      printf ("Done with block 2.\n");
+    }
+    {
+      // This should have no effect.
+      pSetPriority(pLowestPriority());
+      delay(pGetPriority()+1);
+      printf ("Done with block 3.\n");
+    }
+    {
+      delay(4);
+      printf ("Done with block 4.\n");
+    }
+  }
+  return 0;
+}
+
