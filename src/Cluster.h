@@ -54,7 +54,6 @@ namespace plasma {
     // in Interface.C so that everything else has 0 as being lowest.
     void set_priority(unsigned p);
     unsigned get_priority() const;
-    unsigned lowest_priority() const;
 
     // Add and remove processor objects.
     // Sets state to Running.

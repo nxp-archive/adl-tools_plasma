@@ -148,7 +148,7 @@ namespace plasma {
 
   unsigned pLowestPriority()
   {
-    return convert_priority(thecluster.lowest_priority());
+    return convert_priority(0);
   }
 
   void pDelay(ptime_t t)

@@ -52,8 +52,9 @@ int pMain(int argc,const char *argv[])
     }
     {
       // This should have no effect.
+      assert(pLowestPriority() > 0);
       pSetPriority(pLowestPriority());
-      delay(pGetPriority()+3);
+      delay(pGetPriority()+1);
       mprintf ("Done with block 3.\n");
     }
     {

@@ -1,3 +1,10 @@
+2005-01-04  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed bug with pLowestPriority(): It was returning 0, rather
+	than the 1 less than the total number of priorities (which is the
+	lowest priority from the user's point of view).  Modified pri2 to
+	test this.
+
         ======= plasma release 0.8.7 (v0_8_7) on Linux (cde-tx32-ldt189) =======
 
 2004-12-22  Brian Kahne  <bkahne@ibmoto.com>

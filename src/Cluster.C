@@ -370,12 +370,7 @@ namespace plasma {
 
   unsigned Cluster::get_priority() const
   {
-    return (_cur) ? _cur->priority() : lowest_priority();
-  }
-
-  unsigned Cluster::lowest_priority() const
-  {
-    return Proc::numPriorities()-1;
+    return (_cur) ? _cur->priority() : 0;
   }
 
   // Get next thread to execute.  Returns 0 if none available.
