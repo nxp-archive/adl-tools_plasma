@@ -113,7 +113,7 @@ communication.</p><!-- Thread Creation -->
 </div><div class="subsection">
 <!-- Par Block -->
 <a name="Par-Block"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.3 Par Block</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.4 Par Block</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>par</strong> block executes each statement in parallel, waiting until all
 child threads are finished before proceeding.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -146,7 +146,7 @@ operation, simply use a brace-delineated block, e.g.:</p><table cellspacing="0" 
 </tbody></table></div>
 <!-- PFor Loop -->
 <a name="PFor-Loop"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.4 PFor Loop</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.5 PFor Loop</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>pfor</strong> loop acts like a for-loop, except that for each loop
 iteration, its body is launched as a separate thread.  All threads must then
@@ -168,7 +168,7 @@ passed by reference, and thus may be modified.  Thus, each thread contains a
 copy of the index variable <strong>i</strong> but may directly modify <strong>results</strong>.</p></div>
 <!-- Spawn Operator -->
 <a name="Spawn-Operator"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.5 Spawn Operator</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.1.6 Spawn Operator</font>
 </h4></div><div class="subsubsection">
 <p>The <strong>spawn</strong> operator creates a thread and returns a handle object which allows
 the result of the thread to be retrieved.  <strong>spawn</strong> takes a single argument
@@ -445,7 +445,7 @@ current processor.</p></div>
 </div><div class="subsection">
 <!-- Channels -->
 <a name="Channels"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.6 Channels</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.7 Channels</font>
 </h4></div><div class="subsubsection">
 <p>One method for threads to communicate among themselves is to use a channel.
 This is simply a data structure which allows one thread to write a value to it
@@ -558,7 +558,7 @@ channel which will return the result value of the spawned thread.  For example:<
 </ul></div>
 <!-- Alt Blocks -->
 <a name="Alt-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.7 Alt Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.8 Alt Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -588,7 +588,7 @@ blocks.  This allows the user to block on multiple collections of channels, or a
 collection of channels plus one or more single channels, etc.</p></div>
 <!-- Afor Blocks -->
 <a name="Afor-Blocks"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.8 Afor Blocks</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.9 Afor Blocks</font>
 </h4></div><div class="subsubsection">
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -653,7 +653,7 @@ on a collection and an override channel:</p><table cellspacing="0" class="color"
 </tbody></table></div>
 <!-- Shared Data Structures -->
 <a name="Shared-Data-Structures"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.9 Shared Data Structures</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.10 Shared Data Structures</font>
 </h4></div><div class="subsubsection">
 <p>Threads may also communicate using shared data structures whose access methods
 are protected by special synchronization primitives.  There are two means to do
@@ -838,6 +838,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Thu Sep 16 15:29:56 2004</em>.</font></p></div>
+Last update <em>Fri Sep 17 11:05:33 2004</em>.</font></p></div>
 </body>
 </html>

@@ -359,9 +359,106 @@ Peter Wilson</i></font>
 </tbody></table></td></tr>
 </tbody></table><p>In the above example, the thread will suspend unless a channel
 	    in <code>ichannels</code> or the channel <code>xc</code> has data.</p></div>
+<!-- Synchronous Communication -->
+<a name="Synchronous-Communication"></a>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.2 Synchronous Communication</font>
+</h4></div><div class="subsubsection">
+<p>The Plasma standard library contains a special kind of channel,
+	    called a clocked channel, for modeling synchronous hardware.  This
+	    is a standard channel in the sense that it is just a templated class
+	    that conforms to the channel <a href="index-1.html#Channels" class="inbound">API</a>.  The difference is in its behavior:  Writes may occur at any
+	    time but reads are restricted to clock boundaries, where the clock
+	    period is specified by a constructor parameter.</p><p>The benefit of this approach is that the user's code remains
+	    uncluttered by clocking logic.  Timing changes may be made by simply
+	    changing parameters in the declaration of the various channels.
+	    This also retains the basic simplicity of CSP:  Threads continue to
+	    communicate through channels, but the properties of the channels
+	    themselves regulate this data interchange to clock boundaries.</p><p>For example, consider the following program:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"><font color="#1919af"><strong>#include</strong></font> &lt;iostream&gt;
+<font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
+
+using namespace plasma;
+using namespace std;
+
+<strong>typedef</strong> ClockChan&lt;int&gt; IntChan;
+
+void producer(int val,IntChan &amp;chan) 
+<font color="red"><strong>{</strong></font>
+  <strong>for</strong> (int i = 0; i != 10; ++i) <font color="red"><strong>{</strong></font>
+    chan.write(val+i);
+  <font color="red"><strong>}</strong></font>
+  chan.write(-1);
+  cout &lt;&lt; <font color="red">&quot;Producer done.&quot;</font> &lt;&lt; endl;
+<font color="red"><strong>}</strong></font>
+
+void consumer(IntChan &amp;c)
+<font color="red"><strong>{</strong></font>
+  bool done = false;
+  <strong>while</strong> (!done) <font color="red"><strong>{</strong></font>
+    int d = c.get();
+    <strong>if</strong> (d &lt; 0) <font color="red"><strong>{</strong></font> 
+      done = true; 
+    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+      cout &lt;&lt; <font color="red">&quot;Got a value at time &quot;</font> &lt;&lt; pTime() &lt;&lt; <font color="red">&quot;:  &quot;</font> &lt;&lt; d &lt;&lt; endl;
+    <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+  cout &lt;&lt; <font color="red">&quot;Consumer done.&quot;</font> &lt;&lt; endl;
+<font color="red"><strong>}</strong></font>
+
+void pSetup(ConfigParms &amp;cp) <font color="red"><strong>{</strong></font> cp._busyokay = true; <font color="red"><strong>}</strong></font>
+
+int pMain(int argc,const char *argv[])
+<font color="red"><strong>{</strong></font> 
+  IntChan chan(5);
+
+  par <font color="red"><strong>{</strong></font>
+    producer(10,chan);
+    consumer(chan);
+  <font color="red"><strong>}</strong></font>
+  cout &lt;&lt; <font color="red">&quot;Done.&quot;</font> &lt;&lt; endl;
+  <strong>return</strong> 0;
+<font color="red"><strong>}</strong></font>
+
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>It consists of two threads: a producer and a consumer.  The
+	    producer writes integers to a channel while the consumer reads them,
+	    stopping when a -1 is received.  Notice that neither function deals
+	    with time explicitly; they simply communicate via a channel.  Only
+	    the main function knows about time because it instantiates a clocked
+	    channel, <code>IntChan</code>, and specifies that the period of the
+	    clock is 5 time units.  The output of this program is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">Got a value at time 5:  10
+Got a value at time 10:  11
+Got a value at time 15:  12
+Got a value at time 20:  13
+Got a value at time 25:  14
+Got a value at time 30:  15
+Got a value at time 35:  16
+Got a value at time 40:  17
+Got a value at time 45:  18
+Got a value at time 50:  19
+Producer done.
+Consumer done.
+Done.
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>The standard library currently consists of a single type of
+	    clocked channel, called <code>ClockChan</code>.  It defaults to storing
+	    a single item but it can also act as a queue of fixed or arbitrary
+	    size via a constructor parameter.  The behavior remains essentially
+	    the same:  Writes never block unless the queue is full, which might
+	    never be the case if the queue size is not fixed.  Reads, however,
+	    are always synchronous.</p></div>
 <!-- Shared Data Structures -->
 <a name="Shared-Data-Structures"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.2 Shared Data Structures</font>
+<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.3 Shared Data Structures</font>
 </h4></div><div class="subsubsection">
 <p>Shared data structures may be easily implemented by using the
 	    <code>pMutex</code> class modifier:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -470,6 +567,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Thu Sep 16 15:29:56 2004</em>.</font></p></div>
+Last update <em>Fri Sep 17 11:05:33 2004</em>.</font></p></div>
 </body>
 </html>

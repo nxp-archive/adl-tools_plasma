@@ -362,6 +362,111 @@
 	 	     
 	    )
 	 
+	 (subsubsection :title "Synchronous Communication"
+	    
+	    (p [The Plasma standard library contains a special kind of channel,
+	    called a clocked channel, for modeling synchronous hardware.  This
+	    is a standard channel in the sense that it is just a templated class
+	    that conforms to the channel ,(ref :subsubsection "Channels" :text
+	    "API").  The difference is in its behavior:  Writes may occur at any
+	    time but reads are restricted to clock boundaries, where the clock
+	    period is specified by a constructor parameter.])
+	    
+	    (p [The benefit of this approach is that the user's code remains
+	    uncluttered by clocking logic.  Timing changes may be made by simply
+	    changing parameters in the declaration of the various channels.
+	    This also retains the basic simplicity of CSP:  Threads continue to
+	    communicate through channels, but the properties of the channels
+	    themselves regulate this data interchange to clock boundaries.])
+	    
+	    (p [For example, consider the following program:])
+	    
+	    (cprog [
+
+#include <iostream>
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef ClockChan<int> IntChan;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+  }
+  chan.write(-1);
+  cout << "Producer done." << endl;
+}
+
+void consumer(IntChan &c)
+{
+  bool done = false;
+  while (!done) {
+    int d = c.get();
+    if (d < 0) { 
+      done = true; 
+    } else {
+      cout << "Got a value at time " << pTime() << ":  " << d << endl;
+    }
+  }
+  cout << "Consumer done." << endl;
+}
+
+void pSetup(ConfigParms &cp) { cp._busyokay = true; }
+
+int pMain(int argc,const char *argv\[\])
+{ 
+  IntChan chan(5);
+
+  par {
+    producer(10,chan);
+    consumer(chan);
+  }
+  cout << "Done." << endl;
+  return 0;
+}
+
+
+])
+	    
+	    (p [It consists of two threads: a producer and a consumer.  The
+	    producer writes integers to a channel while the consumer reads them,
+	    stopping when a -1 is received.  Notice that neither function deals
+	    with time explicitly; they simply communicate via a channel.  Only
+	    the main function knows about time because it instantiates a clocked
+	    channel, ,(code [IntChan]), and specifies that the period of the
+	    clock is 5 time units.  The output of this program is:])
+	    
+	    (cprog [
+
+Got a value at time 5:  10
+Got a value at time 10:  11
+Got a value at time 15:  12
+Got a value at time 20:  13
+Got a value at time 25:  14
+Got a value at time 30:  15
+Got a value at time 35:  16
+Got a value at time 40:  17
+Got a value at time 45:  18
+Got a value at time 50:  19
+Producer done.
+Consumer done.
+Done.
+
+])
+	    
+	    (p [The standard library currently consists of a single type of
+	    clocked channel, called ,(code [ClockChan]).  It defaults to storing
+	    a single item but it can also act as a queue of fixed or arbitrary
+	    size via a constructor parameter.  The behavior remains essentially
+	    the same:  Writes never block unless the queue is full, which might
+	    never be the case if the queue size is not fixed.  Reads, however,
+	    are always synchronous.])
+	    
+	    )
+	 
 	 (subsubsection :title "Shared Data Structures"
 	    
 	    (p [Shared data structures may be easily implemented by using the

@@ -109,6 +109,7 @@
     ("Regressions" :file "index-3.html" :mark "Regressions" :class "subsection"))
   (subsubsections
     ("Channels" :file "index.html" :mark "Channels" :class "subsubsection")
+    ("Synchronous Communication" :file "index.html" :mark "Synchronous-Communication" :class "subsubsection")
     ("Shared Data Structures" :file "index.html" :mark "Shared-Data-Structures" :class "subsubsection")
     ("Par Block" :file "index-1.html" :mark "Par-Block" :class "subsubsection")
     ("PFor Loop" :file "index-1.html" :mark "PFor-Loop" :class "subsubsection")
