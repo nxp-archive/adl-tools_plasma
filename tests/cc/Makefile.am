@@ -3,10 +3,10 @@ check_PROGRAMS = mytest
 mytest_SOURCES = \
 	String.C \
 	main.pa \
-	CLexer.pa \
 	CParser.pa \
-	clex.ll \
-	cparse.yy
+	cparse.yy \
+	CLexer.pa \
+	clex.ll
 
 mytest_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -40,6 +40,10 @@ clex_lflag = -Cfe
 %.cc : %.yy ;
 	$(LEMON) $<
 	mv $(patsubst %.yy,%.c,$<) $(patsubst %.yy,%.cc,$<)
+
+cparse.h: cparse.yy
+CLexer.o: cparse.h
+clex.o: cparse.h
 
 include $(top_srcdir)/tests/Makefile.rules
 
