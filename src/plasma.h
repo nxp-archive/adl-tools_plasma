@@ -58,6 +58,8 @@ namespace plasma {
   pTMutex class Channel : public SimpleChannelBase<Data> {
     typedef SimpleChannelBase<Data> Base;
   public:
+    typedef Data value_type;
+
     Channel() {};
     void write(const Data &d);
     Data read() { return read_internal(false); };
@@ -79,6 +81,8 @@ namespace plasma {
   class BusyChan : public SimpleChannelBase<Data> {
     typedef SimpleChannelBase<Data> Base;
   public:
+    typedef Data value_type;
+
     BusyChan(ptime_t ts = 0) : _timeslice(ts) {};
     void write(const Data &d);
     Data read() { return read_internal(false); };
@@ -99,6 +103,8 @@ namespace plasma {
     typedef Container Store;
     typedef std::vector<THandle,traceable_allocator<THandle>> Writers;
   public:
+    typedef Data value_type;
+
     QueueChan(int size = 0) : _maxsize(size), _size(0), _readt(0) {};
     void write(const Data &d);
     bool ready() const { return !empty(); };
@@ -140,6 +146,8 @@ namespace plasma {
   pTMutex class ResChan : private Result<Data> {
     typedef Result<Data> Base;
   public:
+    typedef Data value_type;
+
     ResChan(const Result<Data> &r) : Result<Data>(r), _rt(0), _read(false) {};
     
     bool ready() const { return Base::done() && !_read; };
@@ -162,6 +170,8 @@ namespace plasma {
     typedef Container Store;
     typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
   public:
+    typedef Data value_type;
+
     ClockChan(ptime_t p,int size = 1) : ClockChanImpl(p), _maxsize(size) {};
     void write(const Data &d);
     bool ready() const { return current_data() && is_phi(); };

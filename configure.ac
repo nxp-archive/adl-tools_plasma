@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.1])
+AC_INIT([plasma],[0.8.2])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
