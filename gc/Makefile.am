@@ -186,3 +186,8 @@ EXTRA_DIST += libtool.m4
 all: all-recursive
 	ln -sf include gc
 
+check: check-recursive
+	ln -sf include gc
+
+install: install-recursive
+	ln -sf include gc
