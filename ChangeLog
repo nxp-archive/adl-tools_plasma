@@ -1,5 +1,12 @@
 2004-08-27  Brian Kahne  <bkahne@ibmoto.com>
 
+	* minicc: Moved the parallelism of the compiler out of Compiler.pa
+	and into CodeGen so that I could use the double-dispatch
+	mechanism, rather than having to use dynamic_cast.  This means
+	that the only dynamic_cast stuff is conained within Node.C.  Just
+	about everything else has been implemented as virtual function
+	calls w/double-dispatch.
+
 	* minicc:  Moved the spawn/result-vector code into a series of
 	templates in Interface.h.
 

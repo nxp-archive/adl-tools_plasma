@@ -46,11 +46,16 @@ public:
   // This inherits a common-data object.
   CodeGen(const CodeGen &);
 
+  // Performs necessary checks on the code (typechecking,
+  // control-flow analysis, etc.)
+  bool dochecks(TranslationUnit *unit);
+
   void handleGlobals(Node *unit);
 
   void write(const std::string &,Node *) const;
 
   // Used by Node for code generation.
+  void genTranslationUnit(TranslationUnit *);
   void genList(NodeList *);
   void genStatementList(StatementList *);
   void genFunctionDefn(FunctionDefn *);
@@ -70,6 +75,10 @@ public:
   void genNegative(Negative *n);
   void genPointer(Pointer *n);
   void genAddrOf(AddrOf *n);
+
+  // Internal use.
+  bool dochecks_internal(Node *n);
+  bool codegen_internal(CodeGen codegen,Node *n);
 private:
   AsmStore &code();
   StackMachine &stack();

@@ -21,6 +21,7 @@
 #include "cparse.h"
 
 using namespace std;
+using namespace plasma;
 
 #define ASM(code,a,c) { \
   ostringstream s1,s2; \
@@ -181,6 +182,68 @@ void CodeGen::pop_loop_labels()
 {
   _tdata->_break_labels.pop_back();
   _tdata->_continue_labels.pop_back();
+}
+
+// This creates a copy of the main generator, to be used
+// by each thread.
+bool CodeGen::codegen_internal(CodeGen codegen,Node *n)
+{
+  try {
+    n->codegen(codegen);
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    return false;
+  }
+  return true;
+}
+
+// Initiates code generation by spawning threads for each
+// top-level item.
+void CodeGen::genTranslationUnit(TranslationUnit *unit)
+{
+  BoolCheck results(make_boolcheck(true));
+  for (NodeList::iterator i = unit->begin(); i != unit->end(); ++i) {
+    results.push_back(spawn(codegen_internal(*this,*i)));
+  }
+  // If any of the results are false, we've got an error.
+  if (!results.check()) {
+    throw runtime_error("Compilation failed.");
+  }
+}
+
+// Does the checking on a single node.
+// Catches any exceptions and treats this as
+// a checking-phase failure.
+bool CodeGen::dochecks_internal(Node *n)
+{
+  try {
+    // Perform type checking.
+    n->typecheck();
+    // Perform basic flow-control analysis.
+    n->flowcontrol();
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    return false;
+  }
+  return true;
+}
+
+// Does the checking phase of the compilation process.
+// We spawn a thread for each top-level item, so that checking
+// is done in parallel.
+bool CodeGen::dochecks(TranslationUnit *unit)
+{
+  BoolCheck results(make_boolcheck(true));
+  for (NodeList::iterator i = unit->begin(); i != unit->end(); ++i) {
+    results.push_back(spawn(dochecks_internal( *i )));
+  }
+  // If any of the results are false, we've got an error.
+  if (!results.check()) {
+    return false;
+  }
+  return true;
 }
 
 // Writes global data information to the _globals code store.
@@ -390,7 +453,7 @@ void CodeGen::empty_stack(Node *n)
 // node's return value, if one exists.
 void CodeGen::accept_and_empty_stack(Node *n)
 {
-  n->codegen(this);
+  n->codegen(*this);
   empty_stack(n);
 }
 
@@ -398,7 +461,7 @@ void CodeGen::accept_and_empty_stack(Node *n)
 void CodeGen::genList(NodeList *nl)
 {
   for (NodeList::iterator i = nl->begin(); i != nl->end(); ++i) {
-    (*i)->codegen(this);
+    (*i)->codegen(*this);
   }
 }
 
@@ -432,7 +495,7 @@ void CodeGen::genFunctionDefn(FunctionDefn *fd)
   ASM(preamble,"  pushl %ebp","Save old frame pointer.");
   ASM(preamble,"  movl %esp, %ebp","Set new frame pointer.");
 
-  fd->body()->codegen(this);
+  fd->body()->codegen(*this);
 
   // Figure out the final size of the stack frame, taking into
   // account the stack machine's temporary variables, and
@@ -463,7 +526,7 @@ void CodeGen::genFunctionDefn(FunctionDefn *fd)
 
 void CodeGen::genCompoundStatement(CompoundStatement *cs)
 {
-  cs->statement_list()->codegen(this);
+  cs->statement_list()->codegen(*this);
 }
 
 // Generate code for a conditional.
@@ -475,7 +538,7 @@ void CodeGen::genConditional(IfStatement *ifs)
     : done_label;
 
   code().c("IF statement - begin");
-  ifs->expr()->codegen(this);
+  ifs->expr()->codegen(*this);
   Operand comparer = stack().pop();
   stack().done();
   ASM(code(),"  testl " << comparer << ", " << comparer,"Test the result.");
@@ -507,7 +570,7 @@ void CodeGen::genWhileLoop(WhileLoop *wl)
   CMT(code(),"WHILE loop - begin");
 
   ASM1(code(),test_label << ":");
-  wl->expr()->codegen(this);
+  wl->expr()->codegen(*this);
 
   Operand comparer = stack().pop();
   stack().done();
@@ -535,7 +598,7 @@ void CodeGen::genForLoop(ForLoop *fl)
   accept_and_empty_stack(fl->begin());
   
   ASM1(code(),test_label << ":");
-  fl->expr()->codegen(this);
+  fl->expr()->codegen(*this);
 
   Operand comparer = stack().pop();
   stack().done();
@@ -604,8 +667,8 @@ void CodeGen::genId(Id *id)
 // Generate code for an array expression.
 void CodeGen::genArrayExpression(ArrayExpression *ae)
 {
-  ae->expr()->codegen(this);
-  ae->index()->codegen(this);
+  ae->expr()->codegen(*this);
+  ae->index()->codegen(*this);
 
   Operand reg_index = stack().pop(ae->index()->type());
   Operand reg_expr  = stack().pop(ae->expr()->type());
@@ -638,7 +701,7 @@ Operand CodeGen::accept_and_pop(Node *n)
   if (n->is_const()) {
     return Operand(n->value(),Operand::Immed);
   } else {
-    n->codegen(this);
+    n->codegen(*this);
     return stack().pop(n->coerce_to_type());
   }
 }
@@ -653,7 +716,7 @@ void CodeGen::genFunctionExpression(FunctionExpression *fe)
   stack().save_caller_saves();
 
   // Push args on in reverse order.
-  NodeList &args = ncastr<NodeList>(fe->arglist());
+  NodeList &args = fe->get_arglist();
   int argnum = args.size();
   for (NodeList::reverse_iterator i = args.rbegin(); i != args.rend(); ++i) {
     Operand arg_reg = accept_and_pop(*i);
@@ -709,7 +772,7 @@ const char *type_suffix(int size)
 // Binop node.
 void CodeGen::binop_assign(Binop *bo)
 {
-  bo->left()->codegen(this);
+  bo->left()->codegen(*this);
   Operand right_reg = accept_and_pop(bo->right());
   Operand left_reg = stack().pop();
 
@@ -735,7 +798,7 @@ void CodeGen::binop_assign(Binop *bo)
 // Binop node.
 void CodeGen::binop_arith(Binop *bo)
 {
-  bo->left()->codegen(this);
+  bo->left()->codegen(*this);
   Operand right_reg = accept_and_pop(bo->right());
   Operand left_reg = stack().pop(bo->left()->coerce_to_type());
 
@@ -765,7 +828,7 @@ void CodeGen::binop_arith(Binop *bo)
 // Binop node.
 void CodeGen::binop_compare(Binop *bo)
 {
-  bo->left()->codegen(this);
+  bo->left()->codegen(*this);
   Operand right_reg = accept_and_pop(bo->right());
   Operand left_reg = stack().pop(bo->left()->coerce_to_type());
   stack().done();
@@ -802,7 +865,7 @@ void CodeGen::genBinop(Binop *bo)
 // Generate code for a negative object.
 void CodeGen::genNegative(Negative *n)
 {
-  n->expr()->codegen(this);
+  n->expr()->codegen(*this);
   ASM(code(),"  negl " << stack().peek(),
       "Perform unary negation.");
 }
@@ -810,7 +873,7 @@ void CodeGen::genNegative(Negative *n)
 // Generate code for a pointer operation.
 void CodeGen::genPointer(Pointer *p)
 {
-  p->expr()->codegen(this);
+  p->expr()->codegen(*this);
 
   if (p->output_addr()) {
     ASM(code()," ","(Getting pointer target address via '*' here.)");
@@ -830,7 +893,7 @@ void CodeGen::genPointer(Pointer *p)
 // Generate code for an address-of operation.
 void CodeGen::genAddrOf(AddrOf *ao)
 {
-  ao->expr()->codegen(this);
+  ao->expr()->codegen(*this);
 
   ASM(code()," ","(Address-of operator '&' used here.)");
   stack().force_type_change(ao->type());

@@ -17,6 +17,22 @@ Compiler::Compiler( )
 {
 }
 
+string get_outname(const char *filename)
+{
+  string outname = filename;
+  size_t pos = outname.rfind(".c");
+  if (pos != string::npos) {
+    outname = outname.substr(0,pos) + ".s";
+  } else {
+    outname = outname + ".s";
+  }
+  pos = outname.rfind("/");
+  if (pos != string::npos) {
+    outname = outname.substr(pos+1);
+  }
+  return outname;
+}
+
 // Compile a translation unit.
 bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool check_only)
 {
@@ -33,22 +49,19 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
   if (sym_only) {
     return true;
   }
-  // Now we spawn off threads to do the checking phases.
-  TranslationUnit &turef = ncastr<TranslationUnit>(tu);
-  BoolCheck results(make_boolcheck(true));
-  for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
-    results.push_back(spawn(dochecks( *i, check_only )));
-  }
-  // If any of the results are false, we've got an error.
-  if (!results.check()) {
-    return false;
-  }
-  if (check_only) {
-    return true;
-  }
 
   // Main global generator- creates shared data.
   CodeGen maingen(true);
+
+  // Do checking stages.
+  if (!tu->dochecks(maingen)) {
+    return false;
+  }
+
+  // Exit if that's all we're supposed to do.
+  if (check_only) {
+    return true;
+  }
 
   try {
     // Next, generate global variables.
@@ -56,32 +69,15 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
     maingen.handleGlobals(tu);
 
     // Generate main code.  This is done in parallel.
-    results.clear();
-    for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
-      results.push_back(spawn(gencode(maingen,*i)));
-    }
-    // If any of the results are false, we've got an error.
-    if (!results.check()) {
-      return false;
-    }
+    tu->codegen(maingen);
     
     // Create output name from input name.
-    string outname = filename;
-    size_t pos = outname.rfind(".c");
-    if (pos != string::npos) {
-      outname = outname.substr(0,pos) + ".s";
-    } else {
-      outname = outname + ".s";
-    }
-    pos = outname.rfind("/");
-    if (pos != string::npos) {
-      outname = outname.substr(pos+1);
-    }
+    string outname = get_outname(filename);
 
     cout << "\n" << filename << " -> " << outname << "\n";
     
     // Write out all assembly data.
-    maingen.write(outname,&turef);
+    maingen.write(outname,tu);
   }
   catch (exception &err) {
     cerr << err.what() << endl;
@@ -89,33 +85,3 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
   }
   return true;
 }
-
-// This creates a copy of the main generator, to be used
-// by each thread.
-bool Compiler::gencode(CodeGen codegen,Node *n)
-{
-  try {
-    n->codegen(&codegen);
-  }
-  catch (exception &err) {
-    cerr << err.what() << endl;
-    return false;
-  }
-  return true;
-}
-
-bool Compiler::dochecks(Node *n,bool check_only)
-{
-  try {
-    // Perform type checking.
-    n->typecheck();
-    // Perform basic flow-control analysis.
-    n->flowcontrol();
-  }
-  catch (exception &err) {
-    cerr << err.what() << endl;
-    return false;
-  }
-  return true;
-}
-

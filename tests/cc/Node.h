@@ -128,9 +128,11 @@ struct Node : public gc {
   // branches of a function return a value, check break/continue
   // statements, etc.
   void flowcontrol();
+  // Do necessary checks.
+  virtual bool dochecks(CodeGen &);
   // Generate code.  In general, these should just call the
   // appropriate routine in CodeGen, which will do the actual work.
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
   // Write code to specified stream.
   virtual void writecode(std::ostream &) const;
 
@@ -166,7 +168,7 @@ struct ArrayExpression : public Node {
     _expr(expr), _index(index) {}
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 
   Node *expr() const { return _expr; };
   Node *index() const { return _index; };
@@ -183,7 +185,7 @@ struct StringLiteral : public Node {
   void append(String s);
   String get() const { return _s; };
 
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -200,7 +202,7 @@ struct Id : public Node {
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -217,7 +219,7 @@ struct Const : public Node {
   virtual bool is_const() const { return true; };
   virtual int value() const { return _value; };
 
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -248,21 +250,21 @@ struct Negative : public Unaryop {
   Negative(Node *expr) : Unaryop(expr) {};
   Calc calculate() const;
   virtual void typecheck(Node *curr_func);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // A pointer dereference, e.g. *a.
 struct Pointer : public Unaryop {
   Pointer(Node *expr) : Unaryop(expr) {};
   virtual void typecheck(Node *curr_func);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // An address-of operator, e.g. &a.
 struct AddrOf : public Unaryop {
   AddrOf(Node *expr) : Unaryop(expr) {};
   virtual void typecheck(Node *curr_func);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // Any binary operator, such as that for arithmetic
@@ -283,7 +285,7 @@ struct Binop : public Node {
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -300,7 +302,7 @@ struct IfStatement : public Node {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 
   Node *expr() const { return _expr; };
   Node *then_blk() const { return _then; };
@@ -316,13 +318,13 @@ private:
 // A break statement.
 struct BreakStatement : public Node {
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // A continue statement.
 struct ContinueStatement : public Node {
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // A return statement.
@@ -334,7 +336,7 @@ struct ReturnStatement : public Node {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -354,7 +356,7 @@ struct ForLoop : public Node {
   virtual void gensymtab(SymTab *);
   void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -375,7 +377,7 @@ struct WhileLoop : public Node {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -391,7 +393,7 @@ struct NodeList : public Node, public std::vector<Node *,traceable_allocator<Nod
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
   virtual void writecode(std::ostream &) const;
 protected:
   virtual void printdata(std::ostream &) const;
@@ -422,7 +424,7 @@ struct StatementList : public NodeList {
   StatementList(Node *n) : NodeList(n) {};
 
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 };
 
 // Inherit from this if you have a symbol table.
@@ -442,6 +444,8 @@ struct TranslationUnit : public NodeList, public SymNode {
   virtual SymTab *symtab() const { return getsymtab(); };
 
   virtual void gensymtab(SymTab *);
+  virtual bool dochecks(CodeGen &cg);
+  virtual void codegen(CodeGen &cg);
 protected:
   virtual void printdata(std::ostream &) const;
 };
@@ -460,10 +464,11 @@ struct FunctionExpression : public Node {
 
   Node *function() const { return _function; };
   Node *arglist() const { return _arglist; };
+  NodeList &get_arglist() const;
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -484,7 +489,7 @@ struct CompoundStatement : public Node, public SymNode {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -508,7 +513,7 @@ struct FunctionDefn : public Node, public SymNode {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
-  virtual void codegen(CodeGen *);
+  virtual void codegen(CodeGen &);
   virtual void writecode(std::ostream &) const;
 protected:
   virtual void printdata(std::ostream &) const;
@@ -625,30 +630,6 @@ struct PointerType : public Type {
   virtual std::ostream &print(std::ostream &o) const;
   virtual std::ostream &print_outer(std::ostream &o) const;
 };
-
-template <class T>
-T *ncast(Node *n)
-{
-  return dynamic_cast<T *>(n);
-}
-
-template <class T>
-T &ncastr(Node *n)
-{
-  return dynamic_cast<T &>(*n);
-}
-
-template <class T>
-T *tcast(Type *t)
-{
-  return dynamic_cast<T *>(t);
-}
-
-template <class T>
-T &tcastr(Type *t)
-{
-  return dynamic_cast<T &>(*t);
-}
 
 // Functions for querying types.
 

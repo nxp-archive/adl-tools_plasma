@@ -92,13 +92,19 @@ int pMain(int argc,const char *argv[])
 
 void tokenize(TokChan &tc)
 {
-  CLexer cl(tc);
-  // Tokenize all files.
-  for (unsigned i = 0; i != options._files.size(); ++i) {
-    cl.reset(options._files[i]);
-    cl.yylex();
+  try {
+    CLexer cl(tc);
+    // Tokenize all files.
+    for (unsigned i = 0; i != options._files.size(); ++i) {
+      cl.reset(options._files[i]);
+      cl.yylex();
+    }
+    cl.send_alldone();
   }
-  cl.send_alldone();
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    pExit(1);
+  }
 }
 
 void parse(TokChan &tc)

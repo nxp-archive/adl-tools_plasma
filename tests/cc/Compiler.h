@@ -24,10 +24,6 @@ public:
   // return:      False:  An error occurred.
   bool compileUnit(Node *,const char *filename,bool sym_only,bool check_only);
 
-  // Used internally.
-  bool dochecks(Node *,bool);
-
-  bool gencode(CodeGen cg,Node *n);
 };
 
 #endif

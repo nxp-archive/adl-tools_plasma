@@ -19,6 +19,30 @@
 
 using namespace std;
 
+template <class T>
+T *ncast(Node *n)
+{
+  return dynamic_cast<T *>(n);
+}
+
+template <class T>
+T &ncastr(Node *n)
+{
+  return dynamic_cast<T &>(*n);
+}
+
+template <class T>
+T *tcast(Type *t)
+{
+  return dynamic_cast<T *>(t);
+}
+
+template <class T>
+T &tcastr(Type *t)
+{
+  return dynamic_cast<T &>(*t);
+}
+
 // Per-indent amount of whitespace.
 static const int Incr = 2;
 
@@ -221,7 +245,12 @@ void Node::flowcontrol()
   flowcontrol(0,false);
 }
 
-void Node::codegen(CodeGen *)
+bool Node::dochecks(CodeGen &)
+{
+  return true;
+}
+
+void Node::codegen(CodeGen &)
 {
 }
 
@@ -270,9 +299,9 @@ void ArrayExpression::typecheck(Node *curr_func)
   }
 }
 
-void ArrayExpression::codegen(CodeGen *cg)
+void ArrayExpression::codegen(CodeGen &cg)
 {
-  cg->genArrayExpression(this);
+  cg.genArrayExpression(this);
 }
 
 StringLiteral::StringLiteral(String s) : 
@@ -291,9 +320,9 @@ void StringLiteral::printdata(ostream &o) const
   o << indent << "Data:  \"" << _s << "\"";
 }
 
-void StringLiteral::codegen(CodeGen *cg)
+void StringLiteral::codegen(CodeGen &cg)
 {
-  cg->genStringLiteral(this);
+  cg.genStringLiteral(this);
 }
 
 void Id::printdata(ostream &o) const
@@ -318,9 +347,9 @@ void Id::typecheck(Node *curr_func)
   _type = _symbol->type();
 }
 
-void Id::codegen(CodeGen *cg)
+void Id::codegen(CodeGen &cg)
 {
-  cg->genId(this);
+  cg.genId(this);
 }
 
 void Const::printdata(ostream &o) const
@@ -328,9 +357,9 @@ void Const::printdata(ostream &o) const
   o << indent << "Value:  " << _value;
 }
 
-void Const::codegen(CodeGen *cg)
+void Const::codegen(CodeGen &cg)
 {
-  cg->genConst(this);
+  cg.genConst(this);
 }
 
 Node::Calc Const::calculate() const
@@ -379,9 +408,9 @@ void Negative::typecheck(Node *curr_func)
   _type = _expr->type();
 }
 
-void Negative::codegen(CodeGen *cg)
+void Negative::codegen(CodeGen &cg)
 {
-  cg->genNegative(this);
+  cg.genNegative(this);
 }
 
 void AddrOf::typecheck(Node *curr_func)
@@ -395,9 +424,9 @@ void AddrOf::typecheck(Node *curr_func)
   }
 }
 
-void AddrOf::codegen(CodeGen *cg)
+void AddrOf::codegen(CodeGen &cg)
 {
-  cg->genAddrOf(this);
+  cg.genAddrOf(this);
 }
 
 void Pointer::typecheck(Node *curr_func)
@@ -411,9 +440,9 @@ void Pointer::typecheck(Node *curr_func)
   }
 }
 
-void Pointer::codegen(CodeGen *cg)
+void Pointer::codegen(CodeGen &cg)
 {
-  cg->genPointer(this);
+  cg.genPointer(this);
 }
 
 Node::Calc Binop::calculate() const
@@ -588,9 +617,9 @@ void Binop::typecheck(Node *curr_func)
   }
 }
 
-void Binop::codegen(CodeGen *cg)
+void Binop::codegen(CodeGen &cg)
 {
-  cg->genBinop(this);
+  cg.genBinop(this);
 }
 
 void IfStatement::printdata(ostream &o) const
@@ -634,9 +663,9 @@ void IfStatement::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void IfStatement::codegen(CodeGen *cg)
+void IfStatement::codegen(CodeGen &cg)
 {
-  cg->genConditional(this);
+  cg.genConditional(this);
 }
 
 void BreakStatement::flowcontrol(Node *,bool in_loop)
@@ -646,9 +675,9 @@ void BreakStatement::flowcontrol(Node *,bool in_loop)
   }
 }
 
-void BreakStatement::codegen(CodeGen *cg)
+void BreakStatement::codegen(CodeGen &cg)
 {
-  cg->genBreak(this);
+  cg.genBreak(this);
 }
 
 void ContinueStatement::flowcontrol(Node *,bool in_loop)
@@ -658,9 +687,9 @@ void ContinueStatement::flowcontrol(Node *,bool in_loop)
   }
 }
 
-void ContinueStatement::codegen(CodeGen *cg)
+void ContinueStatement::codegen(CodeGen &cg)
 {
-  cg->genContinue(this);
+  cg.genContinue(this);
 }
 
 void ForLoop::printdata(ostream &o) const
@@ -694,9 +723,9 @@ void ForLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
-void ForLoop::codegen(CodeGen *cg)
+void ForLoop::codegen(CodeGen &cg)
 {
-  cg->genForLoop(this);
+  cg.genForLoop(this);
 }
 
 void WhileLoop::printdata(ostream &o) const
@@ -724,9 +753,9 @@ void WhileLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
-void WhileLoop::codegen(CodeGen *cg)
+void WhileLoop::codegen(CodeGen &cg)
 {
-  cg->genWhileLoop(this);
+  cg.genWhileLoop(this);
 }
 
 void NodeList::printdata(ostream &o) const
@@ -750,9 +779,9 @@ void NodeList::typecheck(Node *curr_func)
   }  
 }
 
-void NodeList::codegen(CodeGen *cg)
+void NodeList::codegen(CodeGen &cg)
 {
-  cg->genList(this);
+  cg.genList(this);
 }
 
 void NodeList::writecode(std::ostream &out) const
@@ -760,6 +789,11 @@ void NodeList::writecode(std::ostream &out) const
   for (const_iterator i = begin(); i != end(); ++i) {
     (*i)->writecode(out);
   }
+}
+
+NodeList &FunctionExpression::get_arglist() const
+{
+  return ncastr<NodeList>(arglist());
 }
 
 void FunctionExpression::printdata(ostream &o) const
@@ -825,9 +859,9 @@ void FunctionExpression::typecheck(Node *curr_func)
   }
 }
 
-void FunctionExpression::codegen(CodeGen *cg)
+void FunctionExpression::codegen(CodeGen &cg)
 {
-  cg->genFunctionExpression(this);
+  cg.genFunctionExpression(this);
 }
 
 void SymNode::printsyms(ostream &o) const
@@ -862,9 +896,9 @@ void CompoundStatement::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_statement_list->has_return_stmt());
 }
 
-void CompoundStatement::codegen(CodeGen *cg)
+void CompoundStatement::codegen(CodeGen &cg)
 {
-  cg->genCompoundStatement(this);
+  cg.genCompoundStatement(this);
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -907,9 +941,9 @@ void FunctionDefn::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void FunctionDefn::codegen(CodeGen *cg)
+void FunctionDefn::codegen(CodeGen &cg)
 {
-  cg->genFunctionDefn(this);
+  cg.genFunctionDefn(this);
 }
 
 void FunctionDefn::writecode(ostream &out) const
@@ -943,9 +977,9 @@ void ReturnStatement::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(true);
 }
 
-void ReturnStatement::codegen(CodeGen *cg)
+void ReturnStatement::codegen(CodeGen &cg)
 {
-  cg->genReturn(this);
+  cg.genReturn(this);
 }
 
 Declaration::Declaration (String n,Type *t) :
@@ -996,9 +1030,9 @@ void StatementList::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void StatementList::codegen(CodeGen *cg)
+void StatementList::codegen(CodeGen &cg)
 {
-  cg->genStatementList(this);
+  cg.genStatementList(this);
 }
 
 void TranslationUnit::printdata(std::ostream &o) const
@@ -1014,6 +1048,17 @@ void TranslationUnit::gensymtab(SymTab *p)
   _symtab = new SymTab();
   NodeList::gensymtab(_symtab);
 }
+
+bool TranslationUnit::dochecks(CodeGen &cg)
+{
+  return cg.dochecks(this);
+}
+
+void TranslationUnit::codegen(CodeGen &cg)
+{
+  cg.genTranslationUnit(this);
+}
+
 
 ostream &operator<<(ostream &o,const Type *t)
 {
