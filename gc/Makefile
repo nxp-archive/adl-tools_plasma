@@ -38,7 +38,7 @@ pkgincludedir = $(includedir)/gc
 top_builddir = .
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
-INSTALL = /_TOOLS_/arch/bin/install -c
+INSTALL = /_TOOLS_/plat/local-ppc-/basic-latest/bin/install -c
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
 install_sh_SCRIPT = $(install_sh) -c
@@ -66,8 +66,8 @@ CCAS = $(CC)
 CCASFLAGS = $(CFLAGS) $(DEFS)
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2
-CPLUSPLUS_FALSE = 
-CPLUSPLUS_TRUE = #
+CPLUSPLUS_FALSE = #
+CPLUSPLUS_TRUE = 
 CPP = gcc -E
 CPPFLAGS = 
 CXX = g++
@@ -97,9 +97,9 @@ LIBS =
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LN_S = ln -s
 LTLIBOBJS = 
-MAINT = 
-MAINTAINER_MODE_FALSE = #
-MAINTAINER_MODE_TRUE = 
+MAINT = #
+MAINTAINER_MODE_FALSE = 
+MAINTAINER_MODE_TRUE = #
 MAKEINFO = ${SHELL} /proj/ppctools/tlv/u/bkahne/p/plasma/gc/missing --run makeinfo
 MY_CFLAGS = -g -O2
 OBJEXT = o
@@ -126,10 +126,10 @@ ac_ct_CC = gcc
 ac_ct_CXX = g++
 ac_ct_RANLIB = ranlib
 ac_ct_STRIP = strip
-addincludes = 
+addincludes =  include/gc_cpp.h include/gc_allocator.h
 addlibs = 
 addobjs =  mach_dep.lo
-addtests = 
+addtests =  test_cpp
 am__fastdepCC_FALSE = #
 am__fastdepCC_TRUE = 
 am__fastdepCXX_FALSE = #
@@ -157,7 +157,7 @@ libexecdir = ${exec_prefix}/libexec
 localstatedir = ${prefix}/var
 mandir = ${prefix}/man
 oldincludedir = /usr/include
-prefix = /proj/ppctools/tlv/u/bkahne/plasma-tmpinstall
+prefix = /usr/local
 program_transform_name = s,x,x,
 sbindir = ${exec_prefix}/sbin
 sharedstatedir = ${prefix}/com
@@ -211,13 +211,13 @@ cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
     cord/de_win.h cord/de_win.RC\
 libtool.m4
 
-#extra = libgccpp.la
-extra = 
+extra = libgccpp.la
+#extra = 
 lib_LTLIBRARIES = libgc.la $(extra) 
 
 include_HEADERS = include/gc.h include/gc_local_alloc.h \
 include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/leak_detector.h include/gc_typed.h 
+include/leak_detector.h include/gc_typed.h  include/gc_cpp.h include/gc_allocator.h
 
 
 EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
@@ -254,8 +254,8 @@ libgccpp_la_LDFLAGS = -version-info 1:2:0
 AM_CXXFLAGS =  -fexceptions
 AM_CFLAGS =  -fexceptions
 
-#extra_checks = test_cpp
-extra_checks = 
+extra_checks = test_cpp
+#extra_checks = 
 
 check_PROGRAMS = gctest $(extra_checks)
 
@@ -313,8 +313,8 @@ libgc_la_OBJECTS = $(am_libgc_la_OBJECTS)
 libgccpp_la_DEPENDENCIES =
 am_libgccpp_la_OBJECTS = gc_cpp.lo
 libgccpp_la_OBJECTS = $(am_libgccpp_la_OBJECTS)
-#check_PROGRAMS = gctest$(EXEEXT) test_cpp$(EXEEXT)
-check_PROGRAMS = gctest$(EXEEXT)
+check_PROGRAMS = gctest$(EXEEXT) test_cpp$(EXEEXT)
+#check_PROGRAMS = gctest$(EXEEXT)
 am_gctest_OBJECTS = test.$(OBJEXT)
 gctest_OBJECTS = $(am_gctest_OBJECTS)
 gctest_DEPENDENCIES = ./libgc.la
@@ -391,18 +391,18 @@ all: all-recursive
 
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno
-$(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
+$(srcdir)/Makefile.in: # Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --foreign  Makefile
-Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: # $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $@ $(am__depfiles_maybe)
 
 $(top_builddir)/config.status: $(srcdir)/configure $(CONFIG_STATUS_DEPENDENCIES)
 	$(SHELL) ./config.status --recheck
-$(srcdir)/configure:  $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
+$(srcdir)/configure: # $(srcdir)/configure.in $(ACLOCAL_M4) $(CONFIGURE_DEPENDENCIES)
 	cd $(srcdir) && $(AUTOCONF)
 
-$(ACLOCAL_M4):  configure.in acinclude.m4
+$(ACLOCAL_M4): # configure.in acinclude.m4
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 libLTLIBRARIES_INSTALL = $(INSTALL)
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
@@ -1080,7 +1080,7 @@ test_cpp.o:	$(srcdir)/tests/test_cpp.cc
 $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
 include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
 include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/gc_mark.h 
+include/gc_mark.h  include/gc_cpp.h include/gc_allocator.h
 
 .s.lo:
 	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<

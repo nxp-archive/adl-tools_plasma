@@ -1,0 +1,1264 @@
+// Inner pipe for a processor pipeline
+// Pete august 1997
+// Port to plasma:  Brian Kahne, July 2004
+// © copyright Motorola 1997. All rights reserved
+
+#include <sys/timeb.h>
+
+#include "plasma.h"
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+/* this has a simple pipe
+
+
+	  +<---------------------<--------------------//+
+	  |						|						|  ----///> dcache //-> regwrite2
+	  |						|						| /							|
+	fetcher //> icache //> decode //> regread  //-> alu -----> regwrite1		|
+		|					|			|	\				/	   |			|
+		|					|			|	 \-----> muldiv/	   |			|
+		+<----------------//+			|	 					   |			|
+										|	 					   |			|
+										+<----//- registers <----//+			|
+												and regvalid bits <-------------+
+
+
+ NOTES:
+
+*/
+
+// operations
+const int First_int = 0, Add = 0, Sub = 1, And = 2, Or = 3, Xor = 4, Lshl = 5, Lshr = 6, Cmp = 7,
+	Last_int = 7;
+const int First_ld = Last_int + 1, Ld8 = First_ld, Ld16 = First_ld + 1, Ld32 = First_ld + 2, 
+	Last_ld = First_ld + 2;
+const int First_st = Last_ld + 1, St8 = First_st, St16 = First_st + 1, St32 = First_st + 2, 
+	Last_st = First_st + 2;
+const int First_br = Last_st + 1, Jmp = First_br, Blz = First_br + 1, Ble = First_br + 2, 
+	Bez = First_br + 3, Bne = First_br + 4, Bge = First_br + 5, Bgz = First_br + 6, 
+	Last_br = First_br + 6;
+const int First_lint = Last_br + 1, Mul = First_lint, Div = First_lint + 1, Rem = First_lint + 2,
+	Last_lint = First_lint + 2;
+const int Stop = Last_lint + 1;
+		
+/* instruction fields
+ a very simple risc instruction set - two bits of format, six bits of opcode, five bits of
+ register, 14 bits of literal etc
+
+  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0
+ -------------------------------------------------------------------------------------------------
+ |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+ -------------------------------------------------------------------------------------------------
+
+ format 0: branches
+  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0
+ -------------------------------------------------------------------------------------------------
+ |  0  |       op        |       rd     |                         d19                            |
+ -------------------------------------------------------------------------------------------------
+
+ format 1: reg-reg operations
+ 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0
+ -------------------------------------------------------------------------------------------------
+ |  1  |       op        |       rd     |      r1      |  |  |  |  |  |  |  |  |  |      r2      |
+ -------------------------------------------------------------------------------------------------
+
+ format 2: reg-constant operations
+  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0
+ -------------------------------------------------------------------------------------------------
+ |  2  |       op        |       rd     |      r1      |               L14                       |
+ -------------------------------------------------------------------------------------------------
+
+ format 3: undefined
+ -------------------------------------------------------------------------------------------------
+ |  3  |       op        |       rd     |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |
+ -------------------------------------------------------------------------------------------------
+
+*/
+
+// opcodes are same as operations
+// field definitions are
+const int fbase = 30, fsize = 2, opbase = 24, opsize = 6, rdbase = 19, rdsize = 5,
+			r1base = 14, r1size = 5, r2base = 0, r2size = 5, d19base = 0, d19size = 19,
+			l14base = 0, l14size = 14;
+
+
+// we use the following struct to communicate stuff between pipestages. some
+// fields could of course be bits, but I'm lazy
+struct pipeVal {		 // standard interface between all pipestages
+  int op;			     // the operation needed
+  int invalidate_dest; // if true, invalidate destination register in regread
+  int branch_tag;	     // swaps between 0, 1 to indicate branch prediction behaviour
+  int is_const;		 // if true says vr2 contains a constant operand
+  int vr1_is_in_buff;	 // true if need to use buffer not vr1
+  int vr2_is_in_buff;	 // same for vr2
+  int r1;			     // r1 is source register
+  int r2;			     // vr1 is its value
+  int vr1;			 // same for r2, vr2; 
+  int vr2;
+  int rd;			     // the destination register specification
+  int vrd;			 // the result value
+};
+
+struct brStatus {
+  int is_cr;		     // if true, data is a new cr value else its a branch dest address
+  int data;
+};
+
+struct memReq {
+  int op;			     // ld8, etc
+  int regtag;		     // tag specifying destination register for loads
+  int address;		 // address
+  int data;			 // the data (we're cheating for the moment- the caches provide words)
+};
+
+typedef Channel<int> Chan;
+typedef ClockChan<int> ClkChan;
+typedef ClockChan<memReq> MemClkChan;
+typedef vector<MemClkChan> MemClkChans;
+typedef ClockChan<pipeVal> PipeClkChan;
+
+const int iregs = 32;		// there are 32 integer registers
+const int spr0 = 32,		// the other regs are r32..
+	pc = spr0,
+	cr = spr0 + 1,
+	maxReg = cr;
+	
+int regs[iregs + maxReg];		 // the various registers
+int validbits[iregs + maxReg]; // the validity bits
+
+const int Clock = 10;					// a tick of 10 units	
+
+const int maxAddress = 50000;
+int theMemory[maxAddress];			// a 50Kword memory
+
+const int maxUnit = 10,
+			msgLength = 32;
+			
+char unitNames[(maxUnit + 1) * msgLength];
+char gMsg[64];					// global for people to message into
+
+const int debug = true;
+
+Random<> Rand(1);
+
+// This printf only prints when debug is true.
+int dprintf(const char *fmt, ...)
+{
+  int r = 0;
+  if (debug) {
+    va_list ap;
+    va_start(ap,fmt);
+    r = vprintf(fmt,ap);
+    va_end(ap);
+  }
+  return r;
+}
+
+//----------------------------- opname --------------------------------//
+
+const char *opname(int op)
+{
+  switch (op) {
+  case Add:
+    return ("add");
+    break;
+  case Mul:	
+    return("mul");
+    break;
+  case Div:
+    return("div");
+    break;
+  case Rem:
+    return("rem");
+    break;
+  case Sub:
+    return("sub");
+    break;
+  case And:
+    return( "and");
+    break;
+  case Or:
+    return("or");
+    break;
+  case Xor:
+    return("xor");
+    break;
+  case Lshl:
+    return("lshl");
+    break;
+  case Lshr:
+    return("lshr");
+    break;
+  case Ld8:
+    return("ld8");
+    break;
+  case Ld16:
+    return("ld16");
+    break;
+  case Ld32:
+    return("ld32");
+    break;
+  case St8:
+    return("st8");
+    break;
+  case St16:
+    return("st16");
+    break;
+  case St32:
+    return("st32");
+    break;
+  case Cmp:
+    return("cmp");
+    break;
+  case Jmp:
+    return("jmp");
+    break;
+  case Blz:
+    return("blz");
+    break;
+  case Ble:
+    return("ble");
+    break;
+  case Bez:
+    return("bez");
+    break;
+  case Bne:
+    return("bne");
+    break;
+  case Bge:
+    return("bge");
+    break;
+  case Stop:
+    return("STOP");
+    break;
+  case Bgz:
+    return("bgz");
+    break;
+  default:
+    return("**unknown**");
+    break;
+  }
+}
+
+//----------------------------- setInstrucB ----------------------------
+
+int setInstrucB(int op, int rd, int d19) 
+{
+  // builds a branch instruction of format 0
+  int instruc = (op << opbase) | (rd << rdbase) | (d19 << d19base);
+  return instruc;
+}
+
+	
+//----------------------------- setInstrucRR ----------------------------
+
+int setInstrucRR(int op, int rd, int r1, int r2) 
+{
+  // builds an r-r instruction of format 1
+  int instruc = (1 << fbase) | (op << opbase) | (r1 << r1base) | (r2 << r2base) | (rd << rdbase);
+  return instruc;
+}
+	
+//----------------------------- setInstrucRC ----------------------------
+
+int setInstrucRC(int op, int rd, int r1, int v) 
+{
+  // builds an r-lit instruction of format 1
+  int instruc = (2 << fbase) | (op << opbase) | (r1 << r1base) | (v << l14base) | (rd << rdbase);
+  return instruc;
+}
+	
+//----------------------------- next_phi1 -----------------------------
+
+int next_phi1(int t) 
+{
+  // returns the next full clock boundary after t
+  return t + Clock - (t % Clock);
+}
+
+
+//----------------------------- next_phi2 -----------------------------
+
+int next_phi2(int t) 
+{
+  // returns the time of the next half clock boundary after t
+  return next_phi1(t) + (Clock/2);
+}
+
+//----------------------------- setname -----------------------------
+
+void setname(int unit, const char *name)
+{
+  // write a unit's name into the correct slice of unitNames
+  int i, j, len;
+  printf("\nsetting unit '%ld' to have name ", unit);
+  printf("'%s'", name);
+  i = unit * msgLength;
+  len = strlen(name);
+  len = (msgLength - len)/2;
+  i = i + len;
+  j = 0;
+  while (name[j] != '\0') {
+    unitNames[i] = name[j];
+    i = i + 1;
+    j = j + 1;
+  }
+}
+		
+//----------------------------- initRegs -----------------------------
+
+void initRegs() 
+{
+  // makes all registers valid and gives initial values
+  for (int i = 0; i != maxReg; ++i) {
+    validbits[i] = 1;
+    regs[i] = i;
+  }
+}
+
+//---------------------------- fetch ----------------------------
+
+struct Fetch {
+
+  // launches a request to the icache every clock to get it to deliver instructions
+  // to the rest of the machine
+	
+  // for added realism, we ask the icache for just one word..
+  
+  // dests carries new addresses from decode, which does branch prediction
+		
+  void ticker()
+  {
+    pDelay(Clock);
+    while (_running) {
+      pDelay(Clock );
+      _tickfetch.write(1);
+    }
+    printf ("\nticker stopped.");
+  }
+
+  void fetcher() 
+  {
+    memReq mR;
+    const char *status;
+    regs[pc] = _starter;			// start execution at start address;
+    setname(_unit, "Fetch");
+    pDelay(Clock);
+    while (_running) {
+      //message(unit, "waiting");
+      alt {
+        _dests.port(int pc) {				// read a new destination if there is one from alu
+          regs[pc] = pc;
+          status = "newPC";
+        }
+        _tofetch.port(int dummy) {		// must stop - decode wants us to
+          dprintf("\nfetcher received something (%ld) on tofetch!", dummy);
+          if (dummy == Stop) {
+            regs[pc] = -1;
+            dprintf(".. a request to stop.");
+          }
+        }
+        _tickfetch.port() {
+          status = "fetching";
+        }
+      }
+      // a negative destination address means stop
+      if (regs[pc] < 0) {
+        _running = false;
+        _towatchdog.write(1);
+        _tickfetch.get();
+        printf("\nfetch stopped.");
+      }
+      // set up the request to the cache
+      mR.op = Ld32;
+      mR.address = regs[pc];
+      
+      //===logging
+      sprintf(gMsg, "%s 0x%08lx", status, regs[pc]);
+      dprintf ("\nFetch (%lld):  %s",pTime(),gMsg);
+      //message(_unit,gMsg);
+
+      if (_running) {
+        regs[pc] = regs[pc] + 4;
+      }
+
+      // send the request to the cache
+      _out.write(mR);
+      // activity	
+    }
+  }
+
+  Fetch(int unit, Chan &tofetch, Chan &dests, MemClkChan &out, Chan &towatchdog, int starter) :
+    _running(true), _unit(unit), _starter(starter), 
+    _tofetch(tofetch), _dests(dests), _towatchdog(towatchdog), _out(out)
+  {};
+    
+  void operator()()
+  {
+    // ok, run 'em	
+    par {
+      ticker();
+      fetcher();
+    }
+  }
+
+private:
+  bool        _running;
+  int         _unit;
+  int         _starter;
+
+  Chan        _tickfetch;
+  Chan       &_tofetch;
+  Chan       &_dests;
+  Chan       &_towatchdog;
+  MemClkChan &_out;
+};
+
+// ---------------------------- memread ----------------------------
+
+int memread(int op, int address) 
+{
+  // address is a byte address
+  int d, data, addr;
+  addr = address >> 2;
+  if (addr >= maxAddress) {
+    printf("\nAddress Read error: 0x%08lx too large at %lld", address, pTime());
+    pExit(1);
+  } else if (addr < 0) {
+    printf("\nAddress Read error: 0x%08lx too small at %lld", address, pTime());
+    pExit(1);
+  }
+  data = theMemory[addr];
+  switch (op) {
+  case Ld8: 
+    d = (address & 3) << 3;
+    data = (data >> d) & 0xff;
+    break;
+  case Ld16: 
+    d = (address & 1) << 1;
+    data = (data >> d) & 0xffff;
+    break;
+  case Ld32:
+  default:
+    break;
+  }
+  return data;
+}
+	
+//---------------------------- memwrite ----------------------------
+
+void memwrite(int op, int address, int data) 
+{
+  // address is a byte address
+  int v, d, m, addr;
+  addr = address >> 2;
+  if (addr >= maxAddress) {
+    printf("\nAddress Write error: 0x%08lx too large at %lld", address, pTime());
+    pExit(1);
+  } else if (addr < 0) {
+    printf("\nAddress Write error: 0x%08lx too small at %lld", address, pTime());
+    pExit(1);
+  }
+		
+  v = theMemory[addr];
+  switch (op) {
+  case St8: 
+    d = (address & 3) << 3;			// distance
+    m = 0xff << d;					// wordmask
+    data = (data & 0xff) << d;		// align supplied data
+    break;
+  case St16:
+    d = (address & 1) << 1;
+    m = 0xffff << d;
+    data = (data & 0xffff) << d;
+    break;
+  case St32:
+    m = -1;
+    break;
+  default:
+    break;
+  }
+  m = ~m;
+  theMemory[addr] = (v & m) | data;
+}
+	
+// ---------------------------- icache ----------------------------
+
+void icache(int unit, MemClkChan &in, MemClkChan &out) 
+{
+  memReq mR;
+  bool running = true;
+  int op, address, data;
+  setname(unit, "iCache");
+  pDelay(Clock);
+  while (running) {
+    //message(unit, "waiting");
+    mR = in.get();
+    // activity	
+    op = mR.op;
+    address = mR.address;
+    if (address < 0) {
+      running = false;
+      printf("\nicache stopped.");
+    } else {
+      // ok, do the access. but we'll cheat for a moment and 
+      // just read memory (heh, heh)
+      // address is byte address, and we always want one word
+      data = memread(Ld32, address);
+				
+      //===logging
+      sprintf(gMsg, "lookup 0x%08lx->0x%08lx", address, data); 
+      dprintf("\nIcache (%lld):  %s",pTime(),gMsg);
+      //message(unit,gMsg);
+      
+      mR.data = data;					
+      out.write(mR);
+    }			
+  }
+}
+	
+// -------------------------- decoder -----------------------
+
+struct Decoder {
+	
+  // ----------------------- icount ----------------------------
+  void icount() 
+  {
+    int x = _report.get();
+    if (x < 0) {
+      printf ("\nicount stopped.");
+      return;
+    } else {
+      dprintf("\n** icount asked for instruction count: = %ld", _numInstrucs);
+      _report.write(_numInstrucs);
+    }
+  }
+  
+  // ------------------------//- maskof -------------------------
+  int maskof(int n) 
+  {
+    // returns a bitmask of size n bits
+    int mask;
+    mask = (1 << n) - 1;
+    return mask;
+  }
+
+
+  // ---------------------------- decode ----------------------------
+  void decode() 
+  {
+    memReq mR;
+    pipeVal pV;
+    bool running = true;
+    int instruc, format;
+    int last_rd = -1;
+    char msg[32];
+    const char *r1s, *r2s, *rds;				
+
+    // body //
+    setname(_unit, "Decode");
+		
+    pDelay(Clock);
+		
+    while (running) {
+      int op;
+      mR = _in.get();
+
+      //printf ("\nDecode:  Address %08ld, data %08x\n",mR.address,mR.data);
+
+      _numInstrucs = _numInstrucs + 1;		// increment instruction count
+			
+      //make a pipeVal structure from the instruction
+      instruc = mR.data;
+      format = (instruc >> fbase) & maskof(fsize);
+      pV.op = (instruc >> opbase) & maskof(opsize);
+      pV.rd = (instruc >> rdbase) & maskof(rdsize);
+      //printf("\ndecode: format is %ld", format);
+      pV.invalidate_dest = false;
+      op = pV.op;
+      switch (format) {
+      case 0: 
+        // branch instructions
+        pV.is_const = true;
+        pV.r1 = pV.rd;
+        pV.rd = pc;
+        pV.vr2 = (instruc >> d19base) & maskof(d19size);
+        //===logging
+        sprintf(gMsg, "%08lx=br r%ld %ld", instruc, pV.rd, pV.vr2); 
+        break;
+      case 1: 
+        //reg-reg
+        pV.is_const = false;
+        pV.r1 = (instruc >> r1base) & maskof(r1size);
+        pV.r2 = (instruc >> r2base) & maskof(r2size);
+        //===logging
+        sprintf(gMsg, "%08lx=rr r%ld = r%ld %s r%ld", instruc, pV.rd, pV.r1, opname(op), pV.r2); 
+        if ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) {
+          pV.invalidate_dest = true;
+        }
+        break;
+      case 2: 
+        // reg-lit
+        pV.is_const = true;
+        pV.r1 = (instruc >> r1base) & maskof(r1size);
+        pV.vr2 = (instruc >> l14base) & maskof(l14size);
+        //printf("\nreg-lit: const = 0x%08lx, %ld", pV.vr2, pV.vr2);
+						
+        //===logging
+        sprintf(gMsg, "%08lx=rc r%ld = r%ld %s %ld", instruc, pV.rd, pV.r1, opname(op), pV.vr2);
+        pV.invalidate_dest = false; 
+        // make sure we don't try to use the short-circuit in the alu
+        if ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) {
+          pV.invalidate_dest = true;
+          strcat(gMsg, "j");
+        }
+        break;
+      default: 
+        pV.op = Stop;
+        //===logging
+        sprintf(gMsg, "%08lx=**illegal**", instruc); 
+        break;
+      }
+      
+      //      printf("\nDecode: lastrd = r%ld; 0x%08lx:: r%ld = r%ld %s r%ld; ", 
+      //             last_rd, instruc, pV.rd, pV.r1, opname(op), pV.r2);
+      
+      // if prev instruction writes a register without invalidating it and that register is a source for
+      // this instruction then we need to tell alu to use result from that instruction rather than the read register value
+      // check r1		
+      if (pV.r1 == last_rd) {
+        pV.vr1_is_in_buff = true;
+        //===logging
+        r1s = "B";
+        //printf("r1 to be taken from buffer; ");
+      }
+      else {
+        pV.vr1_is_in_buff = false;
+        //===logging
+        r1s = "r";
+      }
+      		
+      // check r2
+      if ((pV.r2 == last_rd) && (pV.is_const == false)) {
+        pV.vr2_is_in_buff = true;
+        //===logging
+        r2s = "B";
+      }
+      else {
+        pV.vr2_is_in_buff = false;
+        //===logging
+        r2s = "r";
+      }
+      		
+      // now track most recent result register for next cycle
+      // we need to track result register if we wrote to it without clearing its valid bit
+      if (pV.invalidate_dest == true) {
+        //===logging
+        rds = "i";				// mark inval
+        last_rd = -1;				// no short-circuit
+      }
+      else {
+        //===logging
+        rds = "v";				// mark no inval
+        last_rd = pV.rd;			// might have s-c
+      }
+
+      // OK; now we've decoded the instruction and all before halfway through the clock!
+			
+      //===logging
+      sprintf(msg,"::{%s},%s,%s.", rds, r1s, r2s);
+      strcat(gMsg, msg);
+      dprintf("\nDecode (%lld):  %s",pTime(),gMsg);
+      //message(unit, gMsg);
+      			
+      if (pV.op == Stop) {
+        running = false;
+        printf("\nDecode:  Stopping at %lld.", pTime());
+        par {
+          _tofetch.write(Stop);				// gotta stop fetching!
+          {
+            // A few reads to flush out the icache channel.
+            _in.get();
+            _in.get();
+          }
+          _out.write(pV);	                // Propagate stop to rest of pipeline.
+        }
+      }
+      else {
+        _out.write(pV);		// pass on to regread
+      }  
+    }
+    printf("\ndecode stopped.");
+  };
+		
+  Decoder(int unit, MemClkChan &in, Chan &tofetch, PipeClkChan &out, Chan &report) :
+    _numInstrucs(0), _unit(unit),
+    _in(in), _tofetch(tofetch), _out(out), _report(report)
+  {
+  }
+
+  void operator()() {
+	// ------ body --------	
+	par {
+      decode();
+      icount();
+    }		
+  }
+
+private:
+  int _numInstrucs;
+  int _unit;
+
+  MemClkChan  &_in;
+  Chan        &_tofetch;
+  PipeClkChan &_out;
+  Chan        &_report;
+};
+	
+// ----------------------------- regRead -----------------------------
+
+void regRead(int unit, PipeClkChan &in, PipeClkChan &out, PipeClkChan &tomul) 
+{
+  // this guy, uniquely of the units, fires at half-clock boundaries, taking the
+  // stuff from decode halfway thru the clock
+  bool running = true;
+  int r1, r2, rd;
+  char msg[16];
+  setname(unit, "regRead");
+  pDelay(Clock);
+  while (running) {
+    bool waiting = true;
+    // look for traffic only at half-clock boundaries
+    pipeVal pV = in.get();
+
+    // decode and remember what registers we want	
+    r1 = pV.r1;
+    r2 = pV.r2;
+    rd = pV.rd;
+    
+    // now wait until all sources and dests are valid
+    while (waiting) {
+      // read the registers at the front of the clock cycle
+      if (validbits[r1] && validbits[r2] && validbits[rd]) {
+        //===logging
+        sprintf(gMsg, "r%ld[%ld],r%ld[%ld]", r1, regs[r1], r2, regs[r2]);
+        //message(unit, gMsg);
+        waiting = false;
+      } else {
+        //===logging
+        sprintf(gMsg, "valWait: ");
+        if (validbits[r1] == 0) {sprintf(msg, "r%ld ", r1); strcat(gMsg, msg); }
+        if (validbits[r2] == 0) {sprintf(msg, "r%ld ", r2); strcat(gMsg, msg); }
+        if (validbits[rd] == 0) {sprintf(msg, "r%ld", rd); strcat(gMsg, msg); }
+        //message(unit, gMsg);
+      }
+      
+      dprintf ("\nRegRead (%lld):  %s",pTime(),gMsg);
+
+      pV.vr1 = regs[r1];
+      if (pV.is_const == false)	{
+        pV.vr2 = regs[r2];
+      }		
+
+      // wait till backend	
+      pDelay((Clock/2) - 1);
+    }
+			
+    // invalidate the destination if necessary (a muldiv or any load)
+    if (pV.invalidate_dest) {
+      validbits[rd] = false; 
+    }
+					
+    // decide where to send it
+    if ((pV.op == Mul) || (pV.op == Div) || (pV.op == Rem))	{
+      tomul.write(pV);
+    } else if (pV.op == Stop) {
+      running = false;
+      printf("\nregread stopped.");
+      par {
+        out.write(pV);
+        tomul.write(pV);
+      }
+    } else {
+      out.write(pV);
+    }    
+  }
+}	
+	
+// ----------------------------- muldiv -----------------------------
+
+void muldiv(int unit, PipeClkChan &in, PipeClkChan &out) 
+{
+  bool running = true;
+  int ticks;
+  int result, vr1, vr2;
+  const char *op = 0;
+  char msg[64], r1s[8], r2s[8];
+  setname(unit, "MulDiv");
+  pDelay(Clock);
+  while (running) {
+    pipeVal pV = in.get();
+
+    vr1 = pV.vr1;
+    vr2 = pV.vr2;
+    //===logging
+    sprintf(r1s, "r%ld", pV.r1);
+    sprintf(r2s, "r%ld", pV.r2);
+    switch (pV.op) {
+    case Mul:	
+      result = vr1 * vr2; 
+      ticks = 8; 
+      op = "mul";
+      break;
+    case Div:
+      result = (vr2) ? (vr1 / vr2) : 0; 
+      ticks = 32; 
+      op = "div";
+      break;
+    case Rem:
+      result = vr1 % vr2; 
+      ticks = 35; 
+      op = "rem";
+      break;
+    case Stop:	
+    default:		
+      running = false;
+    }
+    //===logging
+    sprintf(gMsg,"%s %s %s", r1s, op, r2s);
+    sprintf(msg, "->%ld", result); 
+    strcat(gMsg, msg);
+    dprintf ("\nMulDiv (%lld):  %s",pTime(),gMsg);
+    //message(unit, gMsg);
+    if (running) {
+      pDelay ((ticks * Clock) + (Clock - 1));
+      pV.vrd = result;
+    }
+    // Always send data so that stop will propagate.
+    out.write(pV);
+  }
+  printf ("\nmuldiv stopped.");
+}
+		
+// ----------------------------- alu -----------------------------
+void alu(int unit, PipeClkChan &in, PipeClkChan &outreg, MemClkChan &outmem, Chan &to_fetch) 
+{
+  bool running = true;
+  bool toreg, tomem, topc;
+  int result, vr1, vr2, last_result;
+  char msg[64];
+  const char *op, *r1s, *r2s;
+  setname(unit, "ALU");
+  pDelay(Clock);
+  while (running) {
+    toreg = true;
+    tomem = false;	
+    topc = false;
+
+    pipeVal pV = in.get();
+    if (pV.vr1_is_in_buff) {
+      vr1 = last_result;					// select from result buffer or input
+      //===logging
+      r1s = "LR";
+    }
+    else {
+      vr1 = pV.vr1;
+      //===logging
+      r1s = "reg";
+    }
+    	
+    if (pV.vr2_is_in_buff) {
+      vr2 = last_result;
+      //===logging
+      r2s = "LR";
+    }
+    else {
+      vr2 = pV.vr2;
+      //===logging
+      r2s = "reg";
+    }
+		   
+    switch (pV.op) {
+    case Add:	
+      {result = vr1 + vr2; op = "add"; break; }
+    case Mul:
+    case Div:
+    case Rem:
+      {result = vr1 * vr2; op = "mul"; break; }			// shouldn't ever execute since not done in alu
+    case Sub:
+      {result = vr1 - vr2; op = "sub"; break; }
+    case And:
+      {result = vr1 & vr2; op = "and"; break; }
+    case Or:
+      {result = vr1 | vr2; op = "or"; break; }
+    case Xor:
+      {result = vr1 ^ vr2; op = "xor"; break; }
+    case Lshl:	
+      {result = vr1 >> vr2; op = "lshl"; break; }
+    case Lshr:	
+      {result = vr1 << vr2; op = "lshr"; break; }
+    case Ld8:
+      {result = vr1 + vr2; tomem = true; toreg = false; op = "ld8"; break; }
+    case Ld16:	
+      {result = vr1 + vr2; tomem = true; toreg = false; op = "ld16"; break; }
+    case Ld32:	
+      {result = vr1 + vr2; tomem = true; toreg = false; op = "ld32"; break; }
+    case St8:	
+      {result = vr1 + vr2; op = "st8"; break; }
+    case St16:	
+      {result = vr1 + vr2; op = "st16"; break; }
+    case St32:	
+      {result = vr1 + vr2; op = "st32"; break; }
+    case Cmp:	
+      {result = vr1 - vr2; op = "cmp"; break; }
+    case Jmp:	
+      {result = vr1 + vr2; op = "jmp"; topc = true; toreg = false; break; }
+    case Blz:	
+      {result = vr1 + vr2; op = "blz"; topc = true; toreg = false; break; }
+    case Ble:	
+      {result = vr1 + vr2; op = "ble"; topc = true; toreg = false; break; }
+    case Bez:	
+      {result = vr1 + vr2; op = "bez"; topc = true; toreg = false; break; }
+    case Bne:	
+      {result = vr1 + vr2; op = "bne"; topc = true; toreg = false; break; }
+    case Bge:	
+      {result = vr1 + vr2; op = "bge"; topc = true; toreg = false; break; }
+    case Bgz:	
+      {result = vr1 + vr2; op = "bgz"; topc = true; toreg = false; break; }
+    case Stop:	
+      {running = false; op = "STOP"; pDelay (100000); break; }	// give time for stuff to settle. bad eng. practice, this
+    default:
+      {running = false; op = "**illegal op**"; break; }
+    }
+    //===logging
+    sprintf(gMsg,"%s[%s,%s]", op, r1s, r2s);
+    sprintf(msg, "->%ld", result); 
+    strcat(gMsg, msg);
+    dprintf ("\nALU (%lld):  %s",pTime(),gMsg);
+    //message(unit,gMsg);
+
+    memReq mR;
+    		
+    pV.vrd = result;
+    last_result = result;
+		
+    if ((toreg == true) && (tomem ==true))	{	// both (er; when does this happen???)
+      //printf("\nalu::result to both");
+      par {
+        outreg. write(pV);		// send results to be written to regs
+        mR.op = pV.op;
+        mR.address = result;
+        outmem.write(mR);		// send results to dcache for read
+      }
+    } else if (toreg == true) {						// just regs: rr and store go to regwr
+      //printf("\nalu::result to reg");
+      outreg.write(pV);			// send results to be written to regs
+    } else if (tomem == true) {						// just loads go to memory
+      //printf("\nalu::result to mem");
+      mR.op = pV.op;
+      mR.address = result;
+      mR.regtag = pV.rd;
+      outmem.write(mR);			// send results to dcache for read
+    } else if (topc == true) {
+      // send results to fetch.
+      dprintf ("\nWriting new pc value of %x",result);
+      to_fetch.write(result);
+    }
+    
+    if (pV.op == Stop) {
+      running = false;
+      printf("\nALU stopped.");
+    }
+  }
+}
+	
+// ----------------------------- regWrite1 -----------------------------
+
+void regWrite1(int unit, PipeClkChan &in, MemClkChan &out) 
+{
+  // in general, this writes vrd into regs[rd], but if it's a store
+  struct memReq mR;
+  bool running = true;
+  setname(unit, "regWrite1");
+  pDelay(Clock);
+  while (running) {
+    pipeVal pV = in.get(); 		// read the request on rising edge
+    int instruc, op;
+    instruc = pV.op;
+    if ((op == St8) || (op == St16) || (op == St32)) {
+      // read rd for store and create memory request
+      mR.op = op;
+      mR.address = pV.vrd;
+      mR.data = regs[pV.rd];
+      //===logging
+      sprintf(gMsg,"%ld -> m[0x%08lx]", mR.data, mR.address);
+      dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);
+      //message(unit, gMsg);
+      out.write(mR);	// give to dcache
+    }
+    else {
+      // write rd
+      //===logging
+      sprintf(gMsg,"r%ld <- %ld at %lld", pV.rd, pV.vrd, pTime());
+      dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);      
+      //message(unit, gMsg);
+      regs[pV.rd] = pV.vrd;
+    }	
+    if (pV.op == Stop) {
+      running = false;
+      printf("\nregwrite1 stopped.");
+      mR.op = Stop;
+      // Stop dcache.
+      out.write(mR);
+    }
+  }
+}
+	
+// ----------------------------- regWrite2 -----------------------------
+
+void regWrite2(int unit, PipeClkChan &in_reg, PipeClkChan &in_mem) 
+{
+  bool running = true;
+  setname(unit, "regWrite2");
+  pDelay(Clock);
+  while (running) {
+    alt {
+      in_reg.port(pipeVal pV) {		// read the request from muldiv on rising edge
+        if (pV.op == Stop) { running = false; continue;}
+        regs[pV.rd] = pV.vrd;			// write the value
+        if (pV.rd == 0) {
+          dprintf("\nrw1 wrote 0x%08lx to r0 [muldiv]", pV.vrd);
+        }
+        validbits[pV.rd] = true;		// make it valid
+        //===logging
+        sprintf(gMsg,"r%ld<-%ld [md]", pV.rd, pV.vrd);
+        dprintf ("\nRegWrite2  (%lld):  %s",pTime(),gMsg);
+        //message(unit, gMsg);
+      }
+      in_mem.port(pipeVal pV) {		// read the request from dcache on rising edge
+        if (pV.op == Stop) { running = false; continue;}
+        regs[pV.rd] = pV.vrd;			// write the value
+        validbits[pV.rd] = true;		// make it valid
+        if (pV.rd == 0) {
+          dprintf("\nrw1 wrote 0x%08lx to r0 [mem]", pV.vrd);
+        }
+        //===logging
+        sprintf(gMsg,"r%ld<-%ld [dc]", pV.rd, pV.vrd);
+        dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);
+        //message(unit, gMsg);
+      }
+    }
+  }
+  printf("\nregwrite2 stopped.");
+}	
+	
+//---------------------------- dcache ----------------------------
+
+void dcache(int unit, MemClkChan &in_load, MemClkChan &in_store, PipeClkChan &out) 
+{
+  bool running = true;
+  setname(unit, "dCache");
+  pDelay(Clock);
+  while (running) {
+    alt {
+      in_store.port(memReq mR) {			// read the store request on rising edge
+        if (mR.op == Stop) { running = false; continue; }
+        memwrite(mR.op, mR.address, mR.data);
+        //===logging
+        sprintf(gMsg, "store %ld->0x%08lx", mR.data, mR.address);
+        dprintf ("\nDcache (%lld):  %s",pTime(),gMsg);
+        //message(unit, gMsg);
+      }
+      in_load.port(memReq mR) {			// read the load on rising edge
+        //===logging
+        if (mR.op == Stop) { running = false; continue; }
+        sprintf(gMsg, "r%ld<-0x%08lx", mR.regtag, mR.address);
+        dprintf ("\nDcache (%lld):  %s",pTime(),gMsg);
+        //message(unit, gMsg);
+        mR.data = memread(mR.op, mR.address);
+        pipeVal pV;
+        pV.rd = mR.regtag;					// find register
+        pV.vrd = mR.data;				
+        out.write(pV);			// give to regwrite2
+      }
+    }
+  }
+  printf("\ndcache stopped.");
+}
+
+//---------------------------- initCode -------------------------
+
+void initCode(int n) 
+{
+  // creates 	n instructions ending with 'stop'
+  // uses r0 as a safe base register for loads and stores
+  int rv, disp, max_disp;
+  const int L12 = (2 << 12);
+  printf("\nCreate %ld instructions from 0x0...", n);
+	
+  // first initialise the available space...
+  max_disp = 250;
+  for (int j = 0; j <= (n + max_disp + 2); ++j) {
+    theMemory[j] = j & 0xff;
+  }
+
+  int i = 0;
+
+# if 1
+  theMemory[i++] = setInstrucRC(Add,1,2,4);
+  theMemory[i++] = setInstrucRC(Add,3,1,16);
+  theMemory[i++] = setInstrucB(Jmp,3,10);
+  theMemory[i++] = setInstrucRR(Or,0,0,0);
+  theMemory[i++] = setInstrucRR(Or,0,0,0);
+  theMemory[i++] = setInstrucRR(Or,0,0,0);
+  theMemory[i++] = setInstrucRR(Or,0,0,0);
+  theMemory[i++] = setInstrucRR(Or,0,0,0);
+  theMemory[i++] = setInstrucRC(Add,20,3,100);
+
+  // Some no-ops to filter out the pipe.
+  for (int j = 0; j != 20; ++j) {
+    theMemory[i++] = setInstrucRR(Or,0,0,0);
+  }
+# else
+  // then point r0 above code
+  theMemory[i] = setInstrucRR(Sub, 0, 0, 0);			// r0 = 0
+  disp = (n + 2) << 2;							// address of first free chunk o memory
+  while (disp > L12) {
+    i = i + 1;
+    disp = disp - L12;
+    theMemory[i] = setInstrucRC(Add, 0, 0, L12);	// r0 = r0 + L12
+  }
+  i = i + 1;
+  theMemory[i] = setInstrucRC(Add, 0, 0, disp);		// r0 = r0 + disp
+  while (i < (n - 2)) {
+    //printf("\n0x%08lx::", i);
+    rv = Rand.uniform(0,0,100);
+    i = i + 1;
+    int instruc;
+    if (rv > 95) {
+      // make a muldiv
+      instruc = setInstrucRR(Rand.uniform(0, First_lint, Last_lint), 
+                   Rand.uniform(0,2,30), Rand.uniform(0,1,30), Rand.uniform(0,1,30));
+    } else if (rv > 75) {
+      // make a load rX = mem[r0 + u]
+      instruc = setInstrucRC(Ld32, 
+                   Rand.uniform (0, 2, 25), 0, Rand.uniform(0, 0, max_disp));
+    } else if (rv > 60) {
+      // make a store mem[r0 + u] = rX
+      instruc = setInstrucRC(St32, 
+                   Rand.uniform (0, 2, 25), 0, Rand.uniform(0, 0, max_disp));
+    } else {
+      // make an add/sub etc
+      instruc = setInstrucRR(Rand.uniform(0, First_int, Last_int), 
+                   Rand.uniform(0,2,30), Rand.uniform(0,0,30), Rand.uniform(0,0,30));
+    }
+    // can't assign to r0 nor use
+    theMemory[i] = instruc;
+    //printf("...=> 0x%08lx", instruc);
+  }
+# endif
+
+  theMemory[i] = setInstrucRR(Stop,0,0,0);
+  printf("\nCreated %ld instructions", i);
+}
+
+//---------------------------- watchdog -------------------------
+
+int mstime()
+{
+  struct timeb tp;
+  ftime(&tp);
+  return tp.time*1000+tp.millitm;
+}
+
+void watchdog(unsigned n, Chan &ask, Chan &shutdown) 
+{
+  double dT, kips;
+  int t0 = mstime();
+  printf("\nStarting time is %ld, timeout is %ld cycles\n\n", t0, n);
+  while (true) {
+    pDelay(Clock * 10);
+    if (shutdown.ready()) {
+      // Got shutdown signal.
+      ask.write(-1);
+      printf("\nwatchdog stopped.");
+      return;
+    }
+    printf(".");
+    if (pTime() > n) {
+      printf("\nStopping- time overrun at t=%lld", pTime());
+      ask.write(0);
+      int instrucs = ask.get();
+      int t2 = mstime();
+      printf("\n\treal time =%ld start time %ld",t2, t0);
+      dT = (t2 - t0);      
+      kips = instrucs / dT;
+      printf("\nDecode saw %ld instructions in ", instrucs);
+      printf("%0.2f milliseconds = %0.2f kips", dT, kips);
+      pExit(1);
+    }
+  }
+}
+
+void printRegs()
+{
+  printf ("\n----------------------------------\n");
+  printf ("Register values at time %lld:\n",pTime());
+  for (int i = 0; i <= maxReg; ++i) {
+    printf ("%02d:  %08x (%d)\n",i,regs[i],regs[i]);
+  }
+  printf ("\n----------------------------------\n");
+}
+
+//---------------------------- main ----------------------------
+
+// Shut off preemption.
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[]) 
+{
+  MemClkChan fetch_icache(Clock), icache_decode(Clock),
+    alu_dcache(Clock), regwrite1_dcache(Clock);
+
+  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), regread_muldiv(Clock),
+    alu_regwrite1(Clock), muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+
+  Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
+  
+  printf("\n\n\n\nthe pipe: a simple risc pipeline simulator v0.06\ncopyright © motorola 1997-2003\n");
+  
+  initCode(10000);			// create some instructions
+  //initCode(10);
+  initRegs();					// set up registers
+  printf("\nCode and registers initialised.");
+  par {
+    //===logging
+    watchdog(20000, icount_watchdog, fetch_watchdog);			// (100050); for long runs
+    {
+      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache, fetch_watchdog, 0);
+      fetch();
+    }
+    icache(1, fetch_icache, icache_decode);
+    {
+      Decoder decoder(2, icache_decode, decode_fetch, decode_regread, icount_watchdog);
+      decoder();
+    }
+    regRead(3, decode_regread, regread_alu, regread_muldiv);
+    alu(4, regread_alu, alu_regwrite1, alu_dcache, alu_fetch);
+    muldiv(5, regread_muldiv, muldiv_regwrite2);
+    regWrite1(6, alu_regwrite1, regwrite1_dcache);
+    dcache(7, alu_dcache, regwrite1_dcache, dcache_regwrite2);
+    regWrite2(8, muldiv_regwrite2, dcache_regwrite2);
+  }
+  printf("\n\n***All stopped.****\n");
+  printRegs();
+  return 0;
+}
+	
+	

@@ -10,57 +10,62 @@ use strict;
 use Data::Dumper;
 
 my @Tests = (
-	     # Test of alt blocks.
-	     {
-	      cmd     => "./alt",
-	      checker => \&check_alt,
-	     },
-	     # Test of channels w/arrays and big ints.
-	     {
-	      cmd     => "./comm",
-	      checker => \&check_comm,
-	     },
-	     # Test of afor with channels and structures.
-	     {
-	      cmd     => "./nalt",
-	      checker => \&check_nalt,
-	     },
-	     # Test of timeouts.
-	     {
-	      cmd     => "./ptimeout",
-	      checker => \&check_ptimeout,
-	     },
-	     # Test of queued channels.
-	     {
-	      cmd     => "./queues",
-	      checker => \&check_queues,
-	     },
-	     # Test of modelling a memory of limited bandwidth.
-	     {
-	      cmd     => "./share",
-	      checker => \&check_share,
-	     },
-	     # Another transaction test.
-	     {
-	      cmd     => "./fhr",
-	      checker => \&check_fhr,
-	     },
-	     # App mux/demux example.
-	     {
-	      cmd     => "./example 20 5 20 3 50 10 0 ",
-	      checker => \&check_example,
-	     },
-	     # CIM system test.
-	     {
-	      cmd     => "./cim",
-	      checker => \&check_cim,
-	     },
-	     # Simple ALU pipeline.
-	     {
-	      cmd     => "./clock &seed",
-	      checker => \&check_clock,
-	     },
-	    );
+			 # Test of alt blocks.
+			 {
+			  cmd     => "./alt",
+			  checker => \&check_alt,
+			 },
+			 # Test of channels w/arrays and big ints.
+			 {
+			  cmd     => "./comm",
+			  checker => \&check_comm,
+			 },
+			 # Test of afor with channels and structures.
+			 {
+			  cmd     => "./nalt",
+			  checker => \&check_nalt,
+			 },
+			 # Test of timeouts.
+			 {
+			  cmd     => "./ptimeout",
+			  checker => \&check_ptimeout,
+			 },
+			 # Test of queued channels.
+			 {
+			  cmd     => "./queues",
+			  checker => \&check_queues,
+			 },
+			 # Test of modelling a memory of limited bandwidth.
+			 {
+			  cmd     => "./share",
+			  checker => \&check_share,
+			 },
+			 # Another transaction test.
+			 {
+			  cmd     => "./fhr",
+			  checker => \&check_fhr,
+			 },
+			 # App mux/demux example.
+			 {
+			  cmd     => "./example 20 5 20 3 50 10 0 ",
+			  checker => \&check_example,
+			 },
+			 # CIM system test.
+			 {
+			  cmd     => "./cim",
+			  checker => \&check_cim,
+			 },
+			 # Simple ALU pipeline.
+			 {
+			  cmd     => "./clock &seed",
+			  checker => \&check_clock,
+			 },
+			 # Simple RISC processor.
+			 {
+			  cmd     => "./pipe",
+			  checker => \&check_pipe,
+			 },
+			);
 
 doTest(\@Tests);
 
@@ -416,6 +421,45 @@ sub check_clock {
     print "Expected to find $expcompletes completions, found $completes.\n";
     die;
   }
+}
+
+# We've hardcoded in some instructions in the simulation, so we just
+# check that the final register values are what we expect.
+sub check_pipe {
+  my @lines = split /\n/,@_[0];
+
+  my %expects = (
+				 1  => 6,
+				 3  => 22,
+				 20 => 122,
+				 32 => -1,
+				 );
+
+  my $pc = 32;  
+  my $rs = 0;
+  my @regs;
+  for (@lines) {
+	if (/^Register values/) {
+	  $rs = 1;
+	} elsif ( /^(\d+):\s+[0-9a-fA-F]+\s+\((-?\d+)\)/ && $rs) {
+	  $regs[$1] = $2;
+	}
+  }
+  if (!@regs) {
+	print "No register values found.\n";
+	die;
+  }
+  
+  # Check for expected values here.
+  my $fail = 0;
+  for (keys(%expects)) {
+	my ($f,$e) = ($regs[$_],$expects{$_});
+	if ($f != $e) {
+	  print "Error:  Expected register $_ to value value $e, but found $f.\n";
+	  $fail++;
+	}
+  }
+  die if $fail;
 }
 
 ##

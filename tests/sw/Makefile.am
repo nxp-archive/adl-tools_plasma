@@ -19,7 +19,8 @@ check_PROGRAMS = \
 	clock \
 	fhr \
 	example \
-	cim
+	cim \
+	pipe
 
 alt_SOURCES = alt.pa
 alt_DEPENDENCIES = $(DEPENDENCIES)
@@ -51,6 +52,9 @@ example_DEPENDENCIES = $(DEPENDENCIES)
 cim_SOURCES = cim.pa
 cim_DEPENDENCIES = $(DEPENDENCIES)
 
+pipe_SOURCES = pipe.pa
+pipe_DEPENDENCIES = $(DEPENDENCIES)
+
 DEP_FILES=\
 	./$(DEPDIR)/alt.Po \
 	./$(DEPDIR)/comm.Po \
@@ -61,7 +65,8 @@ DEP_FILES=\
 	./$(DEPDIR)/clock.Po \
 	./$(DEPDIR)/fhr.Po \
 	./$(DEPDIR)/example.Po \
-	./$(DEPDIR)/cim.Po
+	./$(DEPDIR)/cim.Po \
+	./$(DEPDIR)/pipe.Po
 
 include ./$(DEPDIR)/alt.Po
 include ./$(DEPDIR)/comm.Po
@@ -73,5 +78,6 @@ include ./$(DEPDIR)/clock.Po
 include ./$(DEPDIR)/fhr.Po
 include ./$(DEPDIR)/example.Po
 include ./$(DEPDIR)/cim.Po
+include ./$(DEPDIR)/pipe.Po
 
 include $(top_srcdir)/tests/Makefile.rules
