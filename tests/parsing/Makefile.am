@@ -3,6 +3,8 @@ TESTS = regress
 
 check_PROGRAMS = parse-test
 
+EXTRA_DIST = regress
+
 OccBuildDir = $(top_builddir)/opencxx
 GcBuildDir = $(top_builddir)/gc
 GcSrcDir = $(top_srcdir)/gc
