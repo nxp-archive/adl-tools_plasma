@@ -12,6 +12,7 @@
 namespace plasma {
 
   class Thread;
+  class Proc;
 
   typedef std::vector<Thread *> TVect;
 
@@ -33,6 +34,17 @@ namespace plasma {
     ConfigParms();
   };
 
+  // A Processor object encapsulates a Proc object and provides a means for
+  // users to group threads together.
+  class Processor {
+  public:
+    Processor();
+    Processor(Proc *p) : _proc(p) {};
+    Proc *operator()() { return _proc; };
+  private:
+    Proc *_proc;
+  };
+
   // The following threads relate to the "current" processor, unless
   // a Cluster argument is supplied (assuming a function is used that
   // takes one as an argument).
@@ -43,11 +55,13 @@ namespace plasma {
   // Create a new thread and add it to the ready queue.
   // Returns a handle to the new thread.
   THandle pSpawn(UserFunc *f,void *args);
+  THandle pSpawn(Proc *p,UserFunc *f,void *args);
 
   // Same as above, except that the data pointed to be args is copied to the
   // thread stack (nbytes worth).  The thread will receive a pointer to this
   // information.
   std::pair<THandle,void *> pSpawn(UserFunc *f,int nbytes,void *args);
+  std::pair<THandle,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *args);
 
   // Add a thread to the ready queue, but do not task switch.
   void pAddReady(THandle);
@@ -60,6 +74,9 @@ namespace plasma {
 
   // Return a handle to the current thread.
   THandle pCurThread();
+
+  // Return a handle to the current processor.
+  Processor pCurProc();
 
   // Returns true if a thread is finished.
   bool pDone(const THandle);

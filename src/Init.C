@@ -9,7 +9,7 @@
 #include "Machine.h"
 #include "System.h"
 #include "Cluster.h"
-#include "Processor.h"
+#include "Proc.h"
 
 using namespace std;
 
@@ -152,10 +152,8 @@ int main(int argc,const char *argv[])
 
     // This is the default processor object- it's initialized after
     // the cluster so that we get the number of priorities.
-    Processor processor;
-
-    // Add default processor to the cluster.
-    thecluster.add_proc(&processor);
+    // The act of creating the object adds it to the cluster's processor queue.
+    Proc processor;
 
     sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
     sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill

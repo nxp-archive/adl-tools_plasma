@@ -13,7 +13,7 @@
 #include "Machine.h"
 #include "Cluster.h"
 #include "System.h"
-#include "Processor.h"
+#include "Proc.h"
 
 using namespace std;
 
@@ -114,7 +114,7 @@ namespace plasma {
     if (cp._numpriorities < 1) {
       throw runtime_error("Number of priorities must be greater than 0.");
     }
-    Processor::setNumPriorities(cp._numpriorities);
+    Proc::setNumPriorities(cp._numpriorities);
     resetalarm();
   }
 
@@ -139,7 +139,7 @@ namespace plasma {
       // Note:  We add to the queue, then take from the queue, so that if
       // only one processor exists, things should still work.
       add_proc(_curproc);
-      if (! (_curproc = _procs.get()) ) {
+      if (! (_curproc = get_proc()) ) {
         return;
       }
       // Try to get a ready thread from the current processor.
@@ -160,40 +160,6 @@ namespace plasma {
   inline bool Cluster::ts_okay() const
   {
     return (!locked() && (_cur->priority() == 0));
-  }
-
-  // Create a thread and add to ready queue.
-  Thread *Cluster::create(UserFunc *f,void  *arg)
-  {
-    lock();
-    Thread *t = new Thread;
-    t->realize(f,arg);
-    t->setPriority(_cur->priority());
-    add_ready(t);
-    unlock();
-    return t;
-  }
-
-  // Create a thread and add to ready queue.  This allocates extra space at the
-  // end of the thread object for use by the caller.  Nbytes of data pointed
-  // to by args is copied over to this free space and the thread will receive a
-  // pointer to this extra space.
-  pair<Thread *,void *> Cluster::create(UserFunc *f,int nbytes,void  *args)
-  {
-    lock();
-    // Allocate thread object + nbytes.
-    void *tmp = Thread::operator new(sizeof(Thread)+nbytes);
-    // Construct object at this space.
-    Thread *t = new (tmp) Thread;
-    // Argument to thread is pointer to free space.
-    void *d = t->endspace();
-    t->realize(f,d);
-    t->setPriority(_cur->priority());
-    // Copy over data to free space.
-    memcpy(d,args,nbytes);
-    add_ready(t);
-    unlock();
-    return make_pair(t,d);
   }
 
   // Causes the current thread to wait on the specified thread.
@@ -237,7 +203,7 @@ namespace plasma {
   void Cluster::set_priority(unsigned p)
   {
     lock();
-    if (p >= Processor::numPriorities()) {
+    if (p >= Proc::numPriorities()) {
       pAbort("Bad priority value");
     }
     _cur->setPriority( convert_priority(p) );
@@ -252,13 +218,13 @@ namespace plasma {
 
   unsigned Cluster::lowest_priority() const
   {
-    return Processor::numPriorities()-1;
+    return Proc::numPriorities()-1;
   }
 
   inline unsigned Cluster::convert_priority(unsigned priority) const
   {
     int p = priority;
-    int s = Processor::numPriorities();
+    int s = Proc::numPriorities();
     return (abs((p - (s - 1)) % s));
   }
 
@@ -286,7 +252,7 @@ namespace plasma {
 
   // If item is non-null, then add to queue, unless no current
   // processor exists, in which case we store it as the current processor.
-  void Cluster::add_proc(Processor *p)
+  void Cluster::add_proc(Proc *p)
   {
     if (p) {
       if (!_curproc) {
@@ -297,12 +263,15 @@ namespace plasma {
     }
   }
 
-  Processor *Cluster::get_proc()
+  // Gets next processor with threads to run.
+  // We return 0 if we don't find anything with any
+  // active threads.
+  inline Proc *Cluster::get_proc()
   {
-    return _procs.get();
+    return _procs.get_nonempty();
   }
 
-  Processor *Cluster::get_proc(Processor *p)
+  Proc *Cluster::get_proc(Proc *p)
   {
     return _procs.get(p);
   }

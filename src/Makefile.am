@@ -6,9 +6,10 @@ libplasma_a_SOURCES = \
 	Interface.C \
 	Init.C \
 	Cluster.C \
-	Processor.C \
+	Proc.C \
 	System.C \
 	Queue.C \
+	ProcQ.C \
 	Thread.C
 
 pkginclude_HEADERS = \
@@ -19,7 +20,7 @@ pkginclude_HEADERS = \
 noinst_HEADERS = \
 	Machine.h  \
 	Cluster.h  \
-	Processor.h \
+	Proc.h \
 	System.h \
 	Thread.h \
 	Queue.h \

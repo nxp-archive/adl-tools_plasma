@@ -119,6 +119,21 @@ my @Tests = (
 	      cmd     => "./pri2",
 	      checker => \&check_pri2,
 	     },
+	     # C++-only processor test.
+	     {
+	      cmd     => "./proc1",
+	      checker => \&check_proc1,
+	     },
+	     # Processor test w/on-blocks.
+	     {
+	      cmd     => "./proc2",
+	      checker => \&check_proc2,
+	     },
+	     # Processor test spawn.
+	     {
+	      cmd     => "./proc3",
+	      checker => \&check_proc3,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -239,6 +254,7 @@ sub check_channel {
   my @lines = split /\n/,$input;
   my $max = 10;
   my $numFinish = 0;
+  my $done = 0;
   dprint "Regex:  $regex\n";
   for (@lines) {
     dprint "Line:  $_\n";
@@ -254,6 +270,8 @@ sub check_channel {
       }
     } elsif ( /(Producer|Consumer) done./ ) {
       ++$numFinish;
+    } elsif ( /Done\./ ) {
+      ++$done;
     }
     for my $k (keys %exphash ) {
       if ( /$k/ ) {
@@ -266,6 +284,9 @@ sub check_channel {
       print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
       die;
     }
+  }
+  if (!$done) {
+    die "Did not find main-thread finish message.\n";
   }
   for my $i (0..$#data) {
     if (keys(%{$data[$i]})) {
@@ -296,6 +317,7 @@ sub check_qchannel {
   my $max = 10;
   my $numFinish = 0;
   my $exprcount = 0;
+  my $done = 0;
   dprint "Regex:  $regex\n";
   dprint "Check regex:  $expregex\n";
   dprint "Expected data:  ",join(' ',keys %alldata),"\n";
@@ -311,6 +333,8 @@ sub check_qchannel {
       delete $alldata{$val};
     } elsif ( /(Producer|Consumer) done./ ) {
       ++$numFinish;
+    } elsif ( /Done\./ ) {
+      ++$done;
     } elsif ( $expregex && /$expregex/ ) {
       ++$exprcount;
       if ($1 > $expmax) {
@@ -330,6 +354,9 @@ sub check_qchannel {
   }
   if ($expregex && !$exprcount) {
     die "Found no occurrance of required check expression.\n";
+  }
+  if (!$done) {
+    die "Did not find main-thread finish message.\n";
   }
 }
 
@@ -516,6 +543,8 @@ sub check_sequence {
   my %done;
   @done{keys(%$count)} = (1) x keys(%$count);
 
+  my $final = 0;
+
   my $iseq;
   for (@lines) {
     if ( /In block (\d+\.?\d*)/ ) {
@@ -525,6 +554,8 @@ sub check_sequence {
     } elsif ( /Done with block (\d+\.?\d*)/ ) {
       my $b = eval $1;
       --$done{$b};
+    } elsif (/Done\./) {
+      ++$final;
     }
   }
 
@@ -545,6 +576,10 @@ sub check_sequence {
       print "Error:  Did not find a expected number of messages from block $i:  Expected $count->{$i} more.\n";
       die;
     }
+  }
+
+  if (!$final) {
+    die "Did not find main-thread finish message.\n";
   }
 
 }
@@ -577,3 +612,47 @@ sub check_pri2 {
 	      );
   check_sequence(@_[0],$seq,\%count);
 };
+
+# Test priority sequence.
+sub check_pri2 {
+  my $seq = "(1 |3 |4 )+(2 )+(1 |3 |4 )+";;
+  my %count = (
+	       1.0 => 10, 
+	       2.0 => 30,
+	       3.0 => 10,
+	       4.0 => 10,
+	      );
+  check_sequence(@_[0],$seq,\%count);
+};
+
+# C++-only processor test.
+sub check_proc1 {
+  my $seq = "(1 |3 |4 |5 )+";
+  my %count = (
+	       1.0 => 10, 
+	       2.0 => 10,
+	       3.0 => 10,
+	       4.0 => 20,
+	       5.0 => 10,
+	      );
+  check_sequence(@_[0],$seq,\%count);
+};
+
+# Processor test w/on-blocks.
+sub check_proc2 {
+  my $seq = "(1 |3 |4 |5 )+";
+  my %count = (
+	       1.0 => 10, 
+	       2.0 => 10,
+	       3.0 => 10,
+	       4.0 => 20,
+	       5.0 => 10,
+	      );
+  check_sequence(@_[0],$seq,\%count);
+};
+
+# Processor test w/spawn.
+sub check_proc3 {
+  my @exp1 = ( 6.05, 103.33, 10103.1, 3.14159 );
+  check_spawn($_[0], \@exp1 );
+}

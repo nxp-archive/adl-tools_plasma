@@ -14,6 +14,7 @@ bool Plasma::Initialize()
   SetMetaclassForPlain("Plasma");
   RegisterNewBlockStatement("par");
   RegisterNewForStatement("pfor");
+  RegisterNewWhileStatement("on");
   RegisterNewBlockStatement("alt");
   RegisterNewForStatement("afor");
   RegisterNewClosureStatement("port");
@@ -177,6 +178,15 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 
   thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
 
+  // Do we have a placement statement?  If so, proc will store the expression
+  // which specifies the processor.  If not, this will be nil, so the evaluation
+  // will produce an empty string.
+   Ptree *proc = nil,*tproc,*tbody;
+  if (Ptree::Match(nexpr,"[ on ( %? ) %? ]",&tproc,&tbody)) {
+    nexpr = tbody;
+    proc = Ptree::qMake("(`tproc`)(),");
+  }
+
   if (args) {
     // Arguments exist- we have to create a structure in which
     // to pass them.
@@ -188,16 +198,16 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::THandle `thname` = plasma::pSpawn(`nfname`,sizeof(`tstype`),&`tsname`).first;\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`).first;\n"));
     } else {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::THandle `thname` = plasma::pSpawn(`nfname`,&`tsname`);\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,&`tsname`);\n"));
     }
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *);\n"));
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
-    elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`nfname`,0);\n"));
+    elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0);\n"));
   }
 }
 
@@ -218,15 +228,35 @@ bool isPtrType(TypeInfo &t)
   return (t.IsPointerToMember() || t.IsPointerType());
 }
 
+// Translates a member call.  This is designed to handle calls to spawn() from Processor
+// objects.  This function is invoked because we state that Plasma is a metaclass for Processor.
+Ptree* Plasma::TranslateMemberCall(Environment* env, Ptree* object,
+                                   Ptree* op, Ptree* member, Ptree* arglist)
+{
+  // For future compatibility, if the member isn't "spawn", pass it on through.
+  if (!member->Eq("spawn")) {
+    return Class::TranslateMemberCall(env,object,op,member,arglist);
+  } else {
+    // Was this a pointer call?  If so, dereference it.
+    Ptree *obj = object;
+    if (op->Eq("->")) {
+      obj = Ptree::qMake("*(`object`)");
+    }
+    return TranslateFunctionCall(env,obj,arglist);
+  }
+}
+
 // Translates a spawn "function call".  It expects a single argument which must be a function
 // call or member invocation.  The arguments are evaluated immediately, then a thread is
 // launched of that function call.  The return value is a ResChannel object which contains the
 // result of the function.  Trying to read the result before it's finished will block the thread.
 Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* preargs)
 {
+  // If the object is just "spawn" then we consider this to be the function call invocationm, e.g.
+  // the spawn operator.  Otherwise, we consider this to be the spawn pseudo-method call.
+  Ptree *proc = nil;
   if (!spawnobj->Eq("spawn")) {
-    ErrorMessage(env,"bad spawn class- make sure that you haven't used the pSpawner keyword erroneously.",nil,spawnobj);
-    return nil;
+    proc = Ptree::qMake("(`spawnobj`)()");
   }
 
   Ptree *args = TranslateArguments(env,preargs)->Cadr();
@@ -299,7 +329,7 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   // Create spawn function- this will take the function and its arguments
   // and launch a thread, returning a result structure w/a pointer to the
   // result data.
-  if (!makeSpawnFunc(env,objclass,t,targs,ufunc,lfunc,sfunc)) {
+  if (!makeSpawnFunc(env,objclass,t,targs,ufunc,lfunc,sfunc,(proc != nil))) {
     return nil;
   }
 
@@ -308,6 +338,14 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   Ptree *cur = start;
 
   bool fptr = isPtrType(t);
+
+  // If we have a specified processor, pass as argument.
+  if (proc) {
+    cur = lappend(cur,proc);
+    if (objptr || uargs || fptr) {
+      cur = lappend(cur,Ptree::Make(","));
+    }
+  }
 
   // If we have an explicit object, pass as argument.
   if (objptr) {
@@ -402,6 +440,11 @@ bool Plasma::checkForMemberCall(Environment *env,Class* &objclass,
   return true;
 }
 
+Ptree *procName()
+{
+  return Ptree::Make("proc");
+}
+
 Ptree *className()
 {
   return Ptree::Make("_class");
@@ -474,7 +517,7 @@ bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo t,Ptree *
 
 // Creates the launcher function and spawn function for a spawn operator.
 bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *targs,
-                           Ptree *ufunc,Ptree *lfunc,Ptree *sfunc)
+                           Ptree *ufunc,Ptree *lfunc,Ptree *sfunc,bool proc)
 {
   // Create the launcher function which calls the user function w/proper args.
   Ptree *start = Ptree::qMake("inline void `lfunc`(void *args)\n"
@@ -526,6 +569,14 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   start = Ptree::qMake("inline `rtemplate` `sfunc`(");
   cur = start;
 
+  // If we have a processor, we need it as an argument.
+  if (proc) {
+    cur = lappend(cur,Ptree::qMake("plasma::Proc *`procName()`"));
+    if (objclass || numargs || fptr) {
+      cur = lappend(cur,Ptree::qMake(","));
+    }
+  }
+
   // If we have an explicit object, we need it as an argument.
   if (objclass) {
     cur = lappend(cur,Ptree::qMake("`objclass->Name()` *`className()`"));
@@ -568,7 +619,11 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
 
   // Finally, we spawn the launch function.
   cur = lappend(cur,Ptree::qMake("};\n"
-                                 "return `rtemplate`(plasma::pSpawn(`lfunc`,sizeof(`targs`),&args));\n}\n"));
+                                 "return `rtemplate`(plasma::pSpawn("));
+  if (proc) {
+    cur = lappend(cur,Ptree::qMake("`procName()`,"));
+  }
+  cur = lappend(cur,Ptree::qMake("`lfunc`,sizeof(`targs`),&args));\n}\n"));
   
   InsertBeforeToplevel(env,start);
 

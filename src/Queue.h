@@ -46,7 +46,8 @@ namespace plasma {
     unsigned size() const;
 
     friend std::ostream &operator<<(std::ostream &,const Queue &);
-  private:
+  
+  protected:
     QBase *_head; // Head of the queue.
     QBase *_tail; // Tail of the queue.
   };

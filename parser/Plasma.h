@@ -35,6 +35,8 @@ public:
   Ptree* TranslateUserPlain(Environment*,Ptree*, Ptree*);
   // Translates spawn function call.
   Ptree *TranslateFunctionCall(Environment *,Ptree *,Ptree *);
+  Ptree *TranslateMemberCall(Environment* env, Ptree* object,
+                             Ptree* op, Ptree* member, Ptree* arglist);
   // Setup code.
   static bool Initialize();
 
@@ -59,7 +61,7 @@ private:
   bool parseAltBlock(Environment *env,Ptree *body,bool isloop,PortVect &pv,Ptree* &defaultblock);
   bool checkForMemberCall(Environment *,Class* &,Environment* &,Ptree* &,Ptree* &);
   bool makeSpawnStruct(Environment *env,Class *,TypeInfo,Ptree *,Ptree *);
-  bool makeSpawnFunc(Environment *env,Class *,TypeInfo,Ptree *,Ptree *,Ptree *,Ptree *);
+  bool makeSpawnFunc(Environment *env,Class *,TypeInfo,Ptree *,Ptree *,Ptree *,Ptree *,bool);
 };
 
 

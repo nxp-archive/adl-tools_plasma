@@ -1,0 +1,35 @@
+//
+// Test of the spawn operator with a specified Processor.
+//
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
+  }
+  return a*a + b*b;
+}
+
+double pi()
+{
+  return 3.14159;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  Processor p1,p2;
+  Processor *proc = &p1;
+
+  Result<double> r1 = spawn(foo(1.1,2.2));
+  Result<double> r2 = p1.spawn(foo(2.7,9.8));
+  Result<double> r3 = proc->spawn(foo(100.45,3.59));
+  Result<double> r4 = p2.spawn(pi());
+  cout << "Result is:  " << r1.value() << ", " << r2.value() << ", " << r3.value() << ", " << r4.value() << endl;
+  
+  return 0;
+}

@@ -7,18 +7,29 @@ driver:  Regression driver.
 
 Command-line arguments:
 
-l
-list       :  List the tests in this regression.
+B<l>
+B<list>    :  List the tests in this regression.
 
-t
-tests      :  Specify what tests to run.  Should be a number or a range, where
-              the numbers refer to indices of the test array (1 is the first test).
+B<t>=I<r>
+B<tests>=I<r>  :  Specify what tests to run.  Should be a number or a range, where
+the numbers refer to indices of the test array (1 is the first test).
 
-ko
-keepoutpput:  Do not delete temporary files. 
+B<x>=I<r>
+B<exclude>=I<r>:  Exclude tests.  Should be a number or a range.  Range format is
+the same as for the "tests" parameter.
 
-d
-debug      :  Enable debug messages.
+B<s>=I<str>
+B<string>=I<str> :  Run any tests which contain string I<str>.  This is a simple substring
+search, not a regular expression search.
+
+B<r>=I<re>
+B<regex>=I<re>  :  Run any tests which match regular expression I<re>.
+
+B<ko>
+B<keepoutput>:  Do not delete temporary files. 
+
+B<d>
+B<debug>      :  Enable debug messages.
 
 The valid range forms are:
 
@@ -27,10 +38,6 @@ The valid range forms are:
        -y:  Run tests from start, up to and including y.
 
        x-:  Run tests x through the last one.
-
-        x
-  exclude:  Exclude tests.  Should be a number or a range.  Range format is
-            the same as for the "tests" parameter.
 
 Note:  Multiple parms are allowed and are concatenated together.
 
@@ -46,7 +53,7 @@ doTest(@tests_list);
     doTest takes an array reference as a parameter.
 
     Each entry in the supplied array should be a hash.
-    These are the allowed keys;
+    These are the allowed keys:
 
     cmd    :  Command-line to execute.
     cmts   :  Preserve comments in diff.  Default is 0 (do not preserve).
@@ -233,8 +240,8 @@ sub get_run_list {
   my $tests = shift;
   my $size = scalar( @$tests );
   my (%includes, %excludes);
-  my (@ilist,@xlist);
-  my ($help,$list);
+  my (@ilist,@xlist,@slist);
+  my ($help,$man,$list);
 
   # Process the command-line options, generating up a 
   # list of ranges to include and a list of ranges to exclude.
@@ -242,18 +249,20 @@ sub get_run_list {
       (
        "l|list"        => \$list,
        "h|help"        => \$help,
+       "m|man"         => \$man,
        "d|debug"       => \$debug,
        "t|tests=s"     => \@ilist,
        "x|excludes=s"  => \@xlist,
+       "s|string=s"    => \@slist,
        "ko|keepoutput" => \$keepoutput,
       )) {
-    printhelp(1);
+    printhelp(1,1);
   }
 
   # Print help if requested to do so.
-  if ($help) {
-    printhelp(0);
-  }
+  printhelp(0,1) if $help;
+
+  printhelp(0,2) if $man;
 
   # List tests, if requested to do so.
   if ($list) {
@@ -304,10 +313,24 @@ sub get_run_list {
   }
 
   # Now create a new test list with only the included indices.
+  # If substrings were specified, include each item only if
+  # the command contains a listed substring.
   my %newtests;
   for my $i (0..$size-1) {
     if ($includes{$i}) {
-      $newtests{$i+1} = $$tests[$i];
+      my $test = $$tests[$i];
+      if (@slist) {
+	# Have substrings, so do search.
+	for my $s (@slist) {
+	  if ( index($test->{cmd},$s) >= 0) {
+	    $newtests{$i+1} = $test;
+	    last;
+	  }
+	}
+      } else {
+	# No substrings, so include item.
+	$newtests{$i+1} = $test;
+      }
     }
   }
 
@@ -328,11 +351,11 @@ sub listtests() {
 }
 
 sub printhelp() {
-  my $eval = shift;
+  my ($eval,$verbose) = (shift,shift);
   my @pl = split ('/',$0);
   pop @pl;
   my $path = join('/',@pl) . "/../rdriver.pm";
-  pod2usage(-exutval => $eval,-input=>$path);
+  pod2usage(-exitval => $eval,-input=>$path,-verbose=>$verbose);
   exit 0;
 }
 

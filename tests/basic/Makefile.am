@@ -31,7 +31,10 @@ check_PROGRAMS = \
 	spawn4 \
 	mutex1 \
 	pri1 \
-	pri2
+	pri2 \
+	proc1 \
+	proc2 \
+	proc3
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
@@ -101,6 +104,15 @@ pri1_DEPENDENCIES = $(DEPENDENCIES)
 pri2_SOURCES = pri2.pa
 pri2_DEPENDENCIES = $(DEPENDENCIES)
 
+proc1_SOURCES = proc1.C
+proc1_DEPENDENCIES = $(DEPENDENCIES)
+
+proc2_SOURCES = proc2.pa
+proc2_DEPENDENCIES = $(DEPENDENCIES)
+
+proc3_SOURCES = proc3.pa
+proc3_DEPENDENCIES = $(DEPENDENCIES)
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
 DEP_FILES=\
@@ -125,7 +137,10 @@ DEP_FILES=\
 	./$(DEPDIR)/spawn4.Po \
 	./$(DEPDIR)/mutex1.Po \
 	./$(DEPDIR)/pri1.Po \
-	./$(DEPDIR)/pri2.Po
+	./$(DEPDIR)/pri2.Po \
+	./$(DEPDIR)/proc1.Po \
+	./$(DEPDIR)/proc2.Po \
+	./$(DEPDIR)/proc3.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -147,6 +162,8 @@ include ./$(DEPDIR)/spawn4.Po
 include ./$(DEPDIR)/mutex1.Po
 include ./$(DEPDIR)/pri1.Po
 include ./$(DEPDIR)/pri2.Po
+include ./$(DEPDIR)/proc2.Po
+include ./$(DEPDIR)/proc3.Po
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

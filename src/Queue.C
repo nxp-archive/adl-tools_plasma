@@ -41,6 +41,9 @@ namespace plasma {
       QBase *next = cur->getnext();
       if (next == t) {
         cur->setnext(t->getnext());
+        if (!cur->getnext()) {
+          _tail = cur;
+        }
         return t;
       }
       cur = next;

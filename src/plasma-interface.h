@@ -7,11 +7,22 @@
 #ifndef _PLSMAA_INTERFACE_H_
 #define _PLSMAA_INTERFACE_H_
 
-#include "Interface.h"
+namespace plasma {
 
-// Dummy class to implement spawn operator.
+  // We want to process any calls to Processor::spawn.
+  // Note:  This *must* be in the plasma namespace or it
+  // will not work b/c Processor is declared in plasma.
+  metaclass Plasma Processor;
+
+}
+
+// Dummy class to implement spawn operator.  This is
+// outside of the plasma namespace so that it affects
+// everything and thus looks like an operator.
 pSpawner class Spawn {};
 Spawn spawn;
+
+#include "Interface.h"
 
 #endif
 

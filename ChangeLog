@@ -1,16 +1,63 @@
+2004-06-01  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added the "on" block, which allows users to specify a target
+	processor on which to run a statement within a par block:
+
+	par {
+	  on(p1) {
+	    ....
+	  }
+	  on(p2) {
+	    ...
+	  }
+	  {
+	    ...
+	  }
+	}
+
+	In the above, the first block runs on Processor p1, the second on
+	Procesor p2, and the third on the current processor.
+
+	Added a spawn pseudo-method to the Processor class::
+
+		p1.spawn(foo(1,2));
+
+	This spawns a new process on the specified processor.
+
 2004-05-27  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Created the Processor class, which just wraps a Proc object.
+	The user can instantiate Processor objects and supply the
+	underlying Proc ptr to pSpawn.
+
+	* The current scheduler architecture is as follows:
+
+	- The Cluster object has a queue of Proc objects.  Each time the
+	scheduler thread is run, it chooses another Proc with threads to
+	run.  If none are available, we exit.
+
+	- We add the current Proc to the Proc queue before we query
+	again.  Thus, we do not discard empty Procs from the Proc queue-
+	we simply cycle through the list.  This means that we don't need
+	to store the Proc with a Thread when the Thread is waitinng on
+	another Thread.
+
+	- We get the thread to execute from the Proc object (respecting
+	priorities) and swap to it.  This has the effect of passing the
+	main scheduling thread amongst the processors, but it means that
+	we timeslice between processors.
+
 	* Pretty big re-org of the backend:  I renamed Processor to
-	Cluster and created a new Processor class which stores the
+	Cluster and created a new Proc class which stores the
 	priority-ordered ready queues.  The Cluster object contains the
 	scheduler and the queue of processors.  The scheduler picks a
 	processor and then runs the next available thread from it.  The
-	idea is that the Processor class will be exposed to users, whereas
+	idea is that the Proc class will be exposed to users, whereas
 	the Cluster will be kept hidden and will eventually map to each
 	kernel thread (if we ever implement that).
 
 	* The ThreadQ class was made into a generic Queue class which uses
-	QBase as a container element.  Thread and Processor now derives
+	QBase as a container element.  Thread and Proc now derives
 	from it and ThreadQ and ProcQ privately inherit from Queue, adding
 	wrappers which do the appropriate pointer casting.
 

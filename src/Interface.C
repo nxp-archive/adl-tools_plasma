@@ -4,6 +4,7 @@
 //
 
 #include "Interface.h"
+#include "Proc.h"
 #include "Cluster.h"
 #include "System.h"
 
@@ -22,13 +23,23 @@ namespace plasma {
   // Create a new thread and make it ready.
   Thread *pSpawn(UserFunc *f,void *a)
   {
-    return thecluster.create(f,a);
+    return thecluster.curProc()->create(f,a);
+  }
+
+  Thread *pSpawn(Proc *p,UserFunc *f,void *a)
+  {
+    return p->create(f,a);
   }
 
   // Create a new thread and make it ready.
   pair<Thread *,void *> pSpawn(UserFunc *f,int nbytes,void *a)
   {
-    return thecluster.create(f,nbytes,a);
+    return thecluster.curProc()->create(f,nbytes,a);
+  }
+
+  pair<Thread *,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *a)
+  {
+    return p->create(f,nbytes,a);
   }
 
   void pAddReady(Thread *t)
@@ -48,7 +59,12 @@ namespace plasma {
 
   Thread *pCurThread()
   {
-    return thecluster.getCur();
+    return thecluster.curThread();
+  }
+
+  Processor pCurProc()
+  {
+    return Processor(thecluster.curProc());
   }
 
   void pWait(Thread *t)
@@ -126,6 +142,11 @@ namespace plasma {
   bool pIsLocked()
   {
     return thecluster.locked();
+  }
+
+  Processor::Processor() :
+    _proc(new Proc)
+  {
   }
 
 }

@@ -23,10 +23,6 @@ namespace plasma {
     // Main entry point.  This runs until there are no more user threads.
     void scheduler();
 
-    // Create a thread and add to the ready queue.
-    THandle create(UserFunc *f,void *arg);
-    std::pair<THandle ,void *> create(UserFunc *f,int nbytes,void *args);
-
     // Add an already created thread to the ready queue of the current
     // processor.  This must have already been realized.
     void add_ready(THandle t);
@@ -62,9 +58,8 @@ namespace plasma {
     unsigned lowest_priority() const;
 
     // Add and remove processor objects.
-    void add_proc(Processor *);
-    Processor *get_proc();
-    Processor *get_proc(Processor *);
+    void add_proc(Proc *);
+    Proc *get_proc(Proc *);
 
     // Explicitly switch to the scheduler thread.
     // Caller must lock cluster.
@@ -78,7 +73,9 @@ namespace plasma {
     void preempt();          // switch on alarm preemption
 
     void setCur(THandle t);
-    THandle getCur() const;
+    THandle curThread() const;
+
+    Proc *curProc() const;
 
     // Returns true if it's okay to timeslice.
     bool ts_okay() const;
@@ -93,6 +90,8 @@ namespace plasma {
     unsigned convert_priority(unsigned p) const;
 
     static bool init();
+
+    Proc *get_proc();
 
     // Get next available thread, respecting priorities, from the
     // current processor.
@@ -111,7 +110,7 @@ namespace plasma {
     static unsigned _timeslice;        // Time slice period in usec.
 
     ProcQ      _procs;                 // Queue of processors we know about.
-    Processor *_curproc;               // Current processor.
+    Proc      *_curproc;               // Current processor.
     Thread     _main;                  // Main thread (the scheduler loop itself).
     Thread    *_cur;                   // Current thread.
     bool       _kernel;                // Set if thread is in kernel mode
@@ -140,9 +139,14 @@ namespace plasma {
     _cur = t;
   }
 
-  inline THandle Cluster::getCur() const
+  inline THandle Cluster::curThread() const
   {
     return _cur;
+  }
+
+  inline Proc *Cluster::curProc() const
+  {
+    return _curproc;
   }
 
   // cluster-object, statically allocated in address space of current process

@@ -73,6 +73,7 @@ int pMain(int argc,const char *argv[])
       printf ("Done with block 4.\n");
     }
   }
+  printf ("Done.\n");
   return 0;
 }
 
