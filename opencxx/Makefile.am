@@ -140,7 +140,7 @@ pkginclude_HEADERS	= env.h member.h mop.h \
 # into the distribution tarball (opencxx-<version>.tar.gz).
 # Nevertheless, the following files has to go there too:
 #
-#EXTRA_DIST = driver2.cpp $(HEADERS_all)
+EXTRA_DIST = $(HEADERS_all)
 
 
 # Additional dependencies
