@@ -39,6 +39,7 @@ public:
                              Ptree* op, Ptree* member, Ptree* arglist);
   // Setup code.
   static bool Initialize();
+  void InitializeInstance(Ptree* def, Ptree* margs);
 
 private:
   // Translation functions for the new types introduced by Plasma.
@@ -49,7 +50,7 @@ private:
   Ptree* TranslateSpawn(Environment* env,Ptree* keyword, Ptree* rest);
 
   // Various helper functions.
-  void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
+  void makeThreadStruct(Environment *env,Ptree *type,Ptree *args,const ArgVect &av);
   void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                        Environment *env,bool heapalloc);
   Ptree *generateAltBlock(Environment *env,const PortVect &pv,Ptree *defaultblock);

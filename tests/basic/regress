@@ -44,6 +44,16 @@ my @Tests = (
 	      cmd     => "./par7",
 	      checker => \&check_par6,
 	     },
+	     # Check that pars work with explicit method calls.
+	     {
+	      cmd     => "./par8",
+	      checker => \&check_par8,
+	     },
+	     # Check that pars work with implicit method calls.
+	     {
+	      cmd     => "./par9",
+	      checker => \&check_par8,
+	     },
 	     # Quicksort with parallel sorting of split elements.
 	     {
 	      cmd     => "./qsort",
@@ -609,6 +619,17 @@ sub check_par6 {
   my @exp1 = ( 10, 12.5, 20, 25, 30, 37.5, 40, 50, 50, 62.5 );
   my @exp2 = ( 10, 16.8, 20, 33.6, 30, 50.4, 40, 67.2, 50, 84, );
   check_spawn($_[0], \@exp1, \@exp2);
+}
+
+# Checks that explicit method calls work, i.e. this->xx().
+sub check_par8 {
+  my @exp1 = ( 1 );
+  my @exp2 = ( 2 );
+  my @exp3 = ( 3 );
+  my @exp4 = ( 4 );
+  my @exp5 = ( 5 );
+  my @exp6 = ( 6 );
+  check_spawn($_[0], \@exp1, \@exp2, \@exp3, \@exp4, \@exp5, \@exp6);
 }
 
 # Just make sure that we got the right number of messages.

@@ -1,0 +1,45 @@
+//
+// Tests that par blocks work with explicit method calls.
+//
+#include <iostream>
+#include <iterator>
+
+using namespace std;
+using namespace plasma;
+
+struct Foo {
+  void stuff(int x) {
+    cout << "Result is:  " << x << endl;
+  };
+  void a()
+  {
+    par {
+      par {
+        this->stuff(1);
+        this->stuff(2);
+      }
+      par {
+        this->stuff(3);
+        this->stuff(4);
+      }
+    }
+  }
+  void b();
+};
+
+void Foo::b()
+{
+  par {
+    this->stuff(5);
+    this->stuff(6);
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  Foo f;
+  f.a();
+  f.b();
+  cout << "Done." << endl;
+  return 0;
+}

@@ -1,0 +1,45 @@
+//
+// Tests that implicit method calls will work w/par blocks.
+//
+#include <iostream>
+#include <iterator>
+
+using namespace std;
+using namespace plasma;
+
+struct Foo {
+  void stuff(int x) {
+    cout << "Result is:  " << x << endl;
+  };
+  void a()
+  {
+    par {
+      par {
+        stuff(1);
+        stuff(2);
+      }
+      par {
+        stuff(3);
+        stuff(4);
+      }
+    }
+  }
+  void b();
+};
+
+void Foo::b()
+{
+  par {
+    stuff(5);
+    stuff(6);
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  Foo f;
+  f.a();
+  f.b();
+  cout << "Done." << endl;
+  return 0;
+}

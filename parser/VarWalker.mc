@@ -12,6 +12,8 @@ using namespace std;
 
 StrHash VarWalker::_tsvars;
 
+Class *VarWalker::_plasma = 0;
+
 // This derived class exists so that the double-dispatch mechanism will
 // end up calling TranslateVariable.  By default, you generally just get
 // a character string, which won't work when there are nested par blocks.
@@ -195,6 +197,80 @@ Ptree *VarWalker::TranslateUserStatement(Ptree *exp)
   } 
 }
 
+// Add 'this' pointer info to argument structures.
+void VarWalker::storeThis(Ptree *ctype)
+{
+  if (!_handledThis) {
+    _argnames.push_back(ArgPair(Ptree::Make("this"),true,TypeInfo()));
+    _argnames.back().setFwdDef(Ptree::qMake("class `ctype`"));
+    _args = Ptree::Cons(Ptree::qMake("`ctype` *_this"),_args);
+    _handledThis = true;
+  }
+}
+
+// Translates a this pointer.
+Ptree *VarWalker::TranslateThis(Ptree *exp)
+{
+  if (!_inguard) {
+    TypeInfo t;
+    TypeofThis(exp,t);
+    Ptree *ctype = t.MakePtree();
+    // Have to get rid of qualified name if present (don't know why it's
+    // qualified!).
+    if (!ctype->IsLeaf()) {
+      ctype = ctype->Ca_ar();
+    }
+    storeThis(ctype);
+    // We have to modify "this" to something else b/c it's a reserved word in
+    // C++.
+    if (_tsname) {
+      // Only translate is tsname is set.
+      Ptree *tmp1 = Ptree::qMake("(((`_tstype`*)");
+      Ptree *tmp2 = Ptree::qMake(")->_this)");
+      return TsList::List(tmp1,new TsLeaf(_tsname),tmp2);
+    }
+  }
+  return exp;
+}
+
+// This will act like LookupThis, but will ignore the Plasma metaclass.
+Class *VarWalker::findThis()
+{
+  for (Environment *e = env; e != nil; e = e->GetOuterEnvironment()) {
+    if (Class *c = e->IsClassEnvironment()) {
+      if (c != _plasma) {
+        return c;
+      }
+    }
+  }
+  return nil;
+}
+
+// Handles functions- if this is an implicit method, we translate it to an explicit
+// method call and store the this pointer.
+Ptree *VarWalker::handleFunction(Ptree *exp)
+{
+  TypeInfo t;
+  exp->Typeof(this,t);
+
+  if (t.IsFunction()) {
+    if (Class *c = findThis()) {
+      if (c->LookupMember(exp)) {
+        // We have an implicit method call.
+        storeThis(c->Name());
+        if (_tsname) {
+          // Only translate is tsname is set.
+          Ptree *tmp1 = Ptree::qMake("(((`_tstype`*)");
+          Ptree *tmp2 = Ptree::qMake(")->_this)->`exp`");
+          return TsList::List(tmp1,new TsLeaf(_tsname),tmp2);
+        }        
+      }
+    }
+    return exp;
+  }
+  return nil;
+}
+
 // Look for the variable in all environments from the current up to,
 // but not including, the parent environment.  If not found, we consider
 // this to be a needed argument and add it to the _args list.  Note:  We
@@ -210,14 +286,9 @@ Ptree *VarWalker::TranslateVariable(Ptree *exp)
     bool found = false;
     bool found_inguard = false;
 
-    TypeInfo t;
-    exp->Typeof(this,t);
-    //    cerr << "Type:  " << t.MakePtree() << endl;
-
-    // For some reason, functions in namespaces sometimes get processed here.
-    // This is probably a bug, but we guard against it here.
-    if (t.IsFunction()) {
-      return exp;
+    // Handle namespace functions and methods here.
+    if (Ptree *e = handleFunction(exp)) {
+      return e;
     }
 
     // This searches for a variable up to, but not including, the parent scope.

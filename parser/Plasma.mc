@@ -9,6 +9,13 @@
 
 using namespace std;
 
+// It should be valid to do this b/c there should only be one instance
+// of the Plasma object.
+void Plasma::InitializeInstance(Ptree*, Ptree*)
+{
+  VarWalker::setPlasma(this);
+}
+
 bool Plasma::Initialize()
 {
   SetMetaclassForPlain("Plasma");
@@ -241,7 +248,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   if (args) {
     // Arguments exist- we have to create a structure in which
     // to pass them.
-    makeThreadStruct(benv,tstype,args);     // Create the argument structure.
+    makeThreadStruct(benv,tstype,args,vw->argnames());     // Create the argument structure.
     const string &arglist = argList(vw->argnames());
     // We insert a prototype before, and the actual function after, the current location
     // because we want to handle the case where the thread calls the current function recursively.
@@ -263,7 +270,7 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 }
 
 // This constructs and inserts a thread structure only if we don't have one that's large enough.
-void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args)
+void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args,const ArgVect &av)
 {
     Ptree *front = Ptree::List(Ptree::qMake("struct `type` {\n"));
     Ptree *cur = front;
@@ -271,6 +278,15 @@ void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args)
       cur = lappend(cur,Ptree::qMake("  `*i`;\n"));
     }
     cur = lappend(cur,Ptree::qMake("};\n"));
+
+    // Insert any needed forward defines first.
+    for (ArgVect::const_iterator i = av.begin(); i != av.end(); ++i) {
+      if (i->_fwd) {
+        InsertBeforeToplevel(env,Ptree::qMake("`i->_fwd`;\n"));
+      }
+    }
+    
+    // Insert thread structure.
     InsertBeforeToplevel(env,front);
 }
 

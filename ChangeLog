@@ -1,3 +1,22 @@
+2004-06-28  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed implicit method calls within par blocks.  This means that
+	functions have to be looked up and then we have to see if we're in
+	a class.  The complication is that we need to get a Class object,
+	but the user-plain metaclass (Plasma) interfered with this.  Added
+	a static pointer to VarWalker that Plasma::InitializeInstance
+	sets.  This should be okay b/c there should only be one instance
+	of this class.
+
+	Once we get the Class object, we see if the variable is a method
+	of the class.  If it is, we store the 'this' pointer and translate
+	the code to an explicit method call using that pointer.
+
+	* Fixed explicit method calls within par blocks, e.g. we can now
+	handle "this->xx()".  The problem was that "this" is handled in a
+	special manner, via Walker::TranslateThis.  We then also had to
+	add appropriate forward defines b/c C++ is so lame.
+
 2004-06-25  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed nested par blocks w/on statements.  I also made the
