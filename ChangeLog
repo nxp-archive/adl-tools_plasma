@@ -1,3 +1,22 @@
+2004-07-07  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added the ability to name Processor objects.  The memory is
+	unmanaged, so you can just allocate from the GC and you can
+	compare pointers for fast identification.
+
+	* The QueueChan class is now templated on its container type.  The
+	default is to use a list.
+
+	* Modified all STL containers to use traceable_allocator.
+
+2004-07-06  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed bug w/busy-okay:  If we turned off preemption due to
+	setting ConfigParms::_busyokay, it could be turned on again by
+	GC_startworld.  Fixed this by adding a static member to Cluster
+	that is set when we process the config parms to indicate that
+	preemption should stay off..
+
 2004-07-02  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Modified the basic Channel template to support multiple

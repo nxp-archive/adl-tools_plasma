@@ -11,7 +11,8 @@ using namespace plasma;
 
 // These are global in order to make sure that initialization
 // will happen in the proper order.
-Processor p1,p2;
+const char *P2Name = "Proc2";
+Processor p1("Proc1"),p2(P2Name);
 
 void delay(double x,int d = 10,int w = 10000000);
 
@@ -51,6 +52,14 @@ int pMain(int argc,const char *argv[])
       delay(5,10);
       M::msg ("Done with block %d.\n",5);
     }
+  }
+
+  mprintf ("P1's name:  %s\n",p1.name());
+  mprintf ("P2's name:  %s\n",p2.name());
+  if (p2.name() == P2Name) {
+    mprintf ("P2 is a P2!\n");
+  } else {
+    mprintf ("P2 is *not* a P2!\n");
   }
 
   mprintf ("Done.\n");

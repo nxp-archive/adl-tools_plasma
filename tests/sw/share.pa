@@ -1,0 +1,269 @@
+//
+// an experiment to modell the sharing of the facilities of one resource
+// amongst many disparate requestors
+//
+
+// consider a memory system being attacked by block transfers from many
+// io sources. it is quite possible for the total demanded bandwidth to be
+// more than the memory's capability. the problem is to model this
+// simply and efficiently
+
+#include "plasma.h"
+
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+const int MaxPos = 0x7fffffff;
+const int num_transfers = 5;    
+
+Random Random(1);
+
+typedef Channel<bool> Chan;  
+
+struct Transfer {
+  int id;			// identifier
+  int length;			// number of items
+  float speed;			// item rate
+  Chan *response;	        // address of reply channel structure
+
+  Transfer () : response(0) {};
+};
+
+typedef Channel<Transfer> TranChan;
+
+inline void flush()
+{
+  fflush(stdout);
+}
+
+struct Resource {
+  // this models a resource; it gets requests down its channel. a request
+  // specifies the number of items and the item rate (bytes and kb/sec, for
+  // example)
+  // total_bw is the available bandwidth of the resource
+  
+  struct Timer {
+    bool valid;			// is this entry real?
+    int items_left;		// no of things left to transfer
+    float item_rate;		// base rate of item transfer
+    float current_rate;		// current rate of item transfer
+    int start_time;		// start time of this (portion of) transfer
+    int finish_time;		// expected time of end-o-transfer
+    Chan *response;		// response channel
+
+    Timer () : valid(false), 
+               items_left(0), 
+               item_rate(0), 
+               current_rate(0), 
+               start_time(0),
+               finish_time(0),
+               response(0) 
+    {};
+  };
+  
+  vector<Timer> transfers;
+
+  Resource() : transfers(num_transfers) 
+  {
+  };
+
+
+  ///////////////////// resolve_transfers //////////////////////
+  
+  void resolve_transfers(int t, float &bw) 
+  {
+    // looks at all valid transfers in transfers[] and updates how much
+    // they have transferred up until time t.
+    // signals any completed transfers by sending TRUE down the indicated
+    // channel
+    // adds up the current total bandwidth desired
+
+    //printf("\nRT at %ld", t); flush();
+    bw = 0;
+    for (int i = 0; i != num_transfers; ++i) {
+      //printf("\n\tT[%ld]", i); flush();
+      if (transfers[i].valid) {
+        // valid transfer; update his block
+        //printf(".valid\n"); flush();
+        if (transfers[i].finish_time == t) {
+          // signal completion and invalidate
+          //printf("..Done!\n"); flush();
+          Chan *c = transfers[i].response;
+          assert(c);
+          c->write(true);
+          transfers[i].valid = false;
+          //printf("..Signalled OK\n"); flush();
+        } else {
+          // incomplete; compute how much has been done
+          int n, dt;
+          //printf("..incomplete (%ld left)", transfers[i].items_left); flush();
+          dt = t - transfers[i].start_time;
+          n = (int)(transfers[i].current_rate * dt);
+          //printf ("(cur rate:  %f, dt %d)",transfers[i].current_rate,dt);
+          //printf ("  processed %d items.\n",n);
+          transfers[i].items_left = transfers[i].items_left - n;
+          if (transfers[i].items_left <= 0) {
+            printf("\n%5lld::Item %ld has %ld left to do",
+                   pTime(), i, transfers[i].items_left);
+            printf("\n\tDt = %ld Dn = %ld Finish=%ld",
+                   dt, n, transfers[i].finish_time);
+            printf("\n\tBase rate =%f Item rate = %f\n",
+                   transfers[i].item_rate, transfers[i].current_rate);
+            pExit(1);
+          }
+          transfers[i].start_time = t;
+          bw = bw + transfers[i].item_rate;
+          //printf(".got %ld left, bw is %f\n", transfers[i].items_left,bw); flush();
+        }
+      }
+    }
+  }
+    
+  ////////////////////////// set_transfers /////////////////////////
+  
+  void set_transfers(int t, int &earliest, float bw_frac ) 
+  {
+    // this scans the set of all current transfers, allocating
+    // bandwidth fairly in relation to the natural speed of the transfers
+    // and computing the end time of each transfer. 'earliest' is then the
+    // time of the first transfer to finish
+    // bw_frac is the fraction of bandwidth that is available
+    int early;
+    
+    //printf("\nSetTransfer; available bw is %f", bw_frac); flush();
+    if (bw_frac > 1.0) 	
+      bw_frac = 1.0;
+    early = MaxPos;
+    for (int i = 0; i != num_transfers; ++i) {
+      //printf("\n\tTransfer %ld:", i); flush();
+      if (transfers[i].valid) {
+        //printf("..valid"); flush();
+        //printf("\n\tPrior::Itemrate=%f BWFrac=%f NewRate=%f",
+        //       transfers[i].item_rate,bw_frac,  transfers[i].current_rate); flush();
+        transfers[i].current_rate = transfers[i].item_rate * bw_frac;
+        int f = (int)(transfers[i].items_left / transfers[i].current_rate);
+        //printf("\n\tNow::Itemrate=%f BWFrac=%f NewRate=%f",
+        //       transfers[i].item_rate,bw_frac,  transfers[i].current_rate); flush();
+        if (f < early) {
+          early = f;
+        }
+        transfers[i].finish_time = f + t;
+        //printf("\n\t%ld items left; Finish at %ld Early = %ld", 
+        //       transfers[i].items_left, f, early); flush();
+      }
+    }
+    //printf("\n\t setting earliest to %ld", early); flush();
+    earliest = early;
+    //printf("..OK"); flush();
+  }
+  
+  /////////////////////////// body ///////////////////////////
+  void operator()(TranChan &req, float total_bw)
+  {
+    float bw_demand;
+    int first_time;
+    Transfer the_request;
+  
+    first_time = MaxPos;
+    pSetPriority(1);
+    for (int i = 0; i != num_transfers; ++i) {
+      transfers[i].valid = false;
+    }
+    while (1) {
+      bool timed_out = true;
+      Timeout to(first_time);
+      alt {
+        req.port(Transfer t) {
+          the_request = t;
+          //printf("\nResource got request from %ld at %lld",the_request.id, pTime()); flush();
+          timed_out = false;
+        }
+        to.port() {
+          // empty.
+        }
+      }
+      if (!timed_out) {
+        // we got another request; set up its timer struct
+        int i = the_request.id;
+        if (i >= 0) {
+          //printf("\n\tLegal id.");
+          flush();
+          transfers[i].valid = true;
+          transfers[i].items_left = the_request.length;
+          transfers[i].item_rate  = the_request.speed;
+          transfers[i].start_time = pTime();
+          transfers[i].current_rate = 0.0;
+          transfers[i].response = the_request.response;
+          //printf("\n\tCopied parameters.");
+          flush();
+          resolve_transfers(pTime(), bw_demand);			// snapshot all
+          set_transfers(pTime(), first_time, bw_demand/total_bw);	// new first time
+        } else {
+          //printf("\nEnding.."); flush();
+          break;
+        }
+      } else {
+        // we finished at least one transfer
+        //printf("\nTimed out- finished a transfer.."); flush();
+        resolve_transfers(pTime(), bw_demand);
+        set_transfers(pTime(), first_time, bw_demand/total_bw);
+      }
+    }
+  }
+}; 
+  
+///////////////////////////// user /////////////////////////////
+  
+void user(TranChan &request, int id, int num_requests) 
+{
+  Chan my_chan;
+  Transfer my_req;
+  my_req.response = &my_chan;
+  my_req.id = id;
+  my_req.speed = Random.uniform(0, 100, 1000);
+  
+  for (int i = 0; i != num_requests; ++i) {
+    pDelay(Random.uniform(0, 0, 100));
+    my_req.length = Random.uniform(0, 500, 5000);
+    printf("\nUser %ld requesting at %lld (length %d, speed %f).", id, pTime(),my_req.length,my_req.speed);
+    flush();
+    request.write(my_req);
+    my_chan.get();
+    printf("\n\tUser %ld transfer completed at %lld", id, pTime());
+    flush();
+  }
+}
+
+void users(TranChan &to_resource, int n)
+{
+  Transfer shutup;
+  pSetPriority(3);
+  pfor (int i = 0; i != n; ++i) {
+    user(to_resource, i, 5);
+  }
+  printf("\nAll Users have completed at %lld.   Closing down.\n", pTime());
+  flush();
+  shutup.id = -1;
+  to_resource.write(shutup);
+}
+
+// Turn off timeslicing.
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+  
+void pMain(int,const char*[]) 
+{
+  TranChan to_resource;
+  
+  printf("\nResource sharer starting..\n");
+  Resource resource;
+  par {
+    resource(to_resource, 1000.0);
+    users(to_resource, num_transfers);
+  }
+  printf("\nDone..\n");
+}

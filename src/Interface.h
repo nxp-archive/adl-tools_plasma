@@ -17,9 +17,9 @@ namespace plasma {
   class Thread;
   class Proc;
 
-  typedef std::vector<Thread *> TVect;
-
   typedef Thread * THandle;
+
+  typedef std::vector<THandle,traceable_allocator<THandle> > TVect;
 
   typedef std::pair<int,int> HandleType;
 
@@ -45,12 +45,17 @@ namespace plasma {
   };
 
   // A Processor object encapsulates a Proc object and provides a means for
-  // users to group threads together.
+  // users to group threads together.  A processor may be given a name.  The
+  // name string ptr is stored only- no copying is done, so it's legal to compare
+  // pointers against the name for quick identification.  The name is not deleted-
+  // use gc_strdup to copy a non-constant string.
   class Processor {
   public:
-    Processor();
+    Processor(const char *name = 0);
     Processor(Proc *p) : _proc(p) {};
     Proc *operator()() { return _proc; };
+    const char *name() const;
+    void setName(const char *);
     bool operator==(const Processor &p) const { return _proc == p._proc; };
     bool operator!=(const Processor &p) const { return _proc != p._proc; };
   private:
@@ -63,7 +68,7 @@ namespace plasma {
   struct Processors : public std::vector<Processor,traceable_allocator<Processor> >
   {
     Processors() {};
-    Processors(unsigned n);
+    Processors(unsigned n,const char *name = 0);
   };
 
   // The following threads relate to the "current" processor, unless

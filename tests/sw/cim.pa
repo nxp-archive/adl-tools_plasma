@@ -1,0 +1,549 @@
+//
+//  A  'plasma' model of an application on UNIX communicating with a server
+//  on HVS over the CIM.
+
+//  For simplicity, this starter version only supports one device,
+//  i.e. one active user.
+ 
+//  Even though each CIM input or output channel is itself two way 
+//  alternate and to be fully general would require two sw channels,
+//  we will model a two way alternate application, thus we can double up
+//  on the use of the sw channels, sending either data or acks on a 
+//  given sw channel as appropriate.
+
+#include "plasma.h"
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+const int msec = 1000;
+const int sec  = 1000 * msec;
+
+const int K = 1024;
+const int GIG = K * K * K;
+const int MAXINT = 2 * (GIG - 1) + 1;
+
+const int Think_time = 0;
+const int Write_time = 0;
+
+const int Appl_path = 1000;	// minimum is two system calls
+
+const int zxd_pp = 46;
+const int zxd_rc = 90;
+const int Mcl = 26;
+const int DQPST = 384;
+const int RQCL_path = 200;
+const int Wakeup_path = 140;
+const int Ppntl = 25 + zxd_pp;
+const int Rclhd = 26 + zxd_rc;
+const int Def_path = 57 + (2 * Ppntl) + (3 * Rclhd);
+const int Rcl_path = 67 + Ppntl + Rclhd + Mcl + DQPST;
+const int RecvSvc_path = 150;
+const int SendSvc_path = 150;
+const int Intr386_path = 42;
+const int Req_path = 1835;
+const int UdrvIntr_path = 1000;
+
+const int Clk_offset = 0;
+
+struct Msg
+{
+  unsigned cmd;
+  unsigned trip_tm;
+  unsigned originate_tm;
+};
+
+const unsigned Send_cmd = 1;
+const unsigned Recv_cmd = 2;
+const unsigned Clock_cmd = 3;
+const unsigned Wait_cmd = 4;
+
+Processor XCP;
+Processor MRX;
+
+//	Globals
+
+const int Appl_job  = 0;
+const int Srvr_job  = 1;
+const int Rqst_job  = 2;	// Srvr requesting Hintr
+const int Defer_job = 3;	// Hintr doing deferring and recalling
+const int Hpoll_job = 4;	// Hintr doing polling
+const int Hintr_job = 5;	// other Hintr work
+const int Upoll_job = 6;	// Uintr doing polling
+const int Udrvr_job = 7;	// UNIX driver intpt hdlr called by Uintr
+const int no_Jobs   = 8;
+ 
+//  statistics array
+vector<int> cumul(no_Jobs);
+
+int no_mesgs = 0;
+int Hpoll_path;
+int Upoll_path;
+int IntrMRX_path;
+
+//  Channel declarations
+typedef Channel<Msg> MsgChan;
+
+MsgChan appl_out, appl_in, Hclock, Uintpt, Hreqst;
+MsgChan srvr_out, srvr_in, drvr_in, drvr_out, need_uint;
+
+Random Random(1);
+
+//  work delay - cumul time by job and go busy
+
+void work(int instrs, int mips, int job)
+{
+  int effort;
+
+  effort = instrs/mips;
+  cumul[job] = cumul[job] + effort;
+  pDelay(effort);
+}
+
+// print the ratio of two integers to two decimal places
+void print_rat(int a,int b)
+{
+  if (a == 0) {
+    printf("0.00");
+  } else if (b == 0) {
+    printf("-oo-");
+  } else {
+    int q = a/b;
+    int r = a%b;
+    if (r > MAXINT/100) {
+      b = b/100;	// prevent overflow
+    } else {
+      r = r*100;
+    }
+    r = r/b;			// (a%b)*100/b
+    printf("%d.",q);
+    if (r < 10) {
+      printf("0");
+    }
+    printf ("%d",r);
+  }
+  fflush(stdout);
+}
+
+void final_report()
+{
+  printf("\n                -------------------------------------\n");
+  for (int i = 0; i != 7; ++i) {
+    print_rat(cumul[i], no_mesgs);
+    printf("\t");
+  }
+  printf("%d\t",no_mesgs);
+  print_rat(pTime(), sec);
+  printf("\n\n  Last line above is average for entire run\n");
+}
+
+//  The UNIX application (the client)
+//  Sends input request, waits  for  input,  munges  it,
+//  sends output, awaits response; forever
+void appl(MsgChan &appl_out, MsgChan &appl_in, unsigned QuitTime, int Umips)
+{
+  Msg mesg;
+
+  while (pTime() <= QuitTime) {
+    //printf ("\nclient: sending rcv at time %lld",pTime());
+    mesg.cmd = Recv_cmd;
+    mesg.originate_tm = pTime();
+    appl_out.write(mesg);	// send input request
+    mesg = appl_in.get();	// get input
+    if (no_mesgs == 0) {
+      printf("\nclient: first input message received at: %lld microseconds.",pTime());
+    }
+    no_mesgs = no_mesgs + 1;
+    work(Appl_path + IntrMRX_path, Umips, Appl_job); // munge on it
+    //printf ("\nclient: sending snd at time %lld",pTime());
+    mesg.cmd = Send_cmd;
+    mesg.originate_tm = pTime();
+    appl_out.write(mesg);	// send output
+    mesg = appl_in.get();	// await response
+    if (no_mesgs == 1) {
+      printf("\nclient: first output response received at: %lld microseconds",pTime());
+    }
+    no_mesgs = no_mesgs + 1;
+  }
+  final_report();
+  pExit(0);
+}
+
+//  The UNIX interrupt handler
+void uintr(MsgChan &srvr_out, MsgChan &Uintpt, MsgChan &appl_in, int Umips)
+{
+  Msg mesg, uint;
+  int n = 0;
+
+  mesg.cmd = 0;
+  uint.cmd = 0;
+  while(true) {
+    // if missed implicit intpt, (prior message still extant),
+    // wait for explicit intpt only
+    if (mesg.cmd) {
+      uint = Uintpt.get();
+    } else {
+      alt {
+        Uintpt.port(Msg m) {
+          uint = m;
+        }
+        srvr_out.port(Msg m) {
+          mesg = m;
+        }
+      }
+    }
+    if (mesg.cmd) {
+      // if message is late, we were busy when it was sent and
+      // HVS had to send another interrupt.  Don't handle the message
+      // 'til then.  Note that when mesg comes, we will have both
+      // mesg.cmd and uint.cmd present
+      if ((mesg.trip_tm == pTime()) || (uint.cmd)) {
+        appl_in.write(mesg);
+        work(UdrvIntr_path, Umips, Udrvr_job);
+        mesg.cmd = 0;
+      }
+      work(Upoll_path, Umips, Upoll_job);
+    }
+    // put this here in case we get an unneeded uint input
+    uint.cmd = 0;
+    if (n == 0) {
+      printf("\nUintr: first message received at:  %lld microseconds",pTime());
+    }
+    n = n + 1;
+  }
+}
+
+//  The HVS server
+void server(MsgChan &drvr_in, MsgChan &drvr_out, MsgChan &srvr_in, MsgChan &srvr_out, 
+            MsgChan &Hreqst, MsgChan &need_uint, int Hmips)
+{
+  Msg mesg, wt_req;
+  int n = 0;
+
+  while(true) {
+    // This is the work to simulate sending
+    // a wait request to the CIM interrupt handler.
+    // The actual wait is performed by reading srvr_in.
+    // Send a msg on Hreqst so Hintr can do his part of
+    // Wait request.
+    
+    wt_req.cmd = Wait_cmd;
+    par {
+      Hreqst.write(wt_req);
+      mesg = srvr_in.get();	// get request
+    }
+    work(Req_path, Hmips, Rqst_job);
+
+    if (mesg.cmd == Recv_cmd) {
+      drvr_out.write(mesg);	// request input from driver
+      mesg = drvr_in.get();	// get the input
+      work(RecvSvc_path + Intr386_path, Hmips, Srvr_job);
+    } else if (mesg.cmd == Send_cmd) {
+      drvr_out.write(mesg);	// send to driver
+      mesg = drvr_in.get();	// get the response
+      work(SendSvc_path + Intr386_path, Hmips, Srvr_job);
+    }
+
+    // Timestamp the message being sent to uintr so that both
+    // it and we can tell if it was busy when mesg was sent.  In
+    // that case, uintr acts like it didn't get it and we tell Hintr
+    // to give a kick
+    mesg.trip_tm = pTime();
+    par {
+      srvr_out.write(mesg);	// send the input/response
+      // If it doesn't accept the output immediately, it needs a kick
+      // Hintr proc will send it a mesg on Uintpt channel at next
+      // clock time when need_uint is set
+      need_uint.write(mesg);
+    }
+    if (n == 0) {
+      printf("\nserver: first message received at:  %lld microseconds",pTime());
+    }
+    n = n + 1;
+  }
+}
+
+//  The HVS interrupt handler
+void Hintr(MsgChan &appl_out, MsgChan &Hclock, MsgChan &Hreqst, 
+           MsgChan &Uintpt, MsgChan &srvr_in, MsgChan &need_uint,
+           int Hmips, int Hmiss_avg, int Hmiss_delta)
+{
+  Msg mesg, clock, wt_req, uint, need;
+
+  int intn, no_reqs, n = 0;
+
+  mesg.cmd = 0;
+  clock.cmd = 0;
+  need.cmd = 0;
+  uint.cmd = Clock_cmd;
+  no_reqs = 0;
+  intn = Random.uniform(0, Hmiss_avg-(Hmiss_delta/2), Hmiss_avg+(Hmiss_delta/2));
+  while(true) {
+    if (mesg.cmd) {
+      // if holding prior mesg, don't read appl_out
+      alt {
+        Hclock.port(Msg m) {
+          clock = m;
+        }
+        need_uint.port(Msg m) {
+          need = m;
+        }
+        Hreqst.port(Msg m) {
+          wt_req = m;
+        }
+      }
+    } else {
+      alt {
+        Hclock.port(Msg m) {
+          clock = m;
+        }
+        need_uint.port(Msg m) {
+          need = m;
+        }
+        Hreqst.port(Msg m) {
+          wt_req = m;
+        }
+        appl_out.port(Msg m) {
+          mesg = m;
+          // count-down miss intr ctr on mesg intpts only
+          intn = intn - 1;
+          //printf ("\nhintr:  Got appl_out mesg at %lld, intn %d",pTime(),intn);
+        }
+      }
+    }
+    
+    if (!need.cmd) { 
+      work(Wakeup_path, Hmips, Hintr_job);
+    }
+
+    //  do poll work on all requests except missed mesgs
+    //  (intn == 0 for latter)
+    if (intn) { 
+      work(Hpoll_path, Hmips, Hpoll_job);
+    }
+     
+    if (clock.cmd) {
+      // do clock specific work here
+      work(RQCL_path, Hmips, Hintr_job);
+    } else if (wt_req.cmd) {
+      // if wait request, do work of deferring the req
+      no_reqs = no_reqs+1;
+      work(Def_path*no_reqs, Hmips, Defer_job);
+    }
+ 
+    //  If we got/have a mesg, handle it, except for need_uint
+    //  This test must be kept separate as mesg.cmd is not
+    //  mutually exclusive with others due to hold-overs
+    if (need.cmd) {
+      work(Intr386_path, Hmips, Hintr_job);
+      Uintpt.write(uint);
+      need.cmd = 0;
+    } else if (mesg.cmd) {
+      // only handle message on request
+      if (intn) {
+        // simulate a missed interrupt when intn == 0
+        // by not handling it now
+        // do the work of recalling server's wait
+        // request and send him his input
+        work(Rcl_path*no_reqs, Hmips, Defer_job);
+        no_reqs = no_reqs - 1;
+        srvr_in.write(mesg);
+        mesg.cmd = 0;  // clear this only when handled
+      } else {
+        intn = Random.uniform(0, Hmiss_avg-(Hmiss_delta/2),
+                              Hmiss_avg+(Hmiss_delta/2));
+      }   
+    }
+      
+    clock.cmd = 0;
+    wt_req.cmd = 0;
+    if (n == 0) {
+      printf("\nHintr: first message received at:  %lld microseconds",pTime());
+    }
+  
+    n = n + 1;
+  }
+}
+
+//  The device driver
+void driver(MsgChan &drvr_out, MsgChan &drvr_in)
+{
+  Msg mesg;
+
+  while(true) {
+    mesg = drvr_out.get();
+    if (mesg.cmd == Recv_cmd) {
+      pDelay(Think_time);
+      drvr_in.write(mesg);	// send the input in
+    } else if (mesg.cmd == Send_cmd) {
+      pDelay(Write_time);
+      drvr_in.write(mesg);	// send the response
+    }
+  }
+}
+
+//  HVS clock  -  covers for lost interrupts
+void clock(MsgChan &Hclock, int Tick)
+{
+  Msg mesg;
+
+  mesg.cmd = Clock_cmd;
+  pDelay(Clk_offset);
+  while(true) {
+    mesg.originate_tm = pTime();    // in case anybody cares
+    Hclock.write(mesg);
+    pDelay(Tick);
+  }
+}
+
+//  print delta of each job in cumul array divided by delta messages
+//  every dt ticks
+void reporter(int dt, unsigned QuitTime)
+{
+  const int Size = 10;
+  int last[Size];
+  int new_msgs;
+
+  // print column headings //
+  printf("\n\nAppl\tSrvr\tRqst\tDefer\tHpoll");
+  printf("\tHintr\tUpoll\tUdrvr\tmesgs\ttime\n\n");
+
+  for (int i = 0; i != Size; ++i) {
+    last[i] = 0;
+  }
+  while (pTime() <= QuitTime) {
+    pDelay(dt);		// wait first so no print at time zero
+
+    new_msgs = no_mesgs - last[Size-2];
+    printf("\n");
+    for (int i = 0; i != Size-2; ++i) {
+      print_rat(cumul[i] - last[i], new_msgs);
+      printf("\t");
+    }
+     printf ("%d\t",new_msgs);
+     print_rat(pTime()-last[Size-1],sec);
+     for (int i = 0; i != Size-3; ++i) {
+       last[i] = cumul[i];
+     }
+     last[Size-2] = no_mesgs;
+     last[Size-1] = pTime();
+  }
+}
+
+void tell_usage()
+{
+  printf("\nUsage: args are positional, all optional (defaults in parens)");
+  printf("\n\tSimulation time in secs  	(60)");
+  printf("\n\tNumber of channels       	(50)");
+  printf("\n\tMRX(A) MIPS			(1)  (Use 3 for MRX-A)");
+  printf("\n\tXCP MIPS				(3)  (Use 12 for 486)");
+  printf("\n\tMRX CIM clock interval in msec.	(20) (Use >=1000 if ITP");
+  printf("\n\tMRX intpt miss rate 1:n)		(30) (Use huge if ITP)");
+  printf("\n\ttolerance +/- on miss rate	(5)");
+  printf("\n\treport interval in secs   (2)");
+  pExit(0);
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+// Main code body
+int pMain(int  argc,const char *argv[])
+{
+  unsigned 
+  QuitTime, no_channels, Hmips, Umips,
+  Tick, Hmiss_avg, Hmiss_delta, report_interval;
+
+  for (int i = 0; i != no_Jobs; ++i) {
+    cumul[i] = 0;
+  }
+
+  if (argc < 2) {
+    QuitTime = 60;          
+  } else {
+    QuitTime = atoi(argv[1]);
+  }
+
+  if (argc < 3) {
+    no_channels = 50;       
+  } else {
+    no_channels = atoi(argv[2]);
+  }
+
+  if (argc < 4) {
+    Hmips = 1;              
+  } else {
+    Hmips = atoi(argv[3]);
+
+  }
+
+  if (argc < 5) {
+    Umips = 3;              
+  } else {
+    Umips = atoi(argv[4]);
+  }
+
+  if (argc < 6) {
+    Tick  = 20;             
+  } else {
+    Tick = atoi(argv[5]);
+  }
+
+  if (argc < 7) {
+    Hmiss_avg = 30;         
+  } else {
+    Hmiss_avg = atoi(argv[6]);
+  }
+
+  if (argc < 8) {
+    Hmiss_delta = 5;        
+  } else {
+    Hmiss_delta = atoi(argv[7]);
+  }
+
+  if  (argc < 9) {
+    report_interval = 2;    
+  } else {
+    report_interval = atoi(argv[8]);
+  }
+
+  if  (argc > 9) {
+    tell_usage();		
+  }
+
+  printf("\n\tSimulation will run:\t%d seconds",QuitTime);
+
+  printf("\n\tNumber of channels:\t%d",no_channels);
+
+  printf("\n\tMRX(A) speed is:\t%d mips",Hmips);
+
+  printf("\n\tXCP speed is:\t\t%d mips",Umips);
+
+  printf("\n\tCIM clock interval is:\t%d millisec",Tick);
+
+  printf("\n\tHVS misses 1 in:\t%d +/- %d interrupts",Hmiss_avg,Hmiss_delta);
+
+  printf("\n\tReport interval:\t%d seconds\n",report_interval);
+
+  QuitTime	= QuitTime * sec;
+  report_interval = report_interval * sec;
+  Tick = Tick * msec;
+
+  Hpoll_path = 24 + Ppntl + Rclhd + (36 * no_channels * 2);
+  Upoll_path = 20 + (20 * no_channels * 2);
+  IntrMRX_path = 60 * Umips;
+
+  par {
+    on (XCP) { appl(appl_out, appl_in, QuitTime, Umips); }
+    on (XCP) { uintr(srvr_out, Uintpt, appl_in, Umips); }
+    on (XCP) { reporter(report_interval, QuitTime); }
+    on (MRX) { server(drvr_in, drvr_out, srvr_in, srvr_out, Hreqst, need_uint, Hmips); }
+    on (MRX) { Hintr(appl_out, Hclock, Hreqst, Uintpt, srvr_in, need_uint, Hmips, Hmiss_avg, Hmiss_delta); }
+    on (MRX) { driver(drvr_out, drvr_in); }
+    on (MRX) { clock(Hclock, Tick); }
+  }
+  return 0;
+}

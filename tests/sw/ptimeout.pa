@@ -1,0 +1,126 @@
+//
+// Test timeouts using a sequential buffer.
+//
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+Processor mainframe;
+
+const int pipe_depth = 10;
+const int timeout_val = 10;
+
+typedef Channel<int> Chan;
+
+// A sequential buffer implementation
+void drive_buffer(Chan &in, Chan &out)
+{
+  vector<int> stuff(pipe_depth);
+
+  Chan in_to_out, out_to_in;
+  bool in_asleep = false, out_asleep = true;
+  int inptr = 0, outptr = 0, count = 0;
+    
+  par {
+    // The input handler
+    {
+      int data, any;
+      while(1) {
+        printf("\nBuffInput awaiting input..");
+        data = in.get();
+        printf("\n\tBI gotinput; for slot %d value = %d",inptr,data);
+        stuff[inptr] = data;
+        inptr = inptr + 1;			// increment in pointer
+        count = count + 1;			// increment count
+        inptr = inptr % pipe_depth;	        // wrap in pointer
+        
+        if (out_asleep) {
+          out_asleep = false;
+          in_to_out.write(any);
+        }
+        if (count == pipe_depth) {
+          // Buffer is full
+          printf("\n\tBI: buffer is full; go to sleep");
+          in_asleep = true;
+          any = out_to_in.get();
+          printf("\n\t..BI buffer no longer full");
+        }
+      }
+    }
+    {
+      // The output handler     
+      int data, any;
+      printf("\n\tBO: checking input ");
+      any = in_to_out.get();
+      while(1) {
+        data = stuff[outptr];
+        printf("\n\tBO: outputting on slot %d value = %d",outptr,data);
+        outptr = outptr + 1;
+        outptr = outptr % pipe_depth;
+        count = count - 1;
+        out.write(data);
+        if (count == 0) {
+          // Buffer now empty; tell input
+          out_asleep = true;
+          any = in_to_out.get();	// wait for stuff
+        }
+        
+        if (in_asleep) {
+          // In has gone to sleep
+          in_asleep = false;
+          out_to_in.write(any);	        // wake him up
+        }
+      }
+    }
+  }
+}
+
+void source(Chan &channel)
+{
+  printf("\nSource starting..");
+  for (int i = 0; i != 26; ++i) {
+    printf("\nSource about to output %d",i);
+    channel.write(i);
+    printf("\n\t src did output");
+  }
+}
+  
+void sink(Chan &channel)
+{
+  printf("\nSink starting..");
+  pDelay(5);
+  printf("\nSink waited");
+  Timeout to(timeout_val);
+  while(1) {
+    printf("\nSink waiting..");
+    alt {
+      channel.port(int d) {
+        printf("\n sink 0 got %d",d);
+      }
+      to.port() {
+        printf("\nSink timed out\nDone.\n"); 
+        pExit(0);
+      }
+    }
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  // Switch to simulation mode- no timeslicing.
+  cp._busyokay = true;
+}
+  
+int pMain(int,const char *[])
+{
+  Chan in, out;
+  printf("\nBuffer experiment..");
+  par {
+    on (mainframe) { drive_buffer(in, out); }
+    on (mainframe) { source(in); }
+    on (mainframe) { sink(out); }
+  }
+  return 0;
+}

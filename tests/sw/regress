@@ -25,6 +25,36 @@ my @Tests = (
 	      cmd     => "./nalt",
 	      checker => \&check_nalt,
 	     },
+	     # Test of timeouts.
+	     {
+	      cmd     => "./ptimeout",
+	      checker => \&check_ptimeout,
+	     },
+	     # Test of queued channels.
+	     {
+	      cmd     => "./queues",
+	      checker => \&check_queues,
+	     },
+	     # Test of modelling a memory of limited bandwidth.
+	     {
+	      cmd     => "./share",
+	      checker => \&check_share,
+	     },
+	     # Another transaction test.
+	     {
+	      cmd     => "./fhr",
+	      checker => \&check_fhr,
+	     },
+	     # App mux/demux example.
+	     {
+	      cmd     => "./example 20 5 20 3 50 10 0 ",
+	      checker => \&check_example,
+	     },
+	     # CIM system test.
+	     {
+	      cmd     => "./cim",
+	      checker => \&check_cim,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -83,6 +113,198 @@ sub check_nalt {
 	      [1..5],
 	     );
   check_channel (@_[0],"User (\\d+):\\s+Sending msg num=(\\d+)",\@data2);
+}
+
+sub check_ptimeout {
+  my @data = (
+	      [0..25],
+	     );
+  check_channel (@_[0],"\\s+sink (\\d+) got (\\d+)",\@data);
+}
+
+sub check_queues {
+  # First, make sure that the sink got all of its data.
+  my @data = (
+	      [0..25],
+	     );
+  check_channel (@_[0],"\\s+sink (\\d+) got (\\d+)",\@data);
+
+  # Queue size should never be other than 10.
+  my $gotqs = 0;
+  my @lines = split /\n/,@_[0];
+  for (@lines) {
+    if (/Queue size..\s+(\d+)/) {
+      $gotqs = 1;
+      my $qs = eval $1;
+      if ($qs != 10) {
+	print "Bad queue size ($qs) expected 10.\n";
+	die;
+      }
+    }
+  }
+  if (!$gotqs) {
+    print "Never found queue size.\n";
+    die;
+  }
+}
+
+# We make sure that the required number of transfers were
+# started and completed for each user.
+sub check_share {
+  my @lines = split /\n/,@_[0];
+
+  my $num_transfers = 5;
+  my $num_users = 5;
+
+  # For each item's elements:
+  # 0:  Number of starts
+  # 1:  Number of completes.
+  my %users;
+  for (0..($num_users-1)) {
+    $users{$_} = [0,0];
+  }
+
+  for (@lines) {
+    if (/User (\d+)/) {
+      my $u = eval $1;
+      if ( /requesting/ ) {
+	dprint "Found request for user $u.\n";
+	$users{$u}->[0]++;
+      } elsif ( /completed/ ) {
+	dprint "Found complete for user $u.\n";
+	$users{$u}->[1]++;
+      }
+    }
+  }
+
+  for (keys %users) {
+    my $u = $users{$_};
+    if ($u->[0] != $num_transfers) {
+      print "Did not find expected number of starts for user $_ (found $u->[0], expected $num_transfers).\n";
+      die;
+    }
+    if ($u->[1] != $num_transfers) {
+      print "Did not find expected number of completes for user $_ (found $u->[1], expected $num_transfers).\n";
+      die;
+    }
+  }
+}
+
+# Check to make sure that all users finish with correct #
+# of transactions and that we get the all-done message.
+sub check_fhr {
+
+  my $num_trans = 500;
+  my $num_users = 10;
+  my $found_users = 0;
+  my $all_done = 0;
+
+  my @lines = split /\n/,@_[0];
+
+  for (@lines) {
+    if (/User (\d+) stopping:\s+Did (\d+) transactions/) {
+      my $u = $1;
+      my $nt = eval $2;
+      if ($nt == 500) {
+	++$found_users;
+      } else {
+	print "User $u had wrong # of transactions (found $nt, expected $num_trans).\n";
+	die;
+      }
+    } elsif (/All users finished/) {
+      ++$all_done;
+    }
+  }
+
+  if (!$all_done) {
+    print "Did not find all-done message.\n";
+    die;
+  }
+
+  if ($found_users != $num_users) {
+    print "Did not find finish messages for all users (found $found_users, expected $num_users).\n";
+    die;
+  }
+
+}
+
+# Checks to make sure that the example is running.  It makes sure that it gets
+# four reports, each of which have non-zero counts, tps and average response
+# times.
+sub check_example {
+
+  my $got_stopped = 0;
+  my ($found_count,$exp_count) = (0,4);
+
+  my @lines = split /\n/,@_[0];
+  for (@lines) {
+    if ( /Did (\d+) in (\d+\.\d+) secs -> (\d+\.\d+) tps.\s+Avg response time = (\d+\.\d+) secs/ ) {
+      ++$found_count;
+      my ($count,$time,$tps,$art) = (eval $1,eval $2,eval $3,eval $4);
+      if ($count <= 0) {
+	print "Bad transaction count, report $found_count - expected positive number.\n";
+	die;
+      }
+      if ($time <= 0) {
+	print "Bad time value, report $found_count - expected positive number.\n";
+	die;
+      }
+      if ($tps <= 0) {
+	print "Bad transaction rate, report $found_count - expected positive number.\n";
+	die;
+      }
+      if ($art <= 0) {
+	print "Bad average response time, report $found_count - expected positive number.\n";
+	die;
+      }
+    } elsif ( /Completed simulation run\.\s+Stopping\./ ) {
+      ++$got_stopped;
+    }
+  }
+
+  if (!$got_stopped) {
+    print "Did not found completion message.\n";
+    die;
+  }
+
+  if ($found_count != $exp_count) {
+    print "Found only $found_count report lines, expected $exp_count.\n";
+    die;
+  }
+  
+}
+
+# Makes sure that we have the correct number of reports and each
+# contains non-zero information.
+sub check_cim {
+  
+  my ($reports,$exp_reports) = (0,30);
+  my $exp_nums = 10;
+
+  my @lines = split /\n/,@_[0];
+  for (@lines) {
+    if ( /^\d+\.\d+/ ) {
+      ++$reports;
+      my @n = split /\s+/,$_;
+      my $nums = 0;
+      for (@n) {
+	if ( (eval $_) > 0) {
+	  ++$nums;
+	}
+      }
+      if ($nums != $exp_nums) {
+	print "Incorrect number of items found for report $reports (found $nums, expected $exp_nums).\n";
+	die;
+      }
+    } elsif ( /\s+---------------/ ) {
+      last;
+    }
+  }
+
+  if ($reports != $exp_reports) {
+    print "Did not find expected number of reports (founnd $reports, expected $exp_reports).\n";
+    die;
+  }
 }
 
 ##

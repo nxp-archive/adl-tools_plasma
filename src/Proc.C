@@ -21,7 +21,8 @@ namespace plasma {
   // Ensure that we've initialized everything.  This guards against
   // Processors declared globally in a user program occurring before
   // setup time.
-  Proc::Proc() : 
+  Proc::Proc(const char *n) :
+    _name(n),
     _ready(numPriorities()),
     _busythread(0),
     _numthreads(0),

@@ -1,0 +1,80 @@
+//
+// Test queued channels.
+//
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+Processor mainframe;
+
+const int pipe_depth = 10;
+const int timeout_val = 10;
+
+typedef QueueChan<int> Chan;
+
+// A sequential buffer implementation.
+void drive_buffer(Chan  &in, Chan &out)
+{
+  int data, queue_size;
+
+  in.setMaxSize(pipe_depth);
+  // the buffer handler
+  while(1) {
+    queue_size = in.maxsize();
+    printf("\nQueue size.. %d",queue_size);
+    data = in.get();
+    printf("\n\tBuffer gotinput value = %d",data);
+    out.write(data);
+  }
+}
+
+void source(Chan &channel)
+{
+  printf("\nSource starting..");
+  for (int i = 0; i <= 25; ++i) {
+    printf("\nSource about to output %d",i);
+    channel.write(i);
+    printf("\n\t src did output");
+  }
+}
+  
+void sink(Chan &channel)
+{
+  printf("\nSink starting..");
+  pDelay(5);
+  printf("\nSink waited");
+  Timeout to(timeout_val);
+  while(1) {
+    printf("\nSink waiting..");
+    alt {
+      channel.port(int d) {
+        printf("\n sink 0 got %d",d);
+      }
+      to.port() {
+        printf("`\nSink timed out.\nDone.\n");
+        pExit(0);
+      }
+    }
+  }
+}
+
+// Turn off timeslicing.
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+  
+int pMain(int,const char *[])
+{
+  Chan  in,out;
+
+  printf("\nBuffer experiment..");
+  par {
+    on (mainframe) { drive_buffer(in, out); }
+    on (mainframe) { source(in); }
+    on (mainframe) { sink(out); }
+  }
+  return 0;
+}

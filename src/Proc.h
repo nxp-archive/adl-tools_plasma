@@ -21,9 +21,12 @@ namespace plasma {
   public:
     enum State {  Waiting, Running, Busy };
 
-    Proc();
+    Proc(const char *name = 0);
 
     static void init(const ConfigParms &cp);
+
+    const char *name() const { return _name; };
+    void setName(const char *n) { _name = n; };
 
     // Create a thread and add to the ready queue.
     THandle create(UserFunc *f,void *arg,int pr = -1);
@@ -71,10 +74,11 @@ namespace plasma {
   private:
     static unsigned _numpriorities; // Number of allowed priorities.
 
-    QVect    _ready;          // Ready threads, in priority order.
-    Thread  *_busythread;     // Current busy thread, if any.
-    int      _numthreads;     // Count of threads in this object.
-    State    _state;          // Current processor state.
+    const char *_name;           // Optional name- memory not managed.
+    QVect       _ready;          // Ready threads, in priority order.
+    Thread     *_busythread;     // Current busy thread, if any.
+    int         _numthreads;     // Count of threads in this object.
+    State       _state;          // Current processor state.
   };
 
 }

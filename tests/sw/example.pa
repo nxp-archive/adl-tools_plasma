@@ -1,0 +1,286 @@
+//
+// The example program used in dsm4
+// pete november 1990
+//
+
+#include "plasma.h"
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+// The configuration
+const char *s6502  = "s6502";
+const char *m68040 = "m68040";
+const char *m68030 = "m68030";
+
+const int max_terms = 300;
+
+Processor mainframe(m68040);
+Processor comms(m68030);
+Processors terminals(max_terms,s6502);
+Processor watcher(s6502);
+
+Random Random(1);
+
+int cpu_mips = 0, frontend_mips = 0;
+
+// think procedure
+void think(int instrucs) 
+{
+  int time = 0;
+  const char *cpu_type = pCurProc().name();
+  if (cpu_type == m68040) {
+    time = instrucs/cpu_mips;
+  } else if (cpu_type == m68030) {
+    time = instrucs/frontend_mips;
+  } else {
+    pAbort("Unknown processor type encountered.");
+  }
+  pBusy(time);
+}
+
+// Some time units
+const int musec = 1;
+const int msec = musec * 1000;
+const int sec = msec * 1000;
+const int min = sec * 60;
+
+// First of all let's invent the message structure
+struct Message {
+  int source;	  // index of oiginating terminal
+  int length;	  // number of characters in message
+  int time_start; // time at which sent
+};
+
+typedef Channel<int> IntChan;
+typedef vector<IntChan> IntChans;
+
+typedef Channel<Message> MsgChan;
+typedef vector<MsgChan> MsgChans;
+
+// The user; a copy of this runs on each terminal
+void user(MsgChan &out, MsgChan &in, int index, int &sigma_t, int &n) 
+{
+  Message data;
+  data.source = index;
+  pDelay(Random.uniform(0, 0, 80 * msec));
+  while(1) {
+    data.length = Random.uniform(0, 10, 30);
+    pDelay(Random.uniform(0, 100 * msec, 200 * msec));
+    data.time_start = pTime();
+    out.write(data);
+    data = in.get();
+    sigma_t = sigma_t + ((pTime() - data.time_start)/msec);
+    n = n + 1;
+  }
+}
+	
+// the terminal mux
+void comms_in(MsgChans &in, MsgChan &out) 
+{
+  Message data;
+
+  printf("\nComms running on processor '%s'\n",pCurProc().name());
+
+  while(1) {
+    afor (unsigned i = 0; i != in.size(); ++i) {
+      in[i].port(Message d) {
+        data = d;
+      }
+    }
+    think(1000 + (1000 * data.length));
+    out.write(data);
+  }
+}
+
+// The application demuxer
+void app_demux(IntChans &notify, MsgChans &out, MsgChan &in) 
+{
+  while(1) {
+    int selector;
+    Message data = in.get();
+    afor (unsigned i = 0; i != notify.size(); ++i) {
+      notify[i].port () {
+        selector = i;
+      }
+    }
+    think(2500);
+    out[selector].write(data);
+  }
+}
+
+// The application
+void application(MsgChan &in, MsgChan &out, IntChan &notify, int n) 
+{
+  notify.write(1);
+  while(1) {
+    Message data = in.get();
+    think(Random.uniform(0, 100000, 150000));
+    data.length = Random.uniform(0, 1000, 2000);
+    par {
+      out.write(data);
+      notify.write(1);
+    }
+  }
+}
+	
+// The app mux
+void app_mux(MsgChans &in, MsgChan &out)
+{
+  while(1) {
+    Message data;
+    afor (unsigned i = 0; i != in.size(); ++i) {
+      in[i].port(Message d) {
+        data = d;
+      }
+    }
+    think(800);
+    out.write(data);
+  }
+}
+
+// Terminal demux
+void comms_out(MsgChan &in, MsgChans &out) 
+{
+  Message data;
+  while(1) {
+    data = in.get();
+    think(2500 + (50 * data.length));
+    out[data.source].write(data);
+  }
+}
+	
+// Configure multiple instances of the application
+void apps(MsgChans &in, MsgChans &out, IntChans &notify, int n) 
+{
+  pfor (int i = 0; i != n; ++i) {
+    application(in[i], out[i], notify[i], i);
+  }
+}
+
+// The reporting procedure
+void monitor(ptime_t dt, ptime_t endtime, int &sigma, int &count) 
+{
+  float t;
+  mprintf("\nExample Simulation Starting.\n");
+
+  while (pTime() < endtime) {
+    pDelay(dt);
+    t = pTime()/sec;
+    mprintf("\nDid %d in %f secs -> ",count,t);
+    if (count > 0) {
+      t = (count * sec)/pTime();
+    } else {
+      t = 0.0;
+    }
+    mprintf ("%f tps.  Avg response time = ",t);
+    if (count > 0) {
+      t = ((float)sigma)/(count * msec);
+    } else {
+      t = 0.0;
+    }
+    mprintf ("%f secs\n",t);
+  }
+  mprintf("\nCompleted simulation run.  Stopping.\n\n");
+  pExit(0);
+}
+	
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+	
+// main
+int pMain(int argc,const char *argv[]) 
+{
+  ptime_t 
+    endtime = 100,
+    dt = 5;
+  int
+    main_mips = 20, 
+    comms_mips = 3, 
+    num_terms = max_terms, 
+    num_apps = num_terms / 10, 
+    use_frontend = 0;
+
+  int sigma = 0;
+  int count = 0;
+
+  MsgChan comms_to_demux, mux_to_comms;
+
+  if (argc == 1) {
+    // Use defaults
+    ;
+  } else if (argc != 8) {
+    // wrong number of arguments
+    mprintf("\nexample.pa usage: \nmust specify endtime, report interval, cpu mips, comms mips,"
+            "\nnumber of terminals, number of application instances and "
+            "\n'1' if comms is to use FEP '0' if comms on mainframe.\n");
+    pExit(1);
+  } else {
+    endtime = atoi(argv[1]);
+    dt = atoi(argv[2]);
+    main_mips = atoi(argv[3]);
+    comms_mips = atoi(argv[4]);
+    num_terms = atoi(argv[5]);
+    num_apps = atoi(argv[6]);
+    use_frontend = atoi(argv[7]);
+
+    // check args are OK
+    if (num_terms > max_terms) {
+      num_terms = max_terms;
+    }
+    if (dt > endtime) {
+      dt = endtime;
+    }
+  }
+
+  // initialise the globals for think()
+  cpu_mips = main_mips;
+  frontend_mips = comms_mips;
+
+  mprintf("\nConfiguration:");
+  mprintf("\n\tNumber of Terminals     = %d",num_terms);
+  mprintf("\n\tNumber of App Instances = %d",num_apps);
+  mprintf("\n\tCPU speed (in mips)     = %d",cpu_mips);
+  mprintf("\n\tComms frontend speed    = %d\n",frontend_mips);
+  
+  MsgChans 
+    terms_to_comms(num_terms), 
+    comms_to_terms(num_terms), 
+    to_apps(num_apps),
+    from_apps(num_apps);
+
+  IntChans notify(num_apps);
+	
+  par {
+    // choose to run the comms stuff on the FEP or the mainframe...
+    {
+      if (use_frontend) {
+        par {
+          on (comms) { comms_in(terms_to_comms, comms_to_demux); }
+          on (comms) { comms_out(mux_to_comms, comms_to_terms); }
+        }
+      } else {
+        par {
+          on (mainframe) { comms_in(terms_to_comms, comms_to_demux); }
+          on (mainframe) { comms_out(mux_to_comms, comms_to_terms); }
+        }
+      }
+    }    
+    // now set off the stuff on mainframe and the monitor
+    par {
+      on (mainframe) { apps(to_apps, from_apps, notify, num_apps); }
+      on (mainframe) { app_demux(notify, to_apps, comms_to_demux); }
+      on (mainframe) { app_mux(from_apps, mux_to_comms); }
+      on (watcher) { monitor(dt * sec, endtime * sec, sigma, count); }
+    }
+    pfor ( int i = 0; i != num_terms; ++i) {
+      on (terminals[i]) {
+        user(terms_to_comms[i], comms_to_terms[i], i, sigma, count);
+      }
+    }
+  }
+  return 0;
+}

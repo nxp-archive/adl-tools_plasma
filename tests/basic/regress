@@ -771,6 +771,13 @@ sub check_proc2 {
 	       5.0 => 10,
 	      );
   check_sequence(@_[0],$seq,\%count);
+
+  # Check that processor naming works.
+  str_rdiff(@_[0],[
+		   "P1's name:  Proc1",
+		   "P2's name:  Proc2",
+		   "P2 is a P2!",
+		   ]);  
 };
 
 # Processor test w/spawn.

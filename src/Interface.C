@@ -4,6 +4,7 @@
 //
 
 #include <stdarg.h>
+#include <string>
 
 #include "Interface.h"
 #include "Proc.h"
@@ -176,11 +177,6 @@ namespace plasma {
     return thecluster.locked();
   }
 
-  Processor::Processor() :
-    _proc(new Proc)
-  {
-  }
-
   /////////////// Timeout ///////////////
 
   void timeout(void *a)
@@ -212,7 +208,10 @@ namespace plasma {
     _writet = pSpawn(timeout,this,-1);
   }
 
+  //
   // Mutex I/O routines.
+  //
+
   int mprintf(const char *format, ... )
   {
     pLock();
@@ -249,10 +248,45 @@ namespace plasma {
     return c;
   }
 
-  Processors::Processors(unsigned n)
+  //
+  // GC string methods.
+  //
+
+  char *gc_strdup(const char *s)
+  {
+    char *ns = new (GC) char[strlen(s)+1];
+    return strcpy(ns,s);
+  }
+
+  char *gc_strdup(const std::string &s)
+  {
+    char *ns = new (GC) char[s.size()];
+    return strcpy(ns,s.c_str());
+  }
+
+  //
+  // Processor/Processors methods.
+  //
+
+  Processor::Processor(const char *name) :
+    _proc(new Proc(name))
+  {
+  }
+
+  const char *Processor::name() const
+  {
+    return _proc->name();
+  }
+
+  void Processor::setName(const char *name)
+  {
+    _proc->setName(name);
+  }
+
+  Processors::Processors(unsigned n,const char *name)
   {
     for (unsigned i = 0; i != n; ++i) {
-      push_back(Processor());
+      push_back(Processor(name));
     }
   }
 

@@ -19,13 +19,18 @@ namespace plasma {
   int mvprintf(const char *format, va_list ap);
   int mvfprintf(FILE *,const char *format,va_list ap);
 
+  // This duplicates a string, returning a GC-allocated char*.  There is then
+  // no need to delete this string.
+  char *gc_strdup(const char *);
+  char *gc_strdup(const std::string &s);
+
   // Basic channel class:  Stores only a single piece of data, so 
   // a second write before a read will block.  This is generally
   // used bya single producer to go to a single consumer, but it is
   // possible to have multiple producers.
   template <class Data>
   pTMutex class Channel {
-    typedef std::vector<THandle> Writers;
+    typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
   public:
     Channel() : _ready(false), _readt(0) {};
     void write(const Data &d);
@@ -55,16 +60,17 @@ namespace plasma {
   // objects or a fixed number.  If a fixed number, a write will block if the
   // channel is full.  This is designed for multiple producers to feed data to
   // a single consumer.
-  template <class Data>
+  template <typename Data,typename Container = std::list<Data,traceable_allocator<Data> > >
   pTMutex class QueueChan {
-    typedef std::list<Data>      Store;
-    typedef std::vector<THandle> Writers;
+    typedef Container Store;
+    typedef std::vector<THandle,traceable_allocator<THandle>> Writers;
   public:
     QueueChan(int size = -1) : _maxsize(size), _size(0), _readt(0) {};
     void write(const Data &d);
     bool ready() const { return !_store.empty(); };
     int size() const { return _size; };
     pNoMutex int maxsize() const { return _maxsize; };
+    void setMaxSize(int ms) { _maxsize = ms; }
     void clear_ready() { pLock(); --_size; _store.pop_back(); pUnlock(); };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
@@ -166,8 +172,8 @@ namespace plasma {
 
   /////////////// QueueChan ///////////////
 
-  template <class Data>
-  Data QueueChan<Data>::read_internal(bool clearready)
+  template <typename Data,typename Container>
+  Data QueueChan<Data,Container>::read_internal(bool clearready)
   {
     // If there's a waiting writer (queue is full) and we're
     // going to remove an item, then unblock the next writer here.
@@ -189,8 +195,8 @@ namespace plasma {
     return temp;
   }
 
-  template <class Data>
-  void QueueChan<Data>::write(const Data &d) 
+  template <typename Data,typename Container>
+  void QueueChan<Data,Container>::write(const Data &d) 
   { 
     // If we have a waiting reader, wake it up.
     if (_readt) {

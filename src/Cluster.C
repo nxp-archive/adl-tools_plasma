@@ -23,6 +23,7 @@ namespace plasma {
   sigset_t Cluster::_alarm_mask;  // mask with SIGVTALRM
   unsigned Cluster::_timeslice;
   ptime_t  Cluster::_busyts;
+  bool     Cluster::_preemptOkay = true;
 
   // This is the virtual alarm signal associated with ITIMER_VIRTUAL.
   // It counts CPU time, rather than real time.
@@ -39,7 +40,10 @@ namespace plasma {
   // Switch on preemption
   void Cluster::preempt(void)
   {
-    sigprocmask(SIG_UNBLOCK, &_alarm_mask, 0);
+    // Only allow if global flag not set.
+    if (_preemptOkay) {
+      sigprocmask(SIG_UNBLOCK, &_alarm_mask, 0);
+    }
   }
 
   // Set handler for alarm timer (preempt thread)
@@ -114,6 +118,7 @@ namespace plasma {
     // We don't use preemption if we're using the time model
     // or the user has turned off preemption.
     if (!cp._preempt || cp._busyokay) {
+      _preemptOkay = false;
       nopreempt();
     }
     _timeslice = cp._timeslice;
@@ -271,7 +276,7 @@ namespace plasma {
   void Cluster::set_priority(unsigned p)
   {
     lock();
-    int op = _cur->priority();
+    unsigned op = _cur->priority();
     _cur->setPriority( p );
     // If the new priority is higher than what we have, we don't
     // swap, since we will be switching to ourselves again.

@@ -32,7 +32,7 @@ namespace plasma {
     friend std::ostream &operator<<(std::ostream &,const ThreadQ &);
   };
 
-  typedef std::vector<ThreadQ> QVect;
+  typedef std::vector<ThreadQ,traceable_allocator<ThreadQ> > QVect;
 
   inline std::ostream &operator<<(std::ostream &o,const ThreadQ &tq)
   {

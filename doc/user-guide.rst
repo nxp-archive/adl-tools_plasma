@@ -201,6 +201,10 @@ A thread may be started on another processor using two different methods:
 
     <proc name>.spawn(<command>);
 
+Each **Processor** may be given a name by passing a ``const char *`` to the
+constructor or the **setName** method.  This pointer is unmanaged by the
+**Processor** as is simply stored as-is.  This means that you can compare it
+against another pointer for quick identification purposes.
 
 Priorities
 ==========
