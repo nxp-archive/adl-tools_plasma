@@ -1,0 +1,48 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+# Tests used in this regression.
+
+@Tests = (
+	  {
+	   cmd     => "par1",
+	   checker => \&check_par1,
+	  },
+	 );
+
+use lib "..";
+use rdriver;
+
+doTest(\@Tests);
+
+# We make sure that we get the result values we expect, since this will
+# ensure that we waited until the threads in the par block were finished.
+# We also make sure that the block statements are interleavedd, to make sure
+# that we're getting timeslicing.
+sub check_par1 {
+  my @lines = split /\n/,@_[0];
+  my ($er1,$er2,$er3) = (69,200,1000);
+  my ($r1,$r2,$r3) = (0,0,0);
+  my $cb1 = 0;
+  for (@lines) {
+    if (/^Result1:\s+(\d+),\s+Result2:\s+(\d+),\s+Result3:\s+(\d+)/) {
+      ($r1,$r2,$r3) = ($1,$2,$3);
+    } elsif ( /^In block 1./ ) {
+      ++$cb1;
+      if ($cb1 >= 10) {
+	die "Expected to find interleaved block statements but did not.\n";
+      }
+    } elsif ( /^In block 2./ ) {
+      $cb1 = 0;
+    }
+  }
+  if ($r1 != $er1) {
+    die "Expected Result1 to be $er1, got $r1 instead.\n";
+  }
+  if ($r2 != $er2) {
+    die "Expected Result2 to be $er2, got $r2 instead.\n";
+  }
+  if ($r3 != $er3) {
+    die "Expected Result3 to be $er3, got $r3 instead.\n";
+  }
+}

@@ -1,0 +1,19 @@
+
+pkglib_LIBRARIES = libqt.a
+
+libqt_a_SOURCES = \
+	qt.c \
+	qtmdc.c \
+	qtmds.s
+
+noinst_HEADERS = \
+	qt.h \
+	qtmd.h
+
+libqt_a_LIBADD = qtmds.o
+
+qtmds.o: qtmds.s
+
+# Remove the configuration information on a distclean.
+distclean: distclean-am
+	./config clean

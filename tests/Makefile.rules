@@ -1,0 +1,5 @@
+
+CLEANFILES= *.ii
+
+.pa.o:
+	LD_LIBRARY_PATH=$(top_srcdir)/parser $(OCC) -u.pa -c -SPlasma -d-include$(top_srcdir)/src/Interface.h $(INCLUDES) -- $(CXXFLAGS) -o $@ $<
