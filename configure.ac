@@ -12,6 +12,7 @@ AC_SUBST(PLASMA_MICRO_VERSION)
 AC_SUBST(PLASMA_VERSION)
 
 VERSION=$PLASMA_VERSION
+PACKAGE=plasma
 
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -77,11 +78,14 @@ AC_SUBST(CXXFLAGS)
 AC_PROG_INSTALL
 AC_STDC_HEADERS
 
+# We always want to enable C++ support.
+export enable_cplusplus=yes
 AC_CONFIG_SUBDIRS(gc)
 
 AC_CONFIG_FILES([\
    Makefile \
    macros/Makefile \
+   scripts/Makefile \
    qt/Makefile \
    src/Makefile \
    parser/Makefile \
@@ -91,5 +95,10 @@ AC_CONFIG_FILES([\
    tests/sw/Makefile \
    tests/eav/Makefile
 ])
+
+AC_CONFIG_FILES([\
+	scripts/plasma \
+	scripts/plasma-config
+],[chmod +x scripts/plasma scripts/plasma-config])
 
 AC_OUTPUT

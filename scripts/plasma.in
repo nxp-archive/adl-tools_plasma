@@ -1,0 +1,178 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+
+=head1 NAME
+
+plasma:  PLASMA (Parallel LAnguage for System Modelling and Analysis) compiler.
+
+=head1 SYNOPSIS
+
+Usage:  plasma <compiler options>
+
+Arguments must include 1 plasma language file (.pa extension).  Other options 
+are passed to cpp and g++.
+
+B<-h>     : Display this help message.
+
+B<-man>   : Display more documentation using the I<man> format.
+
+B<-E>     : Stop after conversion to C++.  The resulting file is <source file>.ii.
+
+B<-c>     : Compile but do not link.  Linking is suppressed; only an object file is
+produced.  Use I<ld> or I<g++> to perform the final link.
+
+=head1 DESCRIPTION
+
+The plasma compiler compiles a PLASMA program by first converting it to C++, then
+calling g++ to perform the compilation to an object file.
+
+For multi-file development, use the I<-c> option to compile each plasma file to an
+object file.  Then use I<ld> or I<g++> to link them together.  When linking, use
+the I<plasma-config> script in order to obtain the proper link line.  For instance:
+
+  plasma -c -o a.o a.pa
+  plasma -c -o b.o b.pa
+  g++ -o prog a.o b.o `plasma-config --libs`
+
+Within a makefile, use the $(shell <cmd>) function to execute this script.  Type
+
+  plasma-config
+
+for more options.
+
+=cut
+
+use Getopt::Long qw(:config no_ignore_case pass_through);
+use Pod::Usage;
+use strict;
+
+my $base  = "@prefix@";
+my $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
+my $plibs = "-L$base/lib -Wl,-R$base/lib -lplasma -lgc -lqt -ldl";
+
+if (!@ARGV) {
+  printhelp(1,1);
+}
+
+# The trick here is that we have to differentiate between CPP options, OCC
+# options, and GCC options.  OCC options are passed directly to plasma before
+# the "--".  GCC options are passed directly to plasma after the "--".  CPP
+# options must be prefixed with "-d" and must occur before the "--".  The list
+# of CPP options was taken from GCC's info page.  Anything not recognized is
+# considered to be a GCC option, since there are so many of them.
+
+my $man = 0;
+my $help = 0;
+my $link = 1;
+my $verbose = 0;
+
+# OCC options (pre-compile)
+my $occoptions = "";
+# CPP options- not directly recognized by 
+my $cppoptions = "";
+# Compiler options.
+my $gccoptions = "";
+
+if (!&GetOptions
+    (
+     "help|h|?"        => \$help,
+     "man"           => \$man,     
+     "I=s"           => \&handle_occ_val,
+     "D=s%"          => \&handle_occ_val,
+     "V"             => \&handle_occ_noval,
+     "v"             => \&handle_occ_noval,
+     "C"             => \&handle_occ_noval,
+     "E"             => \&handle_occ_noval,
+     "c"             => \&handle_occ_noval,
+     "include=s"     => \&handle_cpp_val,
+     "imacros=s"     => \&handle_cpp_val,
+     "idirafter=s"   => \&handle_cpp_val,
+     "iprefix=s"     => \&handle_cpp_val,
+     "iwithprefix=s" => \&handle_cpp_val,
+     "iwithprefixbefore=s" => \&handle_cpp_val,
+     "isystem=s"     => \&handle_cpp_val,
+     "nostdinc"      => \&handle_cpp_noval,
+     "undef"         => \&handle_cpp_noval,
+     "P"             => \&handle_cpp_noval,
+     "M"             => \&handle_cpp_noval,
+     "MM"            => \&handle_cpp_noval,
+     "MF=s"          => \&handle_cpp_val,
+     "MG"            => \&handle_cpp_noval,
+     "MP"            => \&handle_cpp_noval,
+     "MT=s"          => \&handle_cpp_val,
+     "MQ=s"          => \&handle_cpp_val,
+     "MD"            => \&handle_cpp_noval,
+     "MMD"           => \&handle_cpp_noval,
+     "H"             => \&handle_cpp_noval,
+     "dM"            => \&handle_cpp_noval,
+     "dD"            => \&handle_cpp_noval,
+     "dN"            => \&handle_cpp_noval,
+     "trigraphs"     => \&handle_cpp_noval,
+     "<>"            => \&handle_gccopts,
+    )) {
+  printhelp(1,1);
+}
+
+# Print help if requested to do so.
+printhelp(0,1) if $help;
+
+printhelp(0,2) if $man;
+
+# OCC options- no space allowed between option and value.
+sub handle_occ_val {
+  #print "Got occ arg $_[0]$_[1]\n";
+  $occoptions .= " -$_[0]$_[1]";
+}
+
+sub handle_occ_noval {
+  my $a = $_[0];
+  #print "Got occ arg $a\n";
+  $occoptions .= " -$a";
+  $link = 0 if ($a eq "c");
+  $verbose = 1 if ($a eq "v");
+}
+
+# CPP options- add "-d" so that OCC will pass it to CPP.
+sub handle_cpp_val {
+  #print "Got cpp arg $_[0]$_[1]\n";
+  $cppoptions .= " -d\"$_[0]=$_[1]\"";
+}
+
+sub handle_cpp_noval {
+  #print "Got cpp arg $_[0]\n";
+  $cppoptions .= " -d\"$_[0]\"";
+}
+
+# We have to handle -D and -U here b/c of their
+# special format.
+sub handle_gccopts {
+  my $a = shift;
+  #print "Got gcc arg of $a, ";
+  if ($a =~ /^-[UDI]/) {
+    #print " adding to occ\n";
+    $occoptions .= " $a";
+  } else {
+    #print " adding to gcc\n";
+    $gccoptions .= " $a";
+  }
+}
+
+sub printhelp() {
+  my ($eval,$verbose) = (shift,shift);
+  pod2usage(-exitval => $eval,-verbose=>$verbose);
+  exit 0;
+}
+
+#print "occ:  $occoptions\n";
+#print "cpp:  $cppoptions\n";
+#print "gcc:  $gccoptions\n";
+
+my $cmd = "$base/bin/plasma-comp -u.pa $pincs $occoptions $cppoptions -- $gccoptions";
+
+if ($link) {
+  $cmd .= " $plibs";
+}
+
+print "Command:  $cmd\n" if $verbose;
+
+exec $cmd;

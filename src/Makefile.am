@@ -1,6 +1,6 @@
-pkglib_LTLIBRARIES = libplasma.la
+lib_LTLIBRARIES = libplasma.la
 
-libplasma_la_CPPFLAGS= -I../qt -I../gc/include
+libplasma_la_CPPFLAGS= -I$(top_srcdir)/qt -I$(top_srcdir)/gc/include
 
 libplasma_la_SOURCES = \
 	Interface.C \

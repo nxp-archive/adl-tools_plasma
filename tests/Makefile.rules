@@ -1,7 +1,7 @@
 
 CLEANFILES= *.ii
 
-PLASMA = $(top_srcdir)/parser/plasma
+PLASMA = $(top_srcdir)/parser/plasma-comp
 
 AM_LDFLAGS = -L$(top_srcdir)/src/.libs -Wl,-R$(top_srcdir)/src/.libs \
 	-L$(top_srcdir)/qt/.libs -Wl,-R$(top_srcdir)/qt/.libs \

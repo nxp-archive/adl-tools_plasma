@@ -1,5 +1,4 @@
-
-pkglib_LTLIBRARIES = libqt.la
+lib_LTLIBRARIES = libqt.la
 
 libqt_la_SOURCES = \
 	qt.c \

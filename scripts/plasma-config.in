@@ -1,0 +1,136 @@
+#!/bin/sh
+
+# this is shamelessly stolen from gnome-config
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+
+libdir=@libdir@
+
+bindir=${exec_prefix}/bin
+datadir=${exec_prefix}/share/
+
+transform=@program_transform_name@
+
+CFLAGS="-I@includedir@"
+LIBPATHS="-L${libdir} -Wl,-R${libdir}"
+STATIC_LIBS="${libdir}/libplasma.a ${libdir}/libqt.a ${libdir}/libgc.a"
+LIBS="-lplasma -lgc -lqt"
+LTLIBS="${libdir}/libplasma.la ${libdir}/libqt.la ${libdir}/libgc.la"
+
+usage()
+{
+    cat <<EOF
+Usage: plasma-config [OPTION]...
+
+Generic options
+  --version	output library version information
+  --help	display this help and exit
+  --prefix      display installation root directory
+
+Compilation support options
+  --depend      print archive dependencies
+  --cflags      print compiler flags.  Note:  Normally, this will not be used
+                because you will invoke the plasma compiler.  This is only useful
+                for compiling a pure-C++ program that uses Plasma resources.
+  --libs	print library linking information
+  --ltlibs	print libtool library information
+  --lib-paths   print only linking path information
+  --static-libs	print archive names and any required system libraries
+EOF
+
+    exit $1
+}
+
+if test $# -eq 0; then
+    usage 1
+fi
+
+depend=false
+cflags=false
+libs=false
+sys_libs=false
+ltlibs=false
+libpaths=false
+static_libs=false
+
+while test $# -gt 0; do
+    case "$1" in
+    -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+    *) optarg= ;;
+    esac
+
+    case $1 in
+    --version)
+        echo @VERSION@
+        exit 0
+        ;;
+    --help)
+        usage 0
+        ;;
+    --prefix)
+        echo $prefix
+        exit 0
+	;;
+    --depend)
+        static_libs=true
+	;;
+    --cflags)
+        cflags=true
+        ;;
+    --libs)
+        libpaths=true
+        libs=true
+	sys_libs=true
+        ;;
+    --ltlibs)
+        ltlibs=true
+	sys_libs=true
+        ;;
+    --static-libs)
+        sys_libs=true
+        static_libs=true
+        ;;
+    --lib-paths)
+        libpaths=true
+        ;;
+    *)
+	usage 1
+	;;
+    esac
+    shift
+done
+
+all_flags=
+
+if $cflags; then
+    all_flags="$all_flags $CFLAGS"
+fi
+
+if $libpaths; then
+    all_flags="$all_flags $LIBPATHS"
+fi
+
+if $libs; then
+    all_flags="$all_flags $LIBS"
+fi
+
+if $ltlibs; then
+    all_flags="$all_flags $LTLIBS"
+fi
+
+if $static_libs; then
+    all_flags="$all_flags $STATIC_LIBS"
+fi
+
+if $sys_libs; then
+    all_flags="$all_flags -ldl"
+fi
+
+if test -z "$all_flags" || test "x$all_flags" = "x "; then
+    usage 1
+fi
+
+echo $all_flags
+
+exit 0

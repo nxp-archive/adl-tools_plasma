@@ -8,15 +8,14 @@
   exit 1;
 }
 
-# uncomment this to check for libtool
-# (grep "^AM_PROG_LIBTOOL" $srcdir/configure.ac >/dev/null) && {
-#   (libtool --version) < /dev/null > /dev/null 2>&1 || {
-#     echo
-#     echo "Error: You must have \`libtool' installed to compile $PKG_NAME."
-#     echo "It is available at ftp://ftp.gnu.org/pub/gnu/"
-#     exit 1;
-#   }
-# }
+(grep "^AM_PROG_LIBTOOL" $srcdir/configure.ac >/dev/null) && {
+  (libtool --version) < /dev/null > /dev/null 2>&1 || {
+    echo
+    echo "Error: You must have \`libtool' installed to compile $PKG_NAME."
+    echo "It is available at ftp://ftp.gnu.org/pub/gnu/"
+    exit 1;
+  }
+}
 
 (automake --version) < /dev/null > /dev/null 2>&1 || {
   echo

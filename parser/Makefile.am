@@ -1,17 +1,17 @@
 
-bin_PROGRAMS = plasma
+bin_PROGRAMS = plasma-comp
 
-plasma_SOURCES = \
+plasma_comp_SOURCES = \
 	Plasma.mc \
 	VarWalker.mc \
 	Wrapper.mc \
 	Mutex.mc \
 	TMutex.mc
 
-plasma_LDADD = \
+plasma_comp_LDADD = \
 	$(OCCLIBS)
 
-plasma_LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
+plasma_comp_LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
 
 noinst_HEADERS = \
 	Plasma.h \

@@ -1,5 +1,11 @@
 2004-07-15  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Plasma should now be useable by others when installed.  I
+	created "plasma", which is a wrapper program that invokes the main
+	executable (plasma-comp).  This massages parameters into the
+	proper order.  I also created plasma-config for printing link
+	lines, etc.
+
 	* Converted over to using libtool.  The main parser/compiler is
 	now statically linked.  Installation seems to work.  I also fixed
 	up the root makefile so that remaking after a change to
