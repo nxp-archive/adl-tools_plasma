@@ -9,6 +9,7 @@
 int pMain(int argc,const char *argv[])
 {
   int result1 = 0, result2 = 0, result3 = 0;
+
   par {
     {
       for (int i = 0; i != 10; ++i) {

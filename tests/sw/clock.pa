@@ -151,8 +151,8 @@ int pMain(int argc,const char *argv[])
   if (argc > 1) {
     seed = atoi(argv[1]);
   }
-  printf ("Seed:  %d\n",seed);
   Random<> Rand(1,seed);
+  printf ("Seed:  %d\n",Rand.seed());
 
   const int clock = 4;
   Chan register1, register2;

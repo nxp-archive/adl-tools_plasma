@@ -1,3 +1,14 @@
+2004-07-14  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added line directives to plasma output so that debugging and
+	error messages work better.  To add a line directive, I created a
+	new object derived from Leaf which inserts a newline before it
+	prints itself, to ensure that a line directive is valid (these
+	directives must occur at the beginning of a line).  The result is
+	that you can put a breakpoint in the middle of a par block and
+	compilation error messages refer to the .pa file, rather than the
+	.ii file.
+
 2004-07-13  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed bug w/alt parsing:  We didn't handle par blocks nested
