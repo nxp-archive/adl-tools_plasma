@@ -19,6 +19,14 @@ typedef IntBroadcast::output_channel BroadcastOut;
 vector<int> Data;
 bool        Halt = false;
 
+template <class C> 
+void flush_channel(C &c)
+{
+  if ( c . ready (  ) ) {
+    c . get (  ) ;
+  }
+}
+
 void begin_stage(int id,IntClkChan &out,BroadcastOut &flush)
 {
   static int input_data[] = { 10,20,30,40,50,60,70,80,90,100,-1 };
@@ -31,35 +39,46 @@ void begin_stage(int id,IntClkChan &out,BroadcastOut &flush)
       }
       {}
     }
-    //cout << pTime() << ":  Writing " << *i << endl;
+    cout << pTime() << ":  Writing " << *i << endl;
     Data[id] = *i;
     out.write(*i);
   }
   Data[id] = 0;
   out.write(-1);
 }
-
 void middle_stage(int id,int pause,int delay,IntClkChan &in,BroadcastOut &flush,IntClkChan &out)
 {
+ Start:
+  flush_channel(in);
+  Data[id] = 0;
   while (true) {
     int x;
     prialt {
-      flush.port() { 
-        Data[id] = 0; 
-        if (in.ready()) { in.get(); }
-        continue;
+      flush.port() {
+        flush_channel(in);
+        cout << pTime (  ) << ": (" << id << ") Got flush in prialt." << endl ;
+        goto Start ;
       }
-      in.port(int tmp) { 
-        x = tmp; 
-      }
+      in.port(int tmp) {
+        x = tmp ;
+      } 
     }
     Data[id] = x;
     if (x == pause) {
-      pDelay(delay);
+      for (int i = 0; i != delay; ++i) {
+        cout << pTime() << ": (" << id << ") Delaying." << endl;
+        pDelay(1);
+        alt {
+          flush.port() {
+            cout << pTime() << ": (" << id << ") Got flush in delay loop." << endl;
+            goto Start;
+          }
+          {}
+        }
+      }
     }
     out.write(x);
     Data[id] = 0;
-    //cout << pTime() << ":  Read " << x << endl;
   }
 }
 
@@ -70,20 +89,19 @@ void end_stage(int id,IntClkChan &in,BroadcastOut &flush,BroadcastIn &flush_out)
   do {
     prialt {
       flush.port() {
-        Data[id] = 0; 
-        if (in.ready()) { in.get(); }
-        //        in.clear();
-        continue;
-      }
+        Data [ id ] = 0 ;
+        flush_channel(in);
+        continue ;
+      } 
       in.port(int tmp) {
-        x = tmp;
-      }
+        x = tmp ;
+      } 
     }
     Data[id] = x;
-    //cout << pTime() << ":  Read " << x << endl;
-    if (x == 30 && do_flush) {
+    if (x == 10 && do_flush) {
       flush_out.write(1);
       do_flush = false;
+      cout << pTime() << ":  Sent flush." << endl;
     }
   } while (x >= 0);
   Halt = true;
@@ -120,7 +138,7 @@ int pMain(int,const char **)
   Data.resize(5);
 
   par {
-    on (pCurProc(),0) {
+    on (pCurProc(),10) {
       par {
         begin_stage(0,one_two,flush.get_sink());
         middle_stage(1,-2,0,one_two,flush.get_sink(),two_three);

@@ -866,8 +866,12 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
 
   cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"));
 
-  // Start of main loop.
-  cur = lappend(cur,Ptree::qMake("`loop`:\n"));
+  // Start of main loop (only needed if we do not have a default block,
+  // since if we do, we don't need to loop- we just execute the
+  // default).
+  if (!defaultblock) {
+    cur = lappend(cur,Ptree::qMake("`loop`:\n"));
+  }
 
   // For each afor entry, write out initial statement loop statement.
   // Create auxiliary stack if needed.
