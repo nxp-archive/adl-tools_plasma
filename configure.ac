@@ -21,9 +21,11 @@ AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
+AC_PROG_INSTALL
+AC_STDC_HEADERS
+AC_LANG_CPLUSPLUS
 AM_PROG_AS
 AM_CPP_SETUP(3,2)
-AC_LANG_CPLUSPLUS
 
 #########################################################################
 #  Configure arguments 
@@ -56,9 +58,9 @@ if test "x$TRIP" = x ; then
   DOCDIR=
 fi
 
-AC_SUBST(WEBHOME)
-AC_SUBST(DOCDIR)
-AC_SUBST(TRIP)
+## Get the full compiler path.
+AC_PATH_PROG(CXXPROG,$CXX)
+echo "Compiler is located at:  $CXXPROG"
 
 ## Configure Quickthreads.
 AM_QT
@@ -75,8 +77,10 @@ ACLOCAL_FLAGS="${ACLOCAL_FLAGS} -I ./macros"
 AC_SUBST(PROFILE)
 AC_SUBST(ACLOCAL_FLAGS)
 AC_SUBST(CXXFLAGS)
-AC_PROG_INSTALL
-AC_STDC_HEADERS
+AC_SUBST(CXXPROG)
+AC_SUBST(WEBHOME)
+AC_SUBST(DOCDIR)
+AC_SUBST(TRIP)
 
 # We always want to enable C++ support.
 export enable_cplusplus=yes
@@ -99,6 +103,6 @@ AC_CONFIG_FILES([\
 AC_CONFIG_FILES([\
 	scripts/plasma \
 	scripts/plasma-config
-],[chmod +x scripts/plasma scripts/plasma-config])
+],[chmod +x,-w scripts/plasma scripts/plasma-config])
 
 AC_OUTPUT

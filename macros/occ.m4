@@ -26,6 +26,28 @@ AC_DEFUN(AM_OCC,
   OCCLIBS=`$OccConfig --libs`
   OCC="$OCCPATH/bin/occ"
 
+  AC_MSG_CHECKING([that we can link against libocc])
+  orig_CXXFLAGS="$CXXFLAGS"
+  CXXFLAGS="$CXXFLAGS $($OccConfig --cflags)"
+  orig_LIBS="$LIBS"
+  LIBS="$LIBS $($OccConfig --libs)"
+  orig_CXX="$CXX"
+  CXX="./libtool --mode=link $CXX"
+  AC_LINK_IFELSE([
+    #include <opencxx/ptree-core.h>
+
+    using namespace Opencxx;
+
+    int main() {
+      Ptree *p = Ptree::Make("foo!");
+      return 0;
+    }
+  ],AC_MSG_RESULT([ok.]),AC_MSG_ERROR([failed.]))
+
+  CXXFLAGS="$orig_CXXFLAGS"
+  LIBS="$orig_LIBS"
+  CXX="$orig_CXX"
+
   AC_SUBST(OCCPATH)
   AC_SUBST(OCCFLAGS)
   AC_SUBST(OCCLIBS)

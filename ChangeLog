@@ -1,8 +1,10 @@
-        ======= plasma release 0.1.0 (v0_1_0) on Linux (cde-tx32-lc210) =======
+
+2004-07-22  Brian Kahne  <bkahne@ibmoto.com>
+
+	* The plasma wrapper script now hardcodes in the compiler so that
+	you don't need to have a compiler policy.
 
         ======= plasma release 0.1.0 (v0_1_0) on Linux (cde-tx32-lc210) =======
-
-        ======= plasma release 0.1.0 (v0_1_0) on Linux (cde-tx32-ldt189) =======
 
         ======= plasma release 0.1.0 (v0_1_0) on Linux (cde-tx32-lc210) =======
 

@@ -73,6 +73,10 @@ B<g++>.  A I<3.x> version is recommended.
 
 =cut
 
+# Autoconf substitutions.
+my $prefix="@prefix@";
+my $cxx="@CXXPROG@";
+
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
 use strict;
@@ -154,13 +158,13 @@ my ($base,$pincs,$plibs,$prog);
 my $baselibs = "-lplasma -lgc -lqt -ldl";
 if (!$devel) {
   # Normal install mode:  Run using installed stuff.
-  $base  = "@prefix@";
+  $base  = $prefix;
   $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
   $plibs = "-L$base/lib -Wl,-R$base/lib $baselibs";
   $prog  = "$base/bin/plasma-comp";
 } else {
   # Development mode:  Run using development layout.
-  $base  = "$devel";
+  $base  = $devel;
   $pincs = "-d-include$base/src/plasma-interface.h -I$base/src -I$base/gc/include";
   $plibs = "-L$base/src/.libs -Wl,-R$base/src/.libs " .
            "-L$base/qt/.libs -Wl,-R$base/qt/.libs " .
@@ -248,7 +252,7 @@ print "[gcc options:  $gccoptions]\n" if $verbose;
 my $cmd;
 if ($compile) {
   # Compile w/optional link.
-  $cmd = "$prog -u.pa $pincs $occoptions $cppoptions -- $gccoptions";
+  $cmd = "$prog --comp=$cxx -u.pa $pincs $occoptions $cppoptions -- $gccoptions";
   if ($link) {
     $cmd .= " $plibs";
   }
@@ -258,7 +262,7 @@ if ($compile) {
     print "Error:  Neither compile nor link operation will be performed.\n";
     die;
   }
-  $cmd = "g++ $occoptions $cppoptions $gccoptions $plibs";
+  $cmd = "$cxx $occoptions $cppoptions $gccoptions $plibs";
 }
 
 print "[cmd:  $cmd]\n" if $verbose;
