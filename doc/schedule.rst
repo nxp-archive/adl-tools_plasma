@@ -95,7 +95,7 @@ Description:
     Basic syntax is::
 
           alt {
-            port(<value decl> ; <channel expr>): ....
+            <channel expr> [ . | -> ] port(<value decl>): ....
             [ { default block } ]
           }
 
@@ -190,7 +190,7 @@ Description:
     Syntax is::
 
       afor ( <s1> ; <s2> ; <s3> ) {
-        port (<value decl> ; <channel expr> ; ) { <body> }
+        <channel expr> [ . | -> ] port (<value decl>) { <body> }
         [ { <default block> } ]
       }
 
@@ -356,24 +356,8 @@ channel after a specified amount of time.  Use in alt blocks.
 Clocked Channels
 ----------------
 
-Investigate further..
-
-Shared Data Structures - Improvements
--------------------------------------
-
-Further support will be added to enable mutex regions within
-methods and plain functions.  This may take the form of a new block
-type, e.g::
-
-  mutex {
-    <...>
-  }
-
-It may also be necessary to introduce a mutex object with a pseudo method::
-
-  m.mutex {
-    <...>
-  }
+Investigate further.  Most likely this will be a channel whose writes are
+guarded by delay statements.  The delay will come from a clock object.
 
 Garbage Collection
 ------------------

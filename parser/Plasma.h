@@ -11,15 +11,16 @@
 // This stuff is used for alt/afor processing.
 struct Port {
   Ptree   *chan;           // Channel expression of a port statement.
+  Ptree   *op;             // Operator used to access channel.
   Ptree   *val;            // Value expression of a port statement.
   Ptree   *body;           // Body of a port statement.
   Ptree   *s1, *s2, *s3;   // Afor loop expressions.
   Ptree   *stack;          // Stack/stack index var for afor.
   TypeInfo indextype;      // Index type for afor blocks.
   Ptree   *loopvar;        // Loop-variable for afor.
-  Port(bool l,Ptree *c,Ptree *v,Ptree *b) : chan(c), val(v), body(b), 
-                                            s1(nil), s2(nil), s3(nil),
-                                            stack(nil), loopvar(nil)
+  Port(bool l,Ptree *c,Ptree *o,Ptree *v,Ptree *b) : chan(c), op(o), val(v), body(b), 
+                                                     s1(nil), s2(nil), s3(nil),
+                                                     stack(nil), loopvar(nil)
   {};
   bool isloop() const { return s1; };
   bool needstack() const { return stack; };

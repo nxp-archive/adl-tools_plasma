@@ -27,7 +27,7 @@ void consumer(ChanVect &channels)
   int donecount = 0;
   while (donecount < (int)channels.size()) {
     afor (int i = 0; i != (int)channels.size(); ++i) {
-      port (int v; channels[i];) {
+      channels[i].port (int v) {
         printf ("Got a value from port %d:  %d\n",i,v);
         if (v < 0) ++donecount;
       }

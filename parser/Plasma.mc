@@ -16,7 +16,7 @@ bool Plasma::Initialize()
   RegisterNewForStatement("pfor");
   RegisterNewBlockStatement("alt");
   RegisterNewForStatement("afor");
-  RegisterNewForStatement("port");
+  RegisterNewClosureStatement("port");
   RegisterMetaclass("pSpawner","Plasma");
   return TRUE;
 }
@@ -657,11 +657,11 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
     if (p.isloop()) {
       // Afor code.
       cur = lappend(cur,Ptree::qMake("for ( ; `p.s2` ; `p.s3`) {\n"
-                                     "if ( (`p.chan`).ready() ) { goto `label`; }\n"
+                                     "if ( (`p.chan`) `p.op` ready() ) { goto `label`; }\n"
                                      "}\n"));
     } else {
       // Alt code.
-      cur = lappend(cur,Ptree::qMake("if ( (`p.chan`).ready() ) { goto `label`; }\n"));
+      cur = lappend(cur,Ptree::qMake("if ( (`p.chan`) `p.op` ready() ) { goto `label`; }\n"));
     }
   }
 
@@ -681,16 +681,16 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
         if (p.needstack()) {
           cur = lappend(cur,Ptree::qMake("`sindex` = 0;\n"
                                          "for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                         "(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,`sindex`++));\n"
+                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,`sindex`++));\n"
                                          "`p.stack`.push_back(`p.loopvar`);\n"
                                          "}\n"));
         } else {
           cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                         "(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,(int)`p.loopvar`));\n"
+                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,(int)`p.loopvar`));\n"
                                          "}\n"));
         }        
       } else {
-        cur = lappend(cur,Ptree::qMake("(`p.chan`).set_notify(plasma::pCurThread(),plasma::HandleType(`index`,0));\n"));
+        cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,0));\n"));
       }
     }
 
@@ -711,10 +711,10 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
       const Port &p = pv[index];
       if (p.isloop()) {
         cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                       "(`p.chan`).clear_notify();\n"
+                                       "(`p.chan`) `p.op` clear_notify();\n"
                                        "}\n"));        
       } else {
-        cur = lappend(cur,Ptree::qMake("(`p.chan`).clear_notify();\n"));
+        cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` clear_notify();\n"));
       }
     }
   }
@@ -732,10 +732,10 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
       const Port &p = *i;
       if (p.isloop()) {
         cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                       "  (`p.chan`).clear_notify();\n"
+                                       "  (`p.chan`) `p.op` clear_notify();\n"
                                        "}\n"));
       } else {
-        cur = lappend(cur,Ptree::qMake("(`p.chan`).clear_notify();\n"));
+        cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` clear_notify();\n"));
       }
     }
     cur = lappend(cur,Ptree::qMake("}\n"));
@@ -761,31 +761,29 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
   for (int index = 0; index != (int)pv.size(); ++index) {
     const Port &p = pv[index];
     if (p.val) {
-      Ptree *val,*cv,*type;
-      if (Ptree::Match(p.val,"[%? %? %? ;]",&cv,&type,&val)) {
-        // User specified a type, so use it directly.
-        cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
-        // If we have a loop, we copy the handle's second item to the loopvar so
-        // that it can be used by the body of the code.
-        if (p.isloop() && !defaultblock) {
-          cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
-          if (p.needstack()) {
-            cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
-          } else {
-            TypeInfo t = p.indextype;
-            cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
-          }
-          cur = lappend(cur,Ptree::qMake("}\n"));
-        }
-        cur = lappend(cur,Ptree::qMake("`cv``type``val` = (`p.chan`).get();\n"
-                                       "{\n"
-                                       "`p.body`\n"
-                                       "}\n"
-                                       "} break;\n"));
-      } else {
-        ErrorMessage(env,"Invalid value declaration for port statement",nil,p.val);
+      if (p.val->Length() > 1) {
+        ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",nil,p.val);
         return nil;
       }
+      // User specified a type, so use it directly.
+      cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
+      // If we have a loop, we copy the handle's second item to the loopvar so
+      // that it can be used by the body of the code.
+      if (p.isloop() && !defaultblock) {
+        cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
+        if (p.needstack()) {
+          cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
+        } else {
+          TypeInfo t = p.indextype;
+          cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
+        }
+        cur = lappend(cur,Ptree::qMake("}\n"));
+      }
+      cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"
+                                     "{\n"
+                                     "`p.body`\n"
+                                     "}\n"
+                                     "} break;\n"));
     } else {
       // Simple case- no value, so just insert code.
       cur = lappend(cur,Ptree::qMake("case `index`: {\n"
@@ -910,19 +908,12 @@ bool Plasma::parseAforBody(Environment *env,Ptree *rest,PortVect &pv,Ptree* &def
 // Scans for alt, afor, or port constructs.
 bool Plasma::parseAltBlock(Environment *env,Ptree *body,bool isloop,PortVect &pv,Ptree* &defaultblock)
 {
-  // Walk through the statements in the alt block.  Each should be a 
-  // case statement or a default statement.
+  // Walk through the statements in the alt block.  They may be
+  // either a port, alt, afor, or default block.
   for (PtreeIter i = body; !i.Empty(); ++i) {
-    Ptree *pval,*pchan,*pnil,*pbody;
-    if ((*i)->Car()->Eq("port")) {
-      if (Ptree::Match(*i,"[ port ( %? %? ; %? ) %? ]",&pval,&pchan,&pnil,&pbody)) {
-        if (pnil != nil) {
-          ErrorMessage(env,"bad port statement:  Nothing may appear after second semicolon.",nil,*i);
-        }
-        pv.push_back(Port(isloop,pchan,pval,pbody));
-      } else {
-        ErrorMessage(env,"bad port statement syntex.",nil,*i);
-      }
+    Ptree *pchan,*pop,*pval,*pbody;
+    if (Ptree::Match(*i,"[ %? %? port ( %? ) %? ]",&pchan,&pop,&pval,&pbody)) {
+      pv.push_back(Port(isloop,pchan,pop,pval,pbody));
     }
     else if ((*i)->Car()->Eq("alt")) {
       parseAltBody(env,(*i)->Cdr(),pv,defaultblock);

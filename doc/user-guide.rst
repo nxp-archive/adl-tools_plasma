@@ -224,10 +224,10 @@ Currently, Plasma contains the following channels.  These are declared in ``plas
      {
        for (int i = 0; i != 2; ++i) {
          alt {
-           port(double x;a;) {
+           a.port(double x) {
              cout << "x:  " << x << endl;
            }
-           port (int y;b;) {
+           b.port (int y) {
              cout << "y:  " << y << endl;        
            }
          }
@@ -249,7 +249,7 @@ An **alt** block allows for unordered selection of data from channels.  Its
 syntax is::
 
   alt {
-    port (<value decl> ; <channel expr> ;) { <body> }
+    <channel expr> [ . | -> ] port (<value decl>) { <body> }
     [ alt { ... } ]
     [ afor { ... } ]
     [ { <default block> } ]
@@ -282,7 +282,7 @@ An **afor** block is similar to an **alt** block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is::
 
   afor ( <s1> ; <s2> ; <s3> ) {
-    port (<value decl> ; <channel expr> ;) { <body> }
+    <channel expr> [. | -> ] port (<value decl>) { <body> }
     [ { <default block> } ]
   }
 
@@ -296,7 +296,7 @@ For example, the following code loops over an array of channels.  As in the
 default block.::
 
   afor (int i = 0; i != (int)channels.size(); ++i) {
-    port (int v; channels[i];) {
+    channels[i].port (int v) {
       printf ("Got a value from port %d:  %d\n",i,v);
       if (v < 0) ++donecount;
     }
@@ -326,12 +326,12 @@ on a collection and an override channel:::
 
   alt {
     afor (int i = 0; i != (int)channels.size(); ++i) {
-      port (int v; channels[i];) {
+      channels[i].port (int v) {
         printf ("Got a value from port %d:  %d\n",i,v);
         if (v < 0) ++donecount;
       }
     }
-    port (bool b; stopchan;) {
+    stopchan.port (bool b) {
       if (b) {
         printf ("Got a stop command!\n");
       }

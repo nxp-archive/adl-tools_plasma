@@ -1,5 +1,14 @@
 2004-05-25  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Changed port statement syntax to be more clear.  Now, the format
+	is:
+
+	  <expr>.port(<decl>) { ... }
+
+	or
+
+	  <expr>->port(<decl>) { ... }
+	
 	* Added support for varargs handling with mutex classes.  The
 	support isn't perfect, though:  You can't write a true variadic
 	function, e.g. foo(const char *fmt,..), because you can't pass the

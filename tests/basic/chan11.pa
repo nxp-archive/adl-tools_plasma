@@ -47,20 +47,20 @@ int consumer(IntChanVect &ichannels,FloatChanVect &fchannels,IntChan &xc)
   while (donecount < stop) {
     alt {
       afor (int i = 0; i != (int)ichannels.size(); ++i) {
-        port (int v; ichannels[i];) {
+        ichannels[i].port (int v) {
           printf ("Got a value from port %d:  %d\n",i+ibase,v);
           if (v < 0) ++donecount;
         }
       }
       afor (std::pair<FloatChanVect::iterator,int> j = std::make_pair(fchannels.begin(),0);
             j.first != fchannels.end(); ++j.first,++j.second) {
-        port (double v; *(j.first);) {
+        j.first->port (double v) {
           printf ("Got a value from port %d:  %f\n",j.second+fbase,v);
           if (v < 0) ++donecount;
         }
       }
       alt {
-        port (int v; xc;) {
+        xc.port (int v) {
           printf ("Got a value from port 0:  %d\n",v);
         }
       }

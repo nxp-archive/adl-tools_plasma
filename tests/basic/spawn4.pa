@@ -26,13 +26,13 @@ void check(ResChan<double> &r0,ResChan<double> &r1,ResChan<int> &r2)
 {
   for (int i = 0; i != 3; ++i) {
     alt {
-      port(double x;r0;) {
+      r0.port(double x) {
         cout << "r0:  " << x << endl;
       }
-      port (double y;r1;) {
+      r1.port (double y) {
         cout << "r1:  " << y << endl;        
       }
-      port (int z;r2;) {
+      r2.port (int z) {
         cout << "r2:  " << z << endl;        
       }
     }

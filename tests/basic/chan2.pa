@@ -27,19 +27,19 @@ void consumer(IntChan &c0,IntChan &c1,IntChan &c2,IntChan &c3)
   int donecount = 0;
   while (donecount <  4) {
     alt {
-      port (int v;c0;) {
+      c0.port (int v) {
         printf ("Got a value from port c0:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (int v;c1;) {
+      c1.port (int v) {
         printf ("Got a value from port c1:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (int v;c2;) {
+      c2.port (int v) {
         printf ("Got a value from port c2:  %d\n",v);
         if (v < 0) ++donecount;
       }
-      port (int v;c3;) {
+      c3.port (int v) {
         printf ("Got a value from port c3:  %d\n",v);
         if (v < 0) ++donecount;
       }
