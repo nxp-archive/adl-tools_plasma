@@ -313,10 +313,50 @@ There are a few restrictions to follow for the **afor** block:
     variable.  Therefore, avoid fancy **afor** loops which declare multiple
     variables in the first statement or update multiple variables in the third statement.
 
-Serialized Data Structures
---------------------------
+Shared Data Structures
+----------------------
 
-TBD
+Threads may also commmunicate using shared data structures whose access methods
+are protected by special synchronization primitives.  There are two means to do
+this.  The easiest is to declare a class as being a mutex class::
+
+  pMutex class X { };
+
+This will wrap all public methods of class **X**, except for constructors and
+its destructor, with serialization code.  To prevent this on a per-method basis,
+use the modifier *pNoMutex*::
+
+  pMutex class Foo {
+  public:
+    // Not protected.
+    Foo();
+    ~Foo();
+    // Protected.
+    int a();
+    // Not protected.
+    pNoMutex int b();
+  private:
+    // Not protected.
+    int c();
+  };    
+
+Be careful with using *pNoMutex*:  Since it disables serialization, it is
+inherently dangerous.  It is useful, though, when you have a constant method
+whose return value would not be affected by a thread preemption.  For example, a
+method which returns a constant which is only initialized at construction time.
+
+The other method for creating a shared data structure is to directly use the
+``pLock()`` and ``pUnlock()`` primitives.  This is more error prone than using
+*pMutex* but might be necessary in some cases, such as for protecting a plain function::
+
+  void msg(const char *fmt, ...) {
+    pLock();
+    va_list ap;
+    va_start(ap,fmt);
+    vprintf(fmt,ap);
+    va_end(ap);
+    pUnlock();
+  }
 
 --------------
 The Time Model

@@ -12,16 +12,14 @@
 using namespace std;
 using namespace plasma;
 
-struct M {
-  static void msg(const char *fmt, ...) {
-    pLock();
-    va_list ap;
-    va_start(ap,fmt);
-    vprintf(fmt,ap);
-    va_end(ap);
-    pUnlock();
-  }
-};
+void msg(const char *fmt, ...) {
+  pLock();
+  va_list ap;
+  va_start(ap,fmt);
+  vprintf(fmt,ap);
+  va_end(ap);
+  pUnlock();
+}
 
 pMutex class Queue {
 public:
@@ -83,19 +81,19 @@ int pMain(int,const char*[])
         }
       }
       q.write(-1);
-      M::msg("Producer done.\n");
+      msg("Producer done.\n");
     }
     {
       // Consumer.
       int v;
       do {
         v = q.read();
-        M::msg("Q result:  %d\n",v);
+        msg("Q result:  %d\n",v);
       } while(v >= 0);
-      M::msg("Consumer done.\n");
+      msg("Consumer done.\n");
     }
   }
-  M::msg("pMain done.\n");
+  msg("pMain done.\n");
   return 0;
 }
 

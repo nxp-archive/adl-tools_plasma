@@ -282,7 +282,7 @@ Shared Data Structures
 
 Status:
 
-    TBD
+    Completed 5/20/2004
 
 Description:
 
@@ -295,15 +295,11 @@ Description:
 
 Implementation:
 
-    Should be a straight-forward use of OpenC++'s MOP.
-
-Dependencies:
-
-    TBD
+    Straightforward use of OpenC++'s example "WrapperClass".
 
 Regressions:
 
-    TBD
+    1. mutex1
 
 Thread Priorities
 -----------------
@@ -335,10 +331,25 @@ Implementation:
     Array of thread queeues.  Scheduler will run high priority threads first.
     Timeslicing will only be turned on when running the lowest-priority threads.
 
+Dependencies:
+
+    Add support for multiple processors first.  Do time model at same time.
+
 Time Model
 ----------
 
 Refer to twiki page for now.
+
+Timeouts
+--------
+
+Create a channel that has a backing thread which wakes up and writes to the
+channel after a specified amount of time.  Use in alt blocks.
+
+Clocked Channels
+----------------
+
+Investigate further..
 
 Garbage Collection
 ------------------

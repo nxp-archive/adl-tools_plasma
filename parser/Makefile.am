@@ -25,14 +25,15 @@ CXXLINK = $(CXX) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 
 am__depfiles_maybe = depfiles
 
-DEP_FILES=\
+DEP_FILES = \
 	./$(DEPDIR)/Plasma.Po \
 	./$(DEPDIR)/VarWalker.Po \
 	./$(DEPDIR)/Wrapper.Po \
-	./$(DEPDIR)/Mutex.Po
+	./$(DEPDIR)/Mutex.Po \
 	./$(DEPDIR)/TMutex.Po
 
 include ./$(DEPDIR)/Plasma.Po
+include ./$(DEPDIR)/VarWalker.Po
 include ./$(DEPDIR)/Wrapper.Po
 include ./$(DEPDIR)/Mutex.Po
 include ./$(DEPDIR)/TMutex.Po
