@@ -7,6 +7,7 @@ minicc_SOURCES = \
 	String.C \
 	Node.C \
 	SymTab.C \
+	StackMachine.C \
 	main.pa \
 	CParser.pa \
 	Compiler.pa \
@@ -26,6 +27,7 @@ DEP_FILES=\
 	./$(DEPDIR)/clex.Po \
 	./$(DEPDIR)/Node.Po \
 	./$(DEPDIR)/SymTab.Po
+	./$(DEPDIR)/StackMachine.Po
 
 include ./$(DEPDIR)/main.Po
 include ./$(DEPDIR)/CLexer.Po

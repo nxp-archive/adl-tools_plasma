@@ -70,42 +70,6 @@ bool do_printsyms(ostream &o)
   return o.iword(PrintSyms);
 }
 
-BaseType::Type intType(Type *t)
-{
-  if (BaseType *bt = tcast<BaseType>(t)) {
-    return bt->type();
-  }
-  return BaseType::None;
-}
-
-// Returns true if the object has an integer type (int or char).
-bool isIntType(Type *t)
-{
-  switch (intType(t)) {
-  case BaseType::None:
-    return false;
-  default:
-    return true;
-  }
-}
-
-// Returns true if the object has an integer type (int or char).
-bool isIntType(Node *n)
-{
-  return isIntType(n->type());
-}
-
-// Returns true if we have a pointer type.
-bool isPtrType(Type *t)
-{
-  return (tcast<PointerType>(t));
-}
-
-bool isPtrType(Node *n)
-{
-  return isPtrType(n->type());
-}
-
 // If the given type is a constant, coerce it to the
 // given type.
 void coerce_const(Node *n,Type *t)
@@ -1019,3 +983,38 @@ ostream &PointerType::print_outer(std::ostream &o) const
   return o;
 }
 
+BaseType::Type intType(Type *t)
+{
+  if (BaseType *bt = tcast<BaseType>(t)) {
+    return bt->type();
+  }
+  return BaseType::None;
+}
+
+// Returns true if the object has an integer type (int or char).
+bool isIntType(Type *t)
+{
+  switch (intType(t)) {
+  case BaseType::None:
+    return false;
+  default:
+    return true;
+  }
+}
+
+// Returns true if the object has an integer type (int or char).
+bool isIntType(Node *n)
+{
+  return isIntType(n->type());
+}
+
+// Returns true if we have a pointer type.
+bool isPtrType(Type *t)
+{
+  return (tcast<PointerType>(t));
+}
+
+bool isPtrType(Node *n)
+{
+  return isPtrType(n->type());
+}

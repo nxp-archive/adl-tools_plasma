@@ -24,6 +24,12 @@ class SymTab;
   throw runtime_error(ss.str()); \
 }
 
+#define Error1(x) { \
+  ostringstream ss; \
+  ss << "Error:  " << x; \
+  throw runtime_error(ss.str()); \
+}
+
 #define Warn(n,x) { \
   cerr << n->filename() << ":" << n->linenumber() << ":  Warning:  " << x; \
 }
@@ -552,5 +558,13 @@ T &tcastr(Type *t)
 {
   return dynamic_cast<T &>(*t);
 }
+
+// Functions for querying types.
+
+BaseType::Type intType(Type *t);
+bool isIntType(Type *t);
+bool isIntType(Node *n);
+bool isPtrType(Type *t);
+bool isPtrType(Node *n);
 
 #endif
