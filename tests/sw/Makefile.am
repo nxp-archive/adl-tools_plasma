@@ -22,6 +22,8 @@ check_PROGRAMS = \
 	cim \
 	pipe
 
+EXTRA_DIST = regress
+
 alt_SOURCES = alt.pa
 alt_DEPENDENCIES = $(DEPENDENCIES)
 

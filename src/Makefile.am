@@ -35,4 +35,5 @@ noinst_HEADERS = \
 	System.h \
 	Thread.h \
 	Queue.h \
-	ThreadQ.h
+	ThreadQ.h \
+	ProcQ.h

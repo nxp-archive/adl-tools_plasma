@@ -77,6 +77,8 @@ check_PROGRAMS = \
 	quantity1 \
 	gc1
 
+EXTRA_DIST = regress
+
 par1_SOURCES = par1.pa
 par1_DEPENDENCIES = $(DEPENDENCIES)
 

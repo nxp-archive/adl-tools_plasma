@@ -1,3 +1,6 @@
+
+SUBDIRS = md
+
 lib_LTLIBRARIES = libqt.la libstp.la
 
 libqt_la_SOURCES = \
@@ -10,11 +13,19 @@ libstp_la_SOURCES = \
 
 noinst_HEADERS = \
 	qt.h \
-	qtmd.h
+	qtmd.h \
+	stp.h
 
-#libqt_la_LIBADD = qtmds.o
+EXTRA_DIST = 	CHANGES \
+		INSTALL \
+		README \
+		README.MISC \
+		README.PORT \
+		b.h \
+		config \
+		copyright.h \
+		meas.c
 
-#qtmds.o: qtmds.s
 
 # Remove the configuration information on a distclean.
 distclean: distclean-am

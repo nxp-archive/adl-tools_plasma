@@ -7,6 +7,8 @@ TESTS = regress
 check_PROGRAMS = \
 	eav
 
+EXTRA_DIST = regress
+
 eav_SOURCES = eav.pa 
 eav_DEPENDENCIES = $(DEPENDENCIES)
 

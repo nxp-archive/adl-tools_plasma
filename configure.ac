@@ -86,6 +86,7 @@ AC_CONFIG_FILES([\
    macros/Makefile \
    scripts/Makefile \
    qt/Makefile \
+   qt/md/Makefile \
    src/Makefile \
    parser/Makefile \
    doc/Makefile \
@@ -95,7 +96,8 @@ AC_CONFIG_FILES([\
    tests/eav/Makefile \
    tests/ecu/Makefile \
    tests/lemon/Makefile \
-   tests/cc/Makefile
+   tests/cc/Makefile \
+   tests/cc/tests/Makefile
 ])
 
 AC_CONFIG_FILES([\

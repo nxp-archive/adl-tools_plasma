@@ -15,6 +15,16 @@ ecu_SOURCES = \
 	utilities.pa \
 	angle.pa
 
+noinst_HEADERS = \
+	angle.h \
+	car.h \
+	configuration.h \
+	constants.h \
+	engine.h \
+	utilities.h
+
+EXTRA_DIST = regress
+
 ecu_DEPENDENCIES = $(DEPENDENCIES)
 
 DEP_FILES=\
