@@ -277,11 +277,11 @@ int Foo::foo(int x,int y)
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.4 Language Enhancements</font>
 </h3></td></tr></table>
 </div><div class="section">
-<ul class="itemize"> <li><p>Default initialization for all built-in variables will be
-	       added.  This inconsistency in the C++ language is frequently the
-	       source of difficult to find bugs and is completely unnecessary: A
-	       good optimizing compiler can remove unneeded initializations.
-	       For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<ul class="itemize"> <li><p>Default initialization for all built-in variables will be added.
+	    This inconsistency in the C++ language is frequently the source of
+	    difficult to find bugs and is completely unnecessary: A good
+	    optimizing compiler can remove unneeded initializations.  For
+	    example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
  
@@ -292,13 +292,13 @@ int i; <font color="#ffa600"><em>// Would be initialized to 0. </em></font>
 </tbody></table></td></tr>
 </tbody></table></li>
  <li><p>Null-pointer checking will be performed.  This can be
-	       implemented without adding extra runtime overhead: A null-pointer
-	       access will cause a protection fault, which can then generate a
-	       C++ exception.</p></li>
- <li><p>A <code>let</code> statement which would allow for the
-	       declaration of variables without explicitly stating their type
-	       will be added.  The type would be implied from the type of the
-	       initializing expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+	    implemented without adding extra runtime overhead: A null-pointer
+	    access will cause a protection fault, which can then generate a C++
+	    exception.</p></li>
+ <li><p>A <code>let</code> statement which would allow for the declaration
+	    of variables without explicitly stating their type will be added.
+	    The type would be implied from the type of the initializing
+	    expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
  
@@ -308,36 +308,44 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li><p>A <code>final</code> block will be added to the language.  This
-	       may only follow a <code>try</code> or <code>catch</code> block and will
-	       be executed whether an exception occurs or not.</p></li>
- <li><p>A proper module system will be added.  C++'s use of header files for
-	       conveying declaration information make for extremely inefficient
-	       compilation.  This is compounded by the fact that templates need
-	       to be in header files.  A proper module system could dramatically
-	       speed up development time.</p></li>
- <li><p>Nested functions and lambda functions with true closures will
-	       be added.  A closure would only be allocated if control-flow
-	       analysis indicated that a function might escape its parent's
-	       scope.  In that case, the relevant local variables would be
-	       placed in a closure.  Thus, no extra overhead would exist for the
-	       usual case of un-nested functions or even for the case where a
-	       function did not escape.</p><p>The main advantage of adding this feature is to be able to
-	       better utilize generic, highly-optimized functions such as those
-	       present in the STL.  For instance, the <code>foreach</code> function
-	       becomes far more useful when a lambda function can be used
-	       directly as the functor argument.  Since <code>foreach</code> can be
-	       specialized for different data structures, it can potentially
-	       yield a faster solution for iterating over a container than a
-	       for-loop.</p></li>
- <li><p>A meta-object protocol/advanced macro processor will be
-	       added.  As mentioned above, the current Plasma implementation
-	       uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a> to convert Plasma
-	       into C++.  By making such a feature a part of Plasma itself, new
-	       language features could be added without changing the actual
-	       language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
-	       parallelism in the language would be implemented as low-level
-	       primitives which would not be directly used by the user.</p></li>
+ <li><p>A <code>final</code> block will be added to the language.  This may
+	    only follow a <code>try</code> or <code>catch</code> block and will be
+	    executed whether an exception occurs or not.</p></li>
+ <li><p>A proper module system will be added.  C++'s use of header files
+	    for conveying declaration information make for extremely inefficient
+	    compilation.  This is compounded by the fact that templates need to
+	    be in header files.  A proper module system could dramatically speed
+	    up development time.</p></li>
+ <li><p>Nested functions and lambda functions with true closures will be
+	    added.  A closure would only be allocated if control-flow analysis
+	    indicated that a function might escape its parent's scope.  In that
+	    case, the relevant local variables would be placed in a closure.
+	    Thus, no extra overhead would exist for the usual case of un-nested
+	    functions or even for the case where a function did not escape.</p><p>The main advantage of adding this feature is to be able to
+	    better utilize generic, highly-optimized functions such as those
+	    present in the STL.  For instance, the <code>foreach</code> function
+	    becomes far more useful when a lambda function can be used directly
+	    as the functor argument.  Since <code>foreach</code> can be specialized
+	    for different data structures, it can potentially yield a faster
+	    solution for iterating over a container than a for-loop.</p></li>
+ <li><p>A meta-object protocol/advanced macro processor will be added.
+	    As mentioned above, the current Plasma implementation uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a> to
+	    convert Plasma into C++.  By making such a feature a part of Plasma
+	    itself, new language features could be added without changing the
+	    actual language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
+	    parallelism in the language would be implemented as low-level
+	    primitives which would not be directly used by the user.</p></li>
+ <li><p>Other possible language enhancements might include:</p><ul class="itemize"> <li>Pattern matching, such as that found in the <a href="http://www.kernel.pl/~malekith/gont/index.html" class="http">Gont
+	       language</a>.</li>
+ <li>An alternative system for declarations, such as that
+	       described in <em>The Design and Evolution of C++</em>, page 46 and
+	       implemented in the preprocessor <a href="http://www.op59.net/cmm/cmm-0.28/readme.html" class="http">Cmm</a>.</li>
+ <li>An alternative template syntax.  The goal is to make it
+	       easier to write compile-time polymorphic code.  Therefore, we
+	       would like to experiment with how to make it much easier to write
+	       generic functions, possibly borrowing ideas from the ML family of
+	       languages.</li>
+</ul></li>
 </ul></div><br>
 <!-- Behavioral Synthesis -->
 <a name="Behavioral-Synthesis"></a>
@@ -362,6 +370,6 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Thu Sep 23 13:22:47 2004</em>.</font></p></div>
+Last update <em>Tue Sep 28 11:45:04 2004</em>.</font></p></div>
 </body>
 </html>

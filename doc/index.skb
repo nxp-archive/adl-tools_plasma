@@ -584,6 +584,20 @@ par {
 	 Additionally, a model might wrap all calls to ,(code [pEnergy]) so that
 	 a scaling value, based on clock-frequency, might be applied.])
 	 
+	 (p [This concept could be extended to other resources besides just
+	 power and computation.  C++'s (and thus Plasma's) data structure support
+	 make this relatively straight-forward: A hash can be constructed to
+	 associate processors with arbitrary data.  This makes it possible to
+	 track additional resources without changing the underlying runtime
+	 kernel.  What is not as straight-forward is to link resource
+	 utilization to compute time; future versions of Plasma will attempt to
+	 deal with this problem.  For example, suppose the user wants to track
+	 memory bandwidth, where two processors share a memory bus.  If the two
+	 processors each want to consume 60% of the available bandwidth, one or
+	 the other will have to wait for the other to finish.  This might be
+	 modeled by adding a feature where a processor is considered to be busy
+	 until a certain condition is reached.])
+	 
 	 )
 	 
       )

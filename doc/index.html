@@ -561,7 +561,19 @@ par <font color="red"><strong>{</strong></font>
 	 different paths through the code or compute energy by looking at the
 	 hamming distance between consecutive data values read from a channel.
 	 Additionally, a model might wrap all calls to <code>pEnergy</code> so that
-	 a scaling value, based on clock-frequency, might be applied.</p></div>
+	 a scaling value, based on clock-frequency, might be applied.</p><p>This concept could be extended to other resources besides just
+	 power and computation.  C++'s (and thus Plasma's) data structure support
+	 make this relatively straight-forward: A hash can be constructed to
+	 associate processors with arbitrary data.  This makes it possible to
+	 track additional resources without changing the underlying runtime
+	 kernel.  What is not as straight-forward is to link resource
+	 utilization to compute time; future versions of Plasma will attempt to
+	 deal with this problem.  For example, suppose the user wants to track
+	 memory bandwidth, where two processors share a memory bus.  If the two
+	 processors each want to consume 60% of the available bandwidth, one or
+	 the other will have to wait for the other to finish.  This might be
+	 modeled by adding a feature where a processor is considered to be busy
+	 until a certain condition is reached.</p></div>
 </div><br>
 <!-- User's Guide -->
 <a name="User's-Guide"></a>
@@ -601,6 +613,6 @@ A description of proposed future enhancements can be found <a href="index-3.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Thu Sep 23 13:22:47 2004</em>.</font></p></div>
+Last update <em>Tue Sep 28 11:45:04 2004</em>.</font></p></div>
 </body>
 </html>

@@ -279,103 +279,125 @@ int Foo::foo(int x,int y)
 
       (itemize
 	 
-	    (item
+	 (item
 	       
-	       (p [Default initialization for all built-in variables will be
-	       added.  This inconsistency in the C++ language is frequently the
-	       source of difficult to find bugs and is completely unnecessary: A
-	       good optimizing compiler can remove unneeded initializations.
-	       For example:])
+	    (p [Default initialization for all built-in variables will be added.
+	    This inconsistency in the C++ language is frequently the source of
+	    difficult to find bugs and is completely unnecessary: A good
+	    optimizing compiler can remove unneeded initializations.  For
+	    example:])
 	       
-	       (cprog [ 
+	    (cprog [ 
  
 int i; // Would be initialized to 0. 
  
 ])
 
-               )
+	    )
 	       
-	    (item
+	 (item
 	       
-	       (p [Null-pointer checking will be performed.  This can be
-	       implemented without adding extra runtime overhead: A null-pointer
-	       access will cause a protection fault, which can then generate a
-	       C++ exception.])
-	       
-	       )
-	       	       	           
-	    (item
+	    (p [Null-pointer checking will be performed.  This can be
+	    implemented without adding extra runtime overhead: A null-pointer
+	    access will cause a protection fault, which can then generate a C++
+	    exception.])
 	    
-	       (p [A ,(code [let]) statement which would allow for the
-	       declaration of variables without explicitly stating their type
-	       will be added.  The type would be implied from the type of the
-	       initializing expression.  For example:])
+	    )
+	       	       	           
+	 (item
+	    
+	    (p [A ,(code [let]) statement which would allow for the declaration
+	    of variables without explicitly stating their type will be added.
+	    The type would be implied from the type of the initializing
+	    expression.  For example:])
 	 
-	       (cprog [ 
+	    (cprog [ 
  
 let i = ValueCheck<int,std::bind2nd(std::equal_to<int>(),10)
  
 ])
 	       
-	       )
+	    )
 	       
-	    (item
+	 (item
 	       
-	       (p [A ,(code [final]) block will be added to the language.  This
-	       may only follow a ,(code [try]) or ,(code [catch]) block and will
-	       be executed whether an exception occurs or not.]))
+	    (p [A ,(code [final]) block will be added to the language.  This may
+	    only follow a ,(code [try]) or ,(code [catch]) block and will be
+	    executed whether an exception occurs or not.]))
 	       
-	    (item
+	 (item
 	       
-	       (p [A proper module system will be added.  C++'s use of header files for
-	       conveying declaration information make for extremely inefficient
-	       compilation.  This is compounded by the fact that templates need
-	       to be in header files.  A proper module system could dramatically
-	       speed up development time.])
+	    (p [A proper module system will be added.  C++'s use of header files
+	    for conveying declaration information make for extremely inefficient
+	    compilation.  This is compounded by the fact that templates need to
+	    be in header files.  A proper module system could dramatically speed
+	    up development time.])
 	       
-	       )
+	    )
 	       
-	    (item
+	 (item
 	       
-	       (p [Nested functions and lambda functions with true closures will
-	       be added.  A closure would only be allocated if control-flow
-	       analysis indicated that a function might escape its parent's
-	       scope.  In that case, the relevant local variables would be
-	       placed in a closure.  Thus, no extra overhead would exist for the
-	       usual case of un-nested functions or even for the case where a
-	       function did not escape.])
+	    (p [Nested functions and lambda functions with true closures will be
+	    added.  A closure would only be allocated if control-flow analysis
+	    indicated that a function might escape its parent's scope.  In that
+	    case, the relevant local variables would be placed in a closure.
+	    Thus, no extra overhead would exist for the usual case of un-nested
+	    functions or even for the case where a function did not escape.])
 	       
-	       (p [The main advantage of adding this feature is to be able to
-	       better utilize generic, highly-optimized functions such as those
-	       present in the STL.  For instance, the ,(code [foreach]) function
-	       becomes far more useful when a lambda function can be used
-	       directly as the functor argument.  Since ,(code [foreach]) can be
-	       specialized for different data structures, it can potentially
-	       yield a faster solution for iterating over a container than a
-	       for-loop.])
+	    (p [The main advantage of adding this feature is to be able to
+	    better utilize generic, highly-optimized functions such as those
+	    present in the STL.  For instance, the ,(code [foreach]) function
+	    becomes far more useful when a lambda function can be used directly
+	    as the functor argument.  Since ,(code [foreach]) can be specialized
+	    for different data structures, it can potentially yield a faster
+	    solution for iterating over a container than a for-loop.])
 	       
-	       )
+	    )
 	       
-	    (item 
+	 (item 
 	       
-	       (p [A meta-object protocol/advanced macro processor will be
-	       added.  As mentioned above, the current Plasma implementation
-	       uses ,(ref :text "OpenC++" :url
-	       "http://sourceforge.net/projects/opencxx/") to convert Plasma
-	       into C++.  By making such a feature a part of Plasma itself, new
-	       language features could be added without changing the actual
-	       language definition.])
+	    (p [A meta-object protocol/advanced macro processor will be added.
+	    As mentioned above, the current Plasma implementation uses ,(ref
+	    :text "OpenC++" :url "http://sourceforge.net/projects/opencxx/") to
+	    convert Plasma into C++.  By making such a feature a part of Plasma
+	    itself, new language features could be added without changing the
+	    actual language definition.])
 	       
-	       (p [This means that constructs such as ,(code [alt]) and ,(code
-	       [par]) could still be implemented by the macro facility; the
-	       parallelism in the language would be implemented as low-level
-	       primitives which would not be directly used by the user.])
+	    (p [This means that constructs such as ,(code [alt]) and ,(code
+	    [par]) could still be implemented by the macro facility; the
+	    parallelism in the language would be implemented as low-level
+	    primitives which would not be directly used by the user.])
+	       
+	    )
+	 
+	 (item
+	    
+	    (p [Other possible language enhancements might include:])
+	    
+	    (itemize
+	       
+	       (item [Pattern matching, such as that found in the ,(ref :url
+	       "http://www.kernel.pl/~malekith/gont/index.html" :text "Gont
+	       language").])
+	       
+	       (item [An alternative system for declarations, such as that
+	       described in ,(i [The Design and Evolution of C++]), page 46 and
+	       implemented in the preprocessor ,(ref :url
+	       "http://www.op59.net/cmm/cmm-0.28/readme.html" :text "Cmm").])
+	       
+	       (item [An alternative template syntax.  The goal is to make it
+	       easier to write compile-time polymorphic code.  Therefore, we
+	       would like to experiment with how to make it much easier to write
+	       generic functions, possibly borrowing ideas from the ML family of
+	       languages.])
 	       
 	       )
 	    
 	    )
-	 
+
 	 )
+	 
+      )
 
    (section :title "Behavioral Synthesis"
       
