@@ -61,6 +61,15 @@ namespace plasma {
     // Caller must lock cluster.
     void runscheduler();
 
+    // Delay current processor by specified amount of time.
+    void delay(ptime_t);
+
+    // Consume the specified amount of time.
+    void busy(ptime_t);
+
+    // Current time.
+    ptime_t time() const;
+
     void lock();             // lock cluster
     void unlock();           // unlock cluster
     bool locked() const;     // is cluster in kernel mode?
@@ -90,6 +99,9 @@ namespace plasma {
     // Updates the current processor to one which has work to do.
     // Returns false if none available.
     bool update_proc();
+    bool get_new_proc();
+    // Updates current time and populates cluster.
+    bool update_time();
     // Get next available thread, respecting priorities, from the
     // current processor.
     Thread *get_ready();    

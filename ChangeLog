@@ -1,3 +1,37 @@
+2004-06-04  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added time model:
+
+	pDelay():  Puts current thread on the delay queue.  When time
+	advances up to this point, process is removed and added back to
+	processor.  Processor is added back to ready queue.  If processor
+	is busy, then it's only added back to ready queue if priority of
+	delayed process is higher than the process which made the
+	processor busy.  In that case, the processor is added back, but
+	removed as soon as higher priority process is finished.
+
+	pBusy():  Puts current process and processor on the busy queue.
+	When time advances up to this point, processor is put back into
+	the ready processor queue.
+
+	Time advances whenever there is no more work to be done for the
+	current time step, i.e. no more processors are on the processor
+	ready queue.  In that case, we advance to the next time step,
+	which is the smaller of the tops of the delay and the busy queue.
+	These queues are implemented as STL priority queues, so whenever
+	we push on a value, the smallest item percolates to the top.
+
+	pTime():  Returns current time of the system.
+
+	If we set ConfigParms::_busyokay to false (default), then we
+	cannot use pBusy; it will cause the system to abort.  This also
+	means that preemptive thread switching is enabled.  If we set this
+	value to true, we can use pBusy, but preemption is turned off- the
+	only way that a thread swaps out is by a call to pBusy(),
+	pDelay(), or a blocking operation (pWait(), alt, etc.).
+	
+	Note:  Time slicing not yet implemented.
+
 2004-06-02  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Updated the scheduler to work in the way described by Pete

@@ -20,6 +20,11 @@ namespace plasma {
 
   typedef std::pair<int,int> HandleType;
 
+  // Time is a 64-bit integer.  This may need to be changed depending
+  // upon the compiler used.
+  typedef unsigned long long int uint64;
+  typedef uint64 ptime_t;
+
   //
   // This defines parameters that are adjustable by the user.
   //
@@ -30,6 +35,8 @@ namespace plasma {
     bool     _preempt;        // preemption allowed.
     unsigned _timeslice;      // Time slice length in usec.
     int      _numpriorities;  // Number of supported priorities.
+    bool     _busyokay;       // Indicates that pBusy is legal- default is false.
+    ptime_t  _busytimeslice;  // Size of time slice for low-priority threads in pBusy.
 
     ConfigParms();
   };
@@ -126,6 +133,16 @@ namespace plasma {
 
   // Returns lock status.
   bool pIsLocked();
+
+  // Delays the current thread for the time specified.
+  void pDelay(ptime_t);
+
+  // Consumes the specified amount of time.  Note:  This is only
+  // valid if the system has been configured to allow time consumption.
+  void pBusy(ptime_t);
+
+  // Return the current simulation time.
+  ptime_t pTime();
 
   // Terminate program with return code .
   void pExit(int code);

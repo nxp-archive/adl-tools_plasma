@@ -1,0 +1,40 @@
+
+Plasma:  Parallel LAnguage for System Modelling and Analysis
+============================================================
+
+Plasma is a superset of C++, adding parallel extensions similar
+to that provided by the language Occam.
+
+To Build:
+---------
+
+./configure <options>
+
+   The most common option is "--prefix=<dir>", which specifies the
+   target directory.  You may need to modify your PATH or supply other
+   options so that configure is able to find the programs it needs, such
+   as gcc 3.x and OpenC++.
+
+   OpenC++ is a C++ parser and meta-object protocol framework.  It is available
+   from here:  
+
+	http://www.csg.is.titech.ac.jp/~chiba/openc++.html  
+
+   It has been installed in _TOOLS_ on GAIN as the package opencxx-bk-
+
+   Note:  You can't just use the distributed version due to some necessary extensions
+   and bug fixes.  Instead, you have to use a special version that's installed
+   on GAIN and stored in CVS at /nfs/ibmoto/tools/CVS_root/opencxx-bk
+
+make
+ 
+   This builds the system.
+
+make check
+
+   This runs the regression.
+
+make install
+
+   This installs the program.
+

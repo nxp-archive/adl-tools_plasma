@@ -1,0 +1,43 @@
+//
+// Test of busy w/delay.  Block 3, b/c it has a higher priority,
+// wakes up the processor to run.  Therefore, its delay is correct,
+// while block 4 has an extra delay b/c of the busy.
+//
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup (ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+void foo(int id,int t)
+{
+  for (int i = 0; i != 10; ++i) {
+    cout << "Id:  " << id << ",  Time:  " << pTime() << endl;
+    pBusy(t);
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    foo(1,10);
+    foo(2,10);
+    {
+      pSetPriority(0);
+      cout << "Block 3 start:  " << pTime() << "." << endl;
+      pDelay(50);
+      cout << "Block 3 done:  " << pTime() << "." << endl;
+    }
+    {
+      cout << "Block 4 start:  " << pTime() << "." << endl;
+      pDelay(50);
+      cout << "Block 4 done:  " << pTime() << "." << endl;
+    }
+  }
+  cout << "Done." << endl;
+  return 0;
+}

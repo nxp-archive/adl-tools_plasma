@@ -19,7 +19,7 @@ namespace plasma {
   // garbage collection should only get rid of it when it's completely done.
   class Proc : public QBase {
   public:
-    enum State {  Waiting, Running };
+    enum State {  Waiting, Running, Busy };
 
     Proc();
 
@@ -41,6 +41,12 @@ namespace plasma {
     State state() const { return _state; };
     void setState(State s) { _state = s; };
 
+    // Priority of busying job.
+    THandle busythread() const { return _bt; };
+    bool hasBusyThread() const { return _bt; };
+    void setBusyThread(THandle t) { _bt = t; };
+    void clearBusyThread() { _bt = 0; };
+
     // Number of threads in object.
     unsigned size() const { return _numthreads; };
     // Returns true if queue is empty.
@@ -54,9 +60,10 @@ namespace plasma {
   private:
     static unsigned _numpriorities; // Number of allowed priorities.
 
-    QVect _ready;          // Ready threads, in priority order.
-    int   _numthreads;     // Count of threads in this object.
-    State _state;          // Current processor state.
+    QVect    _ready;          // Ready threads, in priority order.
+    int      _numthreads;     // Count of threads in this object.
+    State    _state;          // Current processor state.
+    Thread  *_bt;             // Thread which is busying this processor.
   };
 
 }

@@ -107,7 +107,9 @@ namespace plasma {
 
   void Cluster::init(const ConfigParms &cp,Proc *p)
   {
-    if (!cp._preempt) {
+    // We don't use preemption if we're using the time model
+    // or the user has turned off preemption.
+    if (!cp._preempt || cp._busyokay) {
       nopreempt();
     }
     _timeslice = cp._timeslice;
@@ -200,6 +202,35 @@ namespace plasma {
     exec_ready(t,old);
   }
 
+  void Cluster::delay(ptime_t t)
+  {
+    lock();
+    // Add to delay queue.
+    thesystem.add_delay(t,_cur);
+    // Switch to next thread- do not add this thread back to ready queue.
+    exec_block();
+  }
+
+  void Cluster::busy(ptime_t t)
+  {
+    if (!thesystem.busyokay()) {
+      pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
+    }
+    lock();
+    // Add to busy queue.
+    thesystem.add_busy(t,_cur);
+    // Get a new processor.  This should always correctly update _curproc
+    // because we know we've just added an item.
+    get_new_proc();
+    // Switch to scheduler- do not add this thread to ready queue.
+    exec_block();
+  }
+
+  ptime_t Cluster::time() const 
+  { 
+    return thesystem.time(); 
+  }
+
   // This changes the priority, then yields so that the
   // new priority will take effect.
   void Cluster::set_priority(unsigned p)
@@ -210,7 +241,6 @@ namespace plasma {
     }
     _cur->setPriority( convert_priority(p) );
     yield();
-    //runscheduler();
   }
 
   unsigned Cluster::get_priority() const
@@ -257,21 +287,77 @@ namespace plasma {
     }
   }
 
-  // Updates current processor to a new processor with threads, or else
-  // returns false if none available.
+  // Updates current processor to a new processor with threads.  If we have no
+  // more processors available, then advances time.  If that still yields
+  // nothing, then returns false.  If the current processor is empty, we set
+  // it to the Waiting state.
   inline bool Cluster::update_proc()
   {
     assert(_curproc);
     if (_curproc->empty()) {
       // Update state.
       _curproc->setState(Proc::Waiting);
-      // No threads- get next processor.  We assume that this processor
-      // is stored in some waiting thread, so we can clobber this pointer.
-      if (! (_curproc = _procs.get())) {
-        // No processors in ready queue- exit.
-        return false;
+      return get_new_proc();
+    }
+    return true;
+  }
+
+  // Gets a new processor.  If none is available, advances time.
+  // If nothing available, returns false.
+  // The current processor is overwritten, so it should exist somewhere else.
+  bool Cluster::get_new_proc()
+  {
+    // No threads- get next processor.  We assume that this processor
+    // is stored in some waiting thread, so we can clobber this pointer.
+    if (! (_curproc = _procs.get())) {
+      // No new processors at this time, so try to advance time.  If that
+      // fails, then we fail.
+      return update_time();
+    }
+    return true;
+  }
+
+  // Updates system time and populates cluster with stuff that's ready to run.
+  // Returns false if nothing is available.
+  bool Cluster::update_time()
+  {       
+    // No processors in ready queue- try to advance time.
+    if ( !thesystem.update_time()) {
+      return false;
+    }
+    // New time is valid- there's stuff to do.
+    // Grab stuff from delay queue.
+    Thread *t;
+    while ( (t = thesystem.get_delay())) {
+      // Add thread to processor and set processor to run.
+      Proc *p = t->proc();
+      p->add_ready(t);
+      // If processor of delayed thread is busy, then only
+      // run it if its priority is higher.  In that case,
+      // we decrement the amount of busy time left.  However,
+      // we keep the fact that it has an attached busy thread.
+      // When this thread finishes, the processor will be placed
+      // back in the busy queue.
+      if (p->state() == Proc::Busy) {
+        Thread *bt = p->busythread();
+        assert(bt);
+        if (t->priority() < bt->priority()) {
+          add_proc(p);
+        }
+      } else {
+        add_proc(p);
       }
     }
+    // Grab stuff from busy queue.
+    while ( (t = thesystem.get_busy())) {
+      Proc *p = t->proc();
+      // Add thread to processor and set processor to run.
+      p->add_ready(t);
+      p->clearBusyThread();
+      add_proc(p);
+    }
+    // Finally, update the current processor.
+    _curproc = _procs.get();
     return true;
   }
 
@@ -297,6 +383,12 @@ namespace plasma {
   {
     // Lock cluster to prevent preemption.
     lock();
+    // If a busy thread exists for this processor, it means that a higher
+    // priority thread preempted the busy state.  Now we must move it back.
+    // It's still on the busy queue, so we know that there's always more to be done.
+    if (thecluster.curProc()->hasBusyThread()) {
+      get_new_proc();
+    }
     Thread *ready = get_ready();
     Thread *old = _cur;
     _cur = ready;

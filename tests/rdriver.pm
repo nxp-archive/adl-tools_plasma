@@ -127,7 +127,6 @@ sub doTest($) {
   # original test array.
   my $tests = get_run_list(shift);
 
-
   print "\n";
  TEST: for my $iter (sort(keys %{$tests})) {
     print " Test $iter...\n";
@@ -143,12 +142,16 @@ sub doTest($) {
     my $failokay = ($t->{fail});
     #print "Output:\n\n$output\n\n";
     eval {
-      if (($? >> 8) && !($failokay)) {
-	error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
-      }
-      if ( (($? >> 8) == 0) && $failokay) {
+      if (($? >> 8)) {
+	if (!($failokay)) {
+	  error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
+	} else {
+	  print "  ...expected fail found.\n";
+	}
+      } elsif ($failokay) {
 	error (" Test did not fail but was expected to.  Return code was $?. Output is:\n\n$output\n");
       }
+
       if ( $t->{diff} ) {
 	error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{cmts}));
       }

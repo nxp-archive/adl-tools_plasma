@@ -1,0 +1,34 @@
+//
+// Simple test of delays.
+//
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup (ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+void foo(int id,int t)
+{
+  for (int i = 0; i != 10; ++i) {
+    cout << "Id:  " << id << ",  Time:  " << pTime() << endl;
+    pDelay(t);
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  par {
+    foo(1,10);
+    foo(2,20);
+    {
+      cout << "Block 3 start:  " << pTime() << endl;
+      pDelay(50);
+      cout << "Block 3 done:  " << pTime() << endl;
+    }
+  }
+  return 0;
+}

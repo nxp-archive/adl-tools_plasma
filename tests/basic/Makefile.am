@@ -34,7 +34,10 @@ check_PROGRAMS = \
 	pri2 \
 	proc1 \
 	proc2 \
-	proc3
+	proc3 \
+	time1 \
+	time2 \
+	time3
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
@@ -113,6 +116,15 @@ proc2_DEPENDENCIES = $(DEPENDENCIES)
 proc3_SOURCES = proc3.pa
 proc3_DEPENDENCIES = $(DEPENDENCIES)
 
+time1_SOURCES = time1.pa
+time1_DEPENDENCIES = $(DEPENDENCIES)
+
+time2_SOURCES = time2.pa
+time2_DEPENDENCIES = $(DEPENDENCIES)
+
+time3_SOURCES = time3.pa
+time3_DEPENDENCIES = $(DEPENDENCIES)
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
 DEP_FILES=\
@@ -140,7 +152,10 @@ DEP_FILES=\
 	./$(DEPDIR)/pri2.Po \
 	./$(DEPDIR)/proc1.Po \
 	./$(DEPDIR)/proc2.Po \
-	./$(DEPDIR)/proc3.Po
+	./$(DEPDIR)/proc3.Po \
+	./$(DEPDIR)/time1.Po \
+	./$(DEPDIR)/time2.Po \
+	./$(DEPDIR)/time3.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -164,6 +179,9 @@ include ./$(DEPDIR)/pri1.Po
 include ./$(DEPDIR)/pri2.Po
 include ./$(DEPDIR)/proc2.Po
 include ./$(DEPDIR)/proc3.Po
+include ./$(DEPDIR)/time1.Po
+include ./$(DEPDIR)/time2.Po
+include ./$(DEPDIR)/time3.Po
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

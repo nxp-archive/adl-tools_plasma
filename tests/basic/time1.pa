@@ -1,0 +1,19 @@
+//
+// This makes sure that a call to busy, if _busyokay is false,
+// will cause the program to fail.
+//
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup (ConfigParms &cp)
+{
+  cp._busyokay = false;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  pBusy(10);
+  return 0;
+}

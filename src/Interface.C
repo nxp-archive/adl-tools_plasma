@@ -17,7 +17,9 @@ namespace plasma {
     _verbose(false),
     _preempt(true),
     _timeslice(50000),
-    _numpriorities(32)
+    _numpriorities(32),
+    _busyokay(false),
+    _busytimeslice(1)
   {}
 
   // Create a new thread and make it ready.
@@ -127,6 +129,21 @@ namespace plasma {
   unsigned pLowestPriority()
   {
     return thecluster.lowest_priority();
+  }
+
+  void pDelay(ptime_t t)
+  {
+    thecluster.delay(t);
+  }
+
+  void pBusy(ptime_t t)
+  {
+    thecluster.busy(t);
+  }
+
+  ptime_t pTime()
+  {
+    return thesystem.time();
   }
 
   // Lock thecluster.

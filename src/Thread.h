@@ -47,6 +47,9 @@ namespace plasma {
     unsigned priority() const { return _priority; };
     void setPriority(unsigned p) { _priority = p; };
 
+    ptime_t time() const { return _time; };
+    void setTime(ptime_t t) { _time = t; };
+
     void *endspace() const { return (void*)&_extraspace[0]; };
 
     static void *operator new(size_t sz) { return ::operator new(sz); };
@@ -60,6 +63,7 @@ namespace plasma {
     Proc       *_proc;             // Parent processor.
     HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
+    ptime_t     _time;             // Busy or delay time of the thread.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
@@ -68,7 +72,8 @@ namespace plasma {
     _thread(0),
     _stack(0),
     _proc(0),
-    _priority(0)
+    _priority(0),
+    _time(0)
   {
   }
 
