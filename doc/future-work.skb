@@ -1,0 +1,142 @@
+
+(chapter :title "Future Work"
+      
+   (p [The current version of Plasma exists as a prototype.  It is
+      implemented as a front-end filter, using ,(ref :text "OpenC++" :url
+      "http://sourceforge.net/projects/opencxx/"), which converts Plasma code
+      into C++ code and calls to a simple user-mode thread package.  The threads
+      are implemented using ,(ref :text "Quickthreads" :url
+      "http://www.cs.washington.edu/research/compiler/papers.d/quickthreads.html").])
+      
+      (p [A production worthy version of Plasma would feature a thread-aware
+      compiler which would produce more highly optimized code.  For instance, on
+      a thread-yield, the compiler would only save the state of live
+      registers.])
+      
+      (p [Other enhancements we are considering are listed below.])
+
+      (section :title "Real-time Programming Extensions"
+	 
+	 (p [We propose adding various extensions to Plasma to make it easier to
+	 develop real-time embedded applications.  For example, the ,(code
+	 [deadline]) class will be used to state that a certain sequence of code
+	 (from the point of declaration to the end of the scope) must execute
+	 within the specified amount of time:])
+	 
+	 (cprog [
+
+          {
+            deadline d(20);
+            ... <code> ...
+            // Execution must reach this point within 20 time units.
+          }
+
+])
+	 
+	 (p [Otherwise, an exception will be thrown.  The exception can then be
+	 caught by a recovery block and an alternative action taken.])
+	 
+	 (p [It should be possible to statically analyze a Plasma program which
+	 is free of unbounded-loops.  The ,(code [deadline]) declarations can
+	 then be used by the static analysis tool as assertions and these can be
+	 checked by analyzing the relevant code sequences.])
+	 
+	 )
+	 
+      (section :title "Fault Tolerance Extensions"
+	 
+	 )
+      
+      (section :title "Language Enhancements"
+
+	 (itemize
+	 
+	    (item
+	       
+	       (p [Default initialization for all built-in variables.  This
+	       inconsistency in the C++ language is frequently the source of
+	       difficult to find bugs and is completely unnecessary:  A good
+	       optimizing compiler can remove unneeded initializations.  For
+	       example:])
+	       
+	       (cprog [ int i; // Would be initialized to 0. ])
+
+               )
+	       
+	    (item
+	       
+	       (p [Null-pointer checking.  This can be implemented without
+	       adding extra runtime overhead:  A null-pointer access will cause
+	       a protection fault, which can then generate a C++ exception.])
+	       
+	       )
+	       
+	    (item
+	       
+	       (p [Garbage collector aware containers.  The standard containers,
+	       e.g. ,(code [vector]), ,(code [list]), etc., would be traced by
+	       the conservative collector.  Currently, one has to write:])
+
+	       (cprog [ vector<int,traceable_allocator<int> > ])
+
+               (p [This would become the default.  Equivalent containers,
+	       e.g. ,(code [gc_vector]), ,(code [gc_list]), would exist which
+	       would allocate from the managed heap and would not invoke
+	       destructors when destroyed.  An efficient, managed string class
+	       would also be added.])
+	       
+	       )
+	           
+	    (item
+	    
+	       (p [A ,(code [let]) statement which would allow for the
+	       declaration of variables without explicitly stating their type.
+	       The type would be implied from the type of the initializing
+	       expression.  For example:])
+	 
+	       (cprog [ let i = ValueCheck<int,std::bind2nd(std::equal_to<int>(),10)])
+	       
+	       )
+	       
+	    (item
+	       
+	       (p [Nested functions and lambda functions with true closures.  A
+	       closure would only be allocated if control-flow analysis
+	       indicated that a function might escape its parent's scope.  In
+	       that case, the relevant local variables would be placed in a
+	       closure.  Thus, no extra overhead would exist for the usual case
+	       of un-nested functions or even for the case where a function did
+	       not escape.])
+	       
+	       (p [The main advantage of adding this feature is to be able to
+	       better utilize generic, highly-optimized functions such as those
+	       present in the STL.  For instance, the ,(code [foreach]) function
+	       becomes far more useful when a lambda function can be used
+	       directly as the functor argument.  Since ,(code [foreach]) can be
+	       specialized for different data structures, it can potentially
+	       yield a faster solution for iterating over a container than a
+	       for-loop.])
+	       
+	       )
+	       
+	    (item 
+	       
+	       (p [A meta-object protocol/advanced macro processor.  As
+	       mentioned above, the current Plasma implementation uses ,(ref
+	       :text "OpenC++" :url "http://sourceforge.net/projects/opencxx/")
+	       to convert Plasma into C++.  By making such a feature a part of
+	       Plasma itself, new language features could be added without
+	       changing the actual language definition.])
+	       
+	       (p [This means that constructs such as ,(code [alt]) and ,(code
+	       [par]) could still be implemented by the macro facility; the
+	       parallelism in the language would be implemented as low-level
+	       primitives which would not be directly used by the user.])
+	       
+	       )
+	    
+	    )
+	 
+	 )
+
+)

@@ -1,0 +1,255 @@
+<!-- 95% W3C COMPLIANT, 95% CSS FREE, RAW HTML -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>The Plasma Language</title>
+ <style type="text/css">
+  <!--
+  pre { font-family: monospace }
+  tt { font-family: monospace }
+  code { font-family: monospace }
+  p.flushright { text-align: right }
+  p.flushleft { text-align: left }
+  span.sc { font-variant: small-caps }
+  span.sf { font-family: sans-serif }
+  span.skribetitle { font-family: sans-serif; font-weight: bolder; font-size: x-large; }
+  -->
+ </style>
+</head>
+
+<body class="document" bgcolor="#ffffff">
+<table width="100%" class="skribetitle"><tbody>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>The Plasma Language</big></big></big></strong></div><center>
+<table cellpadding="10" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="center" valign="top" colspan="1" rowspan="1"><table class="author"><tbody>
+<tr><td align="center"><font size="+2"><i>
+Brian Kahne</i></font>
+</td></tr><tr><td align="center"><a href="mailto:bkahne&#x40;freescale.com" class="mailto"><tt>bkahne&#x40;freescale.com</tt></a></td></tr></tbody></table></td><td align="center" valign="top" colspan="1" rowspan="1"><table class="author"><tbody>
+<tr><td align="center"><font size="+2"><i>
+Pete Wilson</i></font>
+</td></tr><tr><td align="center"><a href="mailto:Pete.Wilson&#x40;freescale.com" class="mailto"><tt>Pete.Wilson&#x40;freescale.com</tt></a></td></tr></tbody></table></td></tr>
+</tbody></table>
+</center>
+</td></tr></tbody></table>
+<table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
+<td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
+<br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+</tbody></table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+</div></td>
+<td align="left" valign="top" class="skribe-body"><div class="skribe-body">
+<p><strong>Plasma</strong>, (<strong>P</strong>arallel <strong>LA</strong>nguage for <strong>S</strong>ystem
+   <strong>M</strong>odelling and <strong>A</strong>nalysis) is a parallel language implemented as a
+   superset of C++.  The language extensions are based upon those found in <a href="http://www.wotug.org/occam/" class="http">Occam</a>, which is based upon CSP
+   (Communicating Sequential Processes) by C. A. R. Hoare.  The basic idea is
+   that threads are explicitly created by the user and they communicate using
+   typed channels.  Plasma adds several additional concepts such as shared data
+   structures protected by mutual-exclusion code and the ability to easily wait
+   on the result of a function launched as a separate thread.  Although C++
+   is a difficult language from which to extract formal properties, we believe
+   that the combination of CSP (which does have well-understood semantics) and
+   an identified subset of C++ will make this possible.</p><p>The novel aspect of this work is that the language is suitable for use as
+   both an applications development language and as a modeling language.  For
+   application development, both in the embedded and desktop/server realm, it
+   provides a convenient means for exploiting parallelism provided by a
+   multi-core hardware platform.  For modeling purposes, the parallelism in the
+   language is used to model the parallelism inherent in the design being
+   modeled.  In either case, a production-ready compiler for Plasma will know
+   about this parallelism and be able to create better optimized code than the
+   traditional approach of using a threading library.</p><p>For instance, on an explicit thread switch, the compiler need only
+   generate code to save the live registers of the current function, rather than
+   the entire hardware context.  In some cases, the matter is not just about
+   optimization, but about actual correctness: An optimizer might think that a
+   variable is dead, when in fact it is still being used by another thread.</p><p>Another goal of Plasma is to add to C++ features that make it easier to
+   create robust, correct programs.  C++ already offers good abstraction
+   mechanisms and strong type-checking.  However, it lacks, for instance,
+   garbage collection.  The current Plasma implementation adds garbage
+   collection via the <a href="http://www.hpl.hp.com/personal/Hans_Boehm/gc/" class="http">Boehm Weiser Garbage Collector</a>, a fully-conservative collector.  The
+   interface allows the user to work with explicitly-managed memory or with
+   managed memory, thus allowing for interoperability with existing C++ code.</p><p>In a production-worthy version of Plasma we hope to further investigate
+   what else could be added in order to make life easier for the programmer.
+   For example, we might add default initialization of built-in types so that
+   there is no chance of dangling pointers.  We might also consider the
+   recommendations found within <a href="http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a" class="http">Safe, Efficient Garbage Collection for C++</a>.</p><!-- Introduction -->
+<a name="Introduction"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">1 Introduction</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Parallelism -->
+<a name="Parallelism"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.1 Parallelism</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Plasma inherits its parallelism constructs from Occam and extends
+	 them with a functional operator, similar to the <em>future</em> found in
+	 <a href="http://computing-dictionary.thefreedictionary.com/MultiLisp" class="http">Multilisp</a>.  For
+	 example, to create two threads:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">          par <font color="red"><strong>{</strong></font>
+            a();
+            b();
+          <font color="red"><strong>}</strong></font>
+          c();
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>The functions <code>a()</code> and <code>b()</code> will run in parallel
+	 but will both finish before function <code>c()</code> is called.  Each
+	 statement within a par block is launched as a separate thread and
+	 braces may be used to group multiple statements together.</p><p>To work with a more functional approach, the <code>spawn</code>
+	 operator may be used:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> 
+         Foo x;
+
+         Result&lt;int&gt; res = spawn(x.calculate(1,2,3));
+
+         cout &lt;&lt; <font color="red">&quot;The result is:  &quot;</font> &lt;&lt; res.value() &lt;&lt; &quot;\n&quot;;
+      
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the example above, the <code>spawn</code> operator runs <code>Foo::calculate</code> in a separate thread.  Synchronization occurs when
+	 <code>Result::value()</code> is called, which returns the result of the
+	 thread.</p></div>
+<!-- Communication -->
+<a name="Communication"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.2 Communication</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Communication between threads is handled by typed channels.  A
+	 channel can be any object which satisfies a certain <a href="index-1.html#Channels" class="inbound">API</a> and is written in a thread-safe
+	 manner.  This means that a channel can be extemely efficient:  It does
+	 not require the use of virtual functions and a production-ready version
+	 of the compiler may be able to use hardware-optimized intrinsics, if
+	 available.</p><p>For example, the following code creates two threads, a producer and
+	 a consumer:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">         <strong>typedef</strong> Channel&lt;int&gt; IntChan;
+         IntChan c;
+         par <font color="red"><strong>{</strong></font>
+           <font color="red"><strong>{</strong></font>
+             c.write(1);
+             c.write(2);
+             c.write(3);
+             c.write(-1);
+           <font color="red"><strong>}</strong></font>
+           <font color="red"><strong>{</strong></font>
+             int x;
+             <strong>do</strong> <font color="red"><strong>{</strong></font>
+               x = c.get();
+               mprintf (&quot;Result:  %d\n&quot;,x);
+             <font color="red"><strong>}</strong></font> <strong>while</strong> (x &gt;= 0);
+           <font color="red"><strong>}</strong></font>
+         <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>In the above code, <code>mprintf</code> is a Plasma function which
+	 provides a serialized printf.</p><p>Shared data structures may be easily implemented by using the
+	 <code>pMutex</code> class modifier:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">  
+         pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
+           ...
+         public:
+           pNoMutex bool foo() const;
+         <font color="red"><strong>}</strong></font>;
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>A mutex class has all of its public member functions wrapped with
+	 serialization code (except for the constructors and destructors).  This
+	 may be disabled by usin the <code>pNoMutex</code> keyword, as shown for
+	 the method <code>foo</code>.</p></div>
+<!-- Simulation -->
+<a name="Simulation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.3 Simulation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Plasma contains a discrete-event time model for simulation
+	 purposes.  This is not part of the language, per se, but is implemented
+	 as a set of functions which manipulate the back-end thread package.  A
+	 thread may delay itself by calling <code>pDelay</code> and may consume
+	 time by calling <code>pBusy</code>.  By consuming time, we mean that the
+	 processor on which the thread is running is considered to be &quot;busy&quot;, or
+	 unavailable to do other work.</p><p>Threads may be distributed to multiple &quot;processors&quot; to multiple
+	 hardware resources in a simulation.  A thread on one processor might be
+	 busy, but this does not affect a thread on another processor:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">         Processor proc1,proc2;
+
+         par <font color="red"><strong>{</strong></font>
+           on (proc1) <font color="red"><strong>{</strong></font>
+             &lt;code&gt;
+             pBusy(100); <font color="#ffa600"><em>// Does not affect the other thread.</em></font>
+             &lt;code&gt;
+           <font color="red"><strong>}</strong></font>
+           on (proc2) <font color="red"><strong>{</strong></font>
+             &lt;code&gt;
+           <font color="red"><strong>}</strong></font>
+         <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>Each thread may be given a priority.  Higher priority threads (a
+	 lower number) execute until completion before lower priority threads.
+	 The lowest priority threads are timesliced.</p></div>
+</div><br>
+<!-- User's Guide -->
+<a name="User's-Guide"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">2 User's Guide</font>
+</h3></td></tr></table>
+</div><div class="section">
+The Plasma user guide is available <a href="index-1.html#Plasma-User's-Guide" class="inbound">here</a>.  Refer to it for more details about Plasma.</div><br>
+<!-- Examples -->
+<a name="Examples"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3 Examples</font>
+</h3></td></tr></table>
+</div><div class="section">
+Plasma examples are available <a href="index-2.html#Examples" class="inbound">here</a>.</div><br>
+<!-- Implementation Details -->
+<a name="Implementation-Details"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4 Implementation Details</font>
+</h3></td></tr></table>
+</div><div class="section">
+Implementation details and scheduling information can be found here <a href="index-3.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
+<!-- Future Work -->
+<a name="Future-Work"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">5 Future Work</font>
+</h3></td></tr></table>
+</div><div class="section">
+A description of proposed future enhancements may be found <a href="index-4.html#Future-Work" class="inbound">here</a>.</div><br>
+</div></td>
+</tr></table><div class="skribe-ending">
+<hr> 
+<p class="ending"><font size="-1">
+This <span class="sc">Html</span> page has been produced by 
+<a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
+<br/>
+Last update <em>Wed Sep  8 09:29:46 2004</em>.</font></p></div>
+</body>
+</html>

@@ -1,0 +1,728 @@
+<!-- 95% W3C COMPLIANT, 95% CSS FREE, RAW HTML -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>The Plasma Language</title>
+ <style type="text/css">
+  <!--
+  pre { font-family: monospace }
+  tt { font-family: monospace }
+  code { font-family: monospace }
+  p.flushright { text-align: right }
+  p.flushleft { text-align: left }
+  span.sc { font-variant: small-caps }
+  span.sf { font-family: sans-serif }
+  span.skribetitle { font-family: sans-serif; font-weight: bolder; font-size: x-large; }
+  -->
+ </style>
+</head>
+
+<body class="chapter" bgcolor="#ffffff">
+<table width="100%" class="skribetitle"><tbody>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>3. The Plasma Language -- Plasma Development Schedule</big></big></big></strong></div><center>
+</center>
+</td></tr></tbody></table>
+<table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
+<td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
+<br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+</tbody></table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Plasma Development Schedule</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">3.1</td><td colspan="4" width="100%"><a href="index-3.html#Par-Block">Par Block</a></td></tr>
+ <tr><td valign="top" align="left">3.2</td><td colspan="4" width="100%"><a href="index-3.html#Pfor-block">Pfor block</a></td></tr>
+ <tr><td valign="top" align="left">3.3</td><td colspan="4" width="100%"><a href="index-3.html#Channels-(Basic-Alt-block)">Channels (Basic Alt block)</a></td></tr>
+ <tr><td valign="top" align="left">3.4</td><td colspan="4" width="100%"><a href="index-3.html#Looping-Alt-Block">Looping Alt Block</a></td></tr>
+ <tr><td valign="top" align="left">3.5</td><td colspan="4" width="100%"><a href="index-3.html#Spawn-Operator">Spawn Operator</a></td></tr>
+ <tr><td valign="top" align="left">3.6</td><td colspan="4" width="100%"><a href="index-3.html#Shared-Data-Structures">Shared Data Structures</a></td></tr>
+ <tr><td valign="top" align="left">3.7</td><td colspan="4" width="100%"><a href="index-3.html#Thread-Priorities">Thread Priorities</a></td></tr>
+ <tr><td valign="top" align="left">3.8</td><td colspan="4" width="100%"><a href="index-3.html#Support-For-Multiple-Processors">Support For Multiple Processors</a></td></tr>
+ <tr><td></td><td valign="top" align="left">9</td><td colspan="3" width="100%"><a href="index-3.html#Regressions">Regressions</a></td></tr>
+ <tr><td valign="top" align="left">3.10</td><td colspan="4" width="100%"><a href="index-3.html#Time-Model">Time Model</a></td></tr>
+ <tr><td valign="top" align="left">3.11</td><td colspan="4" width="100%"><a href="index-3.html#Garbage-Collection">Garbage Collection</a></td></tr>
+ <tr><td valign="top" align="left">3.12</td><td colspan="4" width="100%"><a href="index-3.html#Timeouts">Timeouts</a></td></tr>
+ <tr><td valign="top" align="left">3.13</td><td colspan="4" width="100%"><a href="index-3.html#Clocked-Channels">Clocked Channels</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+</div></td>
+<td align="left" valign="top" class="skribe-body"><div class="skribe-body">
+<p>This document describes PLASMA's development schedule.  It consists of a
+   series of entries, each representing a feature to be added.  A feature is
+   considered complete when its functionality, documentation, and corresponding
+   regression tests have been committed to CVS.  The list is in chronological
+   order but this order may change based upon external factors.</p><!-- Par Block -->
+<a name="Par-Block"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.1 Par Block</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 4/23/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+A par block launches each of its constituent expressions as separate
+          threads.  It proceeds only when all threads are finished.</div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>The block will be converted such that each expression becomes
+	 its own subroutine.  The parameter passed in will be a structure whose
+	 members are pointers to any variables used by the expression.</li>
+ <li>Each thread will be launched via a call to pCreate.  Then a call
+	 to pWait will exist for each thread.</li>
+</ul></div>
+<!-- Dependencies -->
+<a name="Dependencies"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1.4 Dependencies</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>Thread library</li>
+ <li>Parser is able to parse &quot;plain&quot; block structures.</li>
+</ul></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1.5 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>basic/par1.pa</li>
+ <li>basic/qsort.pa</li>
+</ul></div>
+</div><br>
+<!-- Pfor block -->
+<a name="Pfor-block"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.2 Pfor block</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 4/29/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+For-loop syntax, where body of the loop is launched as a thread.
+          Construct blocks until all threads are finished.</div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Same as for par block, except that the argument structure is
+          allocated on the thread's stack structure.  Each variable declared in
+          loop's guard is passed by value, while everything else is passed by
+          reference.</div>
+<!-- Dependencies -->
+<a name="Dependencies"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2.4 Dependencies</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>Thread library</li>
+ <li>Parser is able to parse &quot;plain&quot; block structures.</li>
+</ul></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2.5 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>basic/par2.pa</li>
+ <li>basic/par3.pa</li>
+</ul></div>
+</div><br>
+<!-- Channels (Basic Alt block) -->
+<a name="Channels-(Basic-Alt-block)"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.3 Channels (Basic Alt block)</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed for 5/12/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Define channel interface and implement basic alt block.  The alt
+          block is like a case statement, except that each condition is a
+          channel variable and a variable to map the channel's return value to.
+          The block blocks until one of the channels has data.  It then reads
+          that data, maps it to the variable, and executes the code associated
+          with that guard.<p>Basic syntax is::</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">          alt <font color="red"><strong>{</strong></font>
+            &lt;channel expr&gt; [ . | -&gt; ] port(&lt;value decl&gt;): ....
+            [ <font color="red"><strong>{</strong></font> <strong>default</strong> block <font color="red"><strong>}</strong></font> ]
+          <font color="red"><strong>}</strong></font>
+
+          
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+A channel will be any type that has the required interface.  This is
+          compile-time polymorphism, similar to how templates work.  The
+          required interface is as follows.  For a channel of type T:<ul class="itemize"> <li><code>T read()</code>: Returns a value read from the channel.
+	     Blocks if no value is present.  Returns the last value read, until
+	     <code>clear_ready()</code> is called.</li>
+ <li><code>T get()</code>: Returns a value from the channel.  Blocks
+	     if no value is present.  Always fetches a new value.  After a call
+	     to this, <code>read()</code> will return this same value.</li>
+ <li><code>void write(T)</code>: Writes a value to the channel.  May
+	     block, depending upon the channel definition.</li>
+ <li><code>bool ready() const</code>: Returns true if the channel
+	     has a value.</li>
+ <li><code>void clear_ready()</code>: Clears the ready status,
+	     forcing the fetch of a new value.</li>
+ <li><code>set_notify(Thread *t,int handle)</code>: Stores the
+	     thread and handle.  When the channel gets a value, it will wake
+	     this thread, giving it the handle.</li>
+ <li><code>clear_notify()</code>: Clears the stored thread so that
+	     no notification will take place if a value is written to the
+	     channel.</li>
+</ul><p>Some details about channel implementation:</p><ul class="itemize"> <li>Call pSleep() to block.  You must have stored a handle to
+	     the current thread somewhere else before this call, e.g. storing it
+	     in a channel member variable.</li>
+ <li>Call pWake() to awaken a thread.  The general protocol is
+	     that the waker clears the thread member variable of the channel and
+	     it does this *before* the call to pWake.</li>
+ <li>Call pAddReady() to add a thread to the ready queue, but not
+	     make it active.  No switching occurs (assuming processor is locked
+	     to avoid preemption).</li>
+ <li>A call to read() or get() should clear any notification.
+	     Thus, with an alt block, only the channels that had set_notify()
+	     called need to have clear_notify() called if a ready channel is
+	     found.  The actual ready channel should not have clear_notify()
+	     called, since there could be a blocked writer waiting to go.</li>
+</ul><p>Code conversion for the alt block will be:</p><ul class="itemize"> <li>Shutdown preemption.</li>
+ <li>Loop through all channels- if anything is ready, save handle
+	     and exit loop.  Else, call set_notify with current thread and
+	     handle (integer index of loop).</li>
+ <li>If nothing ready, sleep.</li>
+ <li>Case statement on return value of sleep, or index value from
+	     loop in (2).  Execute relevant code.</li>
+ <li>Call clear_notify on all threads.  Do this within a
+	     catch(...) block, too.</li>
+ <li>Alt blocks consume values, i.e. they call get().</li>
+</ul></div>
+<!-- Dependencies -->
+<a name="Dependencies"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3.4 Dependencies</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>Need channel definition.</li>
+ <li>Add <code>int pSleep()</code>: Puts the thread to sleep.  Returns integer
+	 when thread wakes.</li>
+ <li>Add <code>void pWake(Thread *t,int h)</code>: Wakes thread, giving
+	 it h.</li>
+</ul></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.3.5 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>chan1 - chan9.</p></div>
+</div><br>
+<!-- Looping Alt Block -->
+<a name="Looping-Alt-Block"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.4 Looping Alt Block</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.4.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 5/12/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.4.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Same as alt block, but allows the user to loop over a data structure.
+       Syntax is:<table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">       
+        afor ( &lt;s1&gt; ; &lt;s2&gt; ; &lt;s3&gt; ) <font color="red"><strong>{</strong></font>
+        &lt;channel expr&gt; [ . | -&gt; ] port (&lt;value decl&gt;) <font color="red"><strong>{</strong></font> &lt;body&gt; <font color="red"><strong>}</strong></font>
+        [ <font color="red"><strong>{</strong></font> &lt;<strong>default</strong> block&gt; <font color="red"><strong>}</strong></font> ]
+      <font color="red"><strong>}</strong></font>
+
+      
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table>Only one port statement is allowed.  An iterator variable must be
+      declared in &lt;s1&gt;.</div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.4.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Same as for alt, except that we replicate the loop condition as a
+       for-loop each time we deal with channnels.  If the iterator is not an
+       integer, we create an auxiliary vector and store the values there.  We
+       then store the corresponding index of the entry as the handle in each
+       channel.</div>
+<!-- Dependencies -->
+<a name="Dependencies"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.4.4 Dependencies</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completion of alt.</div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.4.5 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>basic/chan4.pa</li>
+ <li>basic/chan5.pa</li>
+ <li>basic/chan6.pa</li>
+ <li>basic/chan7.pa</li>
+</ul></div>
+</div><br>
+<!-- Spawn Operator -->
+<a name="Spawn-Operator"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.5 Spawn Operator</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.5.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 5/18/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.5.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Thread creation w/o synchronization, e.g.:<table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">          spawn <font color="red"><strong>{</strong></font> foo(1,2,3); <font color="red"><strong>}</strong></font>;
+
+       
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>Evaluates the argument (must resolve to a function or an object's
+       member invocation).  The argument is launched as a thread.  The return
+       value is an object which meets the specifications of a channel.  It will
+       also have additional operators for thread control:</p><ul class="itemize"> <li>wait():  Wait for thread to finish.</li>
+ <li>kill():  Kill thread.</li>
+</ul><p>The object will be a special type of channel, so you can use it in
+	an alt block and attempts to fetch the value before the thread is
+	finished will result in a block.  Unlike other channels, it will only
+	ever have a single value, so calls to clear_ready() will be ignored.</p><p>Spawn should handle all ways to invoke a function:</p><ul class="itemize"> <li>Literal function call:       spawn(foo());</li>
+ <li>Function pointer call:       p = foo; spawn(p());</li>
+ <li>Method call w/reference:     spawn(a.b());</li>
+ <li>Method call w/pointer:       spawn(a-&gt;b());</li>
+ <li>Static method call:          spawn(A::b());</li>
+ <li>Method pointer w/reference:  p = &amp;A::b; spawn(a.*p());</li>
+ <li>Method pointer w/pointer:    p = &amp;A::b; spawn(a-&gt;*p());</li>
+</ul></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.5.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>Registered as a function call of a special dummy class.</li>
+ <li>Void functions not handled- everything returns a value.</li>
+</ul></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.5.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>spawn1</li>
+ <li>spawn2</li>
+ <li>spawn3</li>
+ <li>spawn4</li>
+</ul></div>
+</div><br>
+<!-- Shared Data Structures -->
+<a name="Shared-Data-Structures"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.6 Shared Data Structures</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.6.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 5/20/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.6.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Shared data structures will allow serialized access to data,
+       i.e. mutexes will wrap the actual data access, ensuring safe use between
+       threads.  The most likely syntax will be a class attribute, e.g. pMutex
+       class ... The public methods will then be wrapped with mutex access code.
+       A per-method modifier will allow this to be disabled (will implement only
+       if easy to do with OpenC++).</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.6.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Straightforward use of OpenC++'s example &quot;WrapperClass&quot;.</p><p>Variadic function support is not perfect but can be made to work.
+       You can't write a true variadic function, e.g. <code>foo(const char
+       *fmt,..)</code>, because you can't pass the variable argument list.  Instead,
+       you must write a va_list function directly, e.g. <code>foo(const char
+       *fmt,va_list ap)</code>.  Plasma will then create a variadic version and a
+       v_list version for you that are wrapped with locking code.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.6.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+mutex1</div>
+</div><br>
+<!-- Thread Priorities -->
+<a name="Thread-Priorities"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.7 Thread Priorities</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.7.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 6/4/2004</div>
+<!-- Decription -->
+<a name="Decription"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.7.2 Decription</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>A thread will be able to change its priority using a function
+      (pSetPriority(int)).  The lowest level of priority will be timesliced.
+      Otherwise, all threads of the highest priority (0) will run to completion
+      before any others.</p><p>API:</p><ul class="itemize"> <li><code>pSetPriority(int)</code>: Set current thread's priority.
+	 Spawned threads will run at their parents priority.</li>
+ <li><code>pGetPriorities()</code>:  Return current thread's priority.</li>
+ <li><code>pLowestPriority()</code>:  Lowest priority (timeslice queue).</li>
+ <li>New config parameter, <code>_priority_count</code> in pSetup to set
+	 number of priorities.  Default is 32.</li>
+ <li>Optional second argument to spawn of a priority, e.g. <code>spawn(foo(),0);</code></li>
+ <li>Optional second argument to on block of a priority, e.g. <code>on(p1,0) { ... }</code></li>
+</ul></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.7.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Array of thread queues.  Scheduler will run high priority threads
+	 first.  Timeslicing will only be turned on when running the
+	 lowest-priority threads.</p><p>To the user, 0 is the highest priority, but internally 0 represents
+         the lowest value and thus what we timeslice on.</p><p>The scheduler calls <code>get_ready()</code>, which returns the next
+	 thread to run, respecting priorities.</p><p>The <code>preempt()</code> function calls <code>Processor::ts_okay()</code>, which returns false if we're in the kernel or
+	 we're in a non-timesliceable thread.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.7.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+pri1 - pri4.</div>
+</div><br>
+<!-- Support For Multiple Processors -->
+<a name="Support-For-Multiple-Processors"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.8 Support For Multiple Processors</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.8.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 6/4/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.8.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Users will be able to instantiate a <strong>Processor</strong> object.  A spawn
+          pseudo-method will allow them to launch a thread on that processor.
+          Using an on-block, e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">	  
+	  par <font color="red"><strong>{</strong></font>
+	    on(&lt;processor&gt; [,&lt;priority&gt;]) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
+	  <font color="red"><strong>}</strong></font>
+
+          
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>will allow for a similar feature using <strong>par</strong> blocks.  Support
+	  for <strong>pfor</strong> will also be included.</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.8.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<ul class="itemize"> <li>Rename <strong>Processor</strong> to <strong>Cluster</strong>.</li>
+ <li>A <strong>Processor</strong> object will be a handle around <strong>Cluster</strong>.</li>
+ <li>A global variable will contain a pointer to the current
+	 <strong>Cluster</strong>.  Most of the interface functions will use that value,
+	 except for some that take a cluster.  A new interface function will
+	 return a <strong>Cluster</strong> object pointing to the current cluster.</li>
+ <li>The <strong>System</strong> object will have a queue of clusters.  Each
+	 cluster will make one pass through its threads, then pass to the next
+	 cluster.</li>
+ <li>Add spawn pseudo method and add support for optional second
+	 parameter setting priority.</li>
+</ul></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">9 Regressions</font>
+</h3></td></tr></table>
+</div><div class="section">
+proc1 - 3</div><br>
+</div><br>
+<!-- Time Model -->
+<a name="Time-Model"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.10 Time Model</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.10.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 6/15/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.10.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>For more information, refer to the twiki page.  In short, users may
+       call <code>pDelay(&lt;n&gt;)</code> to delay for <strong>n</strong> time units or call <strong>pBusy(&lt;n&gt;)</strong>
+       to consume <strong>n</strong> time cycles.  When a processor is busy, it does no other
+       work, whereas a delay means that a process is just waiting.</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.10.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Refer to twiki page for the basic flow.  In short, time is maintained
+       within System.  Two priority queues (stl priority queues) exist: One for
+       delayed objects and one for busy objects.  If an object called pDelay,
+       it's added to the delay queue and if an object called pBusy, it's added
+       to the busy queue.  Note that to use pBusy, you must set <code>ConfigParms::_busyOkay</code> or else pBusy will not be allowed.  This
+       disables preemption- the only task switching will be done when calls to
+       pDelay or pBusy are made.</p><p>Time model functions:</p><ul class="itemize"> <li>pBusy():  Consumes time.</li>
+ <li>pDelay():  Delays a thread.</li>
+ <li>pTime():  Returns current time.</li>
+</ul><p>The delay queue stores Thread objects, ordered by decreasing time
+	  (smallest time is at the front).  The time is the sum of the starting
+	  time and the delay size (both stored in the Thread).</p><p>The busy queue stores processors, also ordered by decreasing time.
+	  The time is the busy thread's start time + busy time.  The busy thread
+	  is identified by finding the highest priority non-empty queue, then
+	  looking at the back.  This is the case b/c the busy thread is added
+	  back to its respective priority queue by the pBusy routine.</p><p>At a given point in time, we cycle through all processors.  For
+	  each processor, we execute all available jobs.  When no more
+	  processors exist with jobs to run, we call <code>System::update_time()</code>.  It looks at both queues and chooses a new
+	  time that is the smallest of the next items on the two queues.  This
+	  becomes the new time.  We then transfer all delayed threads which have
+	  the same time as current back to their owning processors and add those
+	  processors back to the ready queue.  Duplication is handled by having
+	  <code>Cluster::add_proc()</code> only add a processor if its state is not
+	  &quot;Running&quot;.  We then add back all busy processors whose time has
+	  expired.  Then we continue.</p><p>If a delayed thread is ready to run, but its processor is busy, we
+	  interrupt the busy if the thread has higher priority than the busying
+	  thread.  We record how much busy time has been consumed and re-enqueue
+	  the processor.  For the lowest priority threads, they are considered
+	  to be timesliced.  A configuration parameter,
+	  <code>ConfigParms::_simtimeslice</code>, determines the timeslice amount.  A thread
+	  of the lowest priority that is busy will actually add itself to the
+	  busy queue using the timeslice amount.  The busy routine itself tracks
+	  the total amount of busy time required and loops, re-busying the
+	  thread until all time has expired.  Thus, for timesliced threads and
+	  for interrupted threads, the routine sees that more time is required
+	  and loops as necessary.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.10.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+time1 - 4</div>
+</div><br>
+<!-- Garbage Collection -->
+<a name="Garbage-Collection"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.11 Garbage Collection</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.11.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 6/17/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.11.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Plasma is going to have a lot of producer/consumer type code,
+	   where the ownership of a particular piece of memory will be hard to
+	   track.  Garbage collection will make the code much easier to
+	   understand and less error-prone.</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.11.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Boehm garbage collector.  The main issue is that the collector
+	 needs to know about all roots in the system, i.e. thread stacks.  This
+	 is accomplished as follows:</p><ul class="itemize"> <li>A list exists (<code>System::_active_list</code>) that records
+	    all active threads.  When a thread is realized, it is added to this
+	    list.  Each Thread object has a <strong>nt</strong> and <strong>pt</strong> pointer for
+	    storing this information.  When a thread is destroyed, it is removed
+	    from the list.</li>
+ <li>In addition to the bottom of the stack, each thread records
+	    the top of the stack.  This is set whenever a thread is swapped out
+	    by calling <code>Thread::setStackEnd()</code>.</li>
+ <li>When the collector is called, it called the function pointer
+	    GC_push_other_roots.  This is set to the function <code>System::push_other_roots()</code>, which iterates over the active list,
+	    pushing information about the top and bottom of the stack.</li>
+ <li>Other routines used are GC_lock(), which does nothing since
+	    we do not use kernel threads at this point, and GC_stop_world() and
+	    GC_start_world(), which turn preemtion off and on.</li>
+</ul></div>
+<!-- Dependencies -->
+<a name="Dependencies"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.11.4 Dependencies</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>The main issue is getting it to handle user-threads.  It handles
+          kernel threads and should be able to handle user-threads, but I don't
+          know how to do it yet.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.11.5 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+No explicit tests- the rest of the regressions should test its
+	  usage.</div>
+</div><br>
+<!-- Timeouts -->
+<a name="Timeouts"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.12 Timeouts</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.12.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 6/18/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.12.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Create a channel that has a backing thread which wakes up and writes
+      to the channel after a specified amount of time.  Use in alt blocks.</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.12.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Created the Timeout class- it's in Interface.h.  It's written entirely
+      in C++ so that I could hide the implementation and not have to worry about
+      linking Plasma code in with the rest of the thread package.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.12.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+chan12</div>
+</div><br>
+<!-- Clocked Channels -->
+<a name="Clocked-Channels"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3.13 Clocked Channels</font>
+</h3></td></tr></table>
+</div><div class="section">
+<!-- Status -->
+<a name="Status"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.13.1 Status</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+Completed 8/1/2004</div>
+<!-- Description -->
+<a name="Description"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.13.2 Description</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Clocked channels will be channels with knowledge of time.  Writes will
+      be able to occur at anytime, but reads will only be allowed on clock
+      boundaries, where the clock period is defined by a parameter to the
+      constructor.</p></div>
+<!-- Implementation -->
+<a name="Implementation"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.13.3 Implementation</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<p>Implemented as a normal channel, except that a read will create a
+      waking thread if we're not on a clock edge, then go to sleep.</p></div>
+<!-- Regressions -->
+<a name="Regressions"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.13.4 Regressions</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+clock1- clock3</div>
+</div><br>
+</div></td>
+</tr></table><div class="skribe-ending">
+<hr> 
+<p class="ending"><font size="-1">
+This <span class="sc">Html</span> page has been produced by 
+<a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
+<br/>
+Last update <em>Wed Sep  8 09:29:46 2004</em>.</font></p></div>
+</body>
+</html>

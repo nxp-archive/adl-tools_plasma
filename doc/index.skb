@@ -1,0 +1,234 @@
+
+(skribe-load "web-book.skr")
+
+(skribe-load "helpers.skb")
+
+(document :title [The Plasma Language]
+   :author (list (author :name "Brian Kahne" :email (mailto "bkahne@freescale.com"))
+		 (author :name "Pete Wilson" :email (mailto "Pete.Wilson@freescale.com")))
+   
+   (p [,(b[Plasma]), (,(b[P])arallel ,(b[LA])nguage for ,(b[S])ystem
+   ,(b[M])odelling and ,(b[A])nalysis) is a parallel language implemented as a
+   superset of C++.  The language extensions are based upon those found in ,(ref
+   :url "http://www.wotug.org/occam/" :text "Occam"), which is based upon CSP
+   (Communicating Sequential Processes) by C. A. R. Hoare.  The basic idea is
+   that threads are explicitly created by the user and they communicate using
+   typed channels.  Plasma adds several additional concepts such as shared data
+   structures protected by mutual-exclusion code and the ability to easily wait
+   on the result of a function launched as a separate thread.  Although C++
+   is a difficult language from which to extract formal properties, we believe
+   that the combination of CSP (which does have well-understood semantics) and
+   an identified subset of C++ will make this possible.])
+
+   (p [The novel aspect of this work is that the language is suitable for use as
+   both an applications development language and as a modeling language.  For
+   application development, both in the embedded and desktop/server realm, it
+   provides a convenient means for exploiting parallelism provided by a
+   multi-core hardware platform.  For modeling purposes, the parallelism in the
+   language is used to model the parallelism inherent in the design being
+   modeled.  In either case, a production-ready compiler for Plasma will know
+   about this parallelism and be able to create better optimized code than the
+   traditional approach of using a threading library.])
+
+   (p [For instance, on an explicit thread switch, the compiler need only
+   generate code to save the live registers of the current function, rather than
+   the entire hardware context.  In some cases, the matter is not just about
+   optimization, but about actual correctness: An optimizer might think that a
+   variable is dead, when in fact it is still being used by another thread.])
+
+   (p [Another goal of Plasma is to add to C++ features that make it easier to
+   create robust, correct programs.  C++ already offers good abstraction
+   mechanisms and strong type-checking.  However, it lacks, for instance,
+   garbage collection.  The current Plasma implementation adds garbage
+   collection via the ,(ref :url "http://www.hpl.hp.com/personal/Hans_Boehm/gc/"
+   :text "Boehm Weiser Garbage Collector"), a fully-conservative collector.  The
+   interface allows the user to work with explicitly-managed memory or with
+   managed memory, thus allowing for interoperability with existing C++ code.])
+
+   (p [In a production-worthy version of Plasma we hope to further investigate
+   what else could be added in order to make life easier for the programmer.
+   For example, we might add default initialization of built-in types so that
+   there is no chance of dangling pointers.  We might also consider the
+   recommendations found within ,(ref :url
+   "http://www.usenix.org/publications/library/proceedings/c++94/full_papers/ellis.a"
+   :text "Safe, Efficient Garbage Collection for C++").])
+
+   (section :title "Introduction"
+      
+      (subsection :title "Parallelism"
+      
+	 (p [Plasma inherits its parallelism constructs from Occam and extends
+	 them with a functional operator, similar to the ,(i [future]) found in
+	 ,(ref :text "Multilisp" :url
+	 "http://computing-dictionary.thefreedictionary.com/MultiLisp").  For
+	 example, to create two threads:])
+      
+	 (cprog [
+
+          par {
+            a();
+            b();
+          }
+          c();
+
+])
+      
+	 (p [The functions ,(code [a()]) and ,(code [b()]) will run in parallel
+	 but will both finish before function ,(code [c()]) is called.  Each
+	 statement within a par block is launched as a separate thread and
+	 braces may be used to group multiple statements together.])
+      
+	 (p [To work with a more functional approach, the ,(code [spawn])
+	 operator may be used:])
+      
+	 (cprog [
+ 
+         Foo x;
+
+         Result<int> res = spawn(x.calculate(1,2,3));
+
+         cout << "The result is:  " << res.value() << "\\n";
+      
+])
+      
+	 (p [In the example above, the ,(code [spawn]) operator runs ,(code
+	 [Foo::calculate]) in a separate thread.  Synchronization occurs when
+	 ,(code [Result::value()]) is called, which returns the result of the
+	 thread.])
+	 
+	 )
+      
+      (subsection :title "Communication"
+	 
+	 (p [Communication between threads is handled by typed channels.  A
+	 channel can be any object which satisfies a certain ,(ref
+	 :subsubsection "Channels" :text "API") and is written in a thread-safe
+	 manner.  This means that a channel can be extemely efficient:  It does
+	 not require the use of virtual functions and a production-ready version
+	 of the compiler may be able to use hardware-optimized intrinsics, if
+	 available.])
+	 
+	 (p [For example, the following code creates two threads, a producer and
+	 a consumer:])
+
+	 (cprog [
+
+         typedef Channel<int> IntChan;
+         IntChan c;
+         par {
+           {
+             c.write(1);
+             c.write(2);
+             c.write(3);
+             c.write(-1);
+           }
+           {
+             int x;
+             do {
+               x = c.get();
+               mprintf ("Result:  %d\\n",x);
+             } while (x >= 0);
+           }
+         }
+
+])
+	 
+	 (p [In the above code, ,(code [mprintf]) is a Plasma function which
+	 provides a serialized printf.])
+      
+	 (p [Shared data structures may be easily implemented by using the
+	 ,(code [pMutex]) class modifier:])
+	 
+	 (cprog [
+  
+         pMutex class Foo {
+           ...
+         public:
+           pNoMutex bool foo() const;
+         };
+
+])
+	 
+	 (p [A mutex class has all of its public member functions wrapped with
+	 serialization code (except for the constructors and destructors).  This
+	 may be disabled by usin the ,(code [pNoMutex]) keyword, as shown for
+	 the method ,(code [foo]).])
+	 
+	 )
+      
+      (subsection :title "Simulation"
+	 
+	 (p [Plasma contains a discrete-event time model for simulation
+	 purposes.  This is not part of the language, per se, but is implemented
+	 as a set of functions which manipulate the back-end thread package.  A
+	 thread may delay itself by calling ,(code [pDelay]) and may consume
+	 time by calling ,(code [pBusy]).  By consuming time, we mean that the
+	 processor on which the thread is running is considered to be "busy", or
+	 unavailable to do other work.])
+	 
+	 (p [Threads may be distributed to multiple "processors" to multiple
+	 hardware resources in a simulation.  A thread on one processor might be
+	 busy, but this does not affect a thread on another processor:])
+	 
+	 (cprog [
+
+         Processor proc1,proc2;
+
+         par {
+           on (proc1) {
+             <code>
+             pBusy(100); // Does not affect the other thread.
+             <code>
+           }
+           on (proc2) {
+             <code>
+           }
+         }
+
+])
+	 
+	 (p [Each thread may be given a priority.  Higher priority threads (a
+	 lower number) execute until completion before lower priority threads.
+	 The lowest priority threads are timesliced.])
+
+	 )
+      
+      )
+   
+   (section :title "User's Guide"
+      
+      [The Plasma user guide is available ,(ref :chapter "Plasma User's Guide"
+      :text "here").  Refer to it for more details about Plasma.]
+      
+      )
+
+   (section :title "Examples"
+      
+      [Plasma examples are available ,(ref :chapter "Examples"
+      :text "here").]
+      
+      )
+   
+   (section :title "Implementation Details"
+      
+      [Implementation details and scheduling information can be found here ,(ref
+      :chapter "Plasma Development Schedule" :text "here").]
+      
+      )
+   
+   (section :title "Future Work"
+   
+      [A description of proposed future enhancements may be found ,(ref
+      :chapter "Future Work" :text "here").]
+      
+      )
+   
+   (include "user-guide.skb")
+      
+   (include "examples.skb")
+            
+   (include "schedule.skb")   
+   
+   (include "future-work.skb")
+    
+)

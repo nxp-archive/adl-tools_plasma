@@ -54,10 +54,11 @@ else
   DOCDIR=
 fi
 
-AC_PATH_PROG(TRIP,trip)
-if test "x$TRIP" = x ; then
-  echo "The trip program was not found.  Documentation will not be built."
-  echo "To build the documentation, makee sure that trip is installed and in your path."
+AC_PATH_PROG(SKRIBE,skribe)
+if test "x$SKRIBE" = x ; then
+  echo "The skribe program was not found.  Documentation will not be built."
+  echo "To build the documentation, make sure that skribe is installed and in your path."
+  echo "You can find skribe here:  http://www-sop.inria.fr/mimosa/fp/Skribe/"
   DOCDIR=
 fi
 

@@ -1,0 +1,1335 @@
+<!-- 95% W3C COMPLIANT, 95% CSS FREE, RAW HTML -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Example Source Code</title>
+ <style type="text/css">
+  <!--
+  pre { font-family: monospace }
+  tt { font-family: monospace }
+  code { font-family: monospace }
+  p.flushright { text-align: right }
+  p.flushleft { text-align: left }
+  span.sc { font-variant: small-caps }
+  span.sf { font-family: sans-serif }
+  span.skribetitle { font-family: sans-serif; font-weight: bolder; font-size: x-large; }
+  -->
+ </style>
+</head>
+
+<body class="section" bgcolor="#ffffff">
+<table width="100%" class="skribetitle"><tbody>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>1 Example Source Code -- RISC Pipeline Example</big></big></big></strong></div><center>
+</center>
+</td></tr></tbody></table>
+<table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
+<td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
+<br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="source-code.html#Example-Source-Code" class="inbound">Example Source Code</a></td></tr>
+</tbody></table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Sections</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="source-code-1.html#RISC-Pipeline-Example">RISC Pipeline Example</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="source-code-2.html#Network-System-Example">Network System Example</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="source-code-3.html#Embedded-Application-Example">Embedded Application Example</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="source-code-4.html#Desktop-Application-Example">Desktop Application Example</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+</div></td>
+<td align="left" valign="top" class="skribe-body"><div class="skribe-body">
+<!-- sw/pipe.pa -->
+<a name="sw/pipe.pa"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">1.1 sw/pipe.pa</font>
+</h3></td></tr></table>
+</div><div class="subsection">
+<table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"><em>   1: </em><font color="#ffa600"><em>// Inner pipe for a processor pipeline</em></font>
+<em>   2: </em><font color="#ffa600"><em>// Pete august 1997</em></font>
+<em>   3: </em><font color="#ffa600"><em>// Port to plasma:  Brian Kahne, July 2004</em></font>
+<em>   4: </em><font color="#ffa600"><em>// © copyright Motorola 1997. All rights reserved</em></font>
+<em>   5: </em>
+<em>   6: </em><font color="#1919af"><strong>#include</strong></font> &lt;sys/timeb.h&gt;
+<em>   7: </em>
+<em>   8: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
+<em>   9: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;Random.h&quot;</font>
+<em>  10: </em>
+<em>  11: </em>using namespace std;
+<em>  12: </em>using namespace plasma;
+<em>  13: </em>
+<em>  14: </em><font color="#ffa600"><strong>/* this has a simple pipe</strong></font>
+<em>  15: </em>
+<em>  16: </em>
+<em>  17: </em><font color="#ffa600"><strong>      +&lt;---------------------&lt;--------------------//+</strong></font>
+<em>  18: </em><font color="#ffa600"><strong>      |                     |                       |  ----///&gt; dcache //-&gt; regwrite2</strong></font>
+<em>  19: </em><font color="#ffa600"><strong>      |                     |                       | /                         |</strong></font>
+<em>  20: </em><font color="#ffa600"><strong>    fetcher //&gt; icache //&gt; decode //&gt; regread  //-&gt; alu -----&gt; regwrite1        |</strong></font>
+<em>  21: </em><font color="#ffa600"><strong>        |                   |           |   \               /      |            |</strong></font>
+<em>  22: </em><font color="#ffa600"><strong>        |                   |           |    \-----&gt; muldiv/       |            |</strong></font>
+<em>  23: </em><font color="#ffa600"><strong>        +&lt;----------------//+           |                          |            |</strong></font>
+<em>  24: </em><font color="#ffa600"><strong>                                        |                          |            |</strong></font>
+<em>  25: </em><font color="#ffa600"><strong>                                        +&lt;----//- registers &lt;----//+            |</strong></font>
+<em>  26: </em><font color="#ffa600"><strong>                                                and regvalid bits &lt;-------------+</strong></font>
+<em>  27: </em>
+<em>  28: </em>
+<em>  29: </em><font color="#ffa600"><strong> NOTES:</strong></font>
+<em>  30: </em>
+<em>  31: </em><font color="#ffa600"><strong>*/</strong></font>
+<em>  32: </em>
+<em>  33: </em><font color="#ffa600"><em>// operations</em></font>
+<em>  34: </em>const int First_int = 0, Add = 0, Sub = 1, And = 2, Or = 3, Xor = 4, Lshl = 5, Lshr = 6, Cmp = 7,
+<em>  35: </em>    Last_int = 7;
+<em>  36: </em>const int First_ld = Last_int + 1, Ld8 = First_ld, Ld16 = First_ld + 1, Ld32 = First_ld + 2, 
+<em>  37: </em>    Last_ld = First_ld + 2;
+<em>  38: </em>const int First_st = Last_ld + 1, St8 = First_st, St16 = First_st + 1, St32 = First_st + 2, 
+<em>  39: </em>    Last_st = First_st + 2;
+<em>  40: </em>const int First_br = Last_st + 1, Jmp = First_br, Blz = First_br + 1, Ble = First_br + 2, 
+<em>  41: </em>    Bez = First_br + 3, Bne = First_br + 4, Bge = First_br + 5, Bgz = First_br + 6, 
+<em>  42: </em>    Last_br = First_br + 6;
+<em>  43: </em>const int First_lint = Last_br + 1, Mul = First_lint, Div = First_lint + 1, Rem = First_lint + 2,
+<em>  44: </em>    Last_lint = First_lint + 2;
+<em>  45: </em>const int Stop = Last_lint + 1;
+<em>  46: </em>        
+<em>  47: </em><font color="#ffa600"><strong>/* instruction fields</strong></font>
+<em>  48: </em><font color="#ffa600"><strong> a very simple risc instruction set - two bits of format, six bits of opcode, five bits of</strong></font>
+<em>  49: </em><font color="#ffa600"><strong> register, 14 bits of literal etc</strong></font>
+<em>  50: </em>
+<em>  51: </em><font color="#ffa600"><strong>  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0</strong></font>
+<em>  52: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  53: </em><font color="#ffa600"><strong> |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</strong></font>
+<em>  54: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  55: </em>
+<em>  56: </em><font color="#ffa600"><strong> format 0: branches</strong></font>
+<em>  57: </em><font color="#ffa600"><strong>  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0</strong></font>
+<em>  58: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  59: </em><font color="#ffa600"><strong> |  0  |       op        |       rd     |                         d19                            |</strong></font>
+<em>  60: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  61: </em>
+<em>  62: </em><font color="#ffa600"><strong> format 1: reg-reg operations</strong></font>
+<em>  63: </em><font color="#ffa600"><strong> 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0</strong></font>
+<em>  64: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  65: </em><font color="#ffa600"><strong> |  1  |       op        |       rd     |      r1      |  |  |  |  |  |  |  |  |  |      r2      |</strong></font>
+<em>  66: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  67: </em>
+<em>  68: </em><font color="#ffa600"><strong> format 2: reg-constant operations</strong></font>
+<em>  69: </em><font color="#ffa600"><strong>  31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1   0</strong></font>
+<em>  70: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  71: </em><font color="#ffa600"><strong> |  2  |       op        |       rd     |      r1      |               L14                       |</strong></font>
+<em>  72: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  73: </em>
+<em>  74: </em><font color="#ffa600"><strong> format 3: undefined</strong></font>
+<em>  75: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  76: </em><font color="#ffa600"><strong> |  3  |       op        |       rd     |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |  |</strong></font>
+<em>  77: </em><font color="#ffa600"><strong> -------------------------------------------------------------------------------------------------</strong></font>
+<em>  78: </em>
+<em>  79: </em><font color="#ffa600"><strong>*/</strong></font>
+<em>  80: </em>
+<em>  81: </em><font color="#ffa600"><em>// opcodes are same as operations</em></font>
+<em>  82: </em><font color="#ffa600"><em>// field definitions are</em></font>
+<em>  83: </em>const int fbase = 30, fsize = 2, opbase = 24, opsize = 6, rdbase = 19, rdsize = 5,
+<em>  84: </em>            r1base = 14, r1size = 5, r2base = 0, r2size = 5, d19base = 0, d19size = 19,
+<em>  85: </em>            l14base = 0, l14size = 14;
+<em>  86: </em>
+<em>  87: </em>
+<em>  88: </em><font color="#ffa600"><em>// we use the following struct to communicate stuff between pipestages. some</em></font>
+<em>  89: </em><font color="#ffa600"><em>// fields could of course be bits, but I'm lazy</em></font>
+<em>  90: </em><strong>struct</strong> pipeVal <font color="red"><strong>{</strong></font>         <font color="#ffa600"><em>// standard interface between all pipestages</em></font>
+<em>  91: </em>  int op;                <font color="#ffa600"><em>// the operation needed</em></font>
+<em>  92: </em>  int invalidate_dest; <font color="#ffa600"><em>// if true, invalidate destination register in regread</em></font>
+<em>  93: </em>  int branch_tag;        <font color="#ffa600"><em>// swaps between 0, 1 to indicate branch prediction behaviour</em></font>
+<em>  94: </em>  int is_const;          <font color="#ffa600"><em>// if true says vr2 contains a constant operand</em></font>
+<em>  95: </em>  int vr1_is_in_buff;    <font color="#ffa600"><em>// true if need to use buffer not vr1</em></font>
+<em>  96: </em>  int vr2_is_in_buff;    <font color="#ffa600"><em>// same for vr2</em></font>
+<em>  97: </em>  int r1;                <font color="#ffa600"><em>// r1 is source register</em></font>
+<em>  98: </em>  int r2;                <font color="#ffa600"><em>// vr1 is its value</em></font>
+<em>  99: </em>  int vr1;           <font color="#ffa600"><em>// same for r2, vr2; </em></font>
+<em> 100: </em>  int vr2;
+<em> 101: </em>  int rd;                <font color="#ffa600"><em>// the destination register specification</em></font>
+<em> 102: </em>  int vrd;           <font color="#ffa600"><em>// the result value</em></font>
+<em> 103: </em><font color="red"><strong>}</strong></font>;
+<em> 104: </em>
+<em> 105: </em><strong>struct</strong> brStatus <font color="red"><strong>{</strong></font>
+<em> 106: </em>  int is_cr;             <font color="#ffa600"><em>// if true, data is a new cr value else its a branch dest address</em></font>
+<em> 107: </em>  int data;
+<em> 108: </em><font color="red"><strong>}</strong></font>;
+<em> 109: </em>
+<em> 110: </em><strong>struct</strong> memReq <font color="red"><strong>{</strong></font>
+<em> 111: </em>  int op;                <font color="#ffa600"><em>// ld8, etc</em></font>
+<em> 112: </em>  int regtag;            <font color="#ffa600"><em>// tag specifying destination register for loads</em></font>
+<em> 113: </em>  int address;       <font color="#ffa600"><em>// address</em></font>
+<em> 114: </em>  int data;              <font color="#ffa600"><em>// the data (we're cheating for the moment- the caches provide words)</em></font>
+<em> 115: </em><font color="red"><strong>}</strong></font>;
+<em> 116: </em>
+<em> 117: </em><strong>typedef</strong> Channel&lt;int&gt; Chan;
+<em> 118: </em><strong>typedef</strong> ClockChan&lt;int&gt; ClkChan;
+<em> 119: </em><strong>typedef</strong> ClockChan&lt;memReq&gt; MemClkChan;
+<em> 120: </em><strong>typedef</strong> vector&lt;MemClkChan&gt; MemClkChans;
+<em> 121: </em><strong>typedef</strong> ClockChan&lt;pipeVal&gt; PipeClkChan;
+<em> 122: </em>
+<em> 123: </em>const int iregs = 32;       <font color="#ffa600"><em>// there are 32 integer registers</em></font>
+<em> 124: </em>const int spr0 = 32,        <font color="#ffa600"><em>// the other regs are r32..</em></font>
+<em> 125: </em>    pc = spr0,
+<em> 126: </em>    cr = spr0 + 1,
+<em> 127: </em>    maxReg = cr;
+<em> 128: </em>    
+<em> 129: </em>int regs[iregs + maxReg];        <font color="#ffa600"><em>// the various registers</em></font>
+<em> 130: </em>int validbits[iregs + maxReg]; <font color="#ffa600"><em>// the validity bits</em></font>
+<em> 131: </em>
+<em> 132: </em>const int Clock = 10;                   <font color="#ffa600"><em>// a tick of 10 units   </em></font>
+<em> 133: </em>
+<em> 134: </em>const int maxAddress = 50000;
+<em> 135: </em>int theMemory[maxAddress];          <font color="#ffa600"><em>// a 50Kword memory</em></font>
+<em> 136: </em>
+<em> 137: </em>const int maxUnit = 10,
+<em> 138: </em>            msgLength = 32;
+<em> 139: </em>            
+<em> 140: </em>char unitNames[(maxUnit + 1) * msgLength];
+<em> 141: </em>char gMsg[64];                  <font color="#ffa600"><em>// global for people to message into</em></font>
+<em> 142: </em>
+<em> 143: </em>const int debug = true;
+<em> 144: </em>
+<em> 145: </em>Random&lt;&gt; Rand(1);
+<em> 146: </em>
+<em> 147: </em><font color="#ffa600"><em>// This printf only prints when debug is true.</em></font>
+<em> 148: </em>int dprintf(const char *fmt, ...)
+<em> 149: </em><font color="red"><strong>{</strong></font>
+<em> 150: </em>  int r = 0;
+<em> 151: </em>  <strong>if</strong> (debug) <font color="red"><strong>{</strong></font>
+<em> 152: </em>    va_list ap;
+<em> 153: </em>    va_start(ap,fmt);
+<em> 154: </em>    r = vprintf(fmt,ap);
+<em> 155: </em>    va_end(ap);
+<em> 156: </em>  <font color="red"><strong>}</strong></font>
+<em> 157: </em>  <strong>return</strong> r;
+<em> 158: </em><font color="red"><strong>}</strong></font>
+<em> 159: </em>
+<em> 160: </em><font color="#ffa600"><em>//----------------------------- opname --------------------------------//</em></font>
+<em> 161: </em>
+<em> 162: </em>const char *opname(int op)
+<em> 163: </em><font color="red"><strong>{</strong></font>
+<em> 164: </em>  <strong>switch</strong> (op) <font color="red"><strong>{</strong></font>
+<em> 165: </em>  <strong>case</strong> Add:
+<em> 166: </em>    <strong>return</strong> (<font color="red">&quot;add&quot;</font>);
+<em> 167: </em>    <strong>break</strong>;
+<em> 168: </em>  <strong>case</strong> Mul:     
+<em> 169: </em>    <strong>return</strong>(<font color="red">&quot;mul&quot;</font>);
+<em> 170: </em>    <strong>break</strong>;
+<em> 171: </em>  <strong>case</strong> Div:
+<em> 172: </em>    <strong>return</strong>(<font color="red">&quot;div&quot;</font>);
+<em> 173: </em>    <strong>break</strong>;
+<em> 174: </em>  <strong>case</strong> Rem:
+<em> 175: </em>    <strong>return</strong>(<font color="red">&quot;rem&quot;</font>);
+<em> 176: </em>    <strong>break</strong>;
+<em> 177: </em>  <strong>case</strong> Sub:
+<em> 178: </em>    <strong>return</strong>(<font color="red">&quot;sub&quot;</font>);
+<em> 179: </em>    <strong>break</strong>;
+<em> 180: </em>  <strong>case</strong> And:
+<em> 181: </em>    <strong>return</strong>( <font color="red">&quot;and&quot;</font>);
+<em> 182: </em>    <strong>break</strong>;
+<em> 183: </em>  <strong>case</strong> Or:
+<em> 184: </em>    <strong>return</strong>(<font color="red">&quot;or&quot;</font>);
+<em> 185: </em>    <strong>break</strong>;
+<em> 186: </em>  <strong>case</strong> Xor:
+<em> 187: </em>    <strong>return</strong>(<font color="red">&quot;xor&quot;</font>);
+<em> 188: </em>    <strong>break</strong>;
+<em> 189: </em>  <strong>case</strong> Lshl:
+<em> 190: </em>    <strong>return</strong>(<font color="red">&quot;lshl&quot;</font>);
+<em> 191: </em>    <strong>break</strong>;
+<em> 192: </em>  <strong>case</strong> Lshr:
+<em> 193: </em>    <strong>return</strong>(<font color="red">&quot;lshr&quot;</font>);
+<em> 194: </em>    <strong>break</strong>;
+<em> 195: </em>  <strong>case</strong> Ld8:
+<em> 196: </em>    <strong>return</strong>(<font color="red">&quot;ld8&quot;</font>);
+<em> 197: </em>    <strong>break</strong>;
+<em> 198: </em>  <strong>case</strong> Ld16:
+<em> 199: </em>    <strong>return</strong>(<font color="red">&quot;ld16&quot;</font>);
+<em> 200: </em>    <strong>break</strong>;
+<em> 201: </em>  <strong>case</strong> Ld32:
+<em> 202: </em>    <strong>return</strong>(<font color="red">&quot;ld32&quot;</font>);
+<em> 203: </em>    <strong>break</strong>;
+<em> 204: </em>  <strong>case</strong> St8:
+<em> 205: </em>    <strong>return</strong>(<font color="red">&quot;st8&quot;</font>);
+<em> 206: </em>    <strong>break</strong>;
+<em> 207: </em>  <strong>case</strong> St16:
+<em> 208: </em>    <strong>return</strong>(<font color="red">&quot;st16&quot;</font>);
+<em> 209: </em>    <strong>break</strong>;
+<em> 210: </em>  <strong>case</strong> St32:
+<em> 211: </em>    <strong>return</strong>(<font color="red">&quot;st32&quot;</font>);
+<em> 212: </em>    <strong>break</strong>;
+<em> 213: </em>  <strong>case</strong> Cmp:
+<em> 214: </em>    <strong>return</strong>(<font color="red">&quot;cmp&quot;</font>);
+<em> 215: </em>    <strong>break</strong>;
+<em> 216: </em>  <strong>case</strong> Jmp:
+<em> 217: </em>    <strong>return</strong>(<font color="red">&quot;jmp&quot;</font>);
+<em> 218: </em>    <strong>break</strong>;
+<em> 219: </em>  <strong>case</strong> Blz:
+<em> 220: </em>    <strong>return</strong>(<font color="red">&quot;blz&quot;</font>);
+<em> 221: </em>    <strong>break</strong>;
+<em> 222: </em>  <strong>case</strong> Ble:
+<em> 223: </em>    <strong>return</strong>(<font color="red">&quot;ble&quot;</font>);
+<em> 224: </em>    <strong>break</strong>;
+<em> 225: </em>  <strong>case</strong> Bez:
+<em> 226: </em>    <strong>return</strong>(<font color="red">&quot;bez&quot;</font>);
+<em> 227: </em>    <strong>break</strong>;
+<em> 228: </em>  <strong>case</strong> Bne:
+<em> 229: </em>    <strong>return</strong>(<font color="red">&quot;bne&quot;</font>);
+<em> 230: </em>    <strong>break</strong>;
+<em> 231: </em>  <strong>case</strong> Bge:
+<em> 232: </em>    <strong>return</strong>(<font color="red">&quot;bge&quot;</font>);
+<em> 233: </em>    <strong>break</strong>;
+<em> 234: </em>  <strong>case</strong> Stop:
+<em> 235: </em>    <strong>return</strong>(<font color="red">&quot;STOP&quot;</font>);
+<em> 236: </em>    <strong>break</strong>;
+<em> 237: </em>  <strong>case</strong> Bgz:
+<em> 238: </em>    <strong>return</strong>(<font color="red">&quot;bgz&quot;</font>);
+<em> 239: </em>    <strong>break</strong>;
+<em> 240: </em>  default:
+<em> 241: </em>    <strong>return</strong>(<font color="red">&quot;**unknown**&quot;</font>);
+<em> 242: </em>    <strong>break</strong>;
+<em> 243: </em>  <font color="red"><strong>}</strong></font>
+<em> 244: </em><font color="red"><strong>}</strong></font>
+<em> 245: </em>
+<em> 246: </em><font color="#ffa600"><em>//----------------------------- setInstrucB ----------------------------</em></font>
+<em> 247: </em>
+<em> 248: </em>int setInstrucB(int op, int rd, int d19) 
+<em> 249: </em><font color="red"><strong>{</strong></font>
+<em> 250: </em>  <font color="#ffa600"><em>// builds a branch instruction of format 0</em></font>
+<em> 251: </em>  int instruc = (op &lt;&lt; opbase) | (rd &lt;&lt; rdbase) | (d19 &lt;&lt; d19base);
+<em> 252: </em>  <strong>return</strong> instruc;
+<em> 253: </em><font color="red"><strong>}</strong></font>
+<em> 254: </em>
+<em> 255: </em>    
+<em> 256: </em><font color="#ffa600"><em>//----------------------------- setInstrucRR ----------------------------</em></font>
+<em> 257: </em>
+<em> 258: </em>int setInstrucRR(int op, int rd, int r1, int r2) 
+<em> 259: </em><font color="red"><strong>{</strong></font>
+<em> 260: </em>  <font color="#ffa600"><em>// builds an r-r instruction of format 1</em></font>
+<em> 261: </em>  int instruc = (1 &lt;&lt; fbase) | (op &lt;&lt; opbase) | (r1 &lt;&lt; r1base) | (r2 &lt;&lt; r2base) | (rd &lt;&lt; rdbase);
+<em> 262: </em>  <strong>return</strong> instruc;
+<em> 263: </em><font color="red"><strong>}</strong></font>
+<em> 264: </em>    
+<em> 265: </em><font color="#ffa600"><em>//----------------------------- setInstrucRC ----------------------------</em></font>
+<em> 266: </em>
+<em> 267: </em>int setInstrucRC(int op, int rd, int r1, int v) 
+<em> 268: </em><font color="red"><strong>{</strong></font>
+<em> 269: </em>  <font color="#ffa600"><em>// builds an r-lit instruction of format 1</em></font>
+<em> 270: </em>  int instruc = (2 &lt;&lt; fbase) | (op &lt;&lt; opbase) | (r1 &lt;&lt; r1base) | (v &lt;&lt; l14base) | (rd &lt;&lt; rdbase);
+<em> 271: </em>  <strong>return</strong> instruc;
+<em> 272: </em><font color="red"><strong>}</strong></font>
+<em> 273: </em>    
+<em> 274: </em><font color="#ffa600"><em>//----------------------------- next_phi1 -----------------------------</em></font>
+<em> 275: </em>
+<em> 276: </em>int next_phi1(int t) 
+<em> 277: </em><font color="red"><strong>{</strong></font>
+<em> 278: </em>  <font color="#ffa600"><em>// returns the next full clock boundary after t</em></font>
+<em> 279: </em>  <strong>return</strong> t + Clock - (t % Clock);
+<em> 280: </em><font color="red"><strong>}</strong></font>
+<em> 281: </em>
+<em> 282: </em>
+<em> 283: </em><font color="#ffa600"><em>//----------------------------- next_phi2 -----------------------------</em></font>
+<em> 284: </em>
+<em> 285: </em>int next_phi2(int t) 
+<em> 286: </em><font color="red"><strong>{</strong></font>
+<em> 287: </em>  <font color="#ffa600"><em>// returns the time of the next half clock boundary after t</em></font>
+<em> 288: </em>  <strong>return</strong> next_phi1(t) + (Clock/2);
+<em> 289: </em><font color="red"><strong>}</strong></font>
+<em> 290: </em>
+<em> 291: </em><font color="#ffa600"><em>//----------------------------- setname -----------------------------</em></font>
+<em> 292: </em>
+<em> 293: </em>void setname(int unit, const char *name)
+<em> 294: </em><font color="red"><strong>{</strong></font>
+<em> 295: </em>  <font color="#ffa600"><em>// write a unit's name into the correct slice of unitNames</em></font>
+<em> 296: </em>  int i, j, len;
+<em> 297: </em>  printf(<font color="red">&quot;\nsetting unit '%d' to have name &quot;</font>, unit);
+<em> 298: </em>  printf(<font color="red">&quot;'%s'&quot;</font>, name);
+<em> 299: </em>  i = unit * msgLength;
+<em> 300: </em>  len = strlen(name);
+<em> 301: </em>  len = (msgLength - len)/2;
+<em> 302: </em>  i = i + len;
+<em> 303: </em>  j = 0;
+<em> 304: </em>  <strong>while</strong> (name[j] != '\0') <font color="red"><strong>{</strong></font>
+<em> 305: </em>    unitNames[i] = name[j];
+<em> 306: </em>    i = i + 1;
+<em> 307: </em>    j = j + 1;
+<em> 308: </em>  <font color="red"><strong>}</strong></font>
+<em> 309: </em><font color="red"><strong>}</strong></font>
+<em> 310: </em>        
+<em> 311: </em><font color="#ffa600"><em>//----------------------------- initRegs -----------------------------</em></font>
+<em> 312: </em>
+<em> 313: </em>void initRegs() 
+<em> 314: </em><font color="red"><strong>{</strong></font>
+<em> 315: </em>  <font color="#ffa600"><em>// makes all registers valid and gives initial values</em></font>
+<em> 316: </em>  <strong>for</strong> (int i = 0; i != maxReg; ++i) <font color="red"><strong>{</strong></font>
+<em> 317: </em>    validbits[i] = 1;
+<em> 318: </em>    regs[i] = i;
+<em> 319: </em>  <font color="red"><strong>}</strong></font>
+<em> 320: </em><font color="red"><strong>}</strong></font>
+<em> 321: </em>
+<em> 322: </em><font color="#ffa600"><em>//---------------------------- fetch ----------------------------</em></font>
+<em> 323: </em>
+<em> 324: </em><strong>struct</strong> Fetch <font color="red"><strong>{</strong></font>
+<em> 325: </em>
+<em> 326: </em>  <font color="#ffa600"><em>// launches a request to the icache every clock to get it to deliver instructions</em></font>
+<em> 327: </em>  <font color="#ffa600"><em>// to the rest of the machine</em></font>
+<em> 328: </em>    
+<em> 329: </em>  <font color="#ffa600"><em>// for added realism, we ask the icache for just one word..</em></font>
+<em> 330: </em>  
+<em> 331: </em>  <font color="#ffa600"><em>// dests carries new addresses from decode, which does branch prediction</em></font>
+<em> 332: </em>        
+<em> 333: </em>  void ticker()
+<em> 334: </em>  <font color="red"><strong>{</strong></font>
+<em> 335: </em>    pDelay(Clock);
+<em> 336: </em>    <strong>while</strong> (_running) <font color="red"><strong>{</strong></font>
+<em> 337: </em>      pDelay(Clock );
+<em> 338: </em>      _tickfetch.write(1);
+<em> 339: </em>    <font color="red"><strong>}</strong></font>
+<em> 340: </em>    printf (<font color="red">&quot;\nticker stopped.&quot;</font>);
+<em> 341: </em>  <font color="red"><strong>}</strong></font>
+<em> 342: </em>
+<em> 343: </em>  void fetcher() 
+<em> 344: </em>  <font color="red"><strong>{</strong></font>
+<em> 345: </em>    memReq mR;
+<em> 346: </em>    const char *status;
+<em> 347: </em>    regs[pc] = _starter;            <font color="#ffa600"><em>// start execution at start address;</em></font>
+<em> 348: </em>    setname(_unit, <font color="red">&quot;Fetch&quot;</font>);
+<em> 349: </em>    pDelay(Clock);
+<em> 350: </em>    <strong>while</strong> (_running) <font color="red"><strong>{</strong></font>
+<em> 351: </em>      <font color="#ffa600"><em>//message(unit, &quot;waiting&quot;);</em></font>
+<em> 352: </em>      alt <font color="red"><strong>{</strong></font>
+<em> 353: </em>        _dests.port(int pc) <font color="red"><strong>{</strong></font>               <font color="#ffa600"><em>// read a new destination if there is one from alu</em></font>
+<em> 354: </em>          regs[pc] = pc;
+<em> 355: </em>          status = <font color="red">&quot;newPC&quot;</font>;
+<em> 356: </em>        <font color="red"><strong>}</strong></font>
+<em> 357: </em>        _tofetch.port(int dummy) <font color="red"><strong>{</strong></font>      <font color="#ffa600"><em>// must stop - decode wants us to</em></font>
+<em> 358: </em>          dprintf(<font color="red">&quot;\nfetcher received something (%d) on tofetch!&quot;</font>, dummy);
+<em> 359: </em>          <strong>if</strong> (dummy == Stop) <font color="red"><strong>{</strong></font>
+<em> 360: </em>            regs[pc] = -1;
+<em> 361: </em>            dprintf(<font color="red">&quot;.. a request to stop.&quot;</font>);
+<em> 362: </em>          <font color="red"><strong>}</strong></font>
+<em> 363: </em>        <font color="red"><strong>}</strong></font>
+<em> 364: </em>        _tickfetch.port() <font color="red"><strong>{</strong></font>
+<em> 365: </em>          status = <font color="red">&quot;fetching&quot;</font>;
+<em> 366: </em>        <font color="red"><strong>}</strong></font>
+<em> 367: </em>      <font color="red"><strong>}</strong></font>
+<em> 368: </em>      <font color="#ffa600"><em>// a negative destination address means stop</em></font>
+<em> 369: </em>      <strong>if</strong> (regs[pc] &lt; 0) <font color="red"><strong>{</strong></font>
+<em> 370: </em>        _running = false;
+<em> 371: </em>        _towatchdog.write(1);
+<em> 372: </em>        _tickfetch.get();
+<em> 373: </em>        printf(<font color="red">&quot;\nfetch stopped.&quot;</font>);
+<em> 374: </em>      <font color="red"><strong>}</strong></font>
+<em> 375: </em>      <font color="#ffa600"><em>// set up the request to the cache</em></font>
+<em> 376: </em>      mR.op = Ld32;
+<em> 377: </em>      mR.address = regs[pc];
+<em> 378: </em>      
+<em> 379: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 380: </em>      sprintf(gMsg, <font color="red">&quot;%s 0x%08x&quot;</font>, status, regs[pc]);
+<em> 381: </em>      dprintf (<font color="red">&quot;\nFetch (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 382: </em>      <font color="#ffa600"><em>//message(_unit,gMsg);</em></font>
+<em> 383: </em>
+<em> 384: </em>      <strong>if</strong> (_running) <font color="red"><strong>{</strong></font>
+<em> 385: </em>        regs[pc] = regs[pc] + 4;
+<em> 386: </em>      <font color="red"><strong>}</strong></font>
+<em> 387: </em>
+<em> 388: </em>      <font color="#ffa600"><em>// send the request to the cache</em></font>
+<em> 389: </em>      _out.write(mR);
+<em> 390: </em>      <font color="#ffa600"><em>// activity   </em></font>
+<em> 391: </em>    <font color="red"><strong>}</strong></font>
+<em> 392: </em>  <font color="red"><strong>}</strong></font>
+<em> 393: </em>
+<em> 394: </em>  Fetch(int unit, Chan &amp;tofetch, Chan &amp;dests, MemClkChan &amp;out, Chan &amp;towatchdog, int starter) :
+<em> 395: </em>    _running(true), _unit(unit), _starter(starter), 
+<em> 396: </em>    _tofetch(tofetch), _dests(dests), _towatchdog(towatchdog), _out(out)
+<em> 397: </em>  {};
+<em> 398: </em>    
+<em> 399: </em>  void operator()()
+<em> 400: </em>  <font color="red"><strong>{</strong></font>
+<em> 401: </em>    <font color="#ffa600"><em>// ok, run 'em	</em></font>
+<em> 402: </em>    par <font color="red"><strong>{</strong></font>
+<em> 403: </em>      ticker();
+<em> 404: </em>      fetcher();
+<em> 405: </em>    <font color="red"><strong>}</strong></font>
+<em> 406: </em>  <font color="red"><strong>}</strong></font>
+<em> 407: </em>
+<em> 408: </em>private:
+<em> 409: </em>  bool        _running;
+<em> 410: </em>  int         _unit;
+<em> 411: </em>  int         _starter;
+<em> 412: </em>
+<em> 413: </em>  Chan        _tickfetch;
+<em> 414: </em>  Chan       &amp;_tofetch;
+<em> 415: </em>  Chan       &amp;_dests;
+<em> 416: </em>  Chan       &amp;_towatchdog;
+<em> 417: </em>  MemClkChan &amp;_out;
+<em> 418: </em><font color="red"><strong>}</strong></font>;
+<em> 419: </em>
+<em> 420: </em><font color="#ffa600"><em>// ---------------------------- memread ----------------------------</em></font>
+<em> 421: </em>
+<em> 422: </em>int memread(int op, int address) 
+<em> 423: </em><font color="red"><strong>{</strong></font>
+<em> 424: </em>  <font color="#ffa600"><em>// address is a byte address</em></font>
+<em> 425: </em>  int d, data, addr;
+<em> 426: </em>  addr = address &gt;&gt; 2;
+<em> 427: </em>  <strong>if</strong> (addr &gt;= maxAddress) <font color="red"><strong>{</strong></font>
+<em> 428: </em>    printf(<font color="red">&quot;\nAddress Read error: 0x%08x too large at %lld&quot;</font>, address, pTime());
+<em> 429: </em>    pExit(1);
+<em> 430: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (addr &lt; 0) <font color="red"><strong>{</strong></font>
+<em> 431: </em>    printf(<font color="red">&quot;\nAddress Read error: 0x%08x too small at %lld&quot;</font>, address, pTime());
+<em> 432: </em>    pExit(1);
+<em> 433: </em>  <font color="red"><strong>}</strong></font>
+<em> 434: </em>  data = theMemory[addr];
+<em> 435: </em>  <strong>switch</strong> (op) <font color="red"><strong>{</strong></font>
+<em> 436: </em>  <strong>case</strong> Ld8: 
+<em> 437: </em>    d = (address &amp; 3) &lt;&lt; 3;
+<em> 438: </em>    data = (data &gt;&gt; d) &amp; 0xff;
+<em> 439: </em>    <strong>break</strong>;
+<em> 440: </em>  <strong>case</strong> Ld16: 
+<em> 441: </em>    d = (address &amp; 1) &lt;&lt; 1;
+<em> 442: </em>    data = (data &gt;&gt; d) &amp; 0xffff;
+<em> 443: </em>    <strong>break</strong>;
+<em> 444: </em>  <strong>case</strong> Ld32:
+<em> 445: </em>  default:
+<em> 446: </em>    <strong>break</strong>;
+<em> 447: </em>  <font color="red"><strong>}</strong></font>
+<em> 448: </em>  <strong>return</strong> data;
+<em> 449: </em><font color="red"><strong>}</strong></font>
+<em> 450: </em>    
+<em> 451: </em><font color="#ffa600"><em>//---------------------------- memwrite ----------------------------</em></font>
+<em> 452: </em>
+<em> 453: </em>void memwrite(int op, int address, int data) 
+<em> 454: </em><font color="red"><strong>{</strong></font>
+<em> 455: </em>  <font color="#ffa600"><em>// address is a byte address</em></font>
+<em> 456: </em>  int v, d, m, addr;
+<em> 457: </em>  addr = address &gt;&gt; 2;
+<em> 458: </em>  <strong>if</strong> (addr &gt;= maxAddress) <font color="red"><strong>{</strong></font>
+<em> 459: </em>    printf(<font color="red">&quot;\nAddress Write error: 0x%08x too large at %lld&quot;</font>, address, pTime());
+<em> 460: </em>    pExit(1);
+<em> 461: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (addr &lt; 0) <font color="red"><strong>{</strong></font>
+<em> 462: </em>    printf(<font color="red">&quot;\nAddress Write error: 0x%08x too small at %lld&quot;</font>, address, pTime());
+<em> 463: </em>    pExit(1);
+<em> 464: </em>  <font color="red"><strong>}</strong></font>
+<em> 465: </em>        
+<em> 466: </em>  v = theMemory[addr];
+<em> 467: </em>  <strong>switch</strong> (op) <font color="red"><strong>{</strong></font>
+<em> 468: </em>  <strong>case</strong> St8: 
+<em> 469: </em>    d = (address &amp; 3) &lt;&lt; 3;             <font color="#ffa600"><em>// distance</em></font>
+<em> 470: </em>    m = 0xff &lt;&lt; d;                  <font color="#ffa600"><em>// wordmask</em></font>
+<em> 471: </em>    data = (data &amp; 0xff) &lt;&lt; d;      <font color="#ffa600"><em>// align supplied data</em></font>
+<em> 472: </em>    <strong>break</strong>;
+<em> 473: </em>  <strong>case</strong> St16:
+<em> 474: </em>    d = (address &amp; 1) &lt;&lt; 1;
+<em> 475: </em>    m = 0xffff &lt;&lt; d;
+<em> 476: </em>    data = (data &amp; 0xffff) &lt;&lt; d;
+<em> 477: </em>    <strong>break</strong>;
+<em> 478: </em>  <strong>case</strong> St32:
+<em> 479: </em>    m = -1;
+<em> 480: </em>    <strong>break</strong>;
+<em> 481: </em>  default:
+<em> 482: </em>    <strong>break</strong>;
+<em> 483: </em>  <font color="red"><strong>}</strong></font>
+<em> 484: </em>  m = ~m;
+<em> 485: </em>  theMemory[addr] = (v &amp; m) | data;
+<em> 486: </em><font color="red"><strong>}</strong></font>
+<em> 487: </em>    
+<em> 488: </em><font color="#ffa600"><em>// ---------------------------- icache ----------------------------</em></font>
+<em> 489: </em>
+<em> 490: </em>void icache(int unit, MemClkChan &amp;in, MemClkChan &amp;out) 
+<em> 491: </em><font color="red"><strong>{</strong></font>
+<em> 492: </em>  memReq mR;
+<em> 493: </em>  bool running = true;
+<em> 494: </em>  int op, address, data;
+<em> 495: </em>  setname(unit, <font color="red">&quot;iCache&quot;</font>);
+<em> 496: </em>  pDelay(Clock);
+<em> 497: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 498: </em>    <font color="#ffa600"><em>//message(unit, &quot;waiting&quot;);</em></font>
+<em> 499: </em>    mR = in.get();
+<em> 500: </em>    <font color="#ffa600"><em>// activity     </em></font>
+<em> 501: </em>    op = mR.op;
+<em> 502: </em>    address = mR.address;
+<em> 503: </em>    <strong>if</strong> (address &lt; 0) <font color="red"><strong>{</strong></font>
+<em> 504: </em>      running = false;
+<em> 505: </em>      printf(<font color="red">&quot;\nicache stopped.&quot;</font>);
+<em> 506: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 507: </em>      <font color="#ffa600"><em>// ok, do the access. but we'll cheat for a moment and </em></font>
+<em> 508: </em>      <font color="#ffa600"><em>// just read memory (heh, heh)</em></font>
+<em> 509: </em>      <font color="#ffa600"><em>// address is byte address, and we always want one word</em></font>
+<em> 510: </em>      data = memread(Ld32, address);
+<em> 511: </em>                
+<em> 512: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 513: </em>      sprintf(gMsg, <font color="red">&quot;lookup 0x%08x-&gt;0x%08x&quot;</font>, address, data); 
+<em> 514: </em>      dprintf(<font color="red">&quot;\nIcache (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 515: </em>      <font color="#ffa600"><em>//message(unit,gMsg);</em></font>
+<em> 516: </em>      
+<em> 517: </em>      mR.data = data;                   
+<em> 518: </em>      out.write(mR);
+<em> 519: </em>    <font color="red"><strong>}</strong></font>           
+<em> 520: </em>  <font color="red"><strong>}</strong></font>
+<em> 521: </em><font color="red"><strong>}</strong></font>
+<em> 522: </em>    
+<em> 523: </em><font color="#ffa600"><em>// -------------------------- decoder -----------------------</em></font>
+<em> 524: </em>
+<em> 525: </em><strong>struct</strong> Decoder <font color="red"><strong>{</strong></font>
+<em> 526: </em>    
+<em> 527: </em>  <font color="#ffa600"><em>// ----------------------- icount ----------------------------</em></font>
+<em> 528: </em>  void icount() 
+<em> 529: </em>  <font color="red"><strong>{</strong></font>
+<em> 530: </em>    int x = _report.get();
+<em> 531: </em>    <strong>if</strong> (x &lt; 0) <font color="red"><strong>{</strong></font>
+<em> 532: </em>      printf (<font color="red">&quot;\nicount stopped.&quot;</font>);
+<em> 533: </em>      <strong>return</strong>;
+<em> 534: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 535: </em>      dprintf(<font color="red">&quot;\n** icount asked for instruction count: = %d&quot;</font>, _numInstrucs);
+<em> 536: </em>      _report.write(_numInstrucs);
+<em> 537: </em>    <font color="red"><strong>}</strong></font>
+<em> 538: </em>  <font color="red"><strong>}</strong></font>
+<em> 539: </em>  
+<em> 540: </em>  <font color="#ffa600"><em>// ------------------------//- maskof -------------------------</em></font>
+<em> 541: </em>  int maskof(int n) 
+<em> 542: </em>  <font color="red"><strong>{</strong></font>
+<em> 543: </em>    <font color="#ffa600"><em>// returns a bitmask of size n bits</em></font>
+<em> 544: </em>    int mask;
+<em> 545: </em>    mask = (1 &lt;&lt; n) - 1;
+<em> 546: </em>    <strong>return</strong> mask;
+<em> 547: </em>  <font color="red"><strong>}</strong></font>
+<em> 548: </em>
+<em> 549: </em>
+<em> 550: </em>  <font color="#ffa600"><em>// ---------------------------- decode ----------------------------</em></font>
+<em> 551: </em>  void decode() 
+<em> 552: </em>  <font color="red"><strong>{</strong></font>
+<em> 553: </em>    memReq mR;
+<em> 554: </em>    pipeVal pV;
+<em> 555: </em>    bool running = true;
+<em> 556: </em>    int instruc, format;
+<em> 557: </em>    int last_rd = -1;
+<em> 558: </em>    char msg[32];
+<em> 559: </em>    const char *r1s, *r2s, *rds;                
+<em> 560: </em>
+<em> 561: </em>    <font color="#ffa600"><em>// body //</em></font>
+<em> 562: </em>    setname(_unit, <font color="red">&quot;Decode&quot;</font>);
+<em> 563: </em>        
+<em> 564: </em>    pDelay(Clock);
+<em> 565: </em>        
+<em> 566: </em>    <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 567: </em>      int op;
+<em> 568: </em>      mR = _in.get();
+<em> 569: </em>
+<em> 570: </em>      <font color="#ffa600"><em>//printf (&quot;\nDecode:  Address %08ld, data %08x\n&quot;,mR.address,mR.data);</em></font>
+<em> 571: </em>
+<em> 572: </em>      _numInstrucs = _numInstrucs + 1;      <font color="#ffa600"><em>// increment instruction count</em></font>
+<em> 573: </em>            
+<em> 574: </em>      <font color="#ffa600"><em>//make a pipeVal structure from the instruction</em></font>
+<em> 575: </em>      instruc = mR.data;
+<em> 576: </em>      format = (instruc &gt;&gt; fbase) &amp; maskof(fsize);
+<em> 577: </em>      pV.op = (instruc &gt;&gt; opbase) &amp; maskof(opsize);
+<em> 578: </em>      pV.rd = (instruc &gt;&gt; rdbase) &amp; maskof(rdsize);
+<em> 579: </em>      <font color="#ffa600"><em>//printf(&quot;\ndecode: format is %d&quot;, format);</em></font>
+<em> 580: </em>      pV.invalidate_dest = false;
+<em> 581: </em>      op = pV.op;
+<em> 582: </em>      <strong>switch</strong> (format) <font color="red"><strong>{</strong></font>
+<em> 583: </em>      <strong>case</strong> 0: 
+<em> 584: </em>        <font color="#ffa600"><em>// branch instructions</em></font>
+<em> 585: </em>        pV.is_const = true;
+<em> 586: </em>        pV.r1 = pV.rd;
+<em> 587: </em>        pV.rd = pc;
+<em> 588: </em>        pV.vr2 = (instruc &gt;&gt; d19base) &amp; maskof(d19size);
+<em> 589: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 590: </em>        sprintf(gMsg, <font color="red">&quot;%08x=br r%d %d&quot;</font>, instruc, pV.rd, pV.vr2); 
+<em> 591: </em>        <strong>break</strong>;
+<em> 592: </em>      <strong>case</strong> 1: 
+<em> 593: </em>        <font color="#ffa600"><em>//reg-reg</em></font>
+<em> 594: </em>        pV.is_const = false;
+<em> 595: </em>        pV.r1 = (instruc &gt;&gt; r1base) &amp; maskof(r1size);
+<em> 596: </em>        pV.r2 = (instruc &gt;&gt; r2base) &amp; maskof(r2size);
+<em> 597: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 598: </em>        sprintf(gMsg, <font color="red">&quot;%08x=rr r%d = r%d %s r%d&quot;</font>, instruc, pV.rd, pV.r1, opname(op), pV.r2); 
+<em> 599: </em>        <strong>if</strong> ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) <font color="red"><strong>{</strong></font>
+<em> 600: </em>          pV.invalidate_dest = true;
+<em> 601: </em>        <font color="red"><strong>}</strong></font>
+<em> 602: </em>        <strong>break</strong>;
+<em> 603: </em>      <strong>case</strong> 2: 
+<em> 604: </em>        <font color="#ffa600"><em>// reg-lit</em></font>
+<em> 605: </em>        pV.is_const = true;
+<em> 606: </em>        pV.r1 = (instruc &gt;&gt; r1base) &amp; maskof(r1size);
+<em> 607: </em>        pV.vr2 = (instruc &gt;&gt; l14base) &amp; maskof(l14size);
+<em> 608: </em>        <font color="#ffa600"><em>//printf(&quot;\nreg-lit: const = 0x%08x, %d&quot;, pV.vr2, pV.vr2);</em></font>
+<em> 609: </em>                        
+<em> 610: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 611: </em>        sprintf(gMsg, <font color="red">&quot;%08x=rc r%d = r%d %s %d&quot;</font>, instruc, pV.rd, pV.r1, opname(op), pV.vr2);
+<em> 612: </em>        pV.invalidate_dest = false; 
+<em> 613: </em>        <font color="#ffa600"><em>// make sure we don't try to use the short-circuit in the alu</em></font>
+<em> 614: </em>        <strong>if</strong> ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) <font color="red"><strong>{</strong></font>
+<em> 615: </em>          pV.invalidate_dest = true;
+<em> 616: </em>          strcat(gMsg, <font color="red">&quot;j&quot;</font>);
+<em> 617: </em>        <font color="red"><strong>}</strong></font>
+<em> 618: </em>        <strong>break</strong>;
+<em> 619: </em>      default: 
+<em> 620: </em>        pV.op = Stop;
+<em> 621: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 622: </em>        sprintf(gMsg, <font color="red">&quot;%08x=**illegal**&quot;</font>, instruc); 
+<em> 623: </em>        <strong>break</strong>;
+<em> 624: </em>      <font color="red"><strong>}</strong></font>
+<em> 625: </em>      
+<em> 626: </em>      <font color="#ffa600"><em>//      printf(&quot;\nDecode: lastrd = r%d; 0x%08x:: r%d = r%d %s r%d; &quot;, </em></font>
+<em> 627: </em>      <font color="#ffa600"><em>//             last_rd, instruc, pV.rd, pV.r1, opname(op), pV.r2);</em></font>
+<em> 628: </em>      
+<em> 629: </em>      <font color="#ffa600"><em>// if prev instruction writes a register without invalidating it and that register is a source for</em></font>
+<em> 630: </em>      <font color="#ffa600"><em>// this instruction then we need to tell alu to use result from that instruction rather than the read register value</em></font>
+<em> 631: </em>      <font color="#ffa600"><em>// check r1       </em></font>
+<em> 632: </em>      <strong>if</strong> (pV.r1 == last_rd) <font color="red"><strong>{</strong></font>
+<em> 633: </em>        pV.vr1_is_in_buff = true;
+<em> 634: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 635: </em>        r1s = <font color="red">&quot;B&quot;</font>;
+<em> 636: </em>        <font color="#ffa600"><em>//printf(&quot;r1 to be taken from buffer; &quot;);</em></font>
+<em> 637: </em>      <font color="red"><strong>}</strong></font>
+<em> 638: </em>      <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 639: </em>        pV.vr1_is_in_buff = false;
+<em> 640: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 641: </em>        r1s = <font color="red">&quot;r&quot;</font>;
+<em> 642: </em>      <font color="red"><strong>}</strong></font>
+<em> 643: </em>            
+<em> 644: </em>      <font color="#ffa600"><em>// check r2</em></font>
+<em> 645: </em>      <strong>if</strong> ((pV.r2 == last_rd) &amp;&amp; (pV.is_const == false)) <font color="red"><strong>{</strong></font>
+<em> 646: </em>        pV.vr2_is_in_buff = true;
+<em> 647: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 648: </em>        r2s = <font color="red">&quot;B&quot;</font>;
+<em> 649: </em>      <font color="red"><strong>}</strong></font>
+<em> 650: </em>      <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 651: </em>        pV.vr2_is_in_buff = false;
+<em> 652: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 653: </em>        r2s = <font color="red">&quot;r&quot;</font>;
+<em> 654: </em>      <font color="red"><strong>}</strong></font>
+<em> 655: </em>            
+<em> 656: </em>      <font color="#ffa600"><em>// now track most recent result register for next cycle</em></font>
+<em> 657: </em>      <font color="#ffa600"><em>// we need to track result register if we wrote to it without clearing its valid bit</em></font>
+<em> 658: </em>      <strong>if</strong> (pV.invalidate_dest == true) <font color="red"><strong>{</strong></font>
+<em> 659: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 660: </em>        rds = <font color="red">&quot;i&quot;</font>;              <font color="#ffa600"><em>// mark inval</em></font>
+<em> 661: </em>        last_rd = -1;               <font color="#ffa600"><em>// no short-circuit</em></font>
+<em> 662: </em>      <font color="red"><strong>}</strong></font>
+<em> 663: </em>      <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 664: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 665: </em>        rds = <font color="red">&quot;v&quot;</font>;              <font color="#ffa600"><em>// mark no inval</em></font>
+<em> 666: </em>        last_rd = pV.rd;            <font color="#ffa600"><em>// might have s-c</em></font>
+<em> 667: </em>      <font color="red"><strong>}</strong></font>
+<em> 668: </em>
+<em> 669: </em>      <font color="#ffa600"><em>// OK; now we've decoded the instruction and all before halfway through the clock!</em></font>
+<em> 670: </em>            
+<em> 671: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 672: </em>      sprintf(msg,<font color="red">&quot;::{%s},%s,%s.&quot;</font>, rds, r1s, r2s);
+<em> 673: </em>      strcat(gMsg, msg);
+<em> 674: </em>      dprintf(<font color="red">&quot;\nDecode (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 675: </em>      <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em> 676: </em>                
+<em> 677: </em>      <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font>
+<em> 678: </em>        running = false;
+<em> 679: </em>        printf(<font color="red">&quot;\nDecode:  Stopping at %lld.&quot;</font>, pTime());
+<em> 680: </em>        par <font color="red"><strong>{</strong></font>
+<em> 681: </em>          _tofetch.write(Stop);                 <font color="#ffa600"><em>// gotta stop fetching!</em></font>
+<em> 682: </em>          <font color="red"><strong>{</strong></font>
+<em> 683: </em>            <font color="#ffa600"><em>// A few reads to flush out the icache channel.</em></font>
+<em> 684: </em>            _in.get();
+<em> 685: </em>            _in.get();
+<em> 686: </em>          <font color="red"><strong>}</strong></font>
+<em> 687: </em>          _out.write(pV);                   <font color="#ffa600"><em>// Propagate stop to rest of pipeline.</em></font>
+<em> 688: </em>        <font color="red"><strong>}</strong></font>
+<em> 689: </em>      <font color="red"><strong>}</strong></font>
+<em> 690: </em>      <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 691: </em>        _out.write(pV);         <font color="#ffa600"><em>// pass on to regread</em></font>
+<em> 692: </em>      <font color="red"><strong>}</strong></font>  
+<em> 693: </em>    <font color="red"><strong>}</strong></font>
+<em> 694: </em>    printf(<font color="red">&quot;\ndecode stopped.&quot;</font>);
+<em> 695: </em>  <font color="red"><strong>}</strong></font>;
+<em> 696: </em>        
+<em> 697: </em>  Decoder(int unit, MemClkChan &amp;in, Chan &amp;tofetch, PipeClkChan &amp;out, Chan &amp;report) :
+<em> 698: </em>    _numInstrucs(0), _unit(unit),
+<em> 699: </em>    _in(in), _tofetch(tofetch), _out(out), _report(report)
+<em> 700: </em>  <font color="red"><strong>{</strong></font>
+<em> 701: </em>  <font color="red"><strong>}</strong></font>
+<em> 702: </em>
+<em> 703: </em>  void operator()() <font color="red"><strong>{</strong></font>
+<em> 704: </em>    <font color="#ffa600"><em>// ------ body -------- </em></font>
+<em> 705: </em>    par <font color="red"><strong>{</strong></font>
+<em> 706: </em>      decode();
+<em> 707: </em>      icount();
+<em> 708: </em>    <font color="red"><strong>}</strong></font>       
+<em> 709: </em>  <font color="red"><strong>}</strong></font>
+<em> 710: </em>
+<em> 711: </em>private:
+<em> 712: </em>  int _numInstrucs;
+<em> 713: </em>  int _unit;
+<em> 714: </em>
+<em> 715: </em>  MemClkChan  &amp;_in;
+<em> 716: </em>  Chan        &amp;_tofetch;
+<em> 717: </em>  PipeClkChan &amp;_out;
+<em> 718: </em>  Chan        &amp;_report;
+<em> 719: </em><font color="red"><strong>}</strong></font>;
+<em> 720: </em>    
+<em> 721: </em><font color="#ffa600"><em>// ----------------------------- regRead -----------------------------</em></font>
+<em> 722: </em>
+<em> 723: </em>void regRead(int unit, PipeClkChan &amp;in, PipeClkChan &amp;out, PipeClkChan &amp;tomul) 
+<em> 724: </em><font color="red"><strong>{</strong></font>
+<em> 725: </em>  <font color="#ffa600"><em>// this guy, uniquely of the units, fires at half-clock boundaries, taking the</em></font>
+<em> 726: </em>  <font color="#ffa600"><em>// stuff from decode halfway thru the clock</em></font>
+<em> 727: </em>  bool running = true;
+<em> 728: </em>  int r1, r2, rd;
+<em> 729: </em>  char msg[16];
+<em> 730: </em>  setname(unit, <font color="red">&quot;regRead&quot;</font>);
+<em> 731: </em>  pDelay(Clock);
+<em> 732: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 733: </em>    bool waiting = true;
+<em> 734: </em>    <font color="#ffa600"><em>// look for traffic only at half-clock boundaries</em></font>
+<em> 735: </em>    pipeVal pV = in.get();
+<em> 736: </em>
+<em> 737: </em>    <font color="#ffa600"><em>// decode and remember what registers we want   </em></font>
+<em> 738: </em>    r1 = pV.r1;
+<em> 739: </em>    r2 = pV.r2;
+<em> 740: </em>    rd = pV.rd;
+<em> 741: </em>    
+<em> 742: </em>    <font color="#ffa600"><em>// now wait until all sources and dests are valid</em></font>
+<em> 743: </em>    <strong>while</strong> (waiting) <font color="red"><strong>{</strong></font>
+<em> 744: </em>      <font color="#ffa600"><em>// read the registers at the front of the clock cycle</em></font>
+<em> 745: </em>      <strong>if</strong> (validbits[r1] &amp;&amp; validbits[r2] &amp;&amp; validbits[rd]) <font color="red"><strong>{</strong></font>
+<em> 746: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 747: </em>        sprintf(gMsg, <font color="red">&quot;r%d[%d],r%d[%d]&quot;</font>, r1, regs[r1], r2, regs[r2]);
+<em> 748: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em> 749: </em>        waiting = false;
+<em> 750: </em>      <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 751: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em> 752: </em>        sprintf(gMsg, <font color="red">&quot;valWait: &quot;</font>);
+<em> 753: </em>        <strong>if</strong> (validbits[r1] == 0) {sprintf(msg, <font color="red">&quot;r%d &quot;</font>, r1); strcat(gMsg, msg); <font color="red"><strong>}</strong></font>
+<em> 754: </em>        <strong>if</strong> (validbits[r2] == 0) {sprintf(msg, <font color="red">&quot;r%d &quot;</font>, r2); strcat(gMsg, msg); <font color="red"><strong>}</strong></font>
+<em> 755: </em>        <strong>if</strong> (validbits[rd] == 0) {sprintf(msg, <font color="red">&quot;r%d&quot;</font>, rd); strcat(gMsg, msg); <font color="red"><strong>}</strong></font>
+<em> 756: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em> 757: </em>      <font color="red"><strong>}</strong></font>
+<em> 758: </em>      
+<em> 759: </em>      dprintf (<font color="red">&quot;\nRegRead (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 760: </em>
+<em> 761: </em>      pV.vr1 = regs[r1];
+<em> 762: </em>      <strong>if</strong> (pV.is_const == false)     <font color="red"><strong>{</strong></font>
+<em> 763: </em>        pV.vr2 = regs[r2];
+<em> 764: </em>      <font color="red"><strong>}</strong></font>         
+<em> 765: </em>
+<em> 766: </em>      <font color="#ffa600"><em>// wait till backend	</em></font>
+<em> 767: </em>      pDelay((Clock/2) - 1);
+<em> 768: </em>    <font color="red"><strong>}</strong></font>
+<em> 769: </em>            
+<em> 770: </em>    <font color="#ffa600"><em>// invalidate the destination if necessary (a muldiv or any load)</em></font>
+<em> 771: </em>    <strong>if</strong> (pV.invalidate_dest) <font color="red"><strong>{</strong></font>
+<em> 772: </em>      validbits[rd] = false; 
+<em> 773: </em>    <font color="red"><strong>}</strong></font>
+<em> 774: </em>                    
+<em> 775: </em>    <font color="#ffa600"><em>// decide where to send it</em></font>
+<em> 776: </em>    <strong>if</strong> ((pV.op == Mul) || (pV.op == Div) || (pV.op == Rem))     <font color="red"><strong>{</strong></font>
+<em> 777: </em>      tomul.write(pV);
+<em> 778: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font>
+<em> 779: </em>      running = false;
+<em> 780: </em>      printf(<font color="red">&quot;\nregread stopped.&quot;</font>);
+<em> 781: </em>      par <font color="red"><strong>{</strong></font>
+<em> 782: </em>        out.write(pV);
+<em> 783: </em>        tomul.write(pV);
+<em> 784: </em>      <font color="red"><strong>}</strong></font>
+<em> 785: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 786: </em>      out.write(pV);
+<em> 787: </em>    <font color="red"><strong>}</strong></font>    
+<em> 788: </em>  <font color="red"><strong>}</strong></font>
+<em> 789: </em><font color="red"><strong>}</strong></font>   
+<em> 790: </em>    
+<em> 791: </em><font color="#ffa600"><em>// ----------------------------- muldiv -----------------------------</em></font>
+<em> 792: </em>
+<em> 793: </em>void muldiv(int unit, PipeClkChan &amp;in, PipeClkChan &amp;out) 
+<em> 794: </em><font color="red"><strong>{</strong></font>
+<em> 795: </em>  bool running = true;
+<em> 796: </em>  int ticks;
+<em> 797: </em>  int result, vr1, vr2;
+<em> 798: </em>  const char *op = 0;
+<em> 799: </em>  char msg[64], r1s[8], r2s[8];
+<em> 800: </em>  setname(unit, <font color="red">&quot;MulDiv&quot;</font>);
+<em> 801: </em>  pDelay(Clock);
+<em> 802: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 803: </em>    pipeVal pV = in.get();
+<em> 804: </em>
+<em> 805: </em>    vr1 = pV.vr1;
+<em> 806: </em>    vr2 = pV.vr2;
+<em> 807: </em>    <font color="#ffa600"><em>//===logging</em></font>
+<em> 808: </em>    sprintf(r1s, <font color="red">&quot;r%d&quot;</font>, pV.r1);
+<em> 809: </em>    sprintf(r2s, <font color="red">&quot;r%d&quot;</font>, pV.r2);
+<em> 810: </em>    <strong>switch</strong> (pV.op) <font color="red"><strong>{</strong></font>
+<em> 811: </em>    <strong>case</strong> Mul:   
+<em> 812: </em>      result = vr1 * vr2; 
+<em> 813: </em>      ticks = 8; 
+<em> 814: </em>      op = <font color="red">&quot;mul&quot;</font>;
+<em> 815: </em>      <strong>break</strong>;
+<em> 816: </em>    <strong>case</strong> Div:
+<em> 817: </em>      result = (vr2) ? (vr1 / vr2) : 0; 
+<em> 818: </em>      ticks = 32; 
+<em> 819: </em>      op = <font color="red">&quot;div&quot;</font>;
+<em> 820: </em>      <strong>break</strong>;
+<em> 821: </em>    <strong>case</strong> Rem:
+<em> 822: </em>      result = vr1 % vr2; 
+<em> 823: </em>      ticks = 35; 
+<em> 824: </em>      op = <font color="red">&quot;rem&quot;</font>;
+<em> 825: </em>      <strong>break</strong>;
+<em> 826: </em>    <strong>case</strong> Stop:	
+<em> 827: </em>    default:        
+<em> 828: </em>      running = false;
+<em> 829: </em>    <font color="red"><strong>}</strong></font>
+<em> 830: </em>    <font color="#ffa600"><em>//===logging</em></font>
+<em> 831: </em>    sprintf(gMsg,<font color="red">&quot;%s %s %s&quot;</font>, r1s, op, r2s);
+<em> 832: </em>    sprintf(msg, <font color="red">&quot;-&gt;%d&quot;</font>, result); 
+<em> 833: </em>    strcat(gMsg, msg);
+<em> 834: </em>    dprintf (<font color="red">&quot;\nMulDiv (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 835: </em>    <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em> 836: </em>    <strong>if</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 837: </em>      pDelay ((ticks * Clock) + (Clock - 1));
+<em> 838: </em>      pV.vrd = result;
+<em> 839: </em>    <font color="red"><strong>}</strong></font>
+<em> 840: </em>    <font color="#ffa600"><em>// Always send data so that stop will propagate.</em></font>
+<em> 841: </em>    out.write(pV);
+<em> 842: </em>  <font color="red"><strong>}</strong></font>
+<em> 843: </em>  printf (<font color="red">&quot;\nmuldiv stopped.&quot;</font>);
+<em> 844: </em><font color="red"><strong>}</strong></font>
+<em> 845: </em>        
+<em> 846: </em><font color="#ffa600"><em>// ----------------------------- alu -----------------------------</em></font>
+<em> 847: </em>void alu(int unit, PipeClkChan &amp;in, PipeClkChan &amp;outreg, MemClkChan &amp;outmem, Chan &amp;to_fetch) 
+<em> 848: </em><font color="red"><strong>{</strong></font>
+<em> 849: </em>  bool running = true;
+<em> 850: </em>  bool toreg, tomem, topc;
+<em> 851: </em>  int result, vr1, vr2, last_result;
+<em> 852: </em>  char msg[64];
+<em> 853: </em>  const char *op, *r1s, *r2s;
+<em> 854: </em>  setname(unit, <font color="red">&quot;ALU&quot;</font>);
+<em> 855: </em>  pDelay(Clock);
+<em> 856: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 857: </em>    toreg = true;
+<em> 858: </em>    tomem = false;	
+<em> 859: </em>    topc = false;
+<em> 860: </em>
+<em> 861: </em>    pipeVal pV = in.get();
+<em> 862: </em>    <strong>if</strong> (pV.vr1_is_in_buff) <font color="red"><strong>{</strong></font>
+<em> 863: </em>      vr1 = last_result;                    <font color="#ffa600"><em>// select from result buffer or input</em></font>
+<em> 864: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 865: </em>      r1s = <font color="red">&quot;LR&quot;</font>;
+<em> 866: </em>    <font color="red"><strong>}</strong></font>
+<em> 867: </em>    <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 868: </em>      vr1 = pV.vr1;
+<em> 869: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 870: </em>      r1s = <font color="red">&quot;reg&quot;</font>;
+<em> 871: </em>    <font color="red"><strong>}</strong></font>
+<em> 872: </em>        
+<em> 873: </em>    <strong>if</strong> (pV.vr2_is_in_buff) <font color="red"><strong>{</strong></font>
+<em> 874: </em>      vr2 = last_result;
+<em> 875: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 876: </em>      r2s = <font color="red">&quot;LR&quot;</font>;
+<em> 877: </em>    <font color="red"><strong>}</strong></font>
+<em> 878: </em>    <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em> 879: </em>      vr2 = pV.vr2;
+<em> 880: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 881: </em>      r2s = <font color="red">&quot;reg&quot;</font>;
+<em> 882: </em>    <font color="red"><strong>}</strong></font>
+<em> 883: </em>           
+<em> 884: </em>    <strong>switch</strong> (pV.op) <font color="red"><strong>{</strong></font>
+<em> 885: </em>    <strong>case</strong> Add:   
+<em> 886: </em>      {result = vr1 + vr2; op = <font color="red">&quot;add&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 887: </em>    <strong>case</strong> Mul:
+<em> 888: </em>    <strong>case</strong> Div:
+<em> 889: </em>    <strong>case</strong> Rem:
+<em> 890: </em>      {result = vr1 * vr2; op = <font color="red">&quot;mul&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>             <font color="#ffa600"><em>// shouldn't ever execute since not done in alu</em></font>
+<em> 891: </em>    <strong>case</strong> Sub:
+<em> 892: </em>      {result = vr1 - vr2; op = <font color="red">&quot;sub&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 893: </em>    <strong>case</strong> And:
+<em> 894: </em>      {result = vr1 &amp; vr2; op = <font color="red">&quot;and&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 895: </em>    <strong>case</strong> Or:
+<em> 896: </em>      {result = vr1 | vr2; op = <font color="red">&quot;or&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 897: </em>    <strong>case</strong> Xor:
+<em> 898: </em>      {result = vr1 ^ vr2; op = <font color="red">&quot;xor&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 899: </em>    <strong>case</strong> Lshl:	
+<em> 900: </em>      {result = vr1 &gt;&gt; vr2; op = <font color="red">&quot;lshl&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 901: </em>    <strong>case</strong> Lshr:	
+<em> 902: </em>      {result = vr1 &lt;&lt; vr2; op = <font color="red">&quot;lshr&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 903: </em>    <strong>case</strong> Ld8:
+<em> 904: </em>      {result = vr1 + vr2; tomem = true; toreg = false; op = <font color="red">&quot;ld8&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 905: </em>    <strong>case</strong> Ld16:	
+<em> 906: </em>      {result = vr1 + vr2; tomem = true; toreg = false; op = <font color="red">&quot;ld16&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 907: </em>    <strong>case</strong> Ld32:	
+<em> 908: </em>      {result = vr1 + vr2; tomem = true; toreg = false; op = <font color="red">&quot;ld32&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 909: </em>    <strong>case</strong> St8:   
+<em> 910: </em>      {result = vr1 + vr2; op = <font color="red">&quot;st8&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 911: </em>    <strong>case</strong> St16:	
+<em> 912: </em>      {result = vr1 + vr2; op = <font color="red">&quot;st16&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 913: </em>    <strong>case</strong> St32:	
+<em> 914: </em>      {result = vr1 + vr2; op = <font color="red">&quot;st32&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 915: </em>    <strong>case</strong> Cmp:   
+<em> 916: </em>      {result = vr1 - vr2; op = <font color="red">&quot;cmp&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 917: </em>    <strong>case</strong> Jmp:   
+<em> 918: </em>      {result = vr1 + vr2; op = <font color="red">&quot;jmp&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 919: </em>    <strong>case</strong> Blz:   
+<em> 920: </em>      {result = vr1 + vr2; op = <font color="red">&quot;blz&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 921: </em>    <strong>case</strong> Ble:   
+<em> 922: </em>      {result = vr1 + vr2; op = <font color="red">&quot;ble&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 923: </em>    <strong>case</strong> Bez:   
+<em> 924: </em>      {result = vr1 + vr2; op = <font color="red">&quot;bez&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 925: </em>    <strong>case</strong> Bne:   
+<em> 926: </em>      {result = vr1 + vr2; op = <font color="red">&quot;bne&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 927: </em>    <strong>case</strong> Bge:   
+<em> 928: </em>      {result = vr1 + vr2; op = <font color="red">&quot;bge&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 929: </em>    <strong>case</strong> Bgz:   
+<em> 930: </em>      {result = vr1 + vr2; op = <font color="red">&quot;bgz&quot;</font>; topc = true; toreg = false; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 931: </em>    <strong>case</strong> Stop:	
+<em> 932: </em>      {running = false; op = <font color="red">&quot;STOP&quot;</font>; pDelay (100000); <strong>break</strong>; <font color="red"><strong>}</strong></font>	<font color="#ffa600"><em>// give time for stuff to settle. bad eng. practice, this</em></font>
+<em> 933: </em>    default:
+<em> 934: </em>      {running = false; op = <font color="red">&quot;**illegal op**&quot;</font>; <strong>break</strong>; <font color="red"><strong>}</strong></font>
+<em> 935: </em>    <font color="red"><strong>}</strong></font>
+<em> 936: </em>    <font color="#ffa600"><em>//===logging</em></font>
+<em> 937: </em>    sprintf(gMsg,<font color="red">&quot;%s[%s,%s]&quot;</font>, op, r1s, r2s);
+<em> 938: </em>    sprintf(msg, <font color="red">&quot;-&gt;%d&quot;</font>, result); 
+<em> 939: </em>    strcat(gMsg, msg);
+<em> 940: </em>    dprintf (<font color="red">&quot;\nALU (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 941: </em>    <font color="#ffa600"><em>//message(unit,gMsg);</em></font>
+<em> 942: </em>
+<em> 943: </em>    memReq mR;
+<em> 944: </em>            
+<em> 945: </em>    pV.vrd = result;
+<em> 946: </em>    last_result = result;
+<em> 947: </em>        
+<em> 948: </em>    <strong>if</strong> ((toreg == true) &amp;&amp; (tomem ==true))  <font color="red"><strong>{</strong></font>   <font color="#ffa600"><em>// both (er; when does this happen???)</em></font>
+<em> 949: </em>      <font color="#ffa600"><em>//printf(&quot;\nalu::result to both&quot;);</em></font>
+<em> 950: </em>      par <font color="red"><strong>{</strong></font>
+<em> 951: </em>        outreg. write(pV);      <font color="#ffa600"><em>// send results to be written to regs</em></font>
+<em> 952: </em>        mR.op = pV.op;
+<em> 953: </em>        mR.address = result;
+<em> 954: </em>        outmem.write(mR);       <font color="#ffa600"><em>// send results to dcache for read</em></font>
+<em> 955: </em>      <font color="red"><strong>}</strong></font>
+<em> 956: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (toreg == true) <font color="red"><strong>{</strong></font>                         <font color="#ffa600"><em>// just regs: rr and store go to regwr</em></font>
+<em> 957: </em>      <font color="#ffa600"><em>//printf(&quot;\nalu::result to reg&quot;);</em></font>
+<em> 958: </em>      outreg.write(pV);             <font color="#ffa600"><em>// send results to be written to regs</em></font>
+<em> 959: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (tomem == true) <font color="red"><strong>{</strong></font>                         <font color="#ffa600"><em>// just loads go to memory</em></font>
+<em> 960: </em>      <font color="#ffa600"><em>//printf(&quot;\nalu::result to mem&quot;);</em></font>
+<em> 961: </em>      mR.op = pV.op;
+<em> 962: </em>      mR.address = result;
+<em> 963: </em>      mR.regtag = pV.rd;
+<em> 964: </em>      outmem.write(mR);             <font color="#ffa600"><em>// send results to dcache for read</em></font>
+<em> 965: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (topc == true) <font color="red"><strong>{</strong></font>
+<em> 966: </em>      <font color="#ffa600"><em>// send results to fetch.</em></font>
+<em> 967: </em>      dprintf (<font color="red">&quot;\nWriting new pc value of %x&quot;</font>,result);
+<em> 968: </em>      to_fetch.write(result);
+<em> 969: </em>    <font color="red"><strong>}</strong></font>
+<em> 970: </em>    
+<em> 971: </em>    <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font>
+<em> 972: </em>      running = false;
+<em> 973: </em>      printf(<font color="red">&quot;\nALU stopped.&quot;</font>);
+<em> 974: </em>    <font color="red"><strong>}</strong></font>
+<em> 975: </em>  <font color="red"><strong>}</strong></font>
+<em> 976: </em><font color="red"><strong>}</strong></font>
+<em> 977: </em>    
+<em> 978: </em><font color="#ffa600"><em>// ----------------------------- regWrite1 -----------------------------</em></font>
+<em> 979: </em>
+<em> 980: </em>void regWrite1(int unit, PipeClkChan &amp;in, MemClkChan &amp;out) 
+<em> 981: </em><font color="red"><strong>{</strong></font>
+<em> 982: </em>  <font color="#ffa600"><em>// in general, this writes vrd into regs[rd], but if it's a store</em></font>
+<em> 983: </em>  <strong>struct</strong> memReq mR;
+<em> 984: </em>  bool running = true;
+<em> 985: </em>  setname(unit, <font color="red">&quot;regWrite1&quot;</font>);
+<em> 986: </em>  pDelay(Clock);
+<em> 987: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em> 988: </em>    pipeVal pV = in.get();          <font color="#ffa600"><em>// read the request on rising edge</em></font>
+<em> 989: </em>    int instruc, op;
+<em> 990: </em>    instruc = pV.op;
+<em> 991: </em>    <strong>if</strong> ((op == St8) || (op == St16) || (op == St32)) <font color="red"><strong>{</strong></font>
+<em> 992: </em>      <font color="#ffa600"><em>// read rd for store and create memory request</em></font>
+<em> 993: </em>      mR.op = op;
+<em> 994: </em>      mR.address = pV.vrd;
+<em> 995: </em>      mR.data = regs[pV.rd];
+<em> 996: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em> 997: </em>      sprintf(gMsg,<font color="red">&quot;%d -&gt; m[0x%08x]&quot;</font>, mR.data, mR.address);
+<em> 998: </em>      dprintf (<font color="red">&quot;\nRegWrite1 (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em> 999: </em>      <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1000: </em>      out.write(mR);    <font color="#ffa600"><em>// give to dcache</em></font>
+<em>1001: </em>    <font color="red"><strong>}</strong></font>
+<em>1002: </em>    <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>1003: </em>      <font color="#ffa600"><em>// write rd</em></font>
+<em>1004: </em>      <font color="#ffa600"><em>//===logging</em></font>
+<em>1005: </em>      sprintf(gMsg,<font color="red">&quot;r%d &lt;- %d at %lld&quot;</font>, pV.rd, pV.vrd, pTime());
+<em>1006: </em>      dprintf (<font color="red">&quot;\nRegWrite1 (%lld):  %s&quot;</font>,pTime(),gMsg);      
+<em>1007: </em>      <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1008: </em>      regs[pV.rd] = pV.vrd;
+<em>1009: </em>    <font color="red"><strong>}</strong></font>   
+<em>1010: </em>    <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font>
+<em>1011: </em>      running = false;
+<em>1012: </em>      printf(<font color="red">&quot;\nregwrite1 stopped.&quot;</font>);
+<em>1013: </em>      mR.op = Stop;
+<em>1014: </em>      <font color="#ffa600"><em>// Stop dcache.</em></font>
+<em>1015: </em>      out.write(mR);
+<em>1016: </em>    <font color="red"><strong>}</strong></font>
+<em>1017: </em>  <font color="red"><strong>}</strong></font>
+<em>1018: </em><font color="red"><strong>}</strong></font>
+<em>1019: </em>    
+<em>1020: </em><font color="#ffa600"><em>// ----------------------------- regWrite2 -----------------------------</em></font>
+<em>1021: </em>
+<em>1022: </em>void regWrite2(int unit, PipeClkChan &amp;in_reg, PipeClkChan &amp;in_mem) 
+<em>1023: </em><font color="red"><strong>{</strong></font>
+<em>1024: </em>  bool running = true;
+<em>1025: </em>  setname(unit, <font color="red">&quot;regWrite2&quot;</font>);
+<em>1026: </em>  pDelay(Clock);
+<em>1027: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em>1028: </em>    alt <font color="red"><strong>{</strong></font>
+<em>1029: </em>      in_reg.port(pipeVal pV) <font color="red"><strong>{</strong></font>         <font color="#ffa600"><em>// read the request from muldiv on rising edge</em></font>
+<em>1030: </em>        <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font> running = false; <strong>continue</strong>;<font color="red"><strong>}</strong></font>
+<em>1031: </em>        regs[pV.rd] = pV.vrd;           <font color="#ffa600"><em>// write the value</em></font>
+<em>1032: </em>        <strong>if</strong> (pV.rd == 0) <font color="red"><strong>{</strong></font>
+<em>1033: </em>          dprintf(<font color="red">&quot;\nrw1 wrote 0x%08x to r0 [muldiv]&quot;</font>, pV.vrd);
+<em>1034: </em>        <font color="red"><strong>}</strong></font>
+<em>1035: </em>        validbits[pV.rd] = true;        <font color="#ffa600"><em>// make it valid</em></font>
+<em>1036: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em>1037: </em>        sprintf(gMsg,<font color="red">&quot;r%d&lt;-%d [md]&quot;</font>, pV.rd, pV.vrd);
+<em>1038: </em>        dprintf (<font color="red">&quot;\nRegWrite2  (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em>1039: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1040: </em>      <font color="red"><strong>}</strong></font>
+<em>1041: </em>      in_mem.port(pipeVal pV) <font color="red"><strong>{</strong></font>         <font color="#ffa600"><em>// read the request from dcache on rising edge</em></font>
+<em>1042: </em>        <strong>if</strong> (pV.op == Stop) <font color="red"><strong>{</strong></font> running = false; <strong>continue</strong>;<font color="red"><strong>}</strong></font>
+<em>1043: </em>        regs[pV.rd] = pV.vrd;           <font color="#ffa600"><em>// write the value</em></font>
+<em>1044: </em>        validbits[pV.rd] = true;        <font color="#ffa600"><em>// make it valid</em></font>
+<em>1045: </em>        <strong>if</strong> (pV.rd == 0) <font color="red"><strong>{</strong></font>
+<em>1046: </em>          dprintf(<font color="red">&quot;\nrw1 wrote 0x%08x to r0 [mem]&quot;</font>, pV.vrd);
+<em>1047: </em>        <font color="red"><strong>}</strong></font>
+<em>1048: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em>1049: </em>        sprintf(gMsg,<font color="red">&quot;r%d&lt;-%d [dc]&quot;</font>, pV.rd, pV.vrd);
+<em>1050: </em>        dprintf (<font color="red">&quot;\nRegWrite1 (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em>1051: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1052: </em>      <font color="red"><strong>}</strong></font>
+<em>1053: </em>    <font color="red"><strong>}</strong></font>
+<em>1054: </em>  <font color="red"><strong>}</strong></font>
+<em>1055: </em>  printf(<font color="red">&quot;\nregwrite2 stopped.&quot;</font>);
+<em>1056: </em><font color="red"><strong>}</strong></font>   
+<em>1057: </em>    
+<em>1058: </em><font color="#ffa600"><em>//---------------------------- dcache ----------------------------</em></font>
+<em>1059: </em>
+<em>1060: </em>void dcache(int unit, MemClkChan &amp;in_load, MemClkChan &amp;in_store, PipeClkChan &amp;out) 
+<em>1061: </em><font color="red"><strong>{</strong></font>
+<em>1062: </em>  bool running = true;
+<em>1063: </em>  setname(unit, <font color="red">&quot;dCache&quot;</font>);
+<em>1064: </em>  pDelay(Clock);
+<em>1065: </em>  <strong>while</strong> (running) <font color="red"><strong>{</strong></font>
+<em>1066: </em>    alt <font color="red"><strong>{</strong></font>
+<em>1067: </em>      in_store.port(memReq mR) <font color="red"><strong>{</strong></font>            <font color="#ffa600"><em>// read the store request on rising edge</em></font>
+<em>1068: </em>        <strong>if</strong> (mR.op == Stop) <font color="red"><strong>{</strong></font> running = false; <strong>continue</strong>; <font color="red"><strong>}</strong></font>
+<em>1069: </em>        memwrite(mR.op, mR.address, mR.data);
+<em>1070: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em>1071: </em>        sprintf(gMsg, <font color="red">&quot;store %d-&gt;0x%08x&quot;</font>, mR.data, mR.address);
+<em>1072: </em>        dprintf (<font color="red">&quot;\nDcache (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em>1073: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1074: </em>      <font color="red"><strong>}</strong></font>
+<em>1075: </em>      in_load.port(memReq mR) <font color="red"><strong>{</strong></font>             <font color="#ffa600"><em>// read the load on rising edge</em></font>
+<em>1076: </em>        <font color="#ffa600"><em>//===logging</em></font>
+<em>1077: </em>        <strong>if</strong> (mR.op == Stop) <font color="red"><strong>{</strong></font> running = false; <strong>continue</strong>; <font color="red"><strong>}</strong></font>
+<em>1078: </em>        sprintf(gMsg, <font color="red">&quot;r%d&lt;-0x%08x&quot;</font>, mR.regtag, mR.address);
+<em>1079: </em>        dprintf (<font color="red">&quot;\nDcache (%lld):  %s&quot;</font>,pTime(),gMsg);
+<em>1080: </em>        <font color="#ffa600"><em>//message(unit, gMsg);</em></font>
+<em>1081: </em>        mR.data = memread(mR.op, mR.address);
+<em>1082: </em>        pipeVal pV;
+<em>1083: </em>        pV.rd = mR.regtag;                  <font color="#ffa600"><em>// find register</em></font>
+<em>1084: </em>        pV.vrd = mR.data;               
+<em>1085: </em>        out.write(pV);          <font color="#ffa600"><em>// give to regwrite2</em></font>
+<em>1086: </em>      <font color="red"><strong>}</strong></font>
+<em>1087: </em>    <font color="red"><strong>}</strong></font>
+<em>1088: </em>  <font color="red"><strong>}</strong></font>
+<em>1089: </em>  printf(<font color="red">&quot;\ndcache stopped.&quot;</font>);
+<em>1090: </em><font color="red"><strong>}</strong></font>
+<em>1091: </em>
+<em>1092: </em><font color="#ffa600"><em>//---------------------------- initCode -------------------------</em></font>
+<em>1093: </em>
+<em>1094: </em>void initCode(int n) 
+<em>1095: </em><font color="red"><strong>{</strong></font>
+<em>1096: </em>  <font color="#ffa600"><em>// creates    n instructions ending with 'stop'</em></font>
+<em>1097: </em>  <font color="#ffa600"><em>// uses r0 as a safe base register for loads and stores</em></font>
+<em>1098: </em>  int rv, disp, max_disp;
+<em>1099: </em>  const int L12 = (2 &lt;&lt; 12);
+<em>1100: </em>  printf(<font color="red">&quot;\nCreate %d instructions from 0x0...&quot;</font>, n);
+<em>1101: </em>    
+<em>1102: </em>  <font color="#ffa600"><em>// first initialise the available space...</em></font>
+<em>1103: </em>  max_disp = 250;
+<em>1104: </em>  <strong>for</strong> (int j = 0; j &lt;= (n + max_disp + 2); ++j) <font color="red"><strong>{</strong></font>
+<em>1105: </em>    theMemory[j] = j &amp; 0xff;
+<em>1106: </em>  <font color="red"><strong>}</strong></font>
+<em>1107: </em>
+<em>1108: </em>  int i = 0;
+<em>1109: </em>
+<em>1110: </em># <strong>if</strong> 1
+<em>1111: </em>  theMemory[i++] = setInstrucRC(Add,1,2,4);
+<em>1112: </em>  theMemory[i++] = setInstrucRC(Add,3,1,16);
+<em>1113: </em>  theMemory[i++] = setInstrucB(Jmp,3,10);
+<em>1114: </em>  theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1115: </em>  theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1116: </em>  theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1117: </em>  theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1118: </em>  theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1119: </em>  theMemory[i++] = setInstrucRC(Add,20,3,100);
+<em>1120: </em>
+<em>1121: </em>  <font color="#ffa600"><em>// Some no-ops to filter out the pipe.</em></font>
+<em>1122: </em>  <strong>for</strong> (int j = 0; j != 20; ++j) <font color="red"><strong>{</strong></font>
+<em>1123: </em>    theMemory[i++] = setInstrucRR(Or,0,0,0);
+<em>1124: </em>  <font color="red"><strong>}</strong></font>
+<em>1125: </em># <strong>else</strong>
+<em>1126: </em>  <font color="#ffa600"><em>// then point r0 above code</em></font>
+<em>1127: </em>  theMemory[i] = setInstrucRR(Sub, 0, 0, 0);            <font color="#ffa600"><em>// r0 = 0</em></font>
+<em>1128: </em>  disp = (n + 2) &lt;&lt; 2;                          <font color="#ffa600"><em>// address of first free chunk o memory</em></font>
+<em>1129: </em>  <strong>while</strong> (disp &gt; L12) <font color="red"><strong>{</strong></font>
+<em>1130: </em>    i = i + 1;
+<em>1131: </em>    disp = disp - L12;
+<em>1132: </em>    theMemory[i] = setInstrucRC(Add, 0, 0, L12);    <font color="#ffa600"><em>// r0 = r0 + L12</em></font>
+<em>1133: </em>  <font color="red"><strong>}</strong></font>
+<em>1134: </em>  i = i + 1;
+<em>1135: </em>  theMemory[i] = setInstrucRC(Add, 0, 0, disp);         <font color="#ffa600"><em>// r0 = r0 + disp</em></font>
+<em>1136: </em>  <strong>while</strong> (i &lt; (n - 2)) <font color="red"><strong>{</strong></font>
+<em>1137: </em>    <font color="#ffa600"><em>//printf(&quot;\n0x%08x::&quot;, i);</em></font>
+<em>1138: </em>    rv = Rand.uniform(0,0,100);
+<em>1139: </em>    i = i + 1;
+<em>1140: </em>    int instruc;
+<em>1141: </em>    <strong>if</strong> (rv &gt; 95) <font color="red"><strong>{</strong></font>
+<em>1142: </em>      <font color="#ffa600"><em>// make a muldiv</em></font>
+<em>1143: </em>      instruc = setInstrucRR(Rand.uniform(0, First_lint, Last_lint), 
+<em>1144: </em>                   Rand.uniform(0,2,30), Rand.uniform(0,1,30), Rand.uniform(0,1,30));
+<em>1145: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (rv &gt; 75) <font color="red"><strong>{</strong></font>
+<em>1146: </em>      <font color="#ffa600"><em>// make a load rX = mem[r0 + u]</em></font>
+<em>1147: </em>      instruc = setInstrucRC(Ld32, 
+<em>1148: </em>                   Rand.uniform (0, 2, 25), 0, Rand.uniform(0, 0, max_disp));
+<em>1149: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (rv &gt; 60) <font color="red"><strong>{</strong></font>
+<em>1150: </em>      <font color="#ffa600"><em>// make a store mem[r0 + u] = rX</em></font>
+<em>1151: </em>      instruc = setInstrucRC(St32, 
+<em>1152: </em>                   Rand.uniform (0, 2, 25), 0, Rand.uniform(0, 0, max_disp));
+<em>1153: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>1154: </em>      <font color="#ffa600"><em>// make an add/sub etc</em></font>
+<em>1155: </em>      instruc = setInstrucRR(Rand.uniform(0, First_int, Last_int), 
+<em>1156: </em>                   Rand.uniform(0,2,30), Rand.uniform(0,0,30), Rand.uniform(0,0,30));
+<em>1157: </em>    <font color="red"><strong>}</strong></font>
+<em>1158: </em>    <font color="#ffa600"><em>// can't assign to r0 nor use</em></font>
+<em>1159: </em>    theMemory[i] = instruc;
+<em>1160: </em>    <font color="#ffa600"><em>//printf(&quot;...=&gt; 0x%08x&quot;, instruc);</em></font>
+<em>1161: </em>  <font color="red"><strong>}</strong></font>
+<em>1162: </em># endif
+<em>1163: </em>
+<em>1164: </em>  theMemory[i] = setInstrucRR(Stop,0,0,0);
+<em>1165: </em>  printf(<font color="red">&quot;\nCreated %d instructions&quot;</font>, i);
+<em>1166: </em><font color="red"><strong>}</strong></font>
+<em>1167: </em>
+<em>1168: </em><font color="#ffa600"><em>//---------------------------- watchdog -------------------------</em></font>
+<em>1169: </em>
+<em>1170: </em>int mstime()
+<em>1171: </em><font color="red"><strong>{</strong></font>
+<em>1172: </em>  <strong>struct</strong> timeb tp;
+<em>1173: </em>  ftime(&amp;tp);
+<em>1174: </em>  <strong>return</strong> tp.time*1000+tp.millitm;
+<em>1175: </em><font color="red"><strong>}</strong></font>
+<em>1176: </em>
+<em>1177: </em>void watchdog(unsigned n, Chan &amp;ask, Chan &amp;shutdown) 
+<em>1178: </em><font color="red"><strong>{</strong></font>
+<em>1179: </em>  double dT, kips;
+<em>1180: </em>  int t0 = mstime();
+<em>1181: </em>  printf(<font color="red">&quot;\nStarting time is %d, timeout is %d cycles\n\n&quot;</font>, t0, n);
+<em>1182: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>1183: </em>    pDelay(Clock * 10);
+<em>1184: </em>    <strong>if</strong> (shutdown.ready()) <font color="red"><strong>{</strong></font>
+<em>1185: </em>      <font color="#ffa600"><em>// Got shutdown signal.</em></font>
+<em>1186: </em>      ask.write(-1);
+<em>1187: </em>      printf(<font color="red">&quot;\nwatchdog stopped.&quot;</font>);
+<em>1188: </em>      <strong>return</strong>;
+<em>1189: </em>    <font color="red"><strong>}</strong></font>
+<em>1190: </em>    printf(<font color="red">&quot;.&quot;</font>);
+<em>1191: </em>    <strong>if</strong> (pTime() &gt; n) <font color="red"><strong>{</strong></font>
+<em>1192: </em>      printf(<font color="red">&quot;\nStopping- time overrun at t=%lld&quot;</font>, pTime());
+<em>1193: </em>      ask.write(0);
+<em>1194: </em>      int instrucs = ask.get();
+<em>1195: </em>      int t2 = mstime();
+<em>1196: </em>      printf(<font color="red">&quot;\n\treal time =%d start time %d&quot;</font>,t2, t0);
+<em>1197: </em>      dT = (t2 - t0);      
+<em>1198: </em>      kips = instrucs / dT;
+<em>1199: </em>      printf(<font color="red">&quot;\nDecode saw %d instructions in &quot;</font>, instrucs);
+<em>1200: </em>      printf(<font color="red">&quot;%0.2f milliseconds = %0.2f kips&quot;</font>, dT, kips);
+<em>1201: </em>      pExit(1);
+<em>1202: </em>    <font color="red"><strong>}</strong></font>
+<em>1203: </em>  <font color="red"><strong>}</strong></font>
+<em>1204: </em><font color="red"><strong>}</strong></font>
+<em>1205: </em>
+<em>1206: </em>void printRegs()
+<em>1207: </em><font color="red"><strong>{</strong></font>
+<em>1208: </em>  printf (<font color="red">&quot;\n----------------------------------\n&quot;</font>);
+<em>1209: </em>  printf (<font color="red">&quot;Register values at time %lld:\n&quot;</font>,pTime());
+<em>1210: </em>  <strong>for</strong> (int i = 0; i &lt;= maxReg; ++i) <font color="red"><strong>{</strong></font>
+<em>1211: </em>    printf (<font color="red">&quot;%02d:  %08x (%d)\n&quot;</font>,i,regs[i],regs[i]);
+<em>1212: </em>  <font color="red"><strong>}</strong></font>
+<em>1213: </em>  printf (<font color="red">&quot;\n----------------------------------\n&quot;</font>);
+<em>1214: </em><font color="red"><strong>}</strong></font>
+<em>1215: </em>
+<em>1216: </em><font color="#ffa600"><em>//---------------------------- main ----------------------------</em></font>
+<em>1217: </em>
+<em>1218: </em><font color="#ffa600"><em>// Shut off preemption.</em></font>
+<em>1219: </em>void pSetup(ConfigParms &amp;cp)
+<em>1220: </em><font color="red"><strong>{</strong></font>
+<em>1221: </em>  cp._busyokay = true;
+<em>1222: </em><font color="red"><strong>}</strong></font>
+<em>1223: </em>
+<em>1224: </em>int pMain(int argc,const char *argv[]) 
+<em>1225: </em><font color="red"><strong>{</strong></font>
+<em>1226: </em>  MemClkChan fetch_icache(Clock), icache_decode(Clock),
+<em>1227: </em>    alu_dcache(Clock), regwrite1_dcache(Clock);
+<em>1228: </em>
+<em>1229: </em>  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), regread_muldiv(Clock),
+<em>1230: </em>    alu_regwrite1(Clock), muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+<em>1231: </em>
+<em>1232: </em>  Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
+<em>1233: </em>  
+<em>1234: </em>  printf(<font color="red">&quot;\n\n\n\nthe pipe: a simple risc pipeline simulator v0.06\ncopyright © motorola 1997-2003\n&quot;</font>);
+<em>1235: </em>  
+<em>1236: </em>  initCode(10000);          <font color="#ffa600"><em>// create some instructions</em></font>
+<em>1237: </em>  <font color="#ffa600"><em>//initCode(10);</em></font>
+<em>1238: </em>  initRegs();                   <font color="#ffa600"><em>// set up registers</em></font>
+<em>1239: </em>  printf(<font color="red">&quot;\nCode and registers initialised.&quot;</font>);
+<em>1240: </em>  par <font color="red"><strong>{</strong></font>
+<em>1241: </em>    <font color="#ffa600"><em>//===logging</em></font>
+<em>1242: </em>    watchdog(20000, icount_watchdog, fetch_watchdog);           <font color="#ffa600"><em>// (100050); for long runs</em></font>
+<em>1243: </em>    <font color="red"><strong>{</strong></font>
+<em>1244: </em>      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache, fetch_watchdog, 0);
+<em>1245: </em>      fetch();
+<em>1246: </em>    <font color="red"><strong>}</strong></font>
+<em>1247: </em>    icache(1, fetch_icache, icache_decode);
+<em>1248: </em>    <font color="red"><strong>{</strong></font>
+<em>1249: </em>      Decoder decoder(2, icache_decode, decode_fetch, decode_regread, icount_watchdog);
+<em>1250: </em>      decoder();
+<em>1251: </em>    <font color="red"><strong>}</strong></font>
+<em>1252: </em>    regRead(3, decode_regread, regread_alu, regread_muldiv);
+<em>1253: </em>    alu(4, regread_alu, alu_regwrite1, alu_dcache, alu_fetch);
+<em>1254: </em>    muldiv(5, regread_muldiv, muldiv_regwrite2);
+<em>1255: </em>    regWrite1(6, alu_regwrite1, regwrite1_dcache);
+<em>1256: </em>    dcache(7, alu_dcache, regwrite1_dcache, dcache_regwrite2);
+<em>1257: </em>    regWrite2(8, muldiv_regwrite2, dcache_regwrite2);
+<em>1258: </em>  <font color="red"><strong>}</strong></font>
+<em>1259: </em>  printf(<font color="red">&quot;\n\n***All stopped.****\n&quot;</font>);
+<em>1260: </em>  printRegs();
+<em>1261: </em>  <strong>return</strong> 0;
+<em>1262: </em><font color="red"><strong>}</strong></font>
+<em>1263: </em>    
+<em>1264: </em>    
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table></div>
+</div></td>
+</tr></table><div class="skribe-ending">
+<hr> 
+<p class="ending"><font size="-1">
+This <span class="sc">Html</span> page has been produced by 
+<a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
+<br/>
+Last update <em>Wed Sep  8 09:29:44 2004</em>.</font></p></div>
+</body>
+</html>

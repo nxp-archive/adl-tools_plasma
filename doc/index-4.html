@@ -1,0 +1,172 @@
+<!-- 95% W3C COMPLIANT, 95% CSS FREE, RAW HTML -->
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>The Plasma Language</title>
+ <style type="text/css">
+  <!--
+  pre { font-family: monospace }
+  tt { font-family: monospace }
+  code { font-family: monospace }
+  p.flushright { text-align: right }
+  p.flushleft { text-align: left }
+  span.sc { font-variant: small-caps }
+  span.sf { font-family: sans-serif }
+  span.skribetitle { font-family: sans-serif; font-weight: bolder; font-size: x-large; }
+  -->
+ </style>
+</head>
+
+<body class="chapter" bgcolor="#ffffff">
+<table width="100%" class="skribetitle"><tbody>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>4. The Plasma Language -- Future Work</big></big></big></strong></div><center>
+</center>
+</td></tr></tbody></table>
+<table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
+<td align="left" valign="top" class="skribe-left-margin" width="20%" bgcolor="#dedeff"><div class="skribe-left-margin">
+<br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
+<tr><td align="left" valign="top" colspan="1" rowspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1" rowspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+</tbody></table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Future Work</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">4.1</td><td colspan="4" width="100%"><a href="index-4.html#Real-time-Programming-Extensions">Real-time Programming Extensions</a></td></tr>
+ <tr><td valign="top" align="left">4.2</td><td colspan="4" width="100%"><a href="index-4.html#Fault-Tolerance-Extensions">Fault Tolerance Extensions</a></td></tr>
+ <tr><td valign="top" align="left">4.3</td><td colspan="4" width="100%"><a href="index-4.html#Language-Enhancements">Language Enhancements</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+<br/><br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
+<tr bgcolor="#8381de"><th align="center" colspan="1" rowspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
+<tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
+<tbody>
+ <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+</tbody>
+</table>
+</td></tr>
+</tbody></table>
+</center>
+</div></td>
+<td align="left" valign="top" class="skribe-body"><div class="skribe-body">
+<p>The current version of Plasma exists as a prototype.  It is
+      implemented as a front-end filter, using <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a>, which converts Plasma code
+      into C++ code and calls to a simple user-mode thread package.  The threads
+      are implemented using <a href="http://www.cs.washington.edu/research/compiler/papers.d/quickthreads.html" class="http">Quickthreads</a>.</p><p>A production worthy version of Plasma would feature a thread-aware
+      compiler which would produce more highly optimized code.  For instance, on
+      a thread-yield, the compiler would only save the state of live
+      registers.</p><p>Other enhancements we are considering are listed below.</p><!-- Real-time Programming Extensions -->
+<a name="Real-time-Programming-Extensions"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.1 Real-time Programming Extensions</font>
+</h3></td></tr></table>
+</div><div class="section">
+<p>We propose adding various extensions to Plasma to make it easier to
+	 develop real-time embedded applications.  For example, the <code>deadline</code> class will be used to state that a certain sequence of code
+	 (from the point of declaration to the end of the scope) must execute
+	 within the specified amount of time:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog">          <font color="red"><strong>{</strong></font>
+            deadline d(20);
+            ... &lt;code&gt; ...
+            <font color="#ffa600"><em>// Execution must reach this point within 20 time units.</em></font>
+          <font color="red"><strong>}</strong></font>
+
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>Otherwise, an exception will be thrown.  The exception can then be
+	 caught by a recovery block and an alternative action taken.</p><p>It should be possible to statically analyze a Plasma program which
+	 is free of unbounded-loops.  The <code>deadline</code> declarations can
+	 then be used by the static analysis tool as assertions and these can be
+	 checked by analyzing the relevant code sequences.</p></div><br>
+<!-- Fault Tolerance Extensions -->
+<a name="Fault-Tolerance-Extensions"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.2 Fault Tolerance Extensions</font>
+</h3></td></tr></table>
+</div><div class="section">
+</div><br>
+<!-- Language Enhancements -->
+<a name="Language-Enhancements"></a>
+<div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4.3 Language Enhancements</font>
+</h3></td></tr></table>
+</div><div class="section">
+<ul class="itemize"> <li><p>Default initialization for all built-in variables.  This
+	       inconsistency in the C++ language is frequently the source of
+	       difficult to find bugs and is completely unnecessary:  A good
+	       optimizing compiler can remove unneeded initializations.  For
+	       example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> int i; <font color="#ffa600"><em>// Would be initialized to 0. </em></font>
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table></li>
+ <li><p>Null-pointer checking.  This can be implemented without
+	       adding extra runtime overhead:  A null-pointer access will cause
+	       a protection fault, which can then generate a C++ exception.</p></li>
+ <li><p>Garbage collector aware containers.  The standard containers,
+	       e.g. <code>vector</code>, <code>list</code>, etc., would be traced by
+	       the conservative collector.  Currently, one has to write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> vector&lt;int,traceable_allocator&lt;int&gt; &gt; 
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table><p>This would become the default.  Equivalent containers,
+	       e.g. <code>gc_vector</code>, <code>gc_list</code>, would exist which
+	       would allocate from the managed heap and would not invoke
+	       destructors when destroyed.  An efficient, managed string class
+	       would also be added.</p></li>
+ <li><p>A <code>let</code> statement which would allow for the
+	       declaration of variables without explicitly stating their type.
+	       The type would be implied from the type of the initializing
+	       expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
+<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
+<tr><td><pre class="prog"> let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
+</pre>
+</td></tr>
+</tbody></table></td></tr>
+</tbody></table></li>
+ <li><p>Nested functions and lambda functions with true closures.  A
+	       closure would only be allocated if control-flow analysis
+	       indicated that a function might escape its parent's scope.  In
+	       that case, the relevant local variables would be placed in a
+	       closure.  Thus, no extra overhead would exist for the usual case
+	       of un-nested functions or even for the case where a function did
+	       not escape.</p><p>The main advantage of adding this feature is to be able to
+	       better utilize generic, highly-optimized functions such as those
+	       present in the STL.  For instance, the <code>foreach</code> function
+	       becomes far more useful when a lambda function can be used
+	       directly as the functor argument.  Since <code>foreach</code> can be
+	       specialized for different data structures, it can potentially
+	       yield a faster solution for iterating over a container than a
+	       for-loop.</p></li>
+ <li><p>A meta-object protocol/advanced macro processor.  As
+	       mentioned above, the current Plasma implementation uses <a href="http://sourceforge.net/projects/opencxx/" class="http">OpenC++</a>
+	       to convert Plasma into C++.  By making such a feature a part of
+	       Plasma itself, new language features could be added without
+	       changing the actual language definition.</p><p>This means that constructs such as <code>alt</code> and <code>par</code> could still be implemented by the macro facility; the
+	       parallelism in the language would be implemented as low-level
+	       primitives which would not be directly used by the user.</p></li>
+</ul></div><br>
+</div></td>
+</tr></table><div class="skribe-ending">
+<hr> 
+<p class="ending"><font size="-1">
+This <span class="sc">Html</span> page has been produced by 
+<a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
+<br/>
+Last update <em>Wed Sep  8 09:29:46 2004</em>.</font></p></div>
+</body>
+</html>

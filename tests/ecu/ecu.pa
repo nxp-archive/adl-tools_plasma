@@ -266,6 +266,8 @@ void ecu(Chan &started, Chan &tick, Chan &acc_query, Chan &acc_val,
 			
   // now we can start the ecu
   printf("\nECU starting with a %d-cylinder engine to control...", num_cylinders);
+
+  // skribe: cyl-start
   par {
     on (tpu) { angle_manager(num_cylinders, tick, ask, wakeups); }
     on (zen) { cylinders(num_cylinders, started, inject, spark, ask, wakeups); }
@@ -333,7 +335,8 @@ int pMain(int argc,const char *argv[])
   if (!(logfile = fopen(logname, "w"))) {
     pAbort("Unable to open logfile.");
   }
-		
+
+  // skribe: ecu-start
   par {
 	
     // the simulated machinery

@@ -541,6 +541,7 @@ void disk_write_synch(Chan &to_disks, Chan &from_disks)
 // going to a disk; in a giant memory system, it means reading memory. we
 // treat the thing as cached, with a supplied hit rate. with 100% hit, we
 // always go to memory; with 90% hit rate we go to disk 10% of the time
+// skribe: mem_read
 void mem_read(Chan &to_disks, Chan &from_disks, int32 hit_rate) 
 {
   dprintf ("mem_read:  starting.\n");

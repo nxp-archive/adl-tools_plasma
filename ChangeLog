@@ -1,3 +1,8 @@
+2004-09-08  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Converted all documentation to Skribe.  Added lots of stuff,
+	such as future work, description of examples, etc.
+
 2004-08-30  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Found bug w/busy:  I added the thread after I pushed the proc
