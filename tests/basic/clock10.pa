@@ -55,7 +55,8 @@ int pMain(int argc,const char *argv[])
 
   // Now print out anything in the channel.
   while (true) {
-    cout << pTime() << ":  Result:  " << c.get() << endl;
+    int r = c.get();
+    cout << pTime() << ":  Result:  " << r << endl;
   }
 
   return 0;
