@@ -39,8 +39,15 @@ bool Mutex::wrapMember(Environment *env,Member &member) const
 std::pair<Ptree*,Ptree*> Mutex::makeWrapperBody(Environment *env,Member& member, Ptree* name)
 {
     pair<Ptree*,Ptree*> body = Wrapper::makeWrapperBody(env, member, name);
-    return make_pair(Ptree::qMake("plasma::pLock();\n"
-                                  "`body.first`\n"
-                                  "plasma::pUnlock();\n"),body.second);
+    return make_pair(Ptree::qMake("try {\n"
+                                  "  plasma::pLock();\n"
+                                  "  `body.first`\n"
+                                  "  plasma::pUnlock();\n"),
+                     Ptree::qMake("`body.second`\n"
+                                  "}\n"
+                                  "catch (...) {\n"
+                                  "  pUnlock();\n"
+                                  "  throw;\n"
+                                  "}\n"));
 }
 

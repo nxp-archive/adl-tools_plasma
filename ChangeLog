@@ -1,5 +1,7 @@
 2004-05-20  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added exception safety to locking mechanism.
+
 	* Added support for shared data structures.  To make a class
 	shared, simply add a modifier of pMutex to the front of its
 	declaration.  This will protect all public functions (except
