@@ -39,6 +39,10 @@ namespace plasma {
     // Get if it exists in queue.  Removes it.
     // Returns 0 if not in queue.
     QBase *get(QBase *t);
+    // Get ptr to top item, or 0 if queue is empty.
+    // Does not remove it from the queue.
+    QBase *front() const;
+    QBase *back() const;
 
     bool empty() const { return !_head; };
 
@@ -60,6 +64,16 @@ namespace plasma {
   inline void QBase::setnext(QBase *t)
   {
     _next = t;
+  }
+
+  inline QBase *Queue::front() const
+  {
+    return _head;
+  }
+
+  inline QBase *Queue::back() const
+  {
+    return _tail;
   }
 
 }

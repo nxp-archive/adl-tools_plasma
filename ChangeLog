@@ -1,3 +1,18 @@
+2004-06-11  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added timeslicing of lowest-priority threads when busy is
+	allowed.  This was accomplished by:
+
+	1.  The threads now store relative time and start time. 
+
+	2.  The busy() function loops until all required busy time is
+	consumed.  This allows us to handle busy threads that are
+	interrupted and timeslicing.
+
+	3.  Time-sliced busy threads are added to the busy queue with a
+	busy time of ConfigParms::_simtimeslice.  The busy function then
+	loops until the entire time value is consumed.
+
 2004-06-04  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added time model:

@@ -9,9 +9,10 @@
 
 namespace plasma {
 
-  bool greater_time::operator()(const Thread *x,const Thread *y)
+  template<class T1,class T2>
+  bool greater_time<T1,T2>::operator()(const T1 *x,const T2 *y)
   {
-    return x->time() > y->time();
+    return x->endtime() > y->endtime();
   }
 
   System::System() :
@@ -65,24 +66,26 @@ namespace plasma {
 
   void System::add_busy(ptime_t t,Thread *th)
   {
-    th->setTime(_time+t);
+    th->setTime(t);
+    th->setStartTime(_time);
     Proc *p = th->proc();
     p->setState(Proc::Busy);
-    p->setBusyThread(th);
-    _busy.push(th);
+    _busy.push(p);
   }
 
   void System::add_delay(ptime_t t,Thread *th)
   {
-    th->setTime(_time+t);
+    th->setTime(t);
+    th->setStartTime(_time);
     _delay.push(th);
   }
 
-  Thread *System::get_current(PriQueue &q)
+  template <class C,class T>
+  T *System::get_current(C &q)
   {
     if (!q.empty()) {
-      Thread *t = q.top();
-      if (t->time() <= _time) {
+      T *t = q.top();
+      if (t->endtime() <= _time) {
         q.pop();
         return t;
       }
@@ -90,14 +93,14 @@ namespace plasma {
     return 0;
   }
 
-  Thread *System::get_busy()
+  Proc *System::get_busy()
   {
-    return get_current(_busy);
+    return get_current<PPriQueue,Proc>(_busy);
   }
 
   Thread *System::get_delay()
   {
-    return get_current(_delay);
+    return get_current<TPriQueue,Thread>(_delay);
   }
 
   bool System::update_time()
@@ -105,15 +108,14 @@ namespace plasma {
     if (_busy.empty() && _delay.empty()) {
       return false;
     } else if (_busy.empty()) {
-      _time = _delay.top()->time();
+      _time = _delay.top()->endtime();
     } else if (_delay.empty()) {
-      _time = _busy.top()->time();
+      _time = _busy.top()->endtime();
     } else {
-      greater_time gt;
-      if (gt(_delay.top(),_busy.top())) {
-        _time = _busy.top()->time();
+      if (_busy.top()->endtime() < _delay.top()->endtime() ) {
+        _time = _busy.top()->endtime();
       } else {
-        _time = _delay.top()->time();
+        _time = _delay.top()->endtime();
       }
     }
     return true;

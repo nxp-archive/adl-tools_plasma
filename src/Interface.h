@@ -36,7 +36,7 @@ namespace plasma {
     unsigned _timeslice;      // Time slice length in usec.
     int      _numpriorities;  // Number of supported priorities.
     bool     _busyokay;       // Indicates that pBusy is legal- default is false.
-    ptime_t  _busytimeslice;  // Size of time slice for low-priority threads in pBusy.
+    ptime_t  _simtimeslice;   // Size of time slice for low-priority threads in pBusy.
 
     ConfigParms();
   };

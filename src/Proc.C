@@ -74,7 +74,8 @@ namespace plasma {
   void Proc::add_ready(Thread *t)
   {
     if (!t->done()) {
-      _ready[t->priority()].add(t);
+      int p = t->priority();
+      _ready[p].add(t);
       ++_numthreads;
     }
   }
@@ -92,6 +93,16 @@ namespace plasma {
     return 0;
   }
 
+  Thread *Proc::next_ready() const
+  {
+    for (int i = _ready.size()-1; i >= 0; --i) {
+      if (Thread *next = _ready[i].front()) {
+        return next;
+      }
+    }
+    return 0;
+  }
+
   // Searches for the specified thread and removes it from the
   // ready queue.  Returns 0 if not found, otherwise the pointer
   // to the thread.
@@ -103,6 +114,19 @@ namespace plasma {
       --_numthreads;
     }
     return next;
+  }
+
+  // We return the busy time of the highest priority thread in the system.
+  // We look at the back of the queue b/c we assume that the busy thread is
+  // the one that was just added back to the system.
+  ptime_t Proc::endtime() const
+  {
+    for (int i = _ready.size()-1; i >= 0; --i) {
+      if (Thread *n = _ready[i].back()) {
+        return n->endtime();
+      }
+    }
+    return 0;
   }
 
   void Proc::print_ready(ostream &o) const

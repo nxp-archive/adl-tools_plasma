@@ -15,12 +15,14 @@ namespace plasma {
   class ConfigParms;
 
   // Returns true if x's time is greater than y's time.
+  template <class T1,class T2>
   struct greater_time {
-    bool operator()(const Thread *x,const Thread *y);
+    bool operator()(const T1 *x,const T2 *y);
   };
 
   // Sorts Threads by descending time- the smallest time value will be first.
-  typedef std::priority_queue<Thread*,std::vector<Thread*>,greater_time> PriQueue;
+  typedef std::priority_queue<Thread*,std::vector<Thread*>,greater_time<Thread,Thread> > TPriQueue;
+  typedef std::priority_queue<Proc*,std::vector<Proc*>,greater_time<Proc,Proc> > PPriQueue;
 
   class System                    
   {
@@ -48,7 +50,8 @@ namespace plasma {
     // available, or true if there is something available.
     bool update_time();
 
-    // Add a busy processor.  The time specifies for how long to be busy.
+    // Add a busy thread.  The time specifies for how long to be busy.
+    // Stores the processor in the busy queue.
     void add_busy(ptime_t t,Thread *th);
 
     // Add a delayed thread.  The time specifies for how long to delay.
@@ -60,10 +63,10 @@ namespace plasma {
 
     // Returns the next processor with the same time as the current time.
     // Returns 0 if no elements remain (at the current time).
-    Thread *get_busy();
+    Proc *get_busy();
 
   private:
-    Thread *get_current(PriQueue &q);
+    template <class C,class T> T *get_current(C &q);
 
     int     _size;             // Default stack size of threads
     void   *_stacks;           // Disposed thread stacks
@@ -72,8 +75,8 @@ namespace plasma {
     bool    _busyokay;         // Is time consumption legal?
 
     ptime_t   _time;           // Current time of the system.
-    PriQueue  _delay;          // Delayed threads.
-    PriQueue  _busy;           // Busy processors.
+    TPriQueue _delay;          // Delayed threads.
+    PPriQueue _busy;           // Busy processors.
   };
 
   inline int System::stacksize() const 

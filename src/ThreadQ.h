@@ -23,6 +23,9 @@ namespace plasma {
     // Get if it exists in queue.  Removes it.
     // Returns 0 if not in queue.
     Thread *get(Thread *t) { return reinterpret_cast<Thread*>(Queue::get(reinterpret_cast<QBase*>(t))); };
+    // Top of queue- does not remove item.
+    Thread *front() const { return reinterpret_cast<Thread*>(Queue::front()); };
+    Thread *back() const { return reinterpret_cast<Thread*>(Queue::back()); };
 
     friend std::ostream &operator<<(std::ostream &,const ThreadQ &);
   };

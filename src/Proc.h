@@ -36,21 +36,21 @@ namespace plasma {
     Thread *get_ready();    
     // Try to remove thread from ready queue (if it exists).
     THandle get_ready(THandle t);
+    // Pointer to next avail thread- does not remove.
+    THandle next_ready() const;
 
     // Processor state.
     State state() const { return _state; };
     void setState(State s) { _state = s; };
 
-    // Priority of busying job.
-    THandle busythread() const { return _bt; };
-    bool hasBusyThread() const { return _bt; };
-    void setBusyThread(THandle t) { _bt = t; };
-    void clearBusyThread() { _bt = 0; };
-
     // Number of threads in object.
     unsigned size() const { return _numthreads; };
     // Returns true if queue is empty.
     bool empty() const { return !_numthreads; };
+
+    // Amount of busy time left (if applicable).
+    // This is starttime + time.
+    ptime_t endtime() const;
 
     // Printt the ready queue to the specified stream.
     void print_ready(std::ostream &o) const;
@@ -63,7 +63,6 @@ namespace plasma {
     QVect    _ready;          // Ready threads, in priority order.
     int      _numthreads;     // Count of threads in this object.
     State    _state;          // Current processor state.
-    Thread  *_bt;             // Thread which is busying this processor.
   };
 
 }

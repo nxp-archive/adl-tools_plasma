@@ -149,6 +149,11 @@ my @Tests = (
 	      cmd     => "./time3",
 	      checker => \&check_time3,
 	     },
+	     # Time w/timeslicing.
+	     {
+	      cmd     => "./time4",
+	      checker => \&check_time4,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -704,8 +709,11 @@ sub check_time_seq {
 }
 
 # Checks that the ids specified (keys of hash ref parm arg1) have
-# the expected time difference between start and finish.
-sub check_time_diff {
+# either the expected time difference between start and finish or
+# the expected start and stop times.  If the hash value is an integer,
+# it represents a time difference.  If it's an array, then it should
+# contain a start and stop value.
+sub check_times {
   my ($input,$diffs) = (shift,shift);
   my @lines = split /\n/,$input; 
 
@@ -716,19 +724,30 @@ sub check_time_diff {
       if ($data{$id}) {
 	die "Id $id start encountered multiple times.\n";
       }
-      $data{$id} = $s;
+      $data{$id} = [$s];
     } elsif ( /Block (\d+) done:\s+(\d+)/ ) {
       my ($id,$d) = (eval $1,eval $2);
       if (!exists $data{$id}) {
 	die "Id $id start not found.\n";
       }
-      $data{$id} = $d - $data{$id};
+      $data{$id}->[1] = $d;
     }
   }
   for my $id (keys %$diffs) {
-    my ($exp,$fnd) = ($diffs->{$id},$data{$id});
-    if ($exp != $fnd) {
-      die "Expected time diff for id $id to be $exp, found $fnd.\n";
+    if (ref($diffs->{$id}) eq "ARRAY") {
+      my ($exps,$expf,$fnds,$fndf) = ($diffs->{$id}->[0],$diffs->{$id}->[1],
+				      $data{$id}->[0],$data{$id}->[1]);
+      if ($exps != $fnds) {
+	die "Expected start time of id $id should be $exps, found $fnds.\n";
+      }
+      if ($expf != $fndf) {
+	die "Expected finish time of id $id should be $expf, found $fndf.\n";
+      }
+    } else {
+      my ($exp,$fnd) = ($diffs->{$id},($data{$id}->[1] - $data{$id}->[0]));
+      if ($exp != $fnd) {
+	die "Expected time diff for id $id to be $exp, found $fnd.\n";
+      }
     }
   }
 }
@@ -744,7 +763,7 @@ sub check_time2 {
   my %diff = (
  	      3 => 50,
  	     );
-  check_time_diff($_[0],\%diff);
+  check_times($_[0],\%diff);
 }
 
 # Time model w/busy.
@@ -757,7 +776,18 @@ sub check_time3 {
 
   my %diff = (
  	      3 => 50,
-	      4 => 60,
+	      4 => 70,
  	     );
-  check_time_diff($_[0],\%diff);
+  check_times($_[0],\%diff);
+}
+
+# Busy w/timeslicing.
+sub check_time4 {
+  my %diff = (
+ 	      1 => [0,80],
+	      2 => [10,80],
+ 	      3 => [20,100],
+	      4 => [30,100],
+ 	     );
+  check_times($_[0],\%diff);
 }

@@ -128,7 +128,9 @@ sub doTest($) {
   my $tests = get_run_list(shift);
 
   print "\n";
- TEST: for my $iter (sort(keys %{$tests})) {
+  # We sort the keys of the hash here, numerically, so that
+  # the user sees the tests execute in the expected order.
+ TEST: for my $iter (sort { $a <=> $b} (keys %{$tests})) {
     print " Test $iter...\n";
     my $t = $$tests{$iter};
     $cmd = $t->{cmd};

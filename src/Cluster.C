@@ -22,6 +22,7 @@ namespace plasma {
   sigset_t Cluster::_empty_mask;  // empty signal mask
   sigset_t Cluster::_alarm_mask;  // mask with SIGVTALRM
   unsigned Cluster::_timeslice;
+  ptime_t  Cluster::_busyts;
 
   // This is the virtual alarm signal associated with ITIMER_VIRTUAL.
   // It counts CPU time, rather than real time.
@@ -113,6 +114,7 @@ namespace plasma {
       nopreempt();
     }
     _timeslice = cp._timeslice;
+    _busyts = cp._simtimeslice;
 
     _curproc = p;
     p->setState(Proc::Running);
@@ -216,14 +218,26 @@ namespace plasma {
     if (!thesystem.busyokay()) {
       pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
     }
-    lock();
-    // Add to busy queue.
-    thesystem.add_busy(t,_cur);
-    // Get a new processor.  This should always correctly update _curproc
-    // because we know we've just added an item.
-    get_new_proc();
-    // Switch to scheduler- do not add this thread to ready queue.
-    exec_block();
+    // Loop until all time has been used.
+    // Processor is not locked b/c preemption is deactivated in busy-okay mode.
+    while (t) {
+      // Add to busy queue.
+      // If we're dealing with a time-slice process, only add for the timeslice amount.
+      if (_cur->priority() || t < _busyts) {
+        thesystem.add_busy(t,_cur);
+      } else {
+        thesystem.add_busy(_busyts,_cur);
+      }
+      // Add process back to processor.
+      _cur->proc()->add_ready(_cur);
+      // Update- we know something is available b/c we just added something.
+      // This updates the time.
+      get_new_proc();
+      // Switch to new item w/o adding current thread to ready queue.
+      exec_block();
+      // Update time remaining- loop if we still have busy stuff to do.
+      t -= _cur->time();
+    }
   }
 
   ptime_t Cluster::time() const 
@@ -267,6 +281,11 @@ namespace plasma {
   inline Thread *Cluster::get_ready()
   {
     return _curproc->get_ready();
+  }
+
+  inline Thread *Cluster::next_ready() const
+  {
+    return _curproc->next_ready();
   }
 
   // Searches for the specified thread and removes it from the
@@ -322,42 +341,42 @@ namespace plasma {
   bool Cluster::update_time()
   {       
     // No processors in ready queue- try to advance time.
-    if ( !thesystem.update_time()) {
-      return false;
-    }
-    // New time is valid- there's stuff to do.
-    // Grab stuff from delay queue.
-    Thread *t;
-    while ( (t = thesystem.get_delay())) {
-      // Add thread to processor and set processor to run.
-      Proc *p = t->proc();
-      p->add_ready(t);
-      // If processor of delayed thread is busy, then only
-      // run it if its priority is higher.  In that case,
-      // we decrement the amount of busy time left.  However,
-      // we keep the fact that it has an attached busy thread.
-      // When this thread finishes, the processor will be placed
-      // back in the busy queue.
-      if (p->state() == Proc::Busy) {
-        Thread *bt = p->busythread();
-        assert(bt);
-        if (t->priority() < bt->priority()) {
+    // Repeat until we have a ready processor, or there is nothing left to do.
+    while (!_curproc) {
+      if ( !thesystem.update_time()) {
+        return false;
+      }
+      // New time is valid- there's stuff to do.
+      // Grab stuff from delay queue.
+      Thread *t;
+      while ( (t = thesystem.get_delay())) {
+        // Add thread to processor and set processor to run.
+        Proc *p = t->proc();
+        p->add_ready(t);
+        // If processor of delayed thread is busy, then only run it if its
+        // priority is higher.  In that case, we decrement the amount of busy
+        // time left.  The processor will block again when we switch to the
+        // thread w/remaining busy time- the busy() routine will see that busy
+        // time is left and will add the processor back to the busy queue.
+        if (p->state() == Proc::Busy) {
+          Thread *bt = p->next_ready();
+          assert(bt);
+          if (t->priority() < bt->priority()) {
+            bt->setTime(bt->time()-(time()-bt->starttime()));
+            add_proc(p);
+          }
+        } else {
           add_proc(p);
         }
-      } else {
+      }
+      // Grab stuff from busy queue.
+      Proc *p;
+      while ( (p = thesystem.get_busy())) {
         add_proc(p);
       }
+      // Finally, update the current processor.
+      _curproc = _procs.get();
     }
-    // Grab stuff from busy queue.
-    while ( (t = thesystem.get_busy())) {
-      Proc *p = t->proc();
-      // Add thread to processor and set processor to run.
-      p->add_ready(t);
-      p->clearBusyThread();
-      add_proc(p);
-    }
-    // Finally, update the current processor.
-    _curproc = _procs.get();
     return true;
   }
 
@@ -365,9 +384,7 @@ namespace plasma {
   void Cluster::yield()
   {
     lock();
-    Thread *ready = get_ready();
-    Thread *old = _cur;
-    exec_ready(ready,old);
+    exec_ready();
   }
 
   // Explicitly switch to the scheduler thread.
@@ -383,12 +400,6 @@ namespace plasma {
   {
     // Lock cluster to prevent preemption.
     lock();
-    // If a busy thread exists for this processor, it means that a higher
-    // priority thread preempted the busy state.  Now we must move it back.
-    // It's still on the busy queue, so we know that there's always more to be done.
-    if (thecluster.curProc()->hasBusyThread()) {
-      get_new_proc();
-    }
     Thread *ready = get_ready();
     Thread *old = _cur;
     _cur = ready;
@@ -449,6 +460,14 @@ namespace plasma {
   inline bool Cluster::in_scheduler() const
   {
     return (_cur == &_main);
+  }
+
+  // Switch from old thread to new thread; old thread is put into ready queue
+  inline void Cluster::exec_ready()
+  {
+    Thread *ready = get_ready();
+    Thread *old = _cur;
+    exec_ready(ready,old);    
   }
 
   // Switch from old thread to new thread; old thread is put into ready queue

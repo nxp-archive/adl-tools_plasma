@@ -104,19 +104,22 @@ namespace plasma {
     bool update_time();
     // Get next available thread, respecting priorities, from the
     // current processor.
-    Thread *get_ready();    
+    Thread *get_ready();
+    Thread *next_ready() const;
     // Try to remove thread from ready queue (if it exists) from
     // the current processor.
     THandle get_ready(THandle t);
 
     // Execute thread new, saving data in old.
     void exec_ready(THandle newthread,THandle oldthread);
+    void exec_ready();
     // Execute next ready thread.  Old thread (_cur), is not added to ready queue.
     void exec_block();
 
     friend void resetalarm();
 
     static unsigned _timeslice;        // Time slice period in usec.
+    static ptime_t  _busyts;           // Busy timeslice in time units.
 
     ProcQ      _procs;                 // Queue of processors we know about.
     Proc      *_curproc;               // Current processor.

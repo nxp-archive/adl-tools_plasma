@@ -48,7 +48,11 @@ namespace plasma {
     void setPriority(unsigned p) { _priority = p; };
 
     ptime_t time() const { return _time; };
+    ptime_t starttime() const { return _starttime; };
+    ptime_t endtime() const { return _starttime + _time; };
+
     void setTime(ptime_t t) { _time = t; };
+    void setStartTime(ptime_t t) { _starttime = t; };    
 
     void *endspace() const { return (void*)&_extraspace[0]; };
 
@@ -64,6 +68,7 @@ namespace plasma {
     HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
     ptime_t     _time;             // Busy or delay time of the thread.
+    ptime_t     _starttime;        // Start time of a busy or delay.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
   };
 
@@ -73,7 +78,8 @@ namespace plasma {
     _stack(0),
     _proc(0),
     _priority(0),
-    _time(0)
+    _time(0),
+    _starttime(0)
   {
   }
 

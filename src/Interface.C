@@ -19,7 +19,7 @@ namespace plasma {
     _timeslice(50000),
     _numpriorities(32),
     _busyokay(false),
-    _busytimeslice(1)
+    _simtimeslice(10)
   {}
 
   // Create a new thread and make it ready.
