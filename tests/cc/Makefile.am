@@ -35,7 +35,6 @@ noinst_HEADERS = \
 	CodeGen.h \
 	Node.h \
 	SymTab.h \
-	BoolCheck.h \
 	CParser.h \
 	Compiler.h \
 	StackMachine.h \
