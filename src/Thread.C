@@ -47,4 +47,26 @@ namespace plasma {
     System::remove_active_thread(this);
   }
 
+  THandle Thread::get_waiter()
+  {
+    if (_waiters.empty()) {
+      return 0;
+    } else {
+      THandle t = _waiters.back();
+      _waiters.pop_back();
+      return t;
+    }
+  }
+
+  Thread *Thread::get_waiter(Thread *t)
+  {
+    for (Waiters::iterator i = _waiters.begin(); i != _waiters.end(); ++i) {
+      if ( *i == t) {
+        _waiters.erase(i);
+        return t;
+      }
+    }
+    return 0;
+  }
+
 }

@@ -36,12 +36,12 @@ namespace plasma {
     void setStackEnd();
 
     // Add a thread to the wait list.
-    void add_waiter(Thread *t);
+    void add_waiter(THandle t);
     // Get a thread from the wait list.
     Thread *get_waiter();
     // Remove a thread from the wait queue.
     // Returns 0 if it doesn't exist.
-    Thread *get_waiter(Thread *t);
+    Thread *get_waiter(THandle t);
 
     // Ready:  A thread is in ready queue.
     // Run:    Thread is not in the ready queue (may be executing or blocked).
@@ -79,8 +79,10 @@ namespace plasma {
 
   private:
 
+    typedef std::vector<THandle,gc_allocator<THandle> > Waiters;
+
     State        _state;           // Current thread state.
-    ThreadQ     _waiters;          // Threads waiting on this thread.
+    Waiters     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
     void       *_stackend;         // End of stack pointer.
@@ -118,19 +120,9 @@ namespace plasma {
     _stackend = &dummy;
   }
 
-  inline void Thread::add_waiter(Thread *t)
+  inline void Thread::add_waiter(THandle t)
   {
-    _waiters.add(t);
-  }
-
-  inline Thread *Thread::get_waiter()
-  {
-    return _waiters.get();
-  }
-
-  inline Thread *Thread::get_waiter(Thread *t)
-  {
-    return _waiters.get(t);
+    _waiters.push_back(t);
   }
 
 }

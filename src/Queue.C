@@ -2,6 +2,7 @@
 // Simple thread queue class.
 //
 
+#include <assert.h>
 #include <iostream>
 
 #include "Queue.h"
@@ -12,6 +13,10 @@ namespace plasma {
 
   void Queue::add(QBase *next)
   {
+    // Assertion:  Item must not already be in a queue.
+    // This doesn't catch the case where there's only a single item,
+    // though.
+    assert(!next->getnext() && !next->getprev());
     next->setnext(0);        // last thread in queue
     if (_tail) {             // there was a previous thread in queue
       _tail->setnext(next);  // link previous thread with thread

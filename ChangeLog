@@ -1,3 +1,14 @@
+2004-07-19  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Found a bug:  I couldn't use the "waiter" queue, as previously
+	implemented, b/c when we have an alt block and are using ResChans,
+	it means that we might have a situation where a single thread (the
+	alt-block containing thread) might be waiting on multiple items to
+	finish (all of the ResChan objects).  This doesn't work b/c the
+	Queue class only allows an object to be in a single list at any
+	given time- otherwise bad things can happen.  Fixed this by
+	changing the _waiters member to a gc'd vector class.
+
 2004-07-15  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Plasma should now be useable by others when installed.  I
