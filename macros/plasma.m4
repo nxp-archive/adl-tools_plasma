@@ -6,8 +6,9 @@
 ##
 ## Output:
 ##
-##   PLASMA:  The Plasma executable.
-##   PLASMAPATH:  The Plasma install prefix.
+##   PLASMA:        The Plasma executable.
+##   PLASMA_PATH:   The Plasma install prefix.
+##   PLASMA_CFLAGS: Plasma cflags.
 ##
 AC_DEFUN([AM_PLASMA],
 [
@@ -20,12 +21,14 @@ AC_DEFUN([AM_PLASMA],
 
   if [[ $PLASMA = "no" ]] ; then
     AC_MSG_ERROR([Could not find plasma in the path.  Please modify your path or use the --with-plasma option.])
-  fi
+  fi 
   if [[ $PlasmaConfig = "no" ]] ; then
     AC_MSG_ERROR([Could not find plasma-config in the path.  Please modify your path or use the --with-plasma option.])
   fi
 
-  PLASMAPATH=`$PlasmaConfig --prefix`
+  PLASMA_PATH=`$PlasmaConfig --prefix`
+  PLASMA_CFLAGS=`$PlasmaConfig --cflags`
+  PLASMALIBS=`$PlasmaConfig --lib`
 
   AC_MSG_CHECKING([for plasma's version])
   AC_MSG_RESULT($($PlasmaConfig --version))
@@ -50,6 +53,7 @@ AC_DEFUN([AM_PLASMA],
   ],AC_MSG_RESULT([ok.]),AC_MSG_ERROR([failed.]))
 
   AC_SUBST(PLASMA)
-  AC_SUBST(PLASMAPATH)
+  AC_SUBST(PLASMA_PATH)
+  AC_SUBST(PLASMA_CFLAGS)	
 
 ])

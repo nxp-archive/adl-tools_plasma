@@ -327,7 +327,7 @@ namespace plasma {
   // directly.
   class ClockChanImpl {
   public:
-    ClockChanImpl(ptime_t p) : _period(p), _size(0), _readt(0), _waket(0), _delay(0) {};
+    ClockChanImpl(ptime_t p,ptime_t s);
 
     bool is_phi() const;
     ptime_t next_phi() const;
@@ -344,6 +344,7 @@ namespace plasma {
     void start_waker();
 
     ptime_t    _period;    // Clock period.
+    ptime_t    _skew;      // Skew- offset from clock edge.
     unsigned   _size;      // Number of items in channel.
     THandle    _readt;     // Read thread.
     THandle    _waket;     // Thread which wakes reader at the correct time.

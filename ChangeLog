@@ -1,3 +1,11 @@
+
+2004-11-11  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Clocked channels now take three parameters:  Period, skew, and
+	size.  Skew defaults to 0.  This lets a user have a channel that's
+	delayed with respect to other clocked channels, but with the same
+	period, e.g. a half-cycle delay.  Regression "clock5" tests this.
+
         ======= plasma release 0.8.2 (v0_8_2) on Linux (cde-tx32-ldt189) =======
 
 2004-11-04  Brian Kahne  <bkahne@ibmoto.com>

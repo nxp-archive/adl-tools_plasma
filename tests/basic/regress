@@ -10,337 +10,342 @@ use strict;
 use Data::Dumper;
 
 my @Tests = (
-	     # Basic par block test.
-	     {
-	      cmd     => "./par1",
-	      checker => \&check_par1,
-	     },
-	     # Looping par block test.
-	     {
-	      cmd     => "./par2",
-	      checker => \&check_par2,
-	     },
-	     # Looping par block test with structure as loop variable.
-	     {
-	      cmd     => "./par3",
-	      checker => \&check_par3,
-	     },
-	     # Check of code generation w/classes.
-	     {
-	      cmd     => "./par4",
-	      checker => \&check_par1,
-	     },
-	     # Check that nested pars work.
-	     {
-	      cmd     => "./par5",
-	      checker => \&check_par5,
-	     },
-	     # Check that nested pars and pfors work.
-	     {
-	      cmd     => "./par6",
-	      checker => \&check_par6,
-	     },
-	     # Check that nested pars and pfors work w/on blocks.
-	     {
-	      cmd     => "./par7",
-	      checker => \&check_par6,
-	     },
-	     # Check that pars work with explicit method calls.
-	     {
-	      cmd     => "./par8",
-	      checker => \&check_par8,
-	     },
-	     # Check that pars work with implicit method calls.
-	     {
-	      cmd     => "./par9",
-	      checker => \&check_par8,
-	     },
-	     # Quicksort with parallel sorting of split elements.
-	     {
-	      cmd     => "./qsort1",
-	      checker => \&check_qsort1,
-	     },
-	     # Quicksort w/busy statements.
-	     {
-	      cmd     => "./qsort2 && ./qsort2 2 && ./qsort2 10",
-	      checker => \&check_qsort2,
-	     },
-	     # Channel test directly using C++ interface.
-	     {
-	      cmd     => "./chan1",
-	      checker => \&check_chan1,
-	     },
-	     # Channel test using alt.
-	     {
-	      cmd     => "./chan2",
-	      checker => \&check_chan2,
-	     },
-	     # Channel test using alt with a default block.
-	     {
-	      cmd     => "./chan3",
-	      checker => \&check_chan3,
-	     },
-	     # Channel test using afor.
-	     {
-	      cmd     => "./chan4",
-	      checker => \&check_chan4,
-	     },
-	     # Channel test using afor and a non-integer iterator.
-	     {
-	      cmd     => "./chan5",
-	      checker => \&check_chan5,
-	     },
-	     # Channel test using afor and a default block.
-	     {
-	      cmd     => "./chan6",
-	      checker => \&check_chan6,
-	     },
-	     # Channel test using afor, non-integer iterator, and a default block.
-	     {
-	      cmd     => "./chan7",
-	      checker => \&check_chan7,
-	     },
-	     # Channel test using a queued channel.
-	     {
-	      cmd     => "./chan8",
-	      checker => \&check_chan8,
-	     },
-	     # Channel test using a queued channel with a fixed size.
-	     {
-	      cmd     => "./chan9",
-	      checker => \&check_chan9,
-	     },
-	     # Channel test w/multiple afor and alts in an alt.
-	     {
-	      cmd     => "./chan10",
-	      checker => \&check_chan10,
-	     },
-	     # Channel test w/multiple afor and alts in an alt and a default block
-	     {
-	      cmd     => "./chan11",
-	      checker => \&check_chan11,
-	     },
-	     # Channel test w/a timeout channel.
-	     {
-	      cmd     => "./chan12",
-	      checker => \&check_chan12,
-	     },
-	     # Channel test par blocks.
-	     {
-	      cmd     => "./chan13",
-	      checker => \&check_chan13,
-	     },
-	     # Channel test w/multiple processors.
-	     {
-	      cmd     => "./chan14",
-	      checker => \&check_chan14,
-	     },
-	     # Channel test w/value not required in port body.
-	     {
-	      cmd     => "./chan15",
-	      checker => \&check_chan15,
-	     },
-	     # Channel test w/afor and value not required in port body.
-	     {
-	      cmd     => "./chan16",
-	      checker => \&check_chan16,
-	     },
-	     # Channel test w/multiple producers using a simple channel.
-	     {
-	      cmd     => "./chan17",
-	      checker => \&check_chan17,
-	     },
-	     # Test of prialt.
-	     {
-	      cmd     => "./chan18",
-	      checker => \&check_chan18,
-	     },
-	     # Test of priafor.
-	     {
-	      cmd     => "./chan19",
-	      checker => \&check_chan19,
-	     },
-	     # Test of channel replication to multiple consumers.
-	     {
-	      cmd     => "./chan20",
-	      checker => \&check_chan20,
-	     },
-	     # Spawn test- C++ only.
-	     {
-	      cmd     => "./spawn1",
-	      checker => \&check_spawn1,
-	     },
-	     # Spawn test with spawn operator.
-	     {
-	      cmd     => "./spawn2",
-	      checker => \&check_spawn2,
-	     },
-	     # Spawn test with member calls.
-	     {
-	      cmd     => "./spawn3",
-	      checker => \&check_spawn3,
-	     },
-	     # Spawn test with alt.
-	     {
-	      cmd     => "./spawn4",
-	      checker => \&check_spawn4,
-	     },
-	     # Mutex test w/shared data structure.
-	     {
-	      cmd     => "./mutex1",
-	      checker => \&check_mutex1,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri1",
-	      checker => \&check_pri1,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri2",
-	      checker => \&check_pri2,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri3",
-	      checker => \&check_pri3,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri4",
-	      checker => \&check_pri4,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri5",
-	      checker => \&check_pri5,
-	     },
-	     # Test of priorities.
-	     {
-	      cmd     => "./pri6",
-	      checker => \&check_pri6,
-	     },
-	     # Test of priorities w/channels.
-	     {
-	      cmd     => "./pri7",
-	      checker => \&check_pri7,
-	     },
-	     # Test of priorities w/channels.
-	     {
-	      cmd     => "./pri8",
-	      checker => \&check_pri8,
-	     },
-	     # C++-only processor test.
-	     {
-	      cmd     => "./proc1",
-	      checker => \&check_proc1,
-	     },
-	     # Processor test w/on-blocks.
-	     {
-	      cmd     => "./proc2",
-	      checker => \&check_proc2,
-	     },
-	     # Processor test spawn.
-	     {
-	      cmd     => "./proc3",
-	      checker => \&check_proc3,
-	     },
-	     # Multiple processors w/busy.
-	     {
-	      cmd     => "./proc4",
-	      checker => \&check_proc4,
-	     },
-	     # Multiple processors w/delay.
-	     {
-	      cmd     => "./proc5",
-	      checker => \&check_proc5,
-	     },
-	     # Multiple processors w/busy.
-	     {
-	      cmd     => "./proc6",
-	      checker => \&check_proc6,
-	     },
-	     # Multiple processors w/busy.
-	     {
-	      cmd     => "./proc7",
-	      checker => \&check_proc7,
-	     },
-	     # Busy/delay w/multiple procs w/shared issue queue.
-	     {
-	      cmd     => "./proc8",
-	      checker => \&check_proc8,
-	     },
-	     # Busy w/multiple procs w/shared issue queue.
-	     {
-	      cmd     => "./proc9",
-	      checker => \&check_proc9,
-	     },
-	     # Busy w/shared Processors data structure.
-	     {
-	      cmd     => "./proc10",
-	      checker => \&check_proc10,
-	     },
-	     # Time w/invalid busy.
-	     {
-	      cmd     => "./time1",
-	      fail    => 255,
-	     },
-	     # Time w/delay.
-	     {
-	      cmd     => "./time2",
-	      checker => \&check_time2,
-	     },
-	     # Time w/busy.
-	     {
-	      cmd     => "./time3",
-	      checker => \&check_time3,
-	     },
-	     # Time w/timeslicing.
-	     {
-	      cmd     => "./time4",
-	      checker => \&check_time4,
-	     },
-	     # Time w/a single thread on its own processor.
-	     {
-	      cmd     => "./time5",
-	      checker => \&check_time5,
-	     },
-	     # Test multiple random streams.
-	     {
-	      cmd     => "./rand1",
-	     },
-	     # Test distributions.
-	     {
-	      cmd     => "./rand2",
-	     },
-	     # Test a simple clocked channel.
-	     {
-	      cmd     => "./clock1",
-	      checker => \&check_clock1,
-	     },
-	     # Test of multiple clocked-channels.
-	     {
-	      cmd     => "./clock2",
-	      checker => \&check_clock2,
-	     },
-	     # Test of pipelines w/clocked-channels and
-	     # par blocks nested w/in alt blocks.
-	     {
-	      cmd     => "./clock3",
-	      checker => \&check_clock3,
-	     },
-		 # Test a simple clocked channel w/a delay equal
-		 # to the clock period.
-	     {
-	      cmd     => "./clock4",
-	      checker => \&check_clock1,
-	     },
-	     # Simple test of the quantity class.
-	     {
-	      cmd     => "./quantity1",
-	      checker => \&check_quantity1,
-	     },
-	    );
+			 # Basic par block test.
+			 {
+			  cmd     => "./par1",
+			  checker => \&check_par1,
+			 },
+			 # Looping par block test.
+			 {
+			  cmd     => "./par2",
+			  checker => \&check_par2,
+			 },
+			 # Looping par block test with structure as loop variable.
+			 {
+			  cmd     => "./par3",
+			  checker => \&check_par3,
+			 },
+			 # Check of code generation w/classes.
+			 {
+			  cmd     => "./par4",
+			  checker => \&check_par1,
+			 },
+			 # Check that nested pars work.
+			 {
+			  cmd     => "./par5",
+			  checker => \&check_par5,
+			 },
+			 # Check that nested pars and pfors work.
+			 {
+			  cmd     => "./par6",
+			  checker => \&check_par6,
+			 },
+			 # Check that nested pars and pfors work w/on blocks.
+			 {
+			  cmd     => "./par7",
+			  checker => \&check_par6,
+			 },
+			 # Check that pars work with explicit method calls.
+			 {
+			  cmd     => "./par8",
+			  checker => \&check_par8,
+			 },
+			 # Check that pars work with implicit method calls.
+			 {
+			  cmd     => "./par9",
+			  checker => \&check_par8,
+			 },
+			 # Quicksort with parallel sorting of split elements.
+			 {
+			  cmd     => "./qsort1",
+			  checker => \&check_qsort1,
+			 },
+			 # Quicksort w/busy statements.
+			 {
+			  cmd     => "./qsort2 && ./qsort2 2 && ./qsort2 10",
+			  checker => \&check_qsort2,
+			 },
+			 # Channel test directly using C++ interface.
+			 {
+			  cmd     => "./chan1",
+			  checker => \&check_chan1,
+			 },
+			 # Channel test using alt.
+			 {
+			  cmd     => "./chan2",
+			  checker => \&check_chan2,
+			 },
+			 # Channel test using alt with a default block.
+			 {
+			  cmd     => "./chan3",
+			  checker => \&check_chan3,
+			 },
+			 # Channel test using afor.
+			 {
+			  cmd     => "./chan4",
+			  checker => \&check_chan4,
+			 },
+			 # Channel test using afor and a non-integer iterator.
+			 {
+			  cmd     => "./chan5",
+			  checker => \&check_chan5,
+			 },
+			 # Channel test using afor and a default block.
+			 {
+			  cmd     => "./chan6",
+			  checker => \&check_chan6,
+			 },
+			 # Channel test using afor, non-integer iterator, and a default block.
+			 {
+			  cmd     => "./chan7",
+			  checker => \&check_chan7,
+			 },
+			 # Channel test using a queued channel.
+			 {
+			  cmd     => "./chan8",
+			  checker => \&check_chan8,
+			 },
+			 # Channel test using a queued channel with a fixed size.
+			 {
+			  cmd     => "./chan9",
+			  checker => \&check_chan9,
+			 },
+			 # Channel test w/multiple afor and alts in an alt.
+			 {
+			  cmd     => "./chan10",
+			  checker => \&check_chan10,
+			 },
+			 # Channel test w/multiple afor and alts in an alt and a default block
+			 {
+			  cmd     => "./chan11",
+			  checker => \&check_chan11,
+			 },
+			 # Channel test w/a timeout channel.
+			 {
+			  cmd     => "./chan12",
+			  checker => \&check_chan12,
+			 },
+			 # Channel test par blocks.
+			 {
+			  cmd     => "./chan13",
+			  checker => \&check_chan13,
+			 },
+			 # Channel test w/multiple processors.
+			 {
+			  cmd     => "./chan14",
+			  checker => \&check_chan14,
+			 },
+			 # Channel test w/value not required in port body.
+			 {
+			  cmd     => "./chan15",
+			  checker => \&check_chan15,
+			 },
+			 # Channel test w/afor and value not required in port body.
+			 {
+			  cmd     => "./chan16",
+			  checker => \&check_chan16,
+			 },
+			 # Channel test w/multiple producers using a simple channel.
+			 {
+			  cmd     => "./chan17",
+			  checker => \&check_chan17,
+			 },
+			 # Test of prialt.
+			 {
+			  cmd     => "./chan18",
+			  checker => \&check_chan18,
+			 },
+			 # Test of priafor.
+			 {
+			  cmd     => "./chan19",
+			  checker => \&check_chan19,
+			 },
+			 # Test of channel replication to multiple consumers.
+			 {
+			  cmd     => "./chan20",
+			  checker => \&check_chan20,
+			 },
+			 # Spawn test- C++ only.
+			 {
+			  cmd     => "./spawn1",
+			  checker => \&check_spawn1,
+			 },
+			 # Spawn test with spawn operator.
+			 {
+			  cmd     => "./spawn2",
+			  checker => \&check_spawn2,
+			 },
+			 # Spawn test with member calls.
+			 {
+			  cmd     => "./spawn3",
+			  checker => \&check_spawn3,
+			 },
+			 # Spawn test with alt.
+			 {
+			  cmd     => "./spawn4",
+			  checker => \&check_spawn4,
+			 },
+			 # Mutex test w/shared data structure.
+			 {
+			  cmd     => "./mutex1",
+			  checker => \&check_mutex1,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri1",
+			  checker => \&check_pri1,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri2",
+			  checker => \&check_pri2,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri3",
+			  checker => \&check_pri3,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri4",
+			  checker => \&check_pri4,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri5",
+			  checker => \&check_pri5,
+			 },
+			 # Test of priorities.
+			 {
+			  cmd     => "./pri6",
+			  checker => \&check_pri6,
+			 },
+			 # Test of priorities w/channels.
+			 {
+			  cmd     => "./pri7",
+			  checker => \&check_pri7,
+			 },
+			 # Test of priorities w/channels.
+			 {
+			  cmd     => "./pri8",
+			  checker => \&check_pri8,
+			 },
+			 # C++-only processor test.
+			 {
+			  cmd     => "./proc1",
+			  checker => \&check_proc1,
+			 },
+			 # Processor test w/on-blocks.
+			 {
+			  cmd     => "./proc2",
+			  checker => \&check_proc2,
+			 },
+			 # Processor test spawn.
+			 {
+			  cmd     => "./proc3",
+			  checker => \&check_proc3,
+			 },
+			 # Multiple processors w/busy.
+			 {
+			  cmd     => "./proc4",
+			  checker => \&check_proc4,
+			 },
+			 # Multiple processors w/delay.
+			 {
+			  cmd     => "./proc5",
+			  checker => \&check_proc5,
+			 },
+			 # Multiple processors w/busy.
+			 {
+			  cmd     => "./proc6",
+			  checker => \&check_proc6,
+			 },
+			 # Multiple processors w/busy.
+			 {
+			  cmd     => "./proc7",
+			  checker => \&check_proc7,
+			 },
+			 # Busy/delay w/multiple procs w/shared issue queue.
+			 {
+			  cmd     => "./proc8",
+			  checker => \&check_proc8,
+			 },
+			 # Busy w/multiple procs w/shared issue queue.
+			 {
+			  cmd     => "./proc9",
+			  checker => \&check_proc9,
+			 },
+			 # Busy w/shared Processors data structure.
+			 {
+			  cmd     => "./proc10",
+			  checker => \&check_proc10,
+			 },
+			 # Time w/invalid busy.
+			 {
+			  cmd     => "./time1",
+			  fail    => 255,
+			 },
+			 # Time w/delay.
+			 {
+			  cmd     => "./time2",
+			  checker => \&check_time2,
+			 },
+			 # Time w/busy.
+			 {
+			  cmd     => "./time3",
+			  checker => \&check_time3,
+			 },
+			 # Time w/timeslicing.
+			 {
+			  cmd     => "./time4",
+			  checker => \&check_time4,
+			 },
+			 # Time w/a single thread on its own processor.
+			 {
+			  cmd     => "./time5",
+			  checker => \&check_time5,
+			 },
+			 # Test multiple random streams.
+			 {
+			  cmd     => "./rand1",
+			 },
+			 # Test distributions.
+			 {
+			  cmd     => "./rand2",
+			 },
+			 # Test a simple clocked channel.
+			 {
+			  cmd     => "./clock1",
+			  checker => \&check_clock1,
+			 },
+			 # Test of multiple clocked-channels.
+			 {
+			  cmd     => "./clock2",
+			  checker => \&check_clock2,
+			 },
+			 # Test of pipelines w/clocked-channels and
+			 # par blocks nested w/in alt blocks.
+			 {
+			  cmd     => "./clock3",
+			  checker => \&check_clock3,
+			 },
+			 # Test a simple clocked channel w/a delay equal
+			 # to the clock period.
+			 {
+			  cmd     => "./clock4",
+			  checker => \&check_clock1,
+			 },
+			 # Test of the clocked channel's skew feature.
+			 {
+			  cmd     => "./clock5",
+			  checker => \&check_clock5,
+			 },
+			 # Simple test of the quantity class.
+			 {
+			  cmd     => "./quantity1",
+			  checker => \&check_quantity1,
+			 },
+			);
 
 doTest(\@Tests);
 
@@ -1106,6 +1111,34 @@ sub check_clock2 {
   check_clocked_channel (@_[0],"Got a value from port c(\\d+) at time (\\d+):\\s+(\\d+)",\@data,5,6);
 }
 
+sub check_clock5 {
+  str_rdiff(@_[0],<<'EOD');
+stage 1:  Producing at time 0:  1
+stage 1:  Producing at time 0:  2
+stage 1:  Producing at time 10:  3
+stage 1:  Producing at time 20:  4
+stage 1:  Producing at time 30:  -1
+stage 1:  Done.
+EOD
+
+  str_rdiff(@_[0],<<'EOD');
+stage 2:  Got from port c1 at time 10:  1
+stage 2:  Got from port c1 at time 20:  2
+stage 2:  Got from port c1 at time 30:  3
+stage 2:  Got from port c1 at time 40:  4
+stage 2:  Got from port c1 at time 50:  -1
+stage 2:  Done.
+EOD
+
+  str_rdiff(@_[0],<<'EOD');
+stage 3:  Got from port c2 at time 15:  1
+stage 3:  Got from port c2 at time 25:  2
+stage 3:  Got from port c2 at time 35:  3
+stage 3:  Got from port c2 at time 45:  4
+stage 3:  Got from port c2 at time 55:  -1
+stage 3:  Done.
+EOD
+}
 
 sub check_clock3 {
   # We check that each pipeline stage emits the expected data at the right time.

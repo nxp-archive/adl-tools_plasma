@@ -223,16 +223,22 @@ namespace plasma {
 
   /////////////// ClockChan ///////////////
 
+  ClockChanImpl::ClockChanImpl(ptime_t p,ptime_t s) : 
+    _period(p), _skew(s), _size(0), _readt(0), _waket(0), _delay(0) 
+  {}
+
   // Returns true if we're on a clock edge, given a clock period.
   bool ClockChanImpl::is_phi() const
   {
-    return (pTime() % _period) == 0;
+    return (pTime() % _period) == _skew;
   }
 
-  // Returns the time of the next clock cycle.
+  // Returns the time of the next clock cycle.  We compute the time of the 
+  // last edge, then add on the skew (or another cycle if no skew was specified)
+  // to get the next edge.
   ptime_t ClockChanImpl::next_phi() const
   {
-    return (pTime() / _period + 1)*_period;
+    return (pTime() / _period)*_period + ( (!_skew) ? _period : _skew);
   }
 
   THandle ClockChanImpl::reset() 

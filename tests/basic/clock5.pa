@@ -1,0 +1,66 @@
+//
+// Tests that we can set a skew for a clocked channel.
+// This lets us have a channel that has the same period as
+// others, but has a constant offset.
+//
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef ClockChan<int> IntChan;
+
+const int Clock = 10;
+
+void stage1(IntChan &out) 
+{
+  static int foo[] = {1,2,3,4,-1};
+  int i = -1;
+  do {
+    ++i;
+    mprintf ("stage 1:  Producing at time %lld:  %d\n",pTime(),foo[i]);
+    out.write(foo[i]);
+  } while (foo[i] >= 0);
+  plasma::mprintf ("stage 1:  Done.\n");
+}
+
+void stage2(IntChan &in,IntChan &out) 
+{
+  int d;
+  do {
+    d = in.get();
+    mprintf ("stage 2:  Got from port c1 at time %lld:  %d\n",pTime(),d);
+    out.write(d);
+  } while (d >= 0);
+  plasma::mprintf ("stage 2:  Done.\n");
+}
+
+void stage3(IntChan &in)
+{
+  int d;
+  do {
+    d = in.get();
+    mprintf ("stage 3:  Got from port c2 at time %lld:  %d\n",pTime(),d);
+  } while (d >= 0);
+  plasma::mprintf ("stage 3:  Done.\n");
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan chan1(Clock);
+  IntChan chan2(Clock,Clock/2);
+
+  par {
+    stage1(chan1);
+    stage2(chan1,chan2);
+    stage3(chan2);
+  }
+  mprintf ("Done.\n");
+  return 0;
+}

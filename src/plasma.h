@@ -172,7 +172,7 @@ namespace plasma {
   public:
     typedef Data value_type;
 
-    ClockChan(ptime_t p,int size = 1) : ClockChanImpl(p), _maxsize(size) {};
+    ClockChan(ptime_t p,ptime_t s = 0,int size = 1) : ClockChanImpl(p,s), _maxsize(size) {};
     void write(const Data &d);
     bool ready() const { return current_data() && is_phi(); };
 

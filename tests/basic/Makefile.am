@@ -75,6 +75,7 @@ check_PROGRAMS = \
 	clock2 \
 	clock3 \
 	clock4 \
+	clock5 \
 	quantity1 \
 	gc1
 
@@ -280,6 +281,9 @@ clock3_DEPENDENCIES = $(DEPENDENCIES)
 clock4_SOURCES = clock4.pa
 clock4_DEPENDENCIES = $(DEPENDENCIES)
 
+clock5_SOURCES = clock5.pa
+clock5_DEPENDENCIES = $(DEPENDENCIES)
+
 quantity1_SOURCES = quantity1.pa
 quantity1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -287,75 +291,6 @@ gc1_SOURCES = gc1.pa
 gc1_DEPENDENCIES = $(DEPENDENCIES)
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
-
-DEP_FILES=\
-	./$(DEPDIR)/par1.Po \
-	./$(DEPDIR)/par2.Po \
-	./$(DEPDIR)/par3.Po \
-	./$(DEPDIR)/par4.Po \
-	./$(DEPDIR)/par5.Po \
-	./$(DEPDIR)/par6.Po \
-	./$(DEPDIR)/par7.Po \
-	./$(DEPDIR)/par8.Po \
-	./$(DEPDIR)/par9.Po \
-	./$(DEPDIR)/qsort1.Po \
-	./$(DEPDIR)/qsort2.Po \
-	./$(DEPDIR)/chan1.Po \
-	./$(DEPDIR)/chan2.Po \
-	./$(DEPDIR)/chan3.Po \
-	./$(DEPDIR)/chan4.Po \
-	./$(DEPDIR)/chan5.Po \
-	./$(DEPDIR)/chan6.Po \
-	./$(DEPDIR)/chan7.Po \
-	./$(DEPDIR)/chan8.Po \
-	./$(DEPDIR)/chan9.Po \
-	./$(DEPDIR)/chan10.Po \
-	./$(DEPDIR)/chan11.Po \
-	./$(DEPDIR)/chan12.Po \
-	./$(DEPDIR)/chan13.Po \
-	./$(DEPDIR)/chan14.Po \
-	./$(DEPDIR)/chan15.Po \
-	./$(DEPDIR)/chan16.Po \
-	./$(DEPDIR)/chan17.Po \
-	./$(DEPDIR)/chan18.Po \
-	./$(DEPDIR)/chan19.Po \
-	./$(DEPDIR)/chan20.Po \
-	./$(DEPDIR)/spawn1.Po \
-	./$(DEPDIR)/spawn2.Po \
-	./$(DEPDIR)/spawn3.Po \
-	./$(DEPDIR)/spawn4.Po \
-	./$(DEPDIR)/mutex1.Po \
-	./$(DEPDIR)/pri1.Po \
-	./$(DEPDIR)/pri2.Po \
-	./$(DEPDIR)/pri3.Po \
-	./$(DEPDIR)/pri4.Po \
-	./$(DEPDIR)/pri5.Po \
-	./$(DEPDIR)/pri6.Po \
-	./$(DEPDIR)/pri7.Po \
-	./$(DEPDIR)/pri8.Po \
-	./$(DEPDIR)/proc1.Po \
-	./$(DEPDIR)/proc2.Po \
-	./$(DEPDIR)/proc3.Po \
-	./$(DEPDIR)/proc4.Po \
-	./$(DEPDIR)/proc5.Po \
-	./$(DEPDIR)/proc6.Po \
-	./$(DEPDIR)/proc7.Po \
-	./$(DEPDIR)/proc8.Po \
-	./$(DEPDIR)/proc9.Po \
-	./$(DEPDIR)/proc10.Po \
-	./$(DEPDIR)/time1.Po \
-	./$(DEPDIR)/time2.Po \
-	./$(DEPDIR)/time3.Po \
-	./$(DEPDIR)/time4.Po \
-	./$(DEPDIR)/time5.Po \
-	./$(DEPDIR)/rand1.Po \
-	./$(DEPDIR)/rand2.Po \
-	./$(DEPDIR)/clock1.Po \
-	./$(DEPDIR)/clock2.Po \
-	./$(DEPDIR)/clock3.Po \
-	./$(DEPDIR)/clock4.Po \
-	./$(DEPDIR)/quantity1.Po \
-	./$(DEPDIR)/gc1.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -417,6 +352,7 @@ include ./$(DEPDIR)/clock1.Po
 include ./$(DEPDIR)/clock2.Po
 include ./$(DEPDIR)/clock3.Po
 include ./$(DEPDIR)/clock4.Po
+include ./$(DEPDIR)/clock5.Po
 include ./$(DEPDIR)/quantity1.Po
 include ./$(DEPDIR)/gc1.Po
 
