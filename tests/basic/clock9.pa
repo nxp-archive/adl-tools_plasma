@@ -60,15 +60,19 @@ void updater(ClkDataChan &update)
 
 void queryer(IntChan &request,IntChan &reply)
 {
+  int response;
   pDelay(Clock);
   request.write(2);
-  cout << pTime() << ": Response to 2:  " << reply.get() << endl;
+  response = reply.get();
+  cout << pTime() << ": Response to 2:  " << response << endl;
   pDelay(Clock);
   request.write(2);
-  cout << pTime() << ": Response to 2:  " << reply.get() << endl;
+  response = reply.get();
+  cout << pTime() << ": Response to 2:  " << response << endl;
   pDelay(Clock*2);
   request.write(4);
-  cout << pTime() << ": Response to 4:  " << reply.get() << endl;
+  response = reply.get();
+  cout << pTime() << ": Response to 4:  " << response << endl;
 }
 
 void pSetup(ConfigParms &cp)
