@@ -1,5 +1,13 @@
 //
-// C++-only sample implementation of a result thread.
+// Test of spawn w/method calls.
+//
+// The ways to invoke a method are:
+// 1.  Calling a method from within another method (implicit object).
+// 2.  Calling a method with a reference to an object (a.b()).
+// 3.  Calling a method with a pointer to an object (a->b()).
+// 4.  Calling a static method (a::b()).
+// 5.  Calling a pointer to a method with a reference to an object ((a.*b)()).
+// 6.  Calling a pointer to a method with a pointer to an object ((a->*b)()).
 //
 #include <iostream>
 #include <iomanip>
@@ -13,11 +21,16 @@ struct TrySpawn {
 
   double foo(double a,double b)
   {
-    for (int i = 0; i != 100000000; ++i) {
+    for (int i = 0; i != 1000000; ++i) {
       int xx = 10;
     }
     return a*a + b*b;
   }
+
+  double e()
+  {
+    return 2.71828183;
+  }  
 
   static double pi()
   {
@@ -36,14 +49,28 @@ void TrySpawn::start()
   printf("Result is:  %f, %f, %f, %f\n",result1.value(),result2.value(),result3.value(),result4.value());
 }
 
+typedef double (TrySpawn::* MPtr2)(double,double);
+typedef double (TrySpawn::* MPtr0)();
+
 int pMain(int,const char *[])
 {
   TrySpawn ts;
   ts.start();
+  MPtr2 fooptr = &TrySpawn::foo;
+  MPtr0 eptr = &TrySpawn::e;
   TrySpawn *pts = &ts;
+  // Test of a function w/arguments.
   Result<double> r1 = spawn(ts.foo(3.0,4.0));
   Result<double> r2 = spawn(pts->foo(100.1,200.2));
-  Result<double> r3 = spawn(TrySpawn::pi());
-  printf("Result is:  %f, %f, %f\n",r1.value(),r2.value(),r3.value());
+  Result<double> r3 = spawn(ts.*fooptr(69,12));
+  Result<double> r4 = spawn(pts->*fooptr(73,40.4));
+  printf("Result is:  %f, %f, %f, %f\n",r1.value(),r2.value(),r3.value(),r4.value());
+  // Test of a function w/o arguments.
+  Result<double> r6 = spawn(ts.e());
+  Result<double> r7 = spawn(pts->e());
+  Result<double> r8 = spawn(TrySpawn::pi());
+  Result<double> r9 = spawn(ts.*eptr());
+  Result<double> r10 = spawn(pts->*eptr());
+  printf("Result is:  %f, %f, %f, %f, %f\n",r6.value(),r7.value(),r8.value(),r9.value(),r10.value());
   return 0;
 }

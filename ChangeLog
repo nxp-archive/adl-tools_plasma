@@ -1,3 +1,17 @@
+2004-05-18  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added support to spawn for handling function pointers and method
+	pointers.  Spawn now supports the following ways to call a
+	subroutine:
+
+	1. Literal function call:       spawn(foo());
+	2. Function pointer call:       p = foo; spawn(p());
+	3. Method call w/reference:     spawn(a.b());
+	4. Method call w/pointer:       spawn(a->b());
+	5. Static method call:          spawn(A::b());
+	6. Method pointer w/reference:  p = &A::b; spawn(a.*p());
+	7. Method pointer w/pointer:    p = &A::b; spawn(a->*p());
+
 2004-05-17  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added support to spawn for handling member calls.

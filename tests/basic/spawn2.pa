@@ -1,5 +1,8 @@
 //
-// C++-only sample implementation of a result thread.
+// Test of spawn w/function calls.
+// We test:
+// 1.  Explicit function call.
+// 2.  Call of a function pointer.
 //
 #include <iostream>
 
@@ -19,12 +22,23 @@ double pi()
   return 3.14159;
 }
 
+typedef double (*Fptr2)(double,double);
+typedef double (*Fptr0)();
+
 int pMain(int argc,const char *argv[])
 { 
-  Result<double> result1 = spawn(foo(1.1,2.2));
-  Result<double> result2 = spawn(foo(2.7,9.8));
-  Result<double> result3 = spawn(foo(100.45,3.59));
-  Result<double> result4 = spawn(pi());
-  cout << "Result is:  " << result1.value() << ", " << result2.value() << ", " << result3.value() << ", " << result4.value() << endl;
+  Fptr2 a = foo;
+  Fptr0 b = pi;
+
+  Result<double> r1 = spawn(foo(1.1,2.2));
+  Result<double> r2 = spawn(foo(2.7,9.8));
+  Result<double> r3 = spawn(foo(100.45,3.59));
+  Result<double> r4 = spawn(pi());
+  cout << "Result is:  " << r1.value() << ", " << r2.value() << ", " << r3.value() << ", " << r4.value() << endl;
+
+  Result<double> r5 = spawn(a(45.20,90.34));
+  Result<double> r6 = spawn(b());
+  cout << "Result is:  " << r5.value() << ", " << r6.value() << endl;
+  
   return 0;
 }
