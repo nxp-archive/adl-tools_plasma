@@ -31,9 +31,33 @@ AC_LANG_CPLUSPLUS
 ## Check for the location of Perl
 AC_PATH_PROG(PERLPROG,perl)
 if test "x$PERLPROG" = x ; then
-        AC_ERROR("Could not find perl.  Check your path to make sure that it is present.")
+  AC_ERROR("Could not find perl.  Check your path to make sure that it is present.")
 fi
 
+## Check for web directory (documentation destination).
+AC_MSG_CHECKING([for web destination directory])
+ac_web_default=/proj/ppctools/tlv/system-modelling/www
+WEBHOME=
+DOCDIR=doc
+AC_ARG_WITH([web],AC_HELP_STRING([--with-web],[specify a web destination directory.  The default is $ac_web_default.]),WEBHOME=$withval,WEBHOME=$ac_web_default)
+
+if [[ -d $WEBHOME ]]; then
+  AC_MSG_RESULT([$WEBHOME])
+else
+  AC_MSG_RESULT([Directory $WEBHOME not found.  Documentation will not be installed.])
+  DOCDIR=
+fi
+
+AC_PATH_PROG(TRIP,trip)
+if test "x$TRIP" = x ; then
+  echo "The trip program was not found.  Documentation will not be built."
+  echo "To build the documentation, makee sure that trip is installed and in your path."
+  DOCDIR=
+fi
+
+AC_SUBST(WEBHOME)
+AC_SUBST(DOCDIR)
+AC_SUBST(TRIP)
 
 ## Configure Quickthreads.
 AM_QT
@@ -56,6 +80,7 @@ AC_CONFIG_FILES([\
    qt/Makefile \
    src/Makefile \
    parser/Makefile \
+   doc/Makefile \
    tests/Makefile \
    tests/basic/Makefile
 ])

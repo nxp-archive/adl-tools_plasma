@@ -1,3 +1,10 @@
+2004-05-06  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Started a user guide (doc/user-guide.rst) and a schedule
+	(doc/schedule.rst).  The idea is that the schedule will be updated
+	in advance and the user guide will be updated before a feature is
+	committed.
+
 2004-04-29  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Modified the implementation of pfor:  Instead of allocating
