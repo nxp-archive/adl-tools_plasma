@@ -929,16 +929,16 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
         if (p.needstack()) {
           cur = lappend(cur,Ptree::qMake("`sindex` = 0;\n"
                                          "for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,`sindex`++));\n"
+                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread());\n"
                                          "`p.stack`.push_back(`p.loopvar`);\n"
                                          "}\n"));
         } else {
           cur = lappend(cur,Ptree::qMake("for (`p.s1` `p.s2` ; `p.s3`) {\n"
-                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,(int)`p.loopvar`));\n"
+                                         "(`p.chan`) `p.op` set_notify(plasma::pCurThread());\n"
                                          "}\n"));
         }        
       } else {
-        cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` set_notify(plasma::pCurThread(),plasma::HandleType(`index`,0));\n"));
+        cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` set_notify(plasma::pCurThread());\n"));
       }
     }
 

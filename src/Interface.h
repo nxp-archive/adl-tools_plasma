@@ -22,8 +22,6 @@ namespace plasma {
 
   typedef std::vector<THandle,traceable_allocator<THandle> > TVect;
 
-  typedef std::pair<int,int> HandleType;
-
   // Time is a 64-bit integer.  This may need to be changed depending
   // upon the compiler used.
   typedef unsigned long long int uint64;
@@ -133,19 +131,13 @@ namespace plasma {
 
   // Put the current thread to sleep.  When it wakes, it is returned a handle
   // passed by pWake.
-  HandleType pSleep();
+  void pSleep();
 
   // Wake the specified thread, giving it the handle values.
-  void pWake(std::pair<THandle,HandleType>);
+  void pWake(THandle);
 
   // Wake a busy thread that was made busy by pBusySleep.
-  void pBusyWake(std::pair<THandle,HandleType>);
-
-  // Return the thread's handle value (same as returned by pSleep()).
-  HandleType pHandle(THandle);
-
-  // Set a thread's handle.
-  void pSetHandle(THandle,HandleType);
+  void pBusyWake(THandle);
 
   // Set current thread's priority.  This has the effect of performing a thread
   // swap so that the priority takes effect immediately.

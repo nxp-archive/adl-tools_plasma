@@ -37,16 +37,14 @@ namespace plasma {
     // will mark as done.
     void terminate(THandle t);
 
-    // Current thread sleeps.  When awakened, gets handle value sent by
-    // wake command.  Note:  You *must* have some other storage of this thread,
-    // since it's removed from the ready queue.
-    HandleType sleep();
+    // Current thread sleeps.  Note: You *must* have some other storage of this
+    // thread, since it's removed from the ready queue.
+    void sleep();
 
-    // Wake specified thread, switching to it and supplying specified handle.
-    void wake(THandle t,HandleType h);
+    // Wake specified thread.  This just adds the thread back to the ready queue.
+    void wake(THandle t);
     // Wake a busy processor (used with busysleep).
-    void busywake(Thread *t,HandleType h);
-
+    void busywake(THandle t);
 
     // Set the priority of the current thread.  Does not do any scheduling.
     // Note:  0 is highest priority from the point of view of the interface,
@@ -70,7 +68,7 @@ namespace plasma {
     void busy(ptime_t busyt,ptime_t userts);
 
     // Busy the processor until somebody wakes it up.
-    HandleType busysleep(ptime_t userts);    
+    void busysleep(ptime_t userts);    
     
     // Current time.
     ptime_t time() const;

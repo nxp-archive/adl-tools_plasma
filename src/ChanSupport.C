@@ -17,7 +17,7 @@ namespace plasma {
     Timeout *to = (Timeout *)a;
     pDelay(to->delay());
     to->_ready = true;
-    pWake(make_pair(to->reset(),to->_h));
+    pWake(to->reset());
   }
 
   // This will sleep if we're not ready and will clear
@@ -27,7 +27,7 @@ namespace plasma {
     pLock();
     if (!ready()) {
       pUnlock();
-      set_notify(pCurThread(),HandleType());
+      set_notify(pCurThread());
       pLock();
     }
     _ready = false;
@@ -51,11 +51,10 @@ namespace plasma {
     return t; 
   };
 
-  void Timeout::set_notify(plasma::THandle t,plasma::HandleType h)
+  void Timeout::set_notify(plasma::THandle t)
   {
     _ready = false;
     _readt = t;
-    _h = h;
     assert(!_writet);
     _writet = pSpawn(timeout,this,0);
   }
@@ -88,19 +87,18 @@ namespace plasma {
     ClockChanImpl(p,s,ms), _waket(0), _delay(0), _readt(0)
   {}
 
-  TPair SingleConsumerClockChannel::reset() 
+  THandle SingleConsumerClockChannel::reset() 
   { 
     THandle t = _readt; 
     _readt = 0; 
     _waket = 0;
-    return make_pair(t,_h);
+    return t;
   }
 
-  void SingleConsumerClockChannel::set_notify(THandle t,HandleType h) 
+  void SingleConsumerClockChannel::set_notify(THandle t) 
   { 
     assert(!_readt); 
     _readt = t; 
-    _h = h; 
     // If we have data, start the waker.  We don't need to check whether
     // the data is current b/c we wouldn't be here if it weren't.
     if (!empty()) {
@@ -158,7 +156,7 @@ namespace plasma {
     // If we're not empty, and we're here, then it's because we're not on a clock
     // edge- in that case we'll start a waker thread.
     // If we are empty, then we're ready for notification when we do get data.
-    set_notify(pCurThread(),HandleType());
+    set_notify(pCurThread());
     pSleep();
   }
 
@@ -171,18 +169,18 @@ namespace plasma {
   {}
 
   // Removes a consumer from the known set.
-  TPair MultiConsumerClockChannel::reset(MClkInfo::iterator iter) 
+  THandle MultiConsumerClockChannel::reset(MClkInfo::iterator iter) 
   { 
-    TPair t = iter->second._tinfo;
+    THandle t = iter->second._tinfo;
     _cons.erase(iter);
     return t;
   }
 
   // Adds a consumer to the known set and sets up a waker thread if
   // we have data.
-  void MultiConsumerClockChannel::set_notify(THandle t,HandleType h) 
+  void MultiConsumerClockChannel::set_notify(THandle t) 
   { 
-    pair<MClkInfo::iterator,bool> ip = _cons.insert(std::make_pair(t,MClk(t,h)));
+    pair<MClkInfo::iterator,bool> ip = _cons.insert(std::make_pair(t,MClk(t)));
     // If we have data, start the waker.  We don't need to check whether
     // the data is current b/c we wouldn't be here if it weren't.
     if (!empty()) {
@@ -259,7 +257,7 @@ namespace plasma {
     // If we're not empty, and we're here, then it's because we're not on a clock
     // edge- in that case we'll start a waker thread.
     // If we are empty, then we're ready for notification when we do get data.
-    set_notify(pCurThread(),HandleType());
+    set_notify(pCurThread());
     pSleep();
     clear_notify();
   }

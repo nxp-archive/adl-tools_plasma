@@ -207,20 +207,19 @@ namespace plasma {
   // re-busy itself to use up all of its time.  If the waking thread has a lower
   // priority, then we wake the thread, but the processor stays busy- when it
   // completes, the waking thread will then execute.
-  void Cluster::wake(Thread *t,HandleType h)
+  void Cluster::wake(THandle t)
   {
     lock();
-    t->setHandle(h);
     add_thread_to_proc(t);
     unlock();
   }
 
   // This will wake a busy processor- it's usually used in conjunction with
   // busysleep.
-  void Cluster::busywake(Thread *t,HandleType h)
+  void Cluster::busywake(Thread *t)
   {
     lock();
-    t->setHandle(h);
+    t->setValid(true);
     Proc *p = t->proc();
     p->clearBusyThread();
     add_proc(p);
@@ -255,14 +254,12 @@ namespace plasma {
   }
 
   // This causes a thread to sleep until something else wakes it up.
-  HandleType Cluster::sleep()
+  void Cluster::sleep()
   {
     // Prevent preemption.
     lock();
     // Switch to next thread- do not add this thread back to ready queue.
     exec_block();
-    // Return current handle of this thread.
-    return _cur->handle();
   }
 
   // Assuming we've setup the thread and processor to be busy, now we update time.
@@ -304,21 +301,17 @@ namespace plasma {
 
   // This is a cross between sleep and busy.  The processor remains busy
   // until something wakes it up.
-  HandleType Cluster::busysleep(ptime_t ts)
+  void Cluster::busysleep(ptime_t ts)
   {
     if (!thesystem.busyokay()) {
       pAbort("Error:  Attempt to consume time with pBusy(), but this system was not configured for time consumption.");
     }
-    // Loop until the handle is updated.  This handles the case where a higher priority thread
-    // wakes up the processor- we don't want to continue until we've gotten an actual signal.
-    _cur->clearHandle();
+    _cur->setValid(false);
     do {
       // Setup the thread.  Do not add to busy queue, since we're doing this for an indefinite
       // amount of time.
       do_busy(ts);
-    } while (!_cur->validHandle());
-    // Return current handle of this thread.
-    return _cur->handle();
+    } while (!_cur->valid());
   }
 
   // Normal busy call- this will make the processor busy for a certain amount of time.
@@ -543,7 +536,6 @@ namespace plasma {
     // For every waiting thread, add it back to the ready queue of its parent processor.
     // Then make sure that the processor is running.
     while (Thread *next = _cur->get_waiter()) {
-      next->setHandle(_cur->handle());
       next->proc()->add_ready(next);
       thecluster.add_proc(next->proc());
     }

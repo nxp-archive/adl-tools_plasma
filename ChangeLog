@@ -1,5 +1,9 @@
 2005-01-20  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Removed the handle from threads.  I still have a valid flag for
+	use by busysleep/busywake, but that's it.  Removed HandleType from
+	all channels.
+
 	* Re-wrote how alt works:  It no longer uses a handle.  Instead, a
 	thread goes asleep and when it wakes, it jumps back to the
 	checking logic.  This was done to fix a subtle bug with prialt:

@@ -111,29 +111,19 @@ namespace plasma {
     thecluster.terminate(t);
   }
 
-  HandleType pSleep()
+  void pSleep()
   {
-    return thecluster.sleep();
+    thecluster.sleep();
   }
 
-  void pWake(pair<THandle,HandleType> p)
+  void pWake(THandle t)
   {
-    thecluster.wake(p.first,p.second);
+    thecluster.wake(t);
   }
 
-  void pBusyWake(pair<THandle,HandleType> p)
+  void pBusyWake(THandle t)
   {
-    thecluster.busywake(p.first,p.second);
-  }
-
-  HandleType pHandle(THandle t)
-  {
-    return t->handle();
-  }
-
-  void pSetHandle(THandle t,HandleType h)
-  {
-    t->setHandle(h);
+    thecluster.busywake(t);
   }
 
   void pSetPriority(unsigned p)

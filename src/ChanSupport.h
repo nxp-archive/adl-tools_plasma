@@ -8,6 +8,7 @@
 
 #include <deque>
 #include <assert.h>
+#include <ext/hash_set>
 #include <ext/hash_map>
 
 namespace plasma {
@@ -35,25 +36,23 @@ namespace plasma {
 
     // These are marked as non-mutex b/c they are used by alt, which already
     // does the locking.
-    void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
+    void set_notify(THandle t) { assert(!_readt); _readt = t; };
     void clear_notify() { _readt = 0; };
 
   protected:
     // Do we have a waiting reader?
     bool have_reader() const { return _readt; };
-    std::pair<THandle,HandleType> notify_reader() { THandle t = _readt; _readt = 0; return std::make_pair(t,_h); };
+    THandle notify_reader() { THandle t = _readt; _readt = 0; return t; };
 
   private:
     THandle    _readt;
-    HandleType _h;
   };
 
   struct HashTHandle {
     size_t operator()( THandle t ) const { return (size_t)t; };
   };
 
-  typedef __gnu_cxx::hash_map<THandle,HandleType,HashTHandle> ConInfo;
-  typedef std::pair<THandle,HandleType> TPair;
+  typedef __gnu_cxx::hash_set<THandle,HashTHandle> ConInfo;
 
   // Base class for a simple channel that allows multiple consumers and multiple
   // producers.  Note:  The order in which multiple consumers will be satisfied
@@ -65,7 +64,7 @@ namespace plasma {
 
     // These are marked as non-mutex b/c they are used by alt, which already
     // does the locking.
-    void set_notify(THandle t,HandleType h) { _cons.insert(std::make_pair(t,h)); };
+    void set_notify(THandle t) { _cons.insert(t); };
     // This clears the notification for the current thread- should only be called by
     // reader threads.
     void clear_notify() { _cons.erase(_cons.find(pCurThread())); };
@@ -74,7 +73,7 @@ namespace plasma {
     // Do we have a waiting reader?
     bool have_reader() const { return !_cons.empty(); };
     // This gets the next reader in a non-deterministic fashion.
-    TPair notify_reader() { TPair t = *(_cons.begin()); _cons.erase(_cons.begin()); return t; };
+    THandle notify_reader() { THandle t = *(_cons.begin()); _cons.erase(_cons.begin()); return t; };
 
   private:
     ConInfo _cons;
@@ -111,7 +110,7 @@ namespace plasma {
 
     // These are marked as non-mutex b/c they are used by alt, which already
     // does the locking.
-    void set_notify(THandle t,HandleType h);
+    void set_notify(THandle t);
     THandle clear_notify();
 
   private:
@@ -122,7 +121,6 @@ namespace plasma {
     ptime_t    _delay;
     THandle    _readt;
     THandle    _writet;
-    HandleType _h;
   };
 
   // Non-templated implementation class used by ClockChan- do not use this
@@ -167,12 +165,12 @@ namespace plasma {
     SingleConsumerClockChannel(ptime_t p,ptime_t s,unsigned maxsize);
 
     bool have_reader() const { return _readt; };
-    void set_notify(THandle t,HandleType h);
+    void set_notify(THandle t);
     void clear_notify();
     void delayed_wakeup(bool current_data);
     void delayed_reader_wakeup();
     void start_waker();
-    TPair reset();
+    THandle reset();
     void cancel_waker();
     int delay() const { return _delay; };
 
@@ -180,14 +178,13 @@ namespace plasma {
     THandle    _waket;     // Thread which wakes reader at the correct time.
     int        _delay;     // Stores delay time for waker.
     THandle    _readt;     // Read thread.
-    HandleType _h;
   };
 
   struct MClk {
-    TPair      _tinfo;
+    THandle    _tinfo;
     THandle    _waker;
 
-    MClk(THandle t,HandleType h) : _tinfo(t,h), _waker(0) {};
+    MClk(THandle t) : _tinfo(t), _waker(0) {};
   };
   typedef __gnu_cxx::hash_map<THandle,MClk,HashTHandle> MClkInfo;
 
@@ -200,14 +197,14 @@ namespace plasma {
 
     void set_broadcast() { _broadcast = true; };
     bool have_reader() const { return !_cons.empty(); };
-    void set_notify(THandle t,HandleType h);
+    void set_notify(THandle t);
     void clear_notify();
     void cancel_waker(MClkInfo::iterator iter);
     // This wakes up the next available reader.
     void delayed_wakeup(bool current_data);
     void delayed_reader_wakeup();
     void start_waker(MClkInfo::iterator);
-    TPair reset(MClkInfo::iterator);
+    THandle reset(MClkInfo::iterator);
 
   private:
     bool        _broadcast;

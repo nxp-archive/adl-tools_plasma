@@ -21,7 +21,7 @@ public:
 
   // These are marked as non-mutex b/c they are used by alt, which already
   // does the locking.
-  void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+  void set_notify(THandle t) { assert(!_readt); _readt = t; };
   THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
 private:
   void set_writenotify(THandle t) { assert(!_writet); _writet = t; };
@@ -32,7 +32,6 @@ private:
   bool       _ready;
   THandle    _readt;
   THandle    _writet;
-  int        _h;
 };
 
   template <class Data>
@@ -40,7 +39,7 @@ private:
   {
     pLock();
     if (!_ready) {
-      set_notify(pCurThread(),0);
+      set_notify(pCurThread());
       pSleep();
     }
     if (_writet) {
@@ -65,7 +64,7 @@ private:
     _data = d;
     _ready = true;
     if (_readt) {
-      pWake(make_pair(clear_notify(),HandleType(_h,0)));
+      pWake(clear_notify());
     }
     pUnlock();
   };
@@ -126,16 +125,19 @@ void consumer(void *a)
 {
   IntChan *channels = ((IntChan*)a);
   for (int negcount = 0; negcount < NumChan; ) {
-    int j = 0;
-    pLock();
-    for ( ; j != NumChan; ++j) {
-      if (channels[j].ready()) {
-        goto DataReady;
-      } else {
-        channels[j].set_notify(pCurThread(),j);
+    int j;
+    while (true) {
+      j = 0;
+      pLock();
+      for ( ; j != NumChan; ++j) {
+        if (channels[j].ready()) {
+          goto DataReady;
+        } else {
+          channels[j].set_notify(pCurThread());
+        }
       }
+      pSleep();
     }
-    j = pSleep().first;
     pLock();
   DataReady:
     for ( int i = 0; i != NumChan; ++i) {

@@ -128,7 +128,7 @@ namespace plasma {
     Data get() { _read = true; return Base::value(); };
     void clear_ready() { _read = false; };
 
-    pNoMutex void set_notify(THandle t,HandleType h);
+    pNoMutex void set_notify(THandle t);
     pNoMutex THandle clear_notify();
   private:
     THandle _rt;
@@ -276,7 +276,7 @@ namespace plasma {
       // data.  This is in a loop in order to handle the multi-consumer
       // situation, where a consumer may be awakened, but finds that another
       // consumer already got to the data first.
-      Base::set_notify(pCurThread(),HandleType());
+      Base::set_notify(pCurThread());
       pSleep();
       Base::clear_notify();
     }
@@ -325,7 +325,7 @@ namespace plasma {
     if (!ready()) {
       // We don't have data, so the reader must
       // block until the writer adds data.
-      Base::set_notify(pCurThread(),HandleType());
+      Base::set_notify(pCurThread());
       pBusySleep(_timeslice);
     }
     if (clearready) {
@@ -372,7 +372,7 @@ namespace plasma {
     }
     // If no data- sleep until we get some.
     if (!ready()) {
-      Base::set_notify(pCurThread(),HandleType());
+      Base::set_notify(pCurThread());
       pSleep();
     }
     Data temp = _store.back();
@@ -411,12 +411,11 @@ namespace plasma {
   /////////////// ResChan ///////////////
 
   template <class Data>
-  void ResChan<Data>::set_notify(THandle t,HandleType h) 
+  void ResChan<Data>::set_notify(THandle t) 
   { 
     assert(!_rt); 
     _rt = t; 
     pAddWaiter(Base::thread(),_rt); 
-    pSetHandle(Base::thread(),h); 
   };
 
   template <class Data>

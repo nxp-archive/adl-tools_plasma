@@ -55,13 +55,12 @@ namespace plasma {
     void setState(State s) { _state = s; };
     bool done() const { return _state == Done; };
 
+    // State flag available for miscellaneous purposes.
+    bool valid() const { return _valid; };
+    void setValid(bool v) { _valid = v; };
+
     Proc *proc() const { return _proc; };
     void setProc(Proc *p) { _proc = p; };
-
-    HandleType handle() const { return _handle; };
-    bool validHandle() const { return (_handle.first >= 0); };
-    void clearHandle() { _handle = HandleType(-1,-1); };
-    void setHandle(HandleType h) { _handle = h; };
 
     unsigned priority() const { return _priority; };
     void setPriority(unsigned p) { _priority = p; };
@@ -87,13 +86,13 @@ namespace plasma {
 
     typedef std::vector<THandle,gc_allocator<THandle> > Waiters;
 
-    State        _state;           // Current thread state.
+    State       _state;            // Current thread state.
+    bool        _valid;            // Extra flag usable for state.
     Waiters     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
     void       *_stackend;         // End of stack pointer.
     Proc       *_proc;             // Parent processor.
-    HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
     ptime_t     _time;             // Busy or delay time of the thread.
     ptime_t     _starttime;        // Start time of a busy or delay.
@@ -103,6 +102,7 @@ namespace plasma {
 
   inline Thread::Thread() :
     _state(Run),
+    _valid(true),
     _thread(0),
     _stack(0),
     _stackend(0),
