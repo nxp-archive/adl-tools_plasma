@@ -6,8 +6,44 @@
 
 #include "VarWalker.h"
 #include "Plasma.h"
+#include "LdLeaf.h"
 
 using namespace std;
+
+// A line directive has to start at the beginning of a line, so
+// we always include a newline, then dump out the text.
+int LdLeaf::Write(ostream &out, int indent)
+{
+  char* ptr = data.leaf.position;
+  int len = data.leaf.length;
+
+  out << '\n';
+  out.write(ptr,len);
+  return 1;
+}
+
+// Given an environment and a ptree item, returns a filename and line number.
+// This will only work correctly if you give it a chunk of code from the original
+// program- it dives down until it finds the first leaf, then it uses that to get
+// the information.
+Ptree *getLineNumber(Environment *env,Ptree *expr,int &line)
+{
+  while (expr && !expr->IsLeaf()) {
+    expr = expr->Car();
+  }
+  return env->GetLineNumber(expr,line);
+}
+
+// Returns a line directive with the program location pointed to by expr.
+// Note:  Expr must come from the original program for this to work correctly.
+Ptree *lineDirective(Environment *env,Ptree *expr)
+{
+  int line;
+  Ptree *fn = getLineNumber(env,expr,line);
+  Ptree *p = Ptree::qMake("# `line` \"`fn`\"\n");
+  char *str = p->ToString();
+  return new LdLeaf(str,strlen(str));
+}
 
 // It should be valid to do this b/c there should only be one instance
 // of the Plasma object.
@@ -253,7 +289,9 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     // We insert a prototype before, and the actual function after, the current location
     // because we want to handle the case where the thread calls the current function recursively.
     InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
-    AppendAfterToplevel(benv,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
+    AppendAfterToplevel(benv,Ptree::List(Ptree::qMake("void `nfname`(void *`tsname`) {\n"),
+                                         lineDirective(env,expr),
+                                         Ptree::qMake("`TranslateExpression(env,nexpr)`\n}\n")));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
                                          "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`,`pri`).first;\n"));
@@ -264,7 +302,9 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *);\n"));
-    AppendAfterToplevel(benv,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
+    AppendAfterToplevel(benv,Ptree::List(Ptree::qMake("void `nfname`(void *) {\n"),
+                                         lineDirective(env,expr),
+                                         Ptree::qMake("`TranslateExpression(env,nexpr)`\n}\n")));
     elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0,`pri`);\n"));
   }
 }
@@ -943,16 +983,18 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
       // but we don't assign it to anything.
       cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` get();\n"));
     }
-    cur = lappend(cur,Ptree::qMake("{\n"
-                                   "`TranslateExpression(env,p.body)`\n"
-                                   "} } break;\n")); 
+    cur = lappend(cur,Ptree::qMake("{\n"));
+    cur = lappend(cur,lineDirective(env,p.body));
+    cur = lappend(cur,Ptree::qMake("`TranslateExpression(env,p.body)`\n"
+                                   "} } break;\n"));
   }
 
   // Write the default block code, if present.
   if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"
-                                    "`defaultblock`\n"
-                                    "} break;\n"));
+    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"));
+    cur = lappend(cur,lineDirective(env,defaultblock));
+    cur = lappend(cur,Ptree::qMake("`TranslateExpression(env,defaultblock)`\n"
+                                   "} break;\n"));
   }
 
   // End of switch statement.

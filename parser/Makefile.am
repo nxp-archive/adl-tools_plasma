@@ -18,7 +18,8 @@ noinst_HEADERS = \
 	Plasma.h \
 	VarWalker.h \
 	Wrapper.h \
-	Mutex.h
+	Mutex.h \
+	LdLeaf.h
 
 CLEANFILES= *.ii *-init.cc *.so
 
