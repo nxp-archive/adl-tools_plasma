@@ -121,6 +121,14 @@ vector<int,traceable_allocator<int> >
 	    arithmetic, and 128-bit or smaller vectors might be optimized to use
 	    Altivec.]))
 	 
+	 (item
+	    
+	    (p [For easily modifying configurations, a scripting interface is
+	    desirable.  We would like to make the Plasma interface language
+	    independent and have the actual implementation be hidden behind an
+	    interface.  For example, the interface might provide methods to run
+	    a script and query for name/value pairs of data.]))
+	    
 	 )
       
    )
