@@ -21,7 +21,7 @@ if [[ x$ac_qt_host = x ]] ; then
 	;;
     powerpc)
 	ac_qt_host="ppc"
-	CCASFLAGS="${CCASFLAGS} -mregnames"
+	CCASFLAGS="${CCASFLAGS} -mregnames -maltivec"
 	;;
     *)  
 	echo ""
