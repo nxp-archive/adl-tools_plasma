@@ -169,6 +169,7 @@ public:
 private:
   Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest);
   void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
   void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
                        Environment *env,bool heapalloc);
@@ -179,6 +180,9 @@ bool Plasma::Initialize()
   SetMetaclassForPlain("Plasma");
   RegisterNewBlockStatement("par");
   RegisterNewForStatement("pfor");
+  RegisterNewBlockStatement("alt");
+  RegisterNewClosureStatement("port");
+  RegisterNewBlockStatement("otherwise");
   return TRUE;
 }
 
@@ -209,15 +213,23 @@ Ptree *lappend(Ptree *l,Ptree *x)
   }
 }
 
+inline bool compare(Ptree *p,const char *s)
+{
+  return !strncmp(p->GetPosition(),s,p->GetLength());
+}
+
 // This figures out what kind of user statement we have and dispatches to thee
 // appropriate function.
 Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
 {
-  if (!strcmp(keyword->ToString(),"par")) {
+  if (compare(keyword,"par")) {
     return TranslatePar(env,keyword,rest);
   }
-  else if (!strcmp(keyword->ToString(),"pfor")) {
+  else if (compare(keyword,"pfor")) {
     return TranslatePfor(env,keyword,rest);
+  }
+  else if (compare(keyword,"alt")) {
+    return TranslateAlt(env,keyword,rest);
   }
 
   ErrorMessage(env, "unknown user statement encountered",nil,keyword);
@@ -369,4 +381,163 @@ void Plasma::makeThreadStruct(Environment *env,Ptree *type,Ptree *args)
     }
     cur = lappend(cur,Ptree::qMake("};\n"));
     InsertBeforeToplevel(env,front);
+}
+
+struct Port {
+  Ptree *chan;
+  Ptree *val;
+  Ptree *body;
+  Port(Ptree *c,Ptree *v,Ptree *b) : chan(c), val(v), body(b) {};
+};
+
+typedef vector<Port> PortVect;
+
+// Translate an alt block.
+Ptree* Plasma::TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  Ptree *body;
+
+  if(!Ptree::Match(rest, "[ %? ]", &body)){
+    ErrorMessage(env, "invalid alt statement", nil, keyword);
+    return nil;
+  }
+
+  // Ignore the braces.
+  body = body->Cadr();
+  
+  PortVect pv;
+  Ptree *defaultblock = nil;
+
+  // Walk through the statements in the alt block.  Each should be a 
+  // case statement or a default statement.
+  for (PtreeIter i = body; !i.Empty(); ++i) {
+    Ptree *cguard,*cbody;    
+    if (Ptree::Match(*i,"[ port ( %? ) %? ]",&cguard,&cbody)) {
+      Ptree *chan,*val;
+      if (Ptree::Match(cguard,"[ %? , %? ]",&chan,&val)) {
+        pv.push_back(Port(chan,val,cbody));
+      } 
+      else if (Ptree::Match(cguard,"[ %? ]",&chan)) {
+        pv.push_back(Port(chan,0,cbody));
+      } 
+      else {
+        ErrorMessage(env, "bad port statement:  Expected either a channel and value or just a channel.",nil,*i);        
+        return nil;
+      }
+    }
+    else if (Ptree::Match(*i,"[ { %* } ]")) {
+      defaultblock = *i;
+    } else {
+      ErrorMessage(env, "bad alt statement:  Only case or default statements are allowed within the block.",nil,*i);
+      return nil;
+    }
+  }
+
+  if (pv.empty()) {
+    ErrorMessage(env,"bad alt statement:  You must have at least one port or default block.",nil,keyword);
+    return nil;
+  }
+
+  Ptree *iname = Ptree::GenSym();  
+  Ptree *label = Ptree::GenSym();
+  Ptree *start = Ptree::List(Ptree::qMake("{\n"
+                                     "pLock();\n"
+                                     "int `iname`;\n"));
+  Ptree *cur = start;
+
+  // The first part of the alt block queries each channel to see
+  // if it has any data ready.
+  for (int index = 0; index != (int)pv.size(); ++index) {
+    const Port &port = pv[index];
+    cur = lappend(cur,Ptree::qMake("`iname` = `index`;\n"
+                               "if ( (`port.chan`).ready() ) { goto `label`; }\n"));
+  }
+
+  // If we have a default block, this becomes the last index in our
+  // case statement.  We jump directly there if we reach this point.
+  if (defaultblock) {
+    cur = lappend(cur,Ptree::qMake("`iname` = `(int)(pv.size())`;\n"));
+  } else {
+
+    // This generated code is only reached if no ports were ready.
+    // In that case, we set each channel to notify us when it has data.
+    for (int index = 0; index != (int)pv.size(); ++index) {
+      const Port &port = pv[index];
+      cur = lappend(cur,Ptree::qMake("(`port.chan`).set_notify(pCurThread(),`index`);\n"));
+    }
+
+    // Next, we sleep.  When we wake up, we get the handle of the channel
+    // which woke us.
+    cur = lappend(cur,Ptree::qMake("`iname` = pSleep();\n"
+                                   "pLock();\n"));
+
+    // Clear all notification, since we have a value.
+    for (unsigned index = 0; index != pv.size(); ++index) {
+      const Port &port = pv[index];
+      cur = lappend(cur,Ptree::qMake("(`port.chan`).clear_notify();\n"));
+    }
+
+  }
+
+  // Jump to the code for the relevant handle.
+  cur = lappend(cur,Ptree::qMake("`label`:\n"
+                             "switch(`iname`) {\n"));
+
+  Ptree *readname = Ptree::Make("read");
+
+  for (int index = 0; index != (int)pv.size(); ++index) {
+    const Port &port = pv[index];
+    if (port.val) {
+      // We only need to query the read member if the user wants
+      // to map the read value to a variable.
+      TypeInfo t;
+      if (!env->Lookup(port.chan->Car(),t)) {
+        ErrorMessage(env,"Channel not found.",nil,port.chan);
+        return nil;
+      }
+      Class *mc = 0;
+      if (t.IsReferenceType()) {
+        t.Dereference();
+      }
+      if (!t.IsClass(mc)) {
+        ErrorMessage(env,"Channel must be a class object.",nil,port.chan);
+        return nil;
+      }
+      assert(mc);
+      Member member;
+      if (!mc->LookupMember(readname,member)) {
+        ErrorMessage(env,"Bad channel:  No read() member found.",nil,port.chan);
+        return nil;
+      }
+      if (!member.IsFunction()) {
+        ErrorMessage(env,"Bad channel:  read() member is not a function.",nil,port.chan);
+        return nil;
+      }
+      TypeInfo rt;
+      member.Signature(rt);
+      rt.Dereference();
+      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
+                                     "`rt.MakePtree(port.val)` = (`port.chan`).get();\n"
+                                     "{\n"
+                                     "`port.body`\n"
+                                     "}\n"
+                                     "} break;\n"));
+    } else {
+      // Simple case- no value, so just insert code.
+      cur = lappend(cur,Ptree::qMake("case `index`: {\n"
+                                     "`port.body`\n"
+                                     "} break;\n"));      
+    }
+  }
+
+  // Write the default block code, if present.
+  if (defaultblock) {
+    cur = lappend(cur,Ptree::qMake("case `(int)(pv.size())`: {\n"
+                                    "`defaultblock`\n"
+                                    "} break;\n"));
+  }
+
+  cur = lappend(cur,Ptree::Make("}\n}\n"));
+
+  return start;
 }

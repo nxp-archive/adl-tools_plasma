@@ -33,6 +33,11 @@ my @Tests = (
 	      cmd     => "./chan1",
 	      checker => \&check_chan1,
 	     },
+	     # Channel test using alt.
+	     {
+	      cmd     => "./chan2",
+	      checker => \&check_chan2,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -134,24 +139,35 @@ sub check_qsort {
   }
 }
 
+sub check_chan1 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_channel (@_[0],"Data read from channel (\\d+):\\s+(\\d+)",\@data,5);
+}
+
+sub check_chan2 {
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  check_channel (@_[0],"Got a value from port c(\\d+):\\s+(\\d+)",\@data,5);
+}
+
 # Make sure that all expected integers are received.  These should
 # be four sets of ten integers starting at 10, 100, 1000, and 10000.
-sub check_chan1 {
-  my @lines = split /\n/,@_[0];
+sub check_channel {
+  my ($input,$regex,$data,$expNumFinish) = (shift,shift,shift,shift);
+  my @lines = split /\n/,$input;
   my $max = 10;
-  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
   my $numFinish = 0;
-  my $expNumFinish = 5;
+  dprint "Regex:  $regex\n";
   for (@lines) {
-    if ( /Data read from channel (\d+):\s+(\d+)/ ) {
+    dprint "Line:  $_\n";
+    if ( /$regex/ ) {
       my $chan = $1;
       my $val = $2;
       dprint "Read $val from channel $chan.\n";
-      if ($val >= $data[$chan]->[0] && $val < ($data[$chan]->[0]+$max)) {
-	--($data[$chan]->[1]);
+      if ($val >= $data->[$chan]->[0] && $val < ($data->[$chan]->[0]+$max)) {
+	--($data->[$chan]->[1]);
       } else {
 	print "Data out of bound for channel $chan:  Got $val, expected value in [",
-	  $data[$chan]->[0],":",($data[$chan]->[0]+$max),").\n";
+	  $data->[$chan]->[0],":",($data->[$chan]->[0]+$max),").\n";
 	die;
       }
     } elsif ( /(Producer|Consumer) done./ ) {
@@ -162,8 +178,8 @@ sub check_chan1 {
     print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
     die;
   }
-  for my $i (0..$#data) {
-    if ($data[$i]->[1]) {
+  for my $i (0..(scalar @{$data} - 1)) {
+    if ($data->[$i]->[1]) {
       print "Not all data was found for channel $i.\n";
       die;
     }

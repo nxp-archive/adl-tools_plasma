@@ -1,3 +1,22 @@
+2004-05-10  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Initial version of alt added.  The syntax is:
+
+	alt {
+	  port(<channel>[,<variable]) { <action> }
+	  ...
+	  [ { <default action> } ]
+	}
+
+	We check each channel listed in a port directive.  If one is found
+	ready, its action is executed.  If a variable is present in the
+	port statement, the value read from the channel is mapped to the
+	variable, which is in scope for the action code.  If the default
+	action block is present, then if no channels are ready, it is
+	executed.  Otherwise, if no channels are ready, the alt-block
+	sleeps until a channel is ready.  The action associated with the
+	ready channel is then executed.
+
 2004-05-07  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Expanded plasma-interface.h with functions needed to channels.
