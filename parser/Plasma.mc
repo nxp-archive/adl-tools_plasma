@@ -6,48 +6,9 @@
 #include "opencxx/ptree-core.h"
 
 #include "VarWalker.h"
+#include "Plasma.h"
 
 using namespace std;
-
-struct Port {
-  Ptree *chan;
-  Ptree *val;
-  Ptree *body;
-  Port(Ptree *c,Ptree *v,Ptree *b) : chan(c), val(v), body(b) {};
-};
-
-typedef vector<Port> PortVect;
-
-class Plasma : public Class {
-public:
-  // Main entry point for translating new constructs.
-  Ptree* TranslateUserPlain(Environment*,Ptree*, Ptree*);
-  // Translates spawn function call.
-  Ptree *TranslateFunctionCall(Environment *,Ptree *,Ptree *);
-  // Setup code.
-  static bool Initialize();
-
-private:
-  // Translation functions for the new types introduced by Plasma.
-  Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
-  Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
-  Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest);
-  Ptree* TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest);
-  Ptree* TranslateSpawn(Environment* env,Ptree* keyword, Ptree* rest);
-
-  // Various helper functions.
-  Ptree *generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *iname,
-                         const PortVect &pv,Ptree *defaultblock);
-  void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
-  void convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
-                       Environment *env,bool heapalloc);
-  bool parseAforCondition(VarWalker *vs,Environment *env,Ptree *s1,Ptree *s3);
-  bool parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &defaultblock);
-
-  bool checkForMemberCall(Environment *,Class* &,Environment* &,Ptree* &,Ptree* &);
-  bool makeSpawnStruct(Environment *env,Class *,TypeInfo,Ptree *,Ptree *);
-  bool makeSpawnFunc(Environment *env,Class *,TypeInfo,Ptree *,Ptree *,Ptree *,Ptree *);
-};
 
 bool Plasma::Initialize()
 {
@@ -78,30 +39,27 @@ string argList(const ArgVect &av)
   return s;
 }
 
+// Given a list and an object, appends the object to the list and returns
+// a pointer to the new end-of-list object.
 inline Ptree *lappend(Ptree *l,Ptree *x)
 {
   return Ptree::Last(Ptree::Snoc(l,x));
 }
 
-inline bool compare(Ptree *p,const char *s)
-{
-  return !strncmp(p->GetPosition(),s,p->GetLength());
-}
-
-// This figures out what kind of user statement we have and dispatches to thee
+// This figures out what kind of user statement we have and dispatches to the
 // appropriate function.
 Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
 {
-  if (compare(keyword,"par")) {
+  if (keyword->Eq("par")) {
     return TranslatePar(env,keyword,rest);
   }
-  else if (compare(keyword,"pfor")) {
+  else if (keyword->Eq("pfor")) {
     return TranslatePfor(env,keyword,rest);
   }
-  else if (compare(keyword,"alt")) {
+  else if (keyword->Eq("alt")) {
     return TranslateAlt(env,keyword,rest);
   }
-  else if (compare(keyword,"afor")) {
+  else if (keyword->Eq("afor")) {
     return TranslateAfor(env,keyword,rest);
   }
 
@@ -582,7 +540,7 @@ bool isPtrType(TypeInfo &t)
 // result of the function.  Trying to read the result before it's finished will block the thread.
 Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* preargs)
 {
-  if (!compare(spawnobj,"spawn")) {
+  if (!spawnobj->Eq("spawn")) {
     ErrorMessage(env,"bad spawn class- make sure that you haven't used the pSpawner keyword erroneously.",nil,spawnobj);
     return nil;
   }

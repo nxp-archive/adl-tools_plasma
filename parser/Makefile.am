@@ -15,6 +15,7 @@ TMutex_so_SOURCES = \
 	TMutex.mc
 
 noinst_HEADERS = \
+	Plasma.h \
 	VarWalker.h \
 	Wrapper.h \
 	Mutex.h

@@ -351,6 +351,23 @@ Clocked Channels
 
 Investigate further..
 
+Shared Data Structures - Improvements
+-------------------------------------
+
+Further support will be added to enable mutex regions within
+methods and plain functions.  This may take the form of a new block
+type, e.g::
+
+  mutex {
+    <...>
+  }
+
+It may also be necessary to introduce a mutex object with a pseudo method::
+
+  m.mutex {
+    <...>
+  }
+
 Garbage Collection
 ------------------
 
