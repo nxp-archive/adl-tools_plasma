@@ -40,13 +40,16 @@ namespace plasma {
   // Same as above, except that the data pointed to be args is copied to the
   // thread stack (nbytes worth).  The thread will receive a pointer to this
   // information.
-  THandle pSpawn(UserFunc *f,int nbytes,void *args);
+  std::pair<THandle,void *> pSpawn(UserFunc *f,int nbytes,void *args);
 
   // Add a thread to the ready queue, but do not task switch.
   void pAddReady(THandle);
 
   // Return a handle to the current thread.
   THandle pCurThread();
+
+  // Returns true if a thread is finished.
+  bool pDone(const THandle);
 
   // Wait on the specified thread.
   void pWait(THandle);

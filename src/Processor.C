@@ -159,7 +159,7 @@ namespace plasma {
   }
 
   // Create a thread and add to ready queue.
-  Thread *Processor::create(UserFunc *f,int nbytes,void  *args)
+  pair<Thread *,void *> Processor::create(UserFunc *f,int nbytes,void  *args)
   {
     lock();
     Thread *t = new Thread;
@@ -167,7 +167,7 @@ namespace plasma {
     memcpy(d,args,nbytes);
     thesystem.add_ready(t);
     unlock();
-    return t;
+    return make_pair(t,d);
   }
 
   // Causes the current thread to wait on the specified thread.
@@ -220,6 +220,14 @@ namespace plasma {
     exec_ready(ready,old);
   }
 
+  // Explicitly switch to the scheduler thread.
+  void Processor::runscheduler()
+  {
+    Thread *old = _cur;
+    _cur = &_main;
+    exec_ready(&_main,old);
+  }
+
   // Terminate the current thread, continue execution with next ready thread.
   void Processor::terminate()
   {
@@ -229,14 +237,6 @@ namespace plasma {
     Thread *old = _cur;
     _cur = ready;
     QT_ABORT(switch_term, old, 0, ready->thread());
-  }
-
-  // Explicitly switch to the scheduler thread.
-  void Processor::runscheduler()
-  {
-    Thread *old = _cur;
-    _cur = &_main;
-    exec_ready(&_main,old);
   }
 
   // This terminates a thread, returning the stack to the

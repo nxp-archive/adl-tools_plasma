@@ -20,14 +20,22 @@ typedef vector<Port> PortVect;
 
 class Plasma : public Class {
 public:
+  // Main entry point for translating new constructs.
   Ptree* TranslateUserPlain(Environment*,Ptree*, Ptree*);
+  // Translates spawn function call.
+  Ptree *TranslateFunctionCall(Environment *,Ptree *,Ptree *);
+  // Setup code.
   static bool Initialize();
 
 private:
+  // Translation functions for the new types introduced by Plasma.
   Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateAfor(Environment* env,Ptree* keyword, Ptree* rest);
+  Ptree* TranslateSpawn(Environment* env,Ptree* keyword, Ptree* rest);
+
+  // Various helper functions.
   Ptree *generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *iname,
                          const PortVect &pv,Ptree *defaultblock);
   void makeThreadStruct(Environment *env,Ptree *type,Ptree *args);
@@ -45,6 +53,7 @@ bool Plasma::Initialize()
   RegisterNewBlockStatement("alt");
   RegisterNewForStatement("afor");
   RegisterNewForStatement("port");
+  RegisterMetaclass("pSpawner","Plasma");
   return TRUE;
 }
 
@@ -218,16 +227,16 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::Thread *`thname` = plasma::pSpawn(`nfname`,sizeof(`tstype`),&`tsname`);\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`nfname`,sizeof(`tstype`),&`tsname`).first;\n"));
     } else {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::Thread *`thname` = plasma::pSpawn(`nfname`,&`tsname`);\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`nfname`,&`tsname`);\n"));
     }
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *);\n"));
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
-    elist = lappend(elist,Ptree::qMake("plasma::Thread *`thname` = plasma::pSpawn(`nfname`,0);\n"));
+    elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`nfname`,0);\n"));
   }
 }
 
@@ -557,4 +566,53 @@ bool Plasma::parseAltBlock(Environment *env,Ptree *body,PortVect &pv,Ptree* &def
     return false;
   }
   return true;
+}
+
+// Translates a spawn "function call".  It expects a single argument which must be a function
+// call or member invocation.  The arguments are evaluated immediately, then a thread is
+// launched of that function call.  The return value is a ResChannel object which contains the
+// result of the function.  Trying to read the result before it's finished will block the thread.
+Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* object, Ptree* preargs)
+{
+  if (!compare(object,"spawn")) {
+    ErrorMessage(env,"bad spawn class- make sure that you haven't used the pSpawner keyword erroneously.",nil,object);
+    return nil;
+  }
+
+  Ptree *args = TranslateArguments(env,preargs)->Cadr();
+
+  cout << "Args:  (" << args->Length() << "):  ";
+  args->Display2(cout);
+
+  if (args->Length() > 1) {
+    ErrorMessage(env,"The spawn operator accepts only one argument.",nil,object);
+    return nil;
+  }
+
+  Ptree *func,*fargs;
+
+  // Try to extract a function call.
+  if (!Ptree::Match(args,"[[ %? ( %? ) ]]",&func,&fargs)) {
+    ErrorMessage(env,"Invalid spawn call- argument must be a function call.",nil,args);
+    return nil;
+  }
+
+  // The argument type must be a function call.  Its return type will indicate
+  // the type of the result channel object.
+  TypeInfo t;
+  if (!env->Lookup(func,t)) {
+    ErrorMessage(env,"Could not lookup spawn argument.",nil,func);
+    return nil;
+  }
+
+  if (!t.IsFunction()) {
+    ErrorMessage(env,"Spawn argument must be a function call.",nil,func);
+    return nil;
+  }
+
+  // Remove function call aspect- just want return type.
+  t.Dereference();
+  cout << "Spawn's result is:  " << t.MakePtree(nil)->ToString() << endl;
+
+  return Ptree::Make("1");
 }

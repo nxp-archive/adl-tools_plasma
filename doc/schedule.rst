@@ -233,7 +233,7 @@ Description:
 
     Thread creation w/o synchronization, e.g.::
 
-      spawn foo(1,2,3);
+      spawn { foo(1,2,3); };
 
     Evaluates the argument (must resolve to a function or an object's member
     invocation).  The argument is launched as a thread.  The return value is an
@@ -251,7 +251,9 @@ Description:
 
 Implementation:
 
-    TBD
+    * Registered as a while-style statement.
+
+    * Need to handle void functions (those that don't return a value).
 
 Dependencies:
 

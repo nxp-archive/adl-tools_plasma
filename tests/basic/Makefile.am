@@ -1,7 +1,21 @@
 
 TESTS = regress
 
-check_PROGRAMS = par1 par2 par3 qsort chan1 chan2 chan3 chan4 chan5 chan6 chan7
+check_PROGRAMS = \
+	par1 \
+	par2 \
+	par3 \
+	qsort \
+	chan1 \
+	chan2 \
+	chan3 \
+	chan4 \
+	chan5 \
+	chan6 \
+	chan7 \
+	spawn1
+
+DEPENDENCIES = $(top_srcdir)/src/libplasma.a $(top_srcdir)/parser/Plasma.so
 
 par1_SOURCES = par1.pa
 
@@ -25,7 +39,9 @@ chan6_SOURCES = chan6.pa
 
 chan7_SOURCES = chan7.pa
 
-chan1_CXXFLAGS = -I$(top_srcdir)/src
+spawn1_SOURCES = spawn1.C
+
+AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

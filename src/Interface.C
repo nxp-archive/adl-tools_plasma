@@ -7,6 +7,8 @@
 #include "Processor.h"
 #include "System.h"
 
+using namespace std;
+
 namespace plasma {
 
   ConfigParms::ConfigParms() :
@@ -23,7 +25,7 @@ namespace plasma {
   }
 
   // Create a new thread and make it ready.
-  Thread *pSpawn(UserFunc *f,int nbytes,void *a)
+  pair<Thread *,void *> pSpawn(UserFunc *f,int nbytes,void *a)
   {
     return processor.create(f,nbytes,a);
   }
@@ -41,6 +43,11 @@ namespace plasma {
   void pWait(Thread *t)
   {
     processor.wait(t);
+  }
+
+  bool pDone(const THandle t)
+  {
+    return t->done();
   }
 
   void pYield()
