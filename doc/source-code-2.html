@@ -20,7 +20,7 @@
 
 <body class="section" bgcolor="#ffffff">
 <table width="100%" class="skribetitle"><tbody>
-<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>2 Example Source Code -- Network System Example</big></big></big></strong></div><center>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>2 Example Source Code -- RISC Pipeline Example 2</big></big></big></strong></div><center>
 </center>
 </td></tr></tbody></table>
 <table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
@@ -38,9 +38,10 @@
 <tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="source-code-1.html#RISC-Pipeline-Example">RISC Pipeline Example</a></td></tr>
- <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="source-code-2.html#Network-System-Example">Network System Example</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="source-code-3.html#Embedded-Application-Example">Embedded Application Example</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="source-code-4.html#Desktop-Application-Example">Desktop Application Example</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="source-code-2.html#RISC-Pipeline-Example-2">RISC Pipeline Example 2</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="source-code-3.html#Network-System-Example">Network System Example</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="source-code-4.html#Embedded-Application-Example">Embedded Application Example</a></td></tr>
+ <tr><td valign="top" align="left">5</td><td colspan="4" width="100%"><a href="source-code-5.html#Desktop-Application-Example">Desktop Application Example</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -48,849 +49,360 @@
 </center>
 </div></td>
 <td align="left" valign="top" class="skribe-body"><div class="skribe-body">
-<!-- eav/eav.pa -->
-<a name="eav/eav.pa"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">2.1 eav/eav.pa</font>
+<!-- ../doc/pipe2.pa -->
+<a name="../doc/pipe2.pa"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">2.1 ../doc/pipe2.pa</font>
 </h3></td></tr></table>
 </div><div class="subsection">
 <table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"><em>  1: </em><font color="#ffa600"><em>//</em></font>
-<em>  2: </em><font color="#ffa600"><em>// eav.sw: a simplistic model of the eav</em></font>
+<em>  2: </em><font color="#ffa600"><em>// Simple 5-stage DLX pipeline.</em></font>
 <em>  3: </em><font color="#ffa600"><em>//</em></font>
 <em>  4: </em>
-<em>  5: </em><font color="#1919af"><strong>#include</strong></font> &lt;vector&gt;
+<em>  5: </em><font color="#1919af"><strong>#include</strong></font> &lt;iostream&gt;
 <em>  6: </em>
-<em>  7: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
+<em>  7: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma/plasma.h&quot;</font>
 <em>  8: </em>
-<em>  9: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;Random.h&quot;</font>
-<em> 10: </em>
-<em> 11: </em>using namespace std;
-<em> 12: </em>using namespace plasma;
-<em> 13: </em>
-<em> 14: </em><font color="#ffa600"><em>//	this model says the eav is </em></font>
-<em> 15: </em><font color="#ffa600"><em>//	a set of user processes who squirt messages every now and then</em></font>
-<em> 16: </em><font color="#ffa600"><em>//      to a comms multiplexer</em></font>
-<em> 17: </em><font color="#ffa600"><em>//	a comms multiplexer who passes the messages on to a free transaction</em></font>
-<em> 18: </em><font color="#ffa600"><em>//      agent (there are fewer agents than terminals) </em></font>
-<em> 19: </em><font color="#ffa600"><em>//	tp agents who call upon database routines to effect transactions and</em></font>
-<em> 20: </em><font color="#ffa600"><em>//      who pass messages on to a memory manager </em></font>
-<em> 21: </em><font color="#ffa600"><em>//	the memory manager plays with journals and records and so forth, waiting</em></font>
-<em> 22: </em><font color="#ffa600"><em>//      for access to complete when needed.</em></font>
-<em> 23: </em><font color="#ffa600"><em>//	the system behavior is explored by having the memory manager sometimes use</em></font>
-<em> 24: </em><font color="#ffa600"><em>//      fast memory for storage and sometimes use a disk manager; the ratio </em></font>
-<em> 25: </em><font color="#ffa600"><em>//      between the two is a cache hit rate (ignoring writethru) and on an</em></font>
-<em> 26: </em><font color="#ffa600"><em>//      enterprise attack vehicle the hit rate is assumed to be 100%</em></font>
-<em> 27: </em><font color="#ffa600"><em>//	this version doesn't worry about contention for record locks between</em></font>
-<em> 28: </em><font color="#ffa600"><em>//      transactions</em></font>
-<em> 29: </em><font color="#ffa600"><em>//	this version uses a TP-1 like transaction - two reads and a write</em></font>
-<em> 30: </em>
-<em> 31: </em><font color="#ffa600"><em>// bkahne 21 june 2004</em></font>
-<em> 32: </em><font color="#ffa600"><em>//      conversion to plasma</em></font>
-<em> 33: </em><font color="#ffa600"><em>//</em></font>
-<em> 34: </em><font color="#ffa600"><em>// pete 26 july 1990</em></font>
-<em> 35: </em><font color="#ffa600"><em>//      modified june 3 1994: change to order of summary tps computation</em></font>
+<em>  9: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;helpers.h&quot;</font>
+<em> 10: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;NoBlock.h&quot;</font>
+<em> 11: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;dlx.h&quot;</font>
+<em> 12: </em>
+<em> 13: </em>using namespace std;
+<em> 14: </em>using namespace plasma;
+<em> 15: </em>using namespace dlx;
+<em> 16: </em>  
+<em> 17: </em><strong>typedef</strong> NoBlockChan&lt;instr_t&gt;     NbInstChan;
+<em> 18: </em><strong>typedef</strong> ClockChan&lt;int&gt;           ClkIntChan;
+<em> 19: </em><strong>typedef</strong> ClockChan&lt;instr_t&gt;       ClkInstChan;
+<em> 20: </em>
+<em> 21: </em><font color="#ffa600"><em>// The architecture- global for now.</em></font>
+<em> 22: </em>DLX arch;
+<em> 23: </em>
+<em> 24: </em><font color="#ffa600"><em>// A tick of 10 units   </em></font>
+<em> 25: </em>const int Clock = 10;
+<em> 26: </em>
+<em> 27: </em><font color="#ffa600"><em>// Command-line options.</em></font>
+<em> 28: </em>Options options;
+<em> 29: </em>
+<em> 30: </em><font color="#ffa600"><em>// Stage identifiers.</em></font>
+<em> 31: </em>const int FetchStage = 0;
+<em> 32: </em>const int DecodeStage = 1;
+<em> 33: </em>const int ExecStage = 2;
+<em> 34: </em>const int MemStage = 3;
+<em> 35: </em>const int WritebackStage = 4;
 <em> 36: </em>
-<em> 37: </em>
-<em> 38: </em><font color="#ffa600"><em>// timeunits.sw</em></font>
-<em> 39: </em><font color="#ffa600"><em>// names for the base values of time</em></font>
-<em> 40: </em>
-<em> 41: </em><strong>typedef</strong> int int32;
-<em> 42: </em>
-<em> 43: </em>const int32 musec = 1;
-<em> 44: </em>const int32 msec  = musec * 1000;
-<em> 45: </em>const int32 sec       = msec * 1000;
-<em> 46: </em>const int32 minute= sec * 60;
-<em> 47: </em>const int32 hour  = minute * 60;
-<em> 48: </em>const int32 day       = hour * 24;
-<em> 49: </em>
-<em> 50: </em><font color="#ffa600"><em>// configuration</em></font>
-<em> 51: </em>
-<em> 52: </em>const int32 ThinkTime = 1000;       <font color="#ffa600"><em>// average think time for user(msec)</em></font>
-<em> 53: </em>const int32 ThinkVar  = 250;        <font color="#ffa600"><em>// half the think range(msec)</em></font>
-<em> 54: </em>
-<em> 55: </em><font color="#ffa600"><em>// Instruction Path Lengths for Various Things</em></font>
-<em> 56: </em><font color="#ffa600"><em>// these numbers are from Tony Pizzarello's figures</em></font>
+<em> 37: </em><font color="#ffa600"><em>// Instruction classes.</em></font>
+<em> 38: </em>const int Load   = 0x0001;
+<em> 39: </em>const int Store  = 0x0002;
+<em> 40: </em>const int Branch = 0x0004;
+<em> 41: </em>
+<em> 42: </em><font color="#ffa600"><em>// This delays by one clock cycle.</em></font>
+<em> 43: </em>void atclock(int n = 1)
+<em> 44: </em><font color="red"><strong>{</strong></font>
+<em> 45: </em>  pDelay(Clock * n);
+<em> 46: </em><font color="red"><strong>}</strong></font>
+<em> 47: </em>
+<em> 48: </em><font color="#ffa600"><em>// This creates a pipeline bubble by</em></font>
+<em> 49: </em><font color="#ffa600"><em>// stalling a stage for a clock cycle.</em></font>
+<em> 50: </em>void stall(int n,ClkInstChan &amp;chan)
+<em> 51: </em><font color="red"><strong>{</strong></font>
+<em> 52: </em>  <strong>for</strong> (int i = 0; i != n; ++i) <font color="red"><strong>{</strong></font>
+<em> 53: </em>    chan.write(instr_t());
+<em> 54: </em>    pDelay(Clock);
+<em> 55: </em>  <font color="red"><strong>}</strong></font>
+<em> 56: </em><font color="red"><strong>}</strong></font>
 <em> 57: </em>
-<em> 58: </em>const int32 ReadPath        = 25000;    <font color="#ffa600"><em>// transaction path length (read)</em></font>
-<em> 59: </em>const int32 WritePath       = 25000;    <font color="#ffa600"><em>// .. after a write to db</em></font>
-<em> 60: </em>const int32 TermInPath          = 1500;     <font color="#ffa600"><em>// read message from terminal</em></font>
-<em> 61: </em>const int32 TermOutPath     = 1500;     <font color="#ffa600"><em>// send message to terminal</em></font>
-<em> 62: </em>const int32 DiskCmndPath    = 900;      <font color="#ffa600"><em>// instrucs to launch disk access</em></font>
-<em> 63: </em>const int32 DiskResponsePath    = 1200;             <font color="#ffa600"><em>// to read stuff back</em></font>
-<em> 64: </em>const int32 LockPath        = 7500;     <font color="#ffa600"><em>// to set a lock</em></font>
-<em> 65: </em>const int32 UnlockPath      = 500;      <font color="#ffa600"><em>// to unset a lock</em></font>
-<em> 66: </em>
-<em> 67: </em>const int32 VT100 = 0;
-<em> 68: </em>const int32 SuperMIPS = 1;
-<em> 69: </em>const int32 Interphase = 2;
-<em> 70: </em>const int32 num_terminals = 1000;       <font color="#ffa600"><em>// max number of terminals</em></font>
-<em> 71: </em>const int32 num_drives  = 100;          <font color="#ffa600"><em>// max number of drives</em></font>
+<em> 58: </em><font color="#ffa600"><em>//</em></font>
+<em> 59: </em><font color="#ffa600"><em>// Start of micro-architecture description.</em></font>
+<em> 60: </em><font color="#ffa600"><em>//</em></font>
+<em> 61: </em>        
+<em> 62: </em>void fetch(NbInstChan &amp;succ_chan,ClkInstChan &amp;branch_update, 
+<em> 63: </em>           ClkIntChan &amp;refetch_chan, ClkInstChan &amp;out)
+<em> 64: </em><font color="red"><strong>{</strong></font>
+<em> 65: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em> 66: </em>    atclock();
+<em> 67: </em>
+<em> 68: </em>    instr_t bupdate = (branch_update.ready()) ? branch_update.get() : 0;
+<em> 69: </em>    instr_t instr = arch.fetch(bupdate);
+<em> 70: </em>    update_pipe_report(FetchStage,instr);
+<em> 71: </em>    instr_t succ = succ_chan.get();
 <em> 72: </em>
-<em> 73: </em><strong>typedef</strong> vector&lt;int&gt; IntVect;
-<em> 74: </em><strong>typedef</strong> Channel&lt;int32&gt; Chan;
-<em> 75: </em><strong>typedef</strong> vector&lt;Chan&gt; Chans;
-<em> 76: </em>
-<em> 77: </em>Processors terminals(num_terminals);
-<em> 78: </em>Processor mainframe;
-<em> 79: </em>Processors diskdrives(num_drives);
-<em> 80: </em>
-<em> 81: </em><font color="#ffa600"><em>// Random number generation.</em></font>
-<em> 82: </em>Random&lt;&gt; Rand(1);
-<em> 83: </em>
-<em> 84: </em><font color="#ffa600"><em>//</em></font>
-<em> 85: </em><font color="#ffa600"><em>// Miscellaneous output routines to mirror those of sw.</em></font>
-<em> 86: </em><font color="#ffa600"><em>//</em></font>
-<em> 87: </em>
-<em> 88: </em>void say(const char *s)
-<em> 89: </em><font color="red"><strong>{</strong></font>
-<em> 90: </em>  mprintf (<font color="red">&quot;%s&quot;</font>,s);
-<em> 91: </em><font color="red"><strong>}</strong></font>
-<em> 92: </em>
-<em> 93: </em>void saynum(int32 d)
-<em> 94: </em><font color="red"><strong>{</strong></font>
-<em> 95: </em>  mprintf (<font color="red">&quot;%d&quot;</font>,d);
-<em> 96: </em><font color="red"><strong>}</strong></font>
-<em> 97: </em>
-<em> 98: </em>void sayflush()
-<em> 99: </em><font color="red"><strong>{</strong></font>
-<em>100: </em>  fflush(stdout);
-<em>101: </em><font color="red"><strong>}</strong></font>
-<em>102: </em>
-<em>103: </em><font color="#ffa600"><em>// Prints out x/y to 2 decimal places when x&gt;=0 and y&gt;=0</em></font>
-<em>104: </em>void printfixed(uint64 x, uint64 y) 
-<em>105: </em><font color="red"><strong>{</strong></font>
-<em>106: </em>  <strong>if</strong> (x == 0) <font color="red"><strong>{</strong></font>
-<em>107: </em>    mprintf(<font color="red">&quot;0.00&quot;</font>);
-<em>108: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (y == 0) <font color="red"><strong>{</strong></font>
-<em>109: </em>    mprintf(<font color="red">&quot;Infinity&quot;</font>);
-<em>110: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>111: </em>    uint64 vi = x/y;
-<em>112: </em>    uint64 vf = vi * y;
-<em>113: </em>    vf = x - vf;
-<em>114: </em>    <strong>if</strong> (vf &gt; 20000000) <font color="red"><strong>{</strong></font>
-<em>115: </em>      y = y/100;
-<em>116: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>117: </em>      vf = vf * 100;
-<em>118: </em>    <font color="red"><strong>}</strong></font>
-<em>119: </em>    vf = vf / y;
-<em>120: </em>    mprintf (<font color="red">&quot;%lld.%02lld&quot;</font>, vi, vf);
-<em>121: </em>  <font color="red"><strong>}</strong></font>
-<em>122: </em><font color="red"><strong>}</strong></font>
-<em>123: </em>
-<em>124: </em><font color="#ffa600"><em>// Debugging output:  Only displays if debug variable is set.</em></font>
-<em>125: </em>bool Debug = false;
-<em>126: </em>int dprintf(const char *fmt, ... )
-<em>127: </em><font color="red"><strong>{</strong></font>
-<em>128: </em>  <strong>if</strong> (Debug) <font color="red"><strong>{</strong></font>
-<em>129: </em>    va_list ap;
-<em>130: </em>    va_start (ap,fmt);
-<em>131: </em>    int c = mprintf(fmt,ap);
-<em>132: </em>    va_end (ap);
-<em>133: </em>    <strong>return</strong> c;
-<em>134: </em>  <font color="red"><strong>}</strong></font>
-<em>135: </em>  <strong>return</strong> 0;
-<em>136: </em><font color="red"><strong>}</strong></font>
-<em>137: </em>
-<em>138: </em><font color="#ffa600"><em>//////////////////////////// think /////////////////////////////// </em></font>
-<em>139: </em>
-<em>140: </em><font color="#ffa600"><em>// uses up compute time for the right number of microseconds</em></font>
-<em>141: </em><font color="#ffa600"><em>// given the number of instructions and the MIPS rate</em></font>
-<em>142: </em>void think(int32 mips, int32 instructions) 
-<em>143: </em><font color="red"><strong>{</strong></font>
-<em>144: </em>  pBusy(instructions/mips);
-<em>145: </em><font color="red"><strong>}</strong></font>
-<em>146: </em>
-<em>147: </em><font color="#ffa600"><em>//////////////////////////// user //////////////////////////////////</em></font>
-<em>148: </em>
-<em>149: </em><font color="#ffa600"><em>// a user</em></font>
-<em>150: </em>void user(Chan &amp;in, Chan &amp;out, int32 usernum, int32 max_in,
-<em>151: </em>          int32 &amp;transactions1, int32 &amp;times1, int32 &amp;transactions, int32 &amp;times)
-<em>152: </em><font color="red"><strong>{</strong></font>
-<em>153: </em>  int32 sigma_t = 0, dt;
-<em>154: </em>  int32 count = 0;
-<em>155: </em>  pDelay(Rand.uniform(0, 0, ThinkTime * msec)); <font color="#ffa600"><em>//stagger the start-ups of the users</em></font>
-<em>156: </em>  ptime_t now, max = max_in;
-<em>157: </em>  <strong>while</strong> ((now = pTime()) &lt; max) <font color="red"><strong>{</strong></font>
-<em>158: </em>    int32 dummy, t;
-<em>159: </em>    t = now;
-<em>160: </em>    dprintf (<font color="red">&quot;user %d:  Sent request\n&quot;</font>,usernum);
-<em>161: </em>    out.write(usernum);
-<em>162: </em>    dummy = in.get();
-<em>163: </em>    dprintf (<font color="red">&quot;user %d:  Got response.\n&quot;</font>,usernum);
-<em>164: </em>    dt = (now - t)/msec;            <font color="#ffa600"><em>// delta t in milliseconds</em></font>
-<em>165: </em>    count = count + 1;              <font color="#ffa600"><em>// number of transactions</em></font>
-<em>166: </em>    sigma_t = sigma_t + dt;             <font color="#ffa600"><em>// total response time</em></font>
-<em>167: </em>    transactions1 = transactions1 + 1;      <font color="#ffa600"><em>// global transaction sigma</em></font>
-<em>168: </em>    times1 = times1 + dt;                   <font color="#ffa600"><em>// global response time sigma</em></font>
-<em>169: </em>    pDelay(Rand.uniform(0, (ThinkTime - ThinkVar) * msec, 
-<em>170: </em>                 (ThinkTime + ThinkVar) * msec));
-<em>171: </em>    dprintf (<font color="red">&quot;user %d:  Total transactions %d at time %lld\n&quot;</font>,usernum,transactions1,now);
-<em>172: </em>  <font color="red"><strong>}</strong></font>
-<em>173: </em>  dprintf (<font color="red">&quot;user %d:  Done.\n&quot;</font>);
-<em>174: </em>  transactions = transactions + count;
-<em>175: </em>  times = times + sigma_t;
-<em>176: </em><font color="red"><strong>}</strong></font>
-<em>177: </em>
-<em>178: </em><font color="#ffa600"><em>///////////////////////// curr_stats ////////////////////////</em></font>
-<em>179: </em>
-<em>180: </em>void curr_stats(int32 maxtime, int32 &amp;transactions, int32 &amp;time) 
-<em>181: </em><font color="red"><strong>{</strong></font>
-<em>182: </em>  say(<font color="red">&quot;\n..&quot;</font>);
-<em>183: </em>  printfixed(pTime(), sec);
-<em>184: </em>  say(<font color="red">&quot; secs of &quot;</font>);
-<em>185: </em>  printfixed(maxtime, sec);
-<em>186: </em>  say(<font color="red">&quot; did &quot;</font>);
-<em>187: </em>  saynum(transactions);
-<em>188: </em>  say(<font color="red">&quot; = &quot;</font>);
-<em>189: </em>  printfixed(time, transactions);
-<em>190: </em>  say(<font color="red">&quot;ms/t;&quot;</font>);
-<em>191: </em><font color="red"><strong>}</strong></font>
-<em>192: </em>    
-<em>193: </em><font color="#ffa600"><em>////////////////////////////// dots ////////////////////////////////</em></font>
-<em>194: </em>
-<em>195: </em><font color="#ffa600"><em>// simply prints a dot every dt time units</em></font>
-<em>196: </em>void dots(int32 dt) 
-<em>197: </em><font color="red"><strong>{</strong></font>
-<em>198: </em>  <strong>if</strong> (dt &lt;= 0) <font color="red"><strong>{</strong></font>
-<em>199: </em>    dt = 1;
-<em>200: </em>  <font color="red"><strong>}</strong></font>
-<em>201: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>202: </em>    say(<font color="red">&quot;.&quot;</font>);
-<em>203: </em>    sayflush();
-<em>204: </em>    pDelay(dt);
-<em>205: </em>  <font color="red"><strong>}</strong></font>
-<em>206: </em><font color="red"><strong>}</strong></font>
-<em>207: </em>
-<em>208: </em><font color="#ffa600"><em>//////////////////////////// timestamp /////////////////////////////</em></font>
-<em>209: </em>
-<em>210: </em><font color="#ffa600"><em>// simply prints time every dt units</em></font>
-<em>211: </em>void timestamp(int32 dt, int32 maxtime, int32 &amp;transactions, int32 &amp;time) 
-<em>212: </em><font color="red"><strong>{</strong></font>
-<em>213: </em>  int32 newtime = 0;
-<em>214: </em>  ptime_t EndTime;
-<em>215: </em>  int32 LastCount = 0, LastTime = 0;
-<em>216: </em>  int32 newtrans, newdt, oldtrans = 0, olddt = 0;
-<em>217: </em>    
-<em>218: </em>  EndTime = (maxtime + (10 * ((ThinkTime + ThinkVar)* msec)));
-<em>219: </em>  <strong>if</strong> (maxtime &lt; 0) <font color="red"><strong>{</strong></font>
-<em>220: </em>    maxtime = 0x7fffffff;
-<em>221: </em>  <font color="red"><strong>}</strong></font>
-<em>222: </em>  <strong>if</strong> (EndTime &lt; 0) <font color="red"><strong>{</strong></font>
-<em>223: </em>    EndTime = 0x7fffffff;
-<em>224: </em>  <font color="red"><strong>}</strong></font>
-<em>225: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>226: </em>    <strong>if</strong> (pTime() &gt; EndTime) <font color="red"><strong>{</strong></font>
-<em>227: </em>      say(<font color="red">&quot;\n====Running much longer than expected; asked-for time is &quot;</font>);
-<em>228: </em>      printfixed(maxtime, msec);
-<em>229: </em>      say(<font color="red">&quot;\n\tmsec and now is &quot;</font>);
-<em>230: </em>      saynum(pTime()/msec);
-<em>231: </em>      say(<font color="red">&quot; msec.\n\n&quot;</font>);
-<em>232: </em>      curr_stats(maxtime, transactions, time);
-<em>233: </em>      pExit(1);
-<em>234: </em>    <font color="red"><strong>}</strong></font>
-<em>235: </em>    
-<em>236: </em>    curr_stats(maxtime, transactions, time);
-<em>237: </em>    <font color="#ffa600"><em>// now give average msec/transaction since last time</em></font>
-<em>238: </em>    newtrans = transactions - LastCount;
-<em>239: </em>    newdt   = time - LastTime;
-<em>240: </em>    <strong>if</strong> (newtrans &gt; 0) <font color="red"><strong>{</strong></font>     
-<em>241: </em>      int32 n, t;   
-<em>242: </em>      say(<font color="red">&quot; (&quot;</font>);
-<em>243: </em>      t = (newdt + olddt)/2;
-<em>244: </em>      n = (newtrans + oldtrans)/2;
-<em>245: </em>      printfixed(t, n);
-<em>246: </em>      olddt = t;
-<em>247: </em>      oldtrans = n;
-<em>248: </em>      LastCount = transactions;
-<em>249: </em>      LastTime	= time; 
-<em>250: </em>      say(<font color="red">&quot;ms/t)&quot;</font>);
-<em>251: </em>    <font color="red"><strong>}</strong></font>
-<em>252: </em>  
-<em>253: </em>    say(<font color="red">&quot;-&gt;&quot;</font>);
-<em>254: </em>    printfixed(newtrans, dt/sec);
-<em>255: </em>    say(<font color="red">&quot;tps.&quot;</font>);
-<em>256: </em>    sayflush();
-<em>257: </em>    pDelay((newtime + dt) - pTime());
-<em>258: </em>    newtime = newtime + dt;
-<em>259: </em>  <font color="red"><strong>}</strong></font>
-<em>260: </em><font color="red"><strong>}</strong></font>   
-<em>261: </em>    
-<em>262: </em><font color="#ffa600"><em>/////////////////////////// comms_in //////////////////////////</em></font>
-<em>263: </em>
-<em>264: </em><font color="#ffa600"><em>// comms_in listens to the terminals and sends their messages on to</em></font>
-<em>265: </em><font color="#ffa600"><em>//	one of the available transaction processes</em></font>
-<em>266: </em>
-<em>267: </em>void comms_in(int32 mips, Chans &amp;in, Chans &amp;out, Chans &amp;free) 
-<em>268: </em><font color="red"><strong>{</strong></font>
-<em>269: </em>  int32 terminal, tp;
-<em>270: </em>  say(<font color="red">&quot;\nComms starting.&quot;</font>);
-<em>271: </em>  <strong>while</strong> (1) <font color="red"><strong>{</strong></font>
-<em>272: </em>    afor (int i = 0; i != (int)in.size(); ++i) <font color="red"><strong>{</strong></font>
-<em>273: </em>      in[i].port(int v) <font color="red"><strong>{</strong></font>
-<em>274: </em>        <font color="#ffa600"><em>// Drain a value from the input channels.</em></font>
-<em>275: </em>        terminal = v;
-<em>276: </em>        dprintf (<font color="red">&quot;comms_in:  Got a value from terminal %d\n&quot;</font>,v);
-<em>277: </em>      <font color="red"><strong>}</strong></font>
-<em>278: </em>    <font color="red"><strong>}</strong></font>
-<em>279: </em>    <font color="#ffa600"><em>// Got input from a terminal; now find a free tp process</em></font>
-<em>280: </em>    afor (int i = 0; i != (int)free.size(); ++i) <font color="red"><strong>{</strong></font>
-<em>281: </em>      free[i].port() <font color="red"><strong>{</strong></font>
-<em>282: </em>        tp = i;
-<em>283: </em>        dprintf (<font color="red">&quot;comms_in:  Got a tp process %d\n&quot;</font>,tp);
-<em>284: </em>      <font color="red"><strong>}</strong></font>
-<em>285: </em>    <font color="red"><strong>}</strong></font>
-<em>286: </em>    <font color="#ffa600"><em>// Compute.</em></font>
-<em>287: </em>    think(mips, TermInPath);
-<em>288: </em>    dprintf (<font color="red">&quot;comms_in:  Finished thinking.\n&quot;</font>);
-<em>289: </em>    <font color="#ffa600"><em>// Send value.</em></font>
-<em>290: </em>    out[tp].write(terminal);
-<em>291: </em>    dprintf (<font color="red">&quot;comms_in:  Wrote value %d to tp %d\n&quot;</font>,terminal,tp);
+<em> 73: </em>    int refetch = (refetch_chan.ready()) ? refetch_chan.get() : 0;
+<em> 74: </em>    <strong>if</strong> (succ.is_of_class(Branch)) <font color="red"><strong>{</strong></font>
+<em> 75: </em>      refetch = true;
+<em> 76: </em>    <font color="red"><strong>}</strong></font>
+<em> 77: </em>
+<em> 78: </em>    succ_chan.write(instr); 
+<em> 79: </em>    <strong>if</strong> (instr.is_of_class(Branch) || refetch) <font color="red"><strong>{</strong></font>
+<em> 80: </em>      <font color="#ffa600"><em>// This is just needed to keep us from fetching past a branch</em></font>
+<em> 81: </em>      <font color="#ffa600"><em>// until we know the target.  This mainly just matters to avoid</em></font>
+<em> 82: </em>      <font color="#ffa600"><em>// fetching past a halt.</em></font>
+<em> 83: </em>      arch.incr_iar(-4);
+<em> 84: </em>    <font color="red"><strong>}</strong></font>      
+<em> 85: </em>    <strong>if</strong> (refetch) <font color="red"><strong>{</strong></font>
+<em> 86: </em>      succ_chan.write(instr_t()); 
+<em> 87: </em>      <strong>continue</strong>;
+<em> 88: </em>    <font color="red"><strong>}</strong></font>
+<em> 89: </em>
+<em> 90: </em>    out.write(instr);
+<em> 91: </em>  <font color="red"><strong>}</strong></font>
+<em> 92: </em><font color="red"><strong>}</strong></font>
+<em> 93: </em>
+<em> 94: </em>void decode(ClkInstChan &amp;in, ClkIntChan &amp;refetch_chan, ClkInstChan &amp;branch_update,
+<em> 95: </em>            NbInstChan &amp;succ_chan, NbInstChan &amp;exec_fwd, NbInstChan &amp;mem_fwd, 
+<em> 96: </em>            ClkInstChan &amp;out)
+<em> 97: </em><font color="red"><strong>{</strong></font>
+<em> 98: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em> 99: </em>    instr_t instr = in.get();
+<em>100: </em>    update_pipe_report(DecodeStage,instr);
+<em>101: </em>
+<em>102: </em>    <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>103: </em>      arch.read_operands(instr);
+<em>104: </em>      instr_t succ  = succ_chan.get();
+<em>105: </em>      instr_t exec  = exec_fwd.get();
+<em>106: </em>      instr_t mem   = mem_fwd.get();
+<em>107: </em>
+<em>108: </em>      <font color="#ffa600"><em>// Check for stalls here:</em></font>
+<em>109: </em>      <font color="#ffa600"><em>//  Prior instruction is a load and our op uses the target.</em></font>
+<em>110: </em>      <font color="#ffa600"><em>//  This instruction is a branch and op uses prior target.</em></font>
+<em>111: </em>      <strong>if</strong> (succ.is_of_class(Load) &amp;&amp; arch.operand_conflict(instr,succ)) <font color="red"><strong>{</strong></font>
+<em>112: </em>        <font color="#ffa600"><em>// Insert bubble.</em></font>
+<em>113: </em>        stall(1,out);
+<em>114: </em>        <font color="#ffa600"><em>// Issue instruction.</em></font>
+<em>115: </em>        succ_chan.write(instr);
+<em>116: </em>        out.write(instr);
+<em>117: </em>        <font color="#ffa600"><em>// Go to next cycle.</em></font>
+<em>118: </em>        atclock();
+<em>119: </em>        <strong>break</strong>;
+<em>120: </em>      <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (instr.is_of_class(Branch) ) <font color="red"><strong>{</strong></font>
+<em>121: </em>        <strong>if</strong> (arch.operand_conflict(instr,succ)) <font color="red"><strong>{</strong></font>
+<em>122: </em>          refetch_chan.write(1);
+<em>123: </em>          succ_chan.write(instr_t());
+<em>124: </em>          stall(1,out);
+<em>125: </em>          <strong>continue</strong>;
+<em>126: </em>        <font color="red"><strong>}</strong></font>
+<em>127: </em>      <font color="red"><strong>}</strong></font>
+<em>128: </em>      <font color="#ffa600"><em>// Branches update the iar in decode.</em></font>
+<em>129: </em>      <strong>if</strong> (instr.is_of_class(Branch)) <font color="red"><strong>{</strong></font>
+<em>130: </em>        arch.update_from_fwd(instr,exec);
+<em>131: </em>        arch.update_from_fwd(instr,mem);
+<em>132: </em>        arch.exec(instr);
+<em>133: </em>        branch_update.write(instr);
+<em>134: </em>      <font color="red"><strong>}</strong></font>
+<em>135: </em>      <font color="#ffa600"><em>// Normal condition- pass data to next stage.</em></font>
+<em>136: </em>      succ_chan.write(instr);
+<em>137: </em>      out.write(instr);
+<em>138: </em>      <strong>break</strong>;
+<em>139: </em>    <font color="red"><strong>}</strong></font>
+<em>140: </em>  <font color="red"><strong>}</strong></font>
+<em>141: </em><font color="red"><strong>}</strong></font>
+<em>142: </em>
+<em>143: </em>void exec(ClkInstChan &amp;in, NbInstChan &amp;mem_fwd_chan, 
+<em>144: </em>          NbInstChan &amp;exec_fwd_chan, NbInstChan &amp;decode_fwd_chan, 
+<em>145: </em>          ClkInstChan &amp;out)
+<em>146: </em><font color="red"><strong>{</strong></font>
+<em>147: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>148: </em>    instr_t instr = in.get();
+<em>149: </em>    update_pipe_report(ExecStage,instr);
+<em>150: </em>    instr_t mem_fwd = mem_fwd_chan.get();
+<em>151: </em>    instr_t exec_fwd = exec_fwd_chan.get();
+<em>152: </em>    arch.update_from_fwd(instr,exec_fwd);
+<em>153: </em>    arch.update_from_fwd(instr,mem_fwd);
+<em>154: </em>    <strong>if</strong> (!instr.is_of_class(Load | Store)) <font color="red"><strong>{</strong></font>
+<em>155: </em>      arch.exec(instr);
+<em>156: </em>    <font color="red"><strong>}</strong></font>
+<em>157: </em>    out.write(instr);
+<em>158: </em>    exec_fwd_chan.write(instr);
+<em>159: </em>    decode_fwd_chan.write(instr);
+<em>160: </em>  <font color="red"><strong>}</strong></font>
+<em>161: </em><font color="red"><strong>}</strong></font>
+<em>162: </em>
+<em>163: </em>void mem(ClkInstChan &amp;in,NbInstChan &amp;decode_fwd_chan,NbInstChan &amp;exec_fwd_chan,
+<em>164: </em>         NbInstChan &amp;mem_fwd_chan,ClkInstChan &amp;out) 
+<em>165: </em><font color="red"><strong>{</strong></font>
+<em>166: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>167: </em>    instr_t instr = in.get();
+<em>168: </em>    update_pipe_report(MemStage,instr);
+<em>169: </em>    instr_t mem_fwd = mem_fwd_chan.get();
+<em>170: </em>    arch.update_from_fwd(instr,mem_fwd);
+<em>171: </em>    arch.exec(instr);
+<em>172: </em>    out.write(instr);
+<em>173: </em>    decode_fwd_chan.write(instr);
+<em>174: </em>    exec_fwd_chan.write(instr);
+<em>175: </em>    mem_fwd_chan.write(instr);
+<em>176: </em>  <font color="red"><strong>}</strong></font>
+<em>177: </em><font color="red"><strong>}</strong></font>
+<em>178: </em>
+<em>179: </em>void writeback(ClkInstChan &amp;in)
+<em>180: </em><font color="red"><strong>{</strong></font>
+<em>181: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>182: </em>    instr_t instr = in.get();
+<em>183: </em>    update_pipe_report(WritebackStage,instr);
+<em>184: </em>    arch.commit(instr);
+<em>185: </em>  <font color="red"><strong>}</strong></font>
+<em>186: </em><font color="red"><strong>}</strong></font>
+<em>187: </em>
+<em>188: </em><font color="#ffa600"><em>//</em></font>
+<em>189: </em><font color="#ffa600"><em>// Start of setup code.</em></font>
+<em>190: </em><font color="#ffa600"><em>//</em></font>
+<em>191: </em>    
+<em>192: </em>void hangup();
+<em>193: </em>
+<em>194: </em>void microarch_setup()
+<em>195: </em><font color="red"><strong>{</strong></font>
+<em>196: </em>  arch.set_instr_class(<font color="red">&quot;lb&quot;</font>, Load);
+<em>197: </em>  arch.set_instr_class(<font color="red">&quot;lbu&quot;</font>,Load);
+<em>198: </em>  arch.set_instr_class(<font color="red">&quot;ld&quot;</font>, Load);
+<em>199: </em>  arch.set_instr_class(<font color="red">&quot;lf&quot;</font>, Load);
+<em>200: </em>  arch.set_instr_class(<font color="red">&quot;lh&quot;</font>, Load);
+<em>201: </em>  arch.set_instr_class(<font color="red">&quot;lhu&quot;</font>,Load);
+<em>202: </em>  arch.set_instr_class(<font color="red">&quot;lw&quot;</font>, Load);
+<em>203: </em>  arch.set_instr_class(<font color="red">&quot;sb&quot;</font>, Store);
+<em>204: </em>  arch.set_instr_class(<font color="red">&quot;sd&quot;</font>, Store);
+<em>205: </em>  arch.set_instr_class(<font color="red">&quot;sf&quot;</font>, Store);
+<em>206: </em>  arch.set_instr_class(<font color="red">&quot;sh&quot;</font>, Store);
+<em>207: </em>  arch.set_instr_class(<font color="red">&quot;sw&quot;</font>, Store);
+<em>208: </em>  arch.set_instr_class(<font color="red">&quot;beqz&quot;</font>, Branch);
+<em>209: </em>  arch.set_instr_class(<font color="red">&quot;bfpf&quot;</font>, Branch);
+<em>210: </em>  arch.set_instr_class(<font color="red">&quot;bfpt&quot;</font>, Branch);
+<em>211: </em>  arch.set_instr_class(<font color="red">&quot;bnez&quot;</font>, Branch);
+<em>212: </em>  arch.set_instr_class(<font color="red">&quot;j&quot;</font>,    Branch);
+<em>213: </em>  arch.set_instr_class(<font color="red">&quot;jal&quot;</font>,  Branch); 
+<em>214: </em>  arch.set_instr_class(<font color="red">&quot;jalr&quot;</font>, Branch);
+<em>215: </em>  arch.set_instr_class(<font color="red">&quot;jr&quot;</font>,   Branch);
+<em>216: </em>  arch.set_instr_class(<font color="red">&quot;halt&quot;</font>, Branch);
+<em>217: </em>  arch.set_halt_func(hangup);
+<em>218: </em>
+<em>219: </em>  set_stage_name(FetchStage,    <font color="red">&quot;fetch    &quot;</font>);
+<em>220: </em>  set_stage_name(DecodeStage,   <font color="red">&quot;decode   &quot;</font>);
+<em>221: </em>  set_stage_name(ExecStage,     <font color="red">&quot;exec     &quot;</font>);
+<em>222: </em>  set_stage_name(MemStage,      <font color="red">&quot;mem      &quot;</font>);
+<em>223: </em>  set_stage_name(WritebackStage,<font color="red">&quot;writeback&quot;</font>);
+<em>224: </em><font color="red"><strong>}</strong></font>
+<em>225: </em>
+<em>226: </em><font color="#ffa600"><em>// Watchdog timer stops the simulation after a specified amount of time.</em></font>
+<em>227: </em>void watchdog(unsigned n) 
+<em>228: </em><font color="red"><strong>{</strong></font>
+<em>229: </em>  cout &lt;&lt; <font color="red">&quot;\nTimeout is &quot;</font> &lt;&lt; n &lt;&lt; <font color="red">&quot; cycles\n\n&quot;</font>;
+<em>230: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>231: </em>    atclock(10);
+<em>232: </em>    printf(<font color="red">&quot;.&quot;</font>);
+<em>233: </em>    <strong>if</strong> (pTime() &gt; n) <font color="red"><strong>{</strong></font>
+<em>234: </em>      cout &lt;&lt; <font color="red">&quot;\nStopping- timeout at &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;
+<em>235: </em>      pExit(1);
+<em>236: </em>    <font color="red"><strong>}</strong></font>
+<em>237: </em>  <font color="red"><strong>}</strong></font>
+<em>238: </em><font color="red"><strong>}</strong></font>
+<em>239: </em>
+<em>240: </em><font color="#ffa600"><em>// This function is called when the machine is halted.</em></font>
+<em>241: </em>void hangup()
+<em>242: </em><font color="red"><strong>{</strong></font>
+<em>243: </em>  <strong>if</strong> (options._ep) <font color="red"><strong>{</strong></font>
+<em>244: </em>    cout &lt;&lt; <font color="red">&quot;\n&lt;STATE&gt;\n&quot;</font>;
+<em>245: </em>    arch.print_state(cout,true);
+<em>246: </em>    cout &lt;&lt; <font color="red">&quot;\n&quot;</font>;
+<em>247: </em>    arch.print_mem(cout,true);
+<em>248: </em>    cout &lt;&lt; <font color="red">&quot;&lt;/STATE&gt;\n&quot;</font>;
+<em>249: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>250: </em>    <font color="#ffa600"><em>// Make sure that there's a final pipeline report.</em></font>
+<em>251: </em>    <strong>if</strong> (options._pr) <font color="red"><strong>{</strong></font>
+<em>252: </em>      pipe_report(cout,0);
+<em>253: </em>    <font color="red"><strong>}</strong></font>
+<em>254: </em>    cout &lt;&lt; <font color="red">&quot;\n\n&quot;</font>
+<em>255: </em>         &lt;&lt; <font color="red">&quot;End of simulation at time &quot;</font> &lt;&lt; dec &lt;&lt; pTime() &lt;&lt; <font color="red">&quot;\n&quot;</font>
+<em>256: </em>         &lt;&lt; <font color="red">&quot;Number of fetches:  &quot;</font> &lt;&lt; arch.get_num_fetches() &lt;&lt; <font color="red">&quot;\n&quot;</font>
+<em>257: </em>         &lt;&lt; <font color="red">&quot;Number of commits:  &quot;</font> &lt;&lt; arch.get_num_commits() &lt;&lt; <font color="red">&quot;\n&quot;</font>;
+<em>258: </em>    arch.print_state(cout);
+<em>259: </em>    cout &lt;&lt; <font color="red">&quot;\n&quot;</font>;
+<em>260: </em>    arch.print_mem(cout);
+<em>261: </em>  <font color="red"><strong>}</strong></font>
+<em>262: </em>  pExit(0);
+<em>263: </em><font color="red"><strong>}</strong></font>
+<em>264: </em>
+<em>265: </em>int pipeline_report(unsigned delay) 
+<em>266: </em><font color="red"><strong>{</strong></font>
+<em>267: </em>  pDelay(delay);
+<em>268: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
+<em>269: </em>    atclock();
+<em>270: </em>    pipe_report(cout,delay);
+<em>271: </em>  <font color="red"><strong>}</strong></font>
+<em>272: </em>  <strong>return</strong> 0;
+<em>273: </em><font color="red"><strong>}</strong></font>
+<em>274: </em>
+<em>275: </em><font color="#ffa600"><em>// Shut off preemption.</em></font>
+<em>276: </em>void pSetup(ConfigParms &amp;cp)
+<em>277: </em><font color="red"><strong>{</strong></font>
+<em>278: </em>  cp._busyokay = true;
+<em>279: </em><font color="red"><strong>}</strong></font>
+<em>280: </em>
+<em>281: </em>bool init(int argc,const char *argv[])
+<em>282: </em><font color="red"><strong>{</strong></font>
+<em>283: </em>  printf(<font color="red">&quot;\n\n\n\n&quot;</font>
+<em>284: </em>         <font color="red">&quot;Simple 5-stage DLX pipeline\n&quot;</font>);
+<em>285: </em>
+<em>286: </em>  <strong>if</strong> (!process_args(options,argc,argv)) <font color="red"><strong>{</strong></font>
+<em>287: </em>    <strong>return</strong> false;
+<em>288: </em>  <font color="red"><strong>}</strong></font>
+<em>289: </em>  
+<em>290: </em>  <strong>if</strong> (!load_files(arch,options._files)) <font color="red"><strong>{</strong></font>
+<em>291: </em>    <strong>return</strong> false;
 <em>292: </em>  <font color="red"><strong>}</strong></font>
-<em>293: </em><font color="red"><strong>}</strong></font>
-<em>294: </em>
-<em>295: </em><font color="#ffa600"><em>/////////////////////////////// comms_out /////////////////////////</em></font>
-<em>296: </em>
-<em>297: </em><font color="#ffa600"><em>// This collects up the outputs from the tp agents and sends them</em></font>
-<em>298: </em><font color="#ffa600"><em>// back out to the terminals    </em></font>
-<em>299: </em>void comms_out(int32 mips, Chans &amp;from_agents, Chans &amp;to_terminals)
-<em>300: </em><font color="red"><strong>{</strong></font>
-<em>301: </em>  int32 terminal;
-<em>302: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>303: </em>    afor(unsigned i = 0; i != from_agents.size(); ++i) <font color="red"><strong>{</strong></font>
-<em>304: </em>      from_agents[i].port(int v) <font color="red"><strong>{</strong></font>
-<em>305: </em>        terminal = v;
-<em>306: </em>        dprintf (<font color="red">&quot;comms_out:  Got tp message of %d.\n&quot;</font>,terminal);
-<em>307: </em>      <font color="red"><strong>}</strong></font>
-<em>308: </em>    <font color="red"><strong>}</strong></font>
-<em>309: </em>    <font color="#ffa600"><em>// ok, got the value back from the system. give it to a terminal</em></font>
-<em>310: </em>    think(mips, TermOutPath);
-<em>311: </em>    dprintf (<font color="red">&quot;comms_out:  Finished thinking.\n&quot;</font>);
-<em>312: </em>    to_terminals[terminal].write(terminal);
-<em>313: </em>    dprintf (<font color="red">&quot;comms_out:  Send messageof %d to terminal %d.\n&quot;</font>,terminal,terminal);
-<em>314: </em>  <font color="red"><strong>}</strong></font>
-<em>315: </em><font color="red"><strong>}</strong></font>
-<em>316: </em>    
-<em>317: </em><font color="#ffa600"><em>//////////////////////// transaction routines /////////////////////</em></font>
-<em>318: </em>
-<em>319: </em><font color="#ffa600"><em>// these routines 'do transactions'; they call upon the memory manager</em></font>
-<em>320: </em><font color="#ffa600"><em>//	(who can be in essence a ram manager or a disk manager) to read,</em></font>
-<em>321: </em><font color="#ffa600"><em>//	lock, write, free etc things, and they wait for writes to complete</em></font>
-<em>322: </em><font color="#ffa600"><em>//	appropriately thus getting the right amount of performance-sapping</em></font>
-<em>323: </em><font color="#ffa600"><em>//	synchronisation</em></font>
-<em>324: </em>
-<em>325: </em><font color="#ffa600"><em>//	in this version, everybody just tosses pennies; there's no representation</em></font>
-<em>326: </em><font color="#ffa600"><em>//	of real records. also, we assume no contention for records for the moment</em></font>
-<em>327: </em><font color="#ffa600"><em>//	and further, we assume that no record is locked over multiple terminal</em></font>
-<em>328: </em><font color="#ffa600"><em>//	requests.</em></font>
+<em>293: </em>
+<em>294: </em>  <strong>if</strong> (options._pr) <font color="red"><strong>{</strong></font>
+<em>295: </em>    spawn(pipeline_report(1));
+<em>296: </em>  <font color="red"><strong>}</strong></font>
+<em>297: </em>
+<em>298: </em>  microarch_setup();
+<em>299: </em>
+<em>300: </em>  printf(<font color="red">&quot;\nCode and registers initialised.&quot;</font>);
+<em>301: </em>  <strong>return</strong> true;
+<em>302: </em><font color="red"><strong>}</strong></font>
+<em>303: </em>
+<em>304: </em>int pMain(int argc,const char *argv[]) 
+<em>305: </em><font color="red"><strong>{</strong></font>
+<em>306: </em>  <strong>if</strong> (!init(argc,argv)) <font color="red"><strong>{</strong></font>
+<em>307: </em>    <strong>return</strong> usage(argv[0]);
+<em>308: </em>  <font color="red"><strong>}</strong></font>
+<em>309: </em>
+<em>310: </em>  <font color="#ffa600"><em>//</em></font>
+<em>311: </em>  <font color="#ffa600"><em>// Define the communication channels.</em></font>
+<em>312: </em>  <font color="#ffa600"><em>// </em></font>
+<em>313: </em>
+<em>314: </em>  ClkInstChan 
+<em>315: </em>    fetch2decode(Clock),
+<em>316: </em>    br_decode2fetch(Clock),
+<em>317: </em>    decode2exec(Clock),
+<em>318: </em>    exec2mem(Clock),
+<em>319: </em>    mem2wb(Clock/2);
+<em>320: </em>
+<em>321: </em>  NbInstChan
+<em>322: </em>    fetch2fetch(Clock),
+<em>323: </em>    decode2decode(Clock),
+<em>324: </em>    exec2decode(Clock),
+<em>325: </em>    exec2exec(Clock),
+<em>326: </em>    mem2decode(Clock),
+<em>327: </em>    mem2exec(Clock),
+<em>328: </em>    mem2mem(Clock);
 <em>329: </em>
-<em>330: </em><font color="#ffa600"><em>///////////////////////// DISKS ////////////////////////////////</em></font>
-<em>331: </em>
-<em>332: </em>const int32 Read = 0, Write_synch = 1, Write_asynch = 2;
-<em>333: </em>
-<em>334: </em><font color="#ffa600"><em>//////////////////////// disk_manager //////////////////////////</em></font>
-<em>335: </em>
-<em>336: </em><font color="#ffa600"><em>// the disk manager listens to all the tp agents who may sometimes</em></font>
-<em>337: </em><font color="#ffa600"><em>// call upon him to do disk accesses</em></font>
-<em>338: </em><font color="#ffa600"><em>// the disk manager runs a number of disks, which he chooses between </em></font>
-<em>339: </em><font color="#ffa600"><em>// at random for a request. each disk is represented by a process</em></font>
-<em>340: </em><strong>class</strong> DiskManager <font color="red"><strong>{</strong></font>
-<em>341: </em>
-<em>342: </em>public:
-<em>343: </em>
-<em>344: </em>  <font color="#ffa600"><em>// a sequential buffer implementation</em></font>
-<em>345: </em>  void drive_buffer(int32 buff_size, Chan &amp;in, Chan &amp;out, int32 number) 
-<em>346: </em>  <font color="red"><strong>{</strong></font>
-<em>347: </em>    IntVect stuff(buff_size);
-<em>348: </em>
-<em>349: </em>    Chan in_to_out, out_to_in;
-<em>350: </em>    bool in_asleep = false, out_asleep = true;
-<em>351: </em>    int32 inptr = 0, outptr = 0, count = 0;
-<em>352: </em>
-<em>353: </em>    <font color="#ffa600"><em>// the input handler    </em></font>
-<em>354: </em>    par <font color="red"><strong>{</strong></font>
-<em>355: </em>      <font color="red"><strong>{</strong></font>
-<em>356: </em>        int32 any;
-<em>357: </em>        <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>358: </em>          int32 data = in.get();
-<em>359: </em>          stuff[inptr] = data;
-<em>360: </em>          inptr = (inptr + 1) % buff_size;	<font color="#ffa600"><em>// increment in pointer</em></font>
-<em>361: </em>          count = count + 1;            <font color="#ffa600"><em>// increment count</em></font>
-<em>362: </em>          <strong>if</strong> (out_asleep) <font color="red"><strong>{</strong></font>
-<em>363: </em>            out_asleep = false;
-<em>364: </em>            in_to_out.write(any);
-<em>365: </em>          <font color="red"><strong>}</strong></font>
-<em>366: </em>          <strong>if</strong> (count == buff_size) <font color="red"><strong>{</strong></font>
-<em>367: </em>            <font color="#ffa600"><em>// buffer is full</em></font>
-<em>368: </em>            in_asleep = true;
-<em>369: </em>            any = out_to_in.get();
-<em>370: </em>          <font color="red"><strong>}</strong></font>
-<em>371: </em>        <font color="red"><strong>}</strong></font>
-<em>372: </em>      <font color="red"><strong>}</strong></font>
-<em>373: </em>      <font color="red"><strong>{</strong></font>
-<em>374: </em>        <font color="#ffa600"><em>// the output handler   </em></font>
-<em>375: </em>        int32 data, any;
-<em>376: </em>        <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>377: </em>          <font color="#ffa600"><em>// first see if we got any data</em></font>
-<em>378: </em>          <strong>if</strong> (out_asleep) <font color="red"><strong>{</strong></font>
-<em>379: </em>            any = in_to_out.get();	<font color="#ffa600"><em>// wait for stuff</em></font>
-<em>380: </em>          <font color="red"><strong>}</strong></font>
-<em>381: </em>          data = stuff[outptr];
-<em>382: </em>          out.write(data);
-<em>383: </em>          outptr = (outptr + 1) % buff_size;
-<em>384: </em>          count = count - 1;
-<em>385: </em>          <strong>if</strong> (in_asleep) <font color="red"><strong>{</strong></font>
-<em>386: </em>            <font color="#ffa600"><em>// in has gone to sleep</em></font>
-<em>387: </em>            in_asleep = false;
-<em>388: </em>            out_to_in.write(any);   <font color="#ffa600"><em>// wake him up</em></font>
-<em>389: </em>          <font color="red"><strong>}</strong></font>
-<em>390: </em>          <strong>if</strong> (count == 0) <font color="red"><strong>{</strong></font>
-<em>391: </em>            out_asleep = true;
-<em>392: </em>          <font color="red"><strong>}</strong></font>
-<em>393: </em>        <font color="red"><strong>}</strong></font>    
-<em>394: </em>      <font color="red"><strong>}</strong></font>
-<em>395: </em>    <font color="red"><strong>}</strong></font>
-<em>396: </em>  <font color="red"><strong>}</strong></font>
-<em>397: </em>
-<em>398: </em>  <font color="#ffa600"><em>//////////////////////// drive /////////////////////////</em></font>
-<em>399: </em>
-<em>400: </em>  void drive(Chan &amp;in, Chan &amp;out, int32 n) 
-<em>401: </em>  <font color="red"><strong>{</strong></font>
-<em>402: </em>    int32 cmnd;
-<em>403: </em>    const int32 rotation_time = 10 * msec;
-<em>404: </em>    const int32 seek_time = 100 * musec;    <font color="#ffa600"><em>// per track</em></font>
-<em>405: </em>    const int32 settling_time = 1 * msec;
-<em>406: </em>    const int32 num_tracks	= 100;
-<em>407: </em>    <font color="#ffa600"><em>// these disks have a rotation speed of 10 msec, a head movement and</em></font>
-<em>408: </em>    <font color="#ffa600"><em>// settling time of 100musec/track + 1 msec, 100 tracks, and are </em></font>
-<em>409: </em>    <font color="#ffa600"><em>// unsynchronised.</em></font>
-<em>410: </em>    
-<em>411: </em>    int32 agent;
-<em>412: </em>    int32 track = 0;
-<em>413: </em>    int32 newtrack = 0;
-<em>414: </em>    int32 dtrack;
-<em>415: </em>    
-<em>416: </em>    pDelay(Rand.uniform(0, 10 * msec, 20 * msec));
-<em>417: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>418: </em>      int32 wait_time;
-<em>419: </em>      
-<em>420: </em>      cmnd = in.get();             <font color="#ffa600"><em>// get the composite command</em></font>
-<em>421: </em>      agent = cmnd &gt;&gt; 16;          <font color="#ffa600"><em>// resolve into agent number</em></font>
-<em>422: </em>      cmnd = cmnd &amp; 255;           <font color="#ffa600"><em>// ..and command</em></font>
-<em>423: </em>      newtrack = Rand.uniform(0, 0, num_tracks);
-<em>424: </em>      <strong>if</strong> (newtrack &lt; track) <font color="red"><strong>{</strong></font>
-<em>425: </em>    dtrack = track - newtrack;
-<em>426: </em>      <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>427: </em>        dtrack = newtrack - track;
-<em>428: </em>      <font color="red"><strong>}</strong></font>
-<em>429: </em>      wait_time = Rand.uniform(0, 0, rotation_time) + <font color="#ffa600"><em>// rotate latency</em></font>
-<em>430: </em>        (dtrack * seek_time) +      <font color="#ffa600"><em>// seek latency</em></font>
-<em>431: </em>        settling_time;
-<em>432: </em>      pDelay(wait_time);
-<em>433: </em>      <font color="#ffa600"><em>// synchronous command?</em></font>
-<em>434: </em>      <strong>if</strong> ((cmnd == Read) || (cmnd == Write_synch)) <font color="red"><strong>{</strong></font>
-<em>435: </em>    out.write(agent);
-<em>436: </em>      <font color="red"><strong>}</strong></font>
-<em>437: </em>      pDelay(100 * musec);
-<em>438: </em>    <font color="red"><strong>}</strong></font>
-<em>439: </em>  <font color="red"><strong>}</strong></font>
-<em>440: </em>
-<em>441: </em>  <font color="#ffa600"><em>///////////////////////// manager /////////////////////////</em></font>
-<em>442: </em>    
-<em>443: </em>  <font color="#ffa600"><em>// Accepts commands from tp agents and sends to drives</em></font>
-<em>444: </em>  void manager(int32 mips, int32 disks, Chans &amp;commands, Chans &amp;to_drives)
-<em>445: </em>  <font color="red"><strong>{</strong></font>  
-<em>446: </em>    int32 cmnd, agent, drivenum, composite;
-<em>447: </em>    say(<font color="red">&quot;\nDisk manager starting.&quot;</font>);    
-<em>448: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>449: </em>      dprintf (<font color="red">&quot;disk manager:  waiting for command.\n&quot;</font>,cmnd,agent);
-<em>450: </em>      afor(unsigned i = 0; i != commands.size(); ++i) <font color="red"><strong>{</strong></font>
-<em>451: </em>        commands[i].port(int v) <font color="red"><strong>{</strong></font>
-<em>452: </em>          cmnd = v;
-<em>453: </em>          agent = i;
-<em>454: </em>          dprintf (<font color="red">&quot;disk manager:  command %d from %d.\n&quot;</font>,cmnd,agent);
-<em>455: </em>        <font color="red"><strong>}</strong></font>
-<em>456: </em>      <font color="red"><strong>}</strong></font>
-<em>457: </em>      <font color="#ffa600"><em>// got a request from a tp agent; assign it to a drive</em></font>
-<em>458: </em>      drivenum = Rand.uniform(0, 0, disks);     <font color="#ffa600"><em>// chooses rv in 0..disks-1</em></font>
-<em>459: </em>      composite = cmnd + (agent &lt;&lt; 16);
-<em>460: </em>      think(mips, DiskCmndPath);        <font color="#ffa600"><em>// IO-issuing path length</em></font>
-<em>461: </em>      to_drives[drivenum].write(composite);
-<em>462: </em>      dprintf (<font color="red">&quot;disk manager:  wrote message to drives.\n&quot;</font>);
-<em>463: </em>    <font color="red"><strong>}</strong></font>
-<em>464: </em>  <font color="red"><strong>}</strong></font>
-<em>465: </em>
-<em>466: </em>  <font color="#ffa600"><em>///////////////////////// responder ////////////////////////////</em></font>
-<em>467: </em>
-<em>468: </em>  <font color="#ffa600"><em>// the disk interrupt handler; catches 'done' messages from disks,</em></font>
-<em>469: </em>  <font color="#ffa600"><em>// sends signal to appropriate tp agent</em></font>
-<em>470: </em>  void responder(int32 mips, Chans &amp;to_agents, Chans &amp;from_disks) 
-<em>471: </em>  <font color="red"><strong>{</strong></font>
-<em>472: </em>    int32 agent;
-<em>473: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>474: </em>      afor (unsigned i = 0; i != from_disks.size(); ++i) <font color="red"><strong>{</strong></font>
-<em>475: </em>        from_disks[i].port(int v) <font color="red"><strong>{</strong></font>
-<em>476: </em>          agent = v;
-<em>477: </em>        <font color="red"><strong>}</strong></font>
-<em>478: </em>      <font color="red"><strong>}</strong></font>
-<em>479: </em>      to_agents[agent].write(agent);
-<em>480: </em>      think(mips, DiskResponsePath);            
-<em>481: </em>    <font color="red"><strong>}</strong></font>
-<em>482: </em>  <font color="red"><strong>}</strong></font>
-<em>483: </em>
-<em>484: </em>public:
-<em>485: </em>  <font color="#ffa600"><em>// Now, the body of the disk manager just runs the manager on the</em></font>
-<em>486: </em>  <font color="#ffa600"><em>// computer and the drives on themselves</em></font>
-<em>487: </em>  void operator()(int32 mips, int32 buff_size, int32 disks, Chans &amp;in, Chans &amp;out) 
-<em>488: </em>  <font color="red"><strong>{</strong></font>
-<em>489: </em>    Chans to_drives(disks), from_drives(disks), buff_to_drives(disks);
-<em>490: </em>    
-<em>491: </em>    par <font color="red"><strong>{</strong></font>
-<em>492: </em>      par <font color="red"><strong>{</strong></font>
-<em>493: </em>        on (mainframe) <font color="red"><strong>{</strong></font>
-<em>494: </em>          manager(mips, disks, in, to_drives);
-<em>495: </em>        <font color="red"><strong>}</strong></font>
-<em>496: </em>        on (mainframe) <font color="red"><strong>{</strong></font>
-<em>497: </em>          responder(mips, out, from_drives);
-<em>498: </em>        <font color="red"><strong>}</strong></font>
-<em>499: </em>      <font color="red"><strong>}</strong></font>
-<em>500: </em>      pfor (int i = 0; i != disks; ++i) <font color="red"><strong>{</strong></font>
-<em>501: </em>        on (diskdrives[i]) <font color="red"><strong>{</strong></font>
-<em>502: </em>          drive(buff_to_drives[i], from_drives[i], i);
-<em>503: </em>        <font color="red"><strong>}</strong></font>
-<em>504: </em>      <font color="red"><strong>}</strong></font>
-<em>505: </em>      pfor (int i = 0; i != disks; ++i) <font color="red"><strong>{</strong></font>      
-<em>506: </em>        on (diskdrives[i]) <font color="red"><strong>{</strong></font>
-<em>507: </em>          drive_buffer(buff_size, to_drives[i], buff_to_drives[i], i); 
-<em>508: </em>        <font color="red"><strong>}</strong></font>
-<em>509: </em>      <font color="red"><strong>}</strong></font>
-<em>510: </em>    <font color="red"><strong>}</strong></font>
-<em>511: </em>  <font color="red"><strong>}</strong></font>
-<em>512: </em>
-<em>513: </em><font color="red"><strong>}</strong></font>;
-<em>514: </em>
-<em>515: </em><font color="#ffa600"><em>// reads a block from disk by sending the disk manager a message    </em></font>
-<em>516: </em>void disk_read(Chan &amp;to_disks, Chan &amp;from_disks) 
-<em>517: </em><font color="red"><strong>{</strong></font>
-<em>518: </em>  dprintf (<font color="red">&quot;disk_read:  start %d.\n&quot;</font>,Read);
-<em>519: </em>  to_disks.write(Read);
-<em>520: </em>  dprintf (<font color="red">&quot;disk_read:  before get.\n&quot;</font>);
-<em>521: </em>  from_disks.get();
-<em>522: </em>  dprintf (<font color="red">&quot;disk_read:  finish.\n&quot;</font>);
-<em>523: </em><font color="red"><strong>}</strong></font>
-<em>524: </em>
-<em>525: </em><font color="#ffa600"><em>// writes a block to the disk controller</em></font>
-<em>526: </em>void disk_write_asynch(Chan &amp;to_disks, Chan &amp;from_disks) 
-<em>527: </em><font color="red"><strong>{</strong></font>
-<em>528: </em>  to_disks.write(Write_asynch);
-<em>529: </em><font color="red"><strong>}</strong></font>
-<em>530: </em>    
-<em>531: </em><font color="#ffa600"><em>// writes a block to the disk</em></font>
-<em>532: </em>void disk_write_synch(Chan &amp;to_disks, Chan &amp;from_disks) 
-<em>533: </em><font color="red"><strong>{</strong></font>
-<em>534: </em>  to_disks.write(Write_synch);
-<em>535: </em>  from_disks.get();
-<em>536: </em><font color="red"><strong>}</strong></font>
-<em>537: </em>
-<em>538: </em><font color="#ffa600"><em>//////////////////////////// MEMORY /////////////////////////////</em></font>
-<em>539: </em>
-<em>540: </em><font color="#ffa600"><em>// asks for stuff from the memory system; in a normal system, this means</em></font>
-<em>541: </em><font color="#ffa600"><em>// going to a disk; in a giant memory system, it means reading memory. we</em></font>
-<em>542: </em><font color="#ffa600"><em>// treat the thing as cached, with a supplied hit rate. with 100% hit, we</em></font>
-<em>543: </em><font color="#ffa600"><em>// always go to memory; with 90% hit rate we go to disk 10% of the time</em></font>
-<em>544: </em><a name="544" class="mark"></a><font color="#ffa600"><em></em></font>
-<em>545: </em>void mem_read(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>546: </em><font color="red"><strong>{</strong></font>
-<em>547: </em>  dprintf (<font color="red">&quot;mem_read:  starting.\n&quot;</font>);
-<em>548: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
-<em>549: </em>    dprintf (<font color="red">&quot;mem_read:  disk write asynch start.\n&quot;</font>);
-<em>550: </em>    <font color="#ffa600"><em>// hit_rate is an integer in 0..999; if our rv is larger than hitrate</em></font>
-<em>551: </em>    <font color="#ffa600"><em>//then we have a MISS   </em></font>
-<em>552: </em>    disk_read(to_disks, from_disks);
-<em>553: </em>    dprintf (<font color="red">&quot;mem_read:  disk write asynch finish.\n&quot;</font>);
-<em>554: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>555: </em>    <font color="#ffa600"><em>// memory read; this is quick; assume 10 microseconds</em></font>
-<em>556: </em>    dprintf (<font color="red">&quot;mem_read:  delay start.\n&quot;</font>);
-<em>557: </em>    pDelay(15 * musec);
-<em>558: </em>    dprintf (<font color="red">&quot;mem_read:  delay finish.\n&quot;</font>);
-<em>559: </em>  <font color="red"><strong>}</strong></font>
-<em>560: </em>  dprintf (<font color="red">&quot;mem_read:  finished.\n&quot;</font>);
-<em>561: </em><font color="red"><strong>}</strong></font>
-<em>562: </em>    
-<em>563: </em>void mem_write_synch(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>564: </em><font color="red"><strong>{</strong></font>
-<em>565: </em>  <font color="#ffa600"><em>// gives stuff to the memory system and waits for write to finish</em></font>
-<em>566: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
-<em>567: </em>    <font color="#ffa600"><em>// hit_rate is an integer in 0..999; if our rv is larger than hitrate</em></font>
-<em>568: </em>    <font color="#ffa600"><em>// then we have a MISS</em></font>
-<em>569: </em>    disk_write_synch(to_disks, from_disks);
-<em>570: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>571: </em>    <font color="#ffa600"><em>// memory write; this is quick; assume 10 microseconds</em></font>
-<em>572: </em>    pDelay(15 * musec);
-<em>573: </em>  <font color="red"><strong>}</strong></font>
-<em>574: </em><font color="red"><strong>}</strong></font>
-<em>575: </em>    
-<em>576: </em>void mem_write_asynch(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
-<em>577: </em><font color="red"><strong>{</strong></font>
-<em>578: </em>  dprintf (<font color="red">&quot;mem_write_asynch:  starting.\n&quot;</font>);
-<em>579: </em>  <font color="#ffa600"><em>// gives stuff to the memory system</em></font>
-<em>580: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
-<em>581: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  disk write asynch start.\n&quot;</font>);
-<em>582: </em>    disk_write_asynch(to_disks, from_disks);
-<em>583: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  disk write asynch finish.\n&quot;</font>);
-<em>584: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>585: </em>    <font color="#ffa600"><em>// memory write; this is quick; assume 10 microseconds</em></font>
-<em>586: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  delay start.\n&quot;</font>);
-<em>587: </em>    pDelay(15 * musec);
-<em>588: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  delay finish.\n&quot;</font>);
-<em>589: </em>  <font color="red"><strong>}</strong></font>
-<em>590: </em>  dprintf (<font color="red">&quot;mem_write_asynch:  finished.\n&quot;</font>);
-<em>591: </em><font color="red"><strong>}</strong></font>
-<em>592: </em>
-<em>593: </em><font color="#ffa600"><em>//////////////////// RECORDS AND JOURNALS /////////////////////////</em></font>
-<em>594: </em>
-<em>595: </em>void before_journal(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>596: </em><font color="red"><strong>{</strong></font>
-<em>597: </em>  <font color="#ffa600"><em>// this writes an entry to the before journal; no synchronisation is needed</em></font>
-<em>598: </em>  <font color="#ffa600"><em>//say(&quot;\n\tBeforeJrnl&quot;);</em></font>
-<em>599: </em>  mem_write_asynch(to_disks, from_disks, hit_rate);
-<em>600: </em><font color="red"><strong>}</strong></font>
-<em>601: </em>    
-<em>602: </em>void after_journal(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>603: </em><font color="red"><strong>{</strong></font>
-<em>604: </em>  <font color="#ffa600"><em>// this write an entry to the after journal; must wait until complete</em></font>
-<em>605: </em>  mem_write_synch(to_disks, from_disks, hit_rate);
-<em>606: </em><font color="red"><strong>}</strong></font>
-<em>607: </em>    
-<em>608: </em>void get_record(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>609: </em><font color="red"><strong>{</strong></font>
-<em>610: </em>  <font color="#ffa600"><em>// reads a record from the database</em></font>
-<em>611: </em>  mem_read(to_disks, from_disks, hit_rate);
-<em>612: </em><font color="red"><strong>}</strong></font>
-<em>613: </em>    
-<em>614: </em>void put_record(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
-<em>615: </em><font color="red"><strong>{</strong></font>
-<em>616: </em>  <font color="#ffa600"><em>// synchronised write to memory</em></font>
-<em>617: </em>  mem_write_synch(to_disks, from_disks, hit_rate);
-<em>618: </em><font color="red"><strong>}</strong></font>
-<em>619: </em>
-<em>620: </em>void read_record(int32 mips, Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
-<em>621: </em><font color="red"><strong>{</strong></font>
-<em>622: </em>  <font color="#ffa600"><em>// this routine does a read operation on one record</em></font>
-<em>623: </em>  dprintf (<font color="red">&quot;read_record:  start.\n&quot;</font>);
-<em>624: </em>  before_journal(to_disks, from_disks, hit_rate);
-<em>625: </em>  think(mips, ReadPath);
-<em>626: </em>  dprintf (<font color="red">&quot;read_record:  before get.\n&quot;</font>);
-<em>627: </em>  get_record(to_disks, from_disks, hit_rate);
-<em>628: </em>  dprintf (<font color="red">&quot;read_record:  finish.\n&quot;</font>);
-<em>629: </em><font color="red"><strong>}</strong></font>
-<em>630: </em>    
-<em>631: </em>void update_record(int32 mips, Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
-<em>632: </em><font color="red"><strong>{</strong></font>
-<em>633: </em>  <font color="#ffa600"><em>// this does a write operation to one record</em></font>
-<em>634: </em>  before_journal(to_disks, from_disks, hit_rate);
-<em>635: </em>  think(mips, WritePath);
-<em>636: </em>  put_record(to_disks, from_disks, hit_rate);
-<em>637: </em>  after_journal(to_disks, from_disks, hit_rate);
-<em>638: </em><font color="red"><strong>}</strong></font>
-<em>639: </em>        
-<em>640: </em><font color="#ffa600"><em>///////////////////////// TP /////////////////////////////</em></font>
-<em>641: </em>
-<em>642: </em><font color="#ffa600"><em>// the tp process does all the transaction work. there are multiple</em></font>
-<em>643: </em><font color="#ffa600"><em>//	instantiations; each catches stuff on its in, passes stuff on through</em></font>
-<em>644: </em><font color="#ffa600"><em>//	its out and signals its free to the comms mux via the free channel</em></font>
-<em>645: </em>
-<em>646: </em><strong>class</strong> Agents <font color="red"><strong>{</strong></font>
-<em>647: </em>
-<em>648: </em>public: 
-<em>649: </em>  void lock_record(int32 mips) 
-<em>650: </em>  <font color="red"><strong>{</strong></font>
-<em>651: </em>    <font color="#ffa600"><em>// we simply compute a bit -    locks are in memory</em></font>
-<em>652: </em>    think(mips, LockPath);          
-<em>653: </em>  <font color="red"><strong>}</strong></font>
-<em>654: </em>    
-<em>655: </em>  void unlock_record(int32 mips) 
-<em>656: </em>  <font color="red"><strong>{</strong></font>
-<em>657: </em>    <font color="#ffa600"><em>// same again</em></font>
-<em>658: </em>    think(mips, UnlockPath);
-<em>659: </em>  <font color="red"><strong>}</strong></font>
-<em>660: </em>
-<em>661: </em>  void tp_agent(int32 mips, Chan &amp;in, Chan &amp;out, Chan &amp;free, Chan &amp;to_disks, Chan &amp;from_disks,
-<em>662: </em>                int32 tp_num, int32 hit_rate)
-<em>663: </em>  <font color="red"><strong>{</strong></font>         
-<em>664: </em>    int32 terminal = 0,freecount = 0;
-<em>665: </em>    pSetPriority(3);            <font color="#ffa600"><em>// lower priority</em></font>
-<em>666: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
-<em>667: </em>      dprintf (<font color="red">&quot;tp agent  %d:  is free.\n&quot;</font>,tp_num);
-<em>668: </em>      free.write(freecount++);	<font color="#ffa600"><em>// signal i'm free</em></font>
-<em>669: </em>      dprintf (<font color="red">&quot;tp agent  %d:  waiting for input.\n&quot;</font>,tp_num);
-<em>670: </em>      terminal = in.get();	<font color="#ffa600"><em>// get some input</em></font>
-<em>671: </em>      dprintf (<font color="red">&quot;tp agent %d:  got message from terminal %d.\n&quot;</font>,tp_num,terminal);
-<em>672: </em>      lock_record(mips);    <font color="#ffa600"><em>// lock all the records</em></font>
-<em>673: </em>      lock_record(mips);
-<em>674: </em>      lock_record(mips);
-<em>675: </em>      dprintf (<font color="red">&quot;tp agent  %d:  done with locking record.\n&quot;</font>,tp_num);
-<em>676: </em>            
-<em>677: </em>      read_record(mips, to_disks, from_disks, hit_rate);
-<em>678: </em>      read_record(mips, to_disks, from_disks, hit_rate);
-<em>679: </em>      dprintf (<font color="red">&quot;tp agent  %d:  done with reading record.\n&quot;</font>,tp_num);
-<em>680: </em>      update_record(mips, to_disks, from_disks, hit_rate);
-<em>681: </em> 
-<em>682: </em>      dprintf (<font color="red">&quot;tp agent  %d:  sent message to terminal %d.\n&quot;</font>,tp_num,terminal);
-<em>683: </em>      out.write(terminal);      <font color="#ffa600"><em>// provide results to terminal</em></font>
-<em>684: </em>            
-<em>685: </em>      unlock_record(mips);
-<em>686: </em>      unlock_record(mips);
-<em>687: </em>      unlock_record(mips);
-<em>688: </em>      dprintf (<font color="red">&quot;tp agent  %d:  records unlocked.\n&quot;</font>,tp_num);
-<em>689: </em>    <font color="red"><strong>}</strong></font>
-<em>690: </em>  <font color="red"><strong>}</strong></font>
-<em>691: </em>
-<em>692: </em>public:
-<em>693: </em>  void operator()(int32 mips, Chans &amp;in, Chans &amp;out, Chans &amp;free, Chans &amp;to_disks, Chans &amp;from_disks, 
-<em>694: </em>         int32 num_agents, int32 hit_rate) 
-<em>695: </em>  <font color="red"><strong>{</strong></font>
-<em>696: </em>    <font color="#ffa600"><em>//	the body, forking the agents..</em></font>
-<em>697: </em>    say(<font color="red">&quot;\nTP agent starting.&quot;</font>);
-<em>698: </em>    pfor (int i = 0; i != num_agents; ++i) <font color="red"><strong>{</strong></font>
-<em>699: </em>      tp_agent(mips, in[i], out[i], free[i], to_disks[i], from_disks[i], i, hit_rate);
-<em>700: </em>    <font color="red"><strong>}</strong></font>
-<em>701: </em>  <font color="red"><strong>}</strong></font>
-<em>702: </em>
-<em>703: </em><font color="red"><strong>}</strong></font>;
-<em>704: </em>    
-<em>705: </em><font color="#ffa600"><em>/////////////////////////// mainbody ////////////////////////////////////</em></font>
-<em>706: </em>
-<em>707: </em>void pSetup(ConfigParms &amp;cp)
-<em>708: </em><font color="red"><strong>{</strong></font>
-<em>709: </em>  cp._numpriorities = 4;
-<em>710: </em>  cp._busyokay = true;
-<em>711: </em><font color="red"><strong>}</strong></font>
-<em>712: </em>
-<em>713: </em>int pMain(int argc,const char *argv[]) 
-<em>714: </em><font color="red"><strong>{</strong></font>       
-<em>715: </em>  GC_disable();
-<em>716: </em>
-<em>717: </em>  int32 actual_users, hit_rate, mips, buff_size, disks, tp_agents, SimulationTime, ReportInterval;
-<em>718: </em>  
-<em>719: </em>  int32 transactions = 0, times = 0, sigma_transac = 0, sigma_response = 0;
-<em>720: </em>
-<em>721: </em>  <font color="#ffa600"><em>// main body	</em></font>
-<em>722: </em>  mprintf(<font color="red">&quot;\nThe Enterprise Attack Vehicle MkII (v1.01) lifts off..\nWe have some arguments: %ld&quot;</font>, argc);
-<em>723: </em>        
-<em>724: </em>  <strong>if</strong> (argc &lt; 2) <font color="red"><strong>{</strong></font>
-<em>725: </em>    <font color="#ffa600"><em>// no arguments offered at all; use defaults</em></font>
-<em>726: </em>    actual_users = 100; <font color="#ffa600"><em>// 100</em></font>
-<em>727: </em>    hit_rate = 15;
-<em>728: </em>    mips = 10; <font color="#ffa600"><em>// 10</em></font>
-<em>729: </em>    buff_size = 128;
-<em>730: </em>    disks = 40;     <font color="#ffa600"><em>// 40</em></font>
-<em>731: </em>    tp_agents = 4;      <font color="#ffa600"><em>// 4</em></font>
-<em>732: </em>    SimulationTime = 500; <font color="#ffa600"><em>// 500;</em></font>
-<em>733: </em>    ReportInterval = 50; <font color="#ffa600"><em>// 50</em></font>
-<em>734: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (argc &lt; 9) <font color="red"><strong>{</strong></font>
-<em>735: </em>    <font color="#ffa600"><em>// wrong number offered</em></font>
-<em>736: </em>    mprintf(<font color="red">&quot;\nEAV: usage&quot;</font>);
-<em>737: </em>    mprintf(<font color="red">&quot;\n\tNum Users [0..%ld]&quot;</font>, num_terminals);
-<em>738: </em>    mprintf(<font color="red">&quot;\n\tDiskCache HitRate [0..1000]&quot;</font>);
-<em>739: </em>    mprintf(<font color="red">&quot;\n\tProcessor speed in Mips&quot;</font>);
-<em>740: </em>    mprintf(<font color="red">&quot;\n\tPer-Disk Command buffer size [0..]&quot;</font>);
-<em>741: </em>    mprintf(<font color="red">&quot;\n\tNumber of Disks [0..%ld]&quot;</font>, num_drives);
-<em>742: </em>    mprintf(<font color="red">&quot;\n\tNumber of TP daemons [1..]&quot;</font>);
-<em>743: </em>    mprintf(<font color="red">&quot;\n\tMax Simulation Time in seconds [0..1500]&quot;</font>);
-<em>744: </em>    mprintf(<font color="red">&quot;\n\tReporting interval in seconds [0..1500]&quot;</font>);
-<em>745: </em>    mprintf(<font color="red">&quot;\nSimulation will halt almost immediately.\n\n&quot;</font>);
-<em>746: </em>    pExit(1);
-<em>747: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>748: </em>    <font color="#ffa600"><em>// Init parms.</em></font>
-<em>749: </em>    int i = 1;
-<em>750: </em>    actual_users = atoi(argv[i++]);
-<em>751: </em>    hit_rate = atoi(argv[i++]);
-<em>752: </em>    mips = atoi(argv[i++]);
-<em>753: </em>    buff_size = atoi(argv[i++]);
-<em>754: </em>    disks = atoi(argv[i++]);
-<em>755: </em>    tp_agents = atoi(argv[i++]);
-<em>756: </em>    SimulationTime = atoi(argv[i++]);
-<em>757: </em>    ReportInterval = atoi(argv[i++]);
-<em>758: </em>  <font color="red"><strong>}</strong></font>
-<em>759: </em>
-<em>760: </em>  <strong>if</strong> (actual_users &gt; num_terminals) <font color="red"><strong>{</strong></font>
-<em>761: </em>    actual_users = num_terminals;
-<em>762: </em>  <font color="red"><strong>}</strong></font>
-<em>763: </em>  
-<em>764: </em>  mprintf(<font color="red">&quot;\n\tActual Number of users   = %ld&quot;</font>, actual_users);
-<em>765: </em>  mprintf(<font color="red">&quot;\n\tUser Think time (msec)   = %ld&quot;</font>, ThinkTime);
-<em>766: </em>  mprintf(<font color="red">&quot;\n\tNumber of TP Agents	= %ld&quot;</font>, tp_agents);
-<em>767: </em>  mprintf(<font color="red">&quot;\n\tProcessor speed (mips) = %ld&quot;</font>, mips);
-<em>768: </em>  mprintf(<font color="red">&quot;\n\tDisk Buffer Hit Rate     = &quot;</font>);
-<em>769: </em>  printfixed(hit_rate, 10);
-<em>770: </em>  mprintf(<font color="red">&quot; percent&quot;</font>);
-<em>771: </em>  <strong>if</strong> (disks &gt; num_drives) <font color="red"><strong>{</strong></font>
-<em>772: </em>    disks = num_drives;
-<em>773: </em>  <font color="red"><strong>}</strong></font>
-<em>774: </em>  mprintf(<font color="red">&quot;\n\tNumber of Disks      = %ld&quot;</font>, disks);
-<em>775: </em>  mprintf(<font color="red">&quot;\n\tPer Disk Buffer size     = %ld commands&quot;</font>, buff_size);
-<em>776: </em>  mprintf(<font color="red">&quot;\n\tSimulation will run for %ld simulated seconds&quot;</font>, SimulationTime);
-<em>777: </em>  <strong>if</strong> (ReportInterval &lt;= 0) <font color="red"><strong>{</strong></font>
-<em>778: </em>    ReportInterval = 1;
-<em>779: </em>  <font color="red"><strong>}</strong></font>
-<em>780: </em>  mprintf(<font color="red">&quot;\n\tProgress reports every %ld seconds\n&quot;</font>, ReportInterval);
-<em>781: </em>  ReportInterval = ReportInterval * sec;
-<em>782: </em>
-<em>783: </em>  <font color="#ffa600"><em>// create the dynamically-sized interconnect</em></font>
-<em>784: </em>  Chans 
-<em>785: </em>    terms_to_comms(actual_users), 
-<em>786: </em>    comms_to_terms(actual_users),
-<em>787: </em>    comms_to_tp(tp_agents),
-<em>788: </em>    tp_to_comms(tp_agents),
-<em>789: </em>    free(tp_agents),
-<em>790: </em>    tp_to_disks(tp_agents),
-<em>791: </em>    disks_to_tp(tp_agents);
-<em>792: </em>    
-<em>793: </em>  par <font color="red"><strong>{</strong></font>
-<em>794: </em>    par <font color="red"><strong>{</strong></font>
-<em>795: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
-<em>796: </em>        comms_in(mips, terms_to_comms, comms_to_tp, free);
-<em>797: </em>      <font color="red"><strong>}</strong></font>
-<em>798: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
-<em>799: </em>        comms_out(mips, tp_to_comms, comms_to_terms);
-<em>800: </em>      <font color="red"><strong>}</strong></font>
-<em>801: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
-<em>802: </em>        DiskManager disk_manager;
-<em>803: </em>        disk_manager(mips,buff_size,disks,tp_to_disks,disks_to_tp);
-<em>804: </em>      <font color="red"><strong>}</strong></font>
-<em>805: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
-<em>806: </em>        Agents agents;
-<em>807: </em>        agents(mips, comms_to_tp, tp_to_comms, free, 
-<em>808: </em>               tp_to_disks, disks_to_tp, tp_agents, hit_rate);
-<em>809: </em>      <font color="red"><strong>}</strong></font>
-<em>810: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
-<em>811: </em>        timestamp(ReportInterval, SimulationTime * sec, 
-<em>812: </em>                  transactions, times);
-<em>813: </em>      <font color="red"><strong>}</strong></font>
-<em>814: </em>    <font color="red"><strong>}</strong></font>
-<em>815: </em>    <font color="red"><strong>{</strong></font>
-<em>816: </em>      pfor (int i = 0; i != actual_users; ++i) <font color="red"><strong>{</strong></font>
-<em>817: </em>        on (terminals[i]) <font color="red"><strong>{</strong></font>
-<em>818: </em>          user(comms_to_terms[i], terms_to_comms[i],
-<em>819: </em>               i, SimulationTime * sec, transactions, times, 
-<em>820: </em>               sigma_transac, sigma_response);
-<em>821: </em>        <font color="red"><strong>}</strong></font>
-<em>822: </em>      <font color="red"><strong>}</strong></font>
-<em>823: </em>      
-<em>824: </em>      say(<font color="red">&quot;\nThe users have all finished..\nTotal of &quot;</font>);
-<em>825: </em>      saynum(transactions);
-<em>826: </em>      say(<font color="red">&quot; in &quot;</font>);
-<em>827: </em>      printfixed(pTime(), sec);
-<em>828: </em>      say(<font color="red">&quot; seconds for a transaction rate of &quot;</font>);
-<em>829: </em>      <font color="#ffa600"><em>//mprintfixed(transactions * sec, Now);</em></font>
-<em>830: </em>      printfixed(transactions, pTime()/sec);
-<em>831: </em>      say (<font color="red">&quot; tps\n&quot;</font>);
-<em>832: </em>      pExit(0);
-<em>833: </em>    <font color="red"><strong>}</strong></font>
-<em>834: </em>  <font color="red"><strong>}</strong></font>
-<em>835: </em>  <strong>return</strong> 0;
-<em>836: </em><font color="red"><strong>}</strong></font>
+<em>330: </em>  ClkIntChan
+<em>331: </em>    decode2fetch(Clock);
+<em>332: </em>
+<em>333: </em>  <font color="#ffa600"><em>//</em></font>
+<em>334: </em>  <font color="#ffa600"><em>// Define the connectivity and launch each thread.</em></font>
+<em>335: </em>  <font color="#ffa600"><em>//</em></font>
+<em>336: </em>  par <font color="red"><strong>{</strong></font>
+<em>337: </em>    watchdog(10000);
+<em>338: </em>    fetch(fetch2fetch,br_decode2fetch,decode2fetch,fetch2decode);
+<em>339: </em>    decode(fetch2decode,decode2fetch,br_decode2fetch,decode2decode,exec2decode,mem2decode,decode2exec);
+<em>340: </em>    exec(decode2exec,mem2exec,exec2exec,exec2decode,exec2mem);
+<em>341: </em>    mem(exec2mem,mem2decode,mem2exec,mem2mem,mem2wb);
+<em>342: </em>    writeback(mem2wb);
+<em>343: </em>  <font color="red"><strong>}</strong></font>
+<em>344: </em>
+<em>345: </em>  <font color="#ffa600"><em>// We never get here- the watchdog stops the simulation.</em></font>
+<em>346: </em>  <strong>return</strong> 0;
+<em>347: </em><font color="red"><strong>}</strong></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -902,6 +414,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 21 15:10:18 2004</em>.</font></p></div>
+Last update <em>Mon Nov  8 16:37:58 2004</em>.</font></p></div>
 </body>
 </html>

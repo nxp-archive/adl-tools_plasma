@@ -11,6 +11,12 @@
       
       )
    
+   (section :title "RISC Pipeline Example 2" :file #t
+         
+      (cprogfileln-sub "../doc/pipe2.pa")
+      
+      )
+   
    
    (section :title "Network System Example"  :file #t
          

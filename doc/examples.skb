@@ -33,6 +33,17 @@
       boundary.  This shows that the timing of the particular channel, and thus
       of the model, can be altered by simply changing a declaration.])
       
+      (p [Another example of modeling hardware can be found ,(scref :text "here"
+      :section "RISC Pipeline Example 2").  In this example, the architecture of
+      the processor is implemented in an auxiliary class called ,(code [DLX]).  The
+      Plasma code simply implements the microarchitecture.  Communication is
+      done by channels, as in the first example.  One difference is that the
+      ,(code [NoBlockChan]) channel is used to represent simple registers:
+      Writes never block; they simply overwrite existing data.  Reads do not
+      block either; they return the last data item until time advances, at which
+      time they return the new data item.  This channel is simply a template
+      class and thus does not require any modification to Plasma itself.])
+      
       )
    
    (section :title "Network System Modeling"

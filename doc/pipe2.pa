@@ -1,0 +1,347 @@
+//
+// Simple 5-stage DLX pipeline.
+//
+
+#include <iostream>
+
+#include "plasma/plasma.h"
+
+#include "helpers.h"
+#include "NoBlock.h"
+#include "dlx.h"
+
+using namespace std;
+using namespace plasma;
+using namespace dlx;
+  
+typedef NoBlockChan<instr_t>     NbInstChan;
+typedef ClockChan<int>           ClkIntChan;
+typedef ClockChan<instr_t>       ClkInstChan;
+
+// The architecture- global for now.
+DLX arch;
+
+// A tick of 10 units	
+const int Clock = 10;
+
+// Command-line options.
+Options options;
+
+// Stage identifiers.
+const int FetchStage = 0;
+const int DecodeStage = 1;
+const int ExecStage = 2;
+const int MemStage = 3;
+const int WritebackStage = 4;
+
+// Instruction classes.
+const int Load   = 0x0001;
+const int Store  = 0x0002;
+const int Branch = 0x0004;
+
+// This delays by one clock cycle.
+void atclock(int n = 1)
+{
+  pDelay(Clock * n);
+}
+
+// This creates a pipeline bubble by
+// stalling a stage for a clock cycle.
+void stall(int n,ClkInstChan &chan)
+{
+  for (int i = 0; i != n; ++i) {
+    chan.write(instr_t());
+    pDelay(Clock);
+  }
+}
+
+//
+// Start of micro-architecture description.
+//
+		
+void fetch(NbInstChan &succ_chan,ClkInstChan &branch_update, 
+           ClkIntChan &refetch_chan, ClkInstChan &out)
+{
+  while (true) {
+    atclock();
+
+    instr_t bupdate = (branch_update.ready()) ? branch_update.get() : 0;
+    instr_t instr = arch.fetch(bupdate);
+    update_pipe_report(FetchStage,instr);
+    instr_t succ = succ_chan.get();
+
+    int refetch = (refetch_chan.ready()) ? refetch_chan.get() : 0;
+    if (succ.is_of_class(Branch)) {
+      refetch = true;
+    }
+
+    succ_chan.write(instr); 
+    if (instr.is_of_class(Branch) || refetch) {
+      // This is just needed to keep us from fetching past a branch
+      // until we know the target.  This mainly just matters to avoid
+      // fetching past a halt.
+      arch.incr_iar(-4);
+    }      
+    if (refetch) {
+      succ_chan.write(instr_t()); 
+      continue;
+    }
+
+    out.write(instr);
+  }
+}
+
+void decode(ClkInstChan &in, ClkIntChan &refetch_chan, ClkInstChan &branch_update,
+            NbInstChan &succ_chan, NbInstChan &exec_fwd, NbInstChan &mem_fwd, 
+            ClkInstChan &out)
+{
+  while (true) {
+    instr_t instr = in.get();
+    update_pipe_report(DecodeStage,instr);
+
+    while (true) {
+      arch.read_operands(instr);
+      instr_t succ  = succ_chan.get();
+      instr_t exec  = exec_fwd.get();
+      instr_t mem   = mem_fwd.get();
+
+      // Check for stalls here:
+      //  Prior instruction is a load and our op uses the target.
+      //  This instruction is a branch and op uses prior target.
+      if (succ.is_of_class(Load) && arch.operand_conflict(instr,succ)) {
+        // Insert bubble.
+        stall(1,out);
+        // Issue instruction.
+        succ_chan.write(instr);
+        out.write(instr);
+        // Go to next cycle.
+        atclock();
+        break;
+      } else if (instr.is_of_class(Branch) ) {
+        if (arch.operand_conflict(instr,succ)) {
+          refetch_chan.write(1);
+          succ_chan.write(instr_t());
+          stall(1,out);
+          continue;
+        }
+      }
+      // Branches update the iar in decode.
+      if (instr.is_of_class(Branch)) {
+        arch.update_from_fwd(instr,exec);
+        arch.update_from_fwd(instr,mem);
+        arch.exec(instr);
+        branch_update.write(instr);
+      }
+      // Normal condition- pass data to next stage.
+      succ_chan.write(instr);
+      out.write(instr);
+      break;
+    }
+  }
+}
+
+void exec(ClkInstChan &in, NbInstChan &mem_fwd_chan, 
+          NbInstChan &exec_fwd_chan, NbInstChan &decode_fwd_chan, 
+          ClkInstChan &out)
+{
+  while (true) {
+    instr_t instr = in.get();
+    update_pipe_report(ExecStage,instr);
+    instr_t mem_fwd = mem_fwd_chan.get();
+    instr_t exec_fwd = exec_fwd_chan.get();
+    arch.update_from_fwd(instr,exec_fwd);
+    arch.update_from_fwd(instr,mem_fwd);
+    if (!instr.is_of_class(Load | Store)) {
+      arch.exec(instr);
+    }
+    out.write(instr);
+    exec_fwd_chan.write(instr);
+    decode_fwd_chan.write(instr);
+  }
+}
+
+void mem(ClkInstChan &in,NbInstChan &decode_fwd_chan,NbInstChan &exec_fwd_chan,
+         NbInstChan &mem_fwd_chan,ClkInstChan &out) 
+{
+  while (true) {
+    instr_t instr = in.get();
+    update_pipe_report(MemStage,instr);
+    instr_t mem_fwd = mem_fwd_chan.get();
+    arch.update_from_fwd(instr,mem_fwd);
+    arch.exec(instr);
+    out.write(instr);
+    decode_fwd_chan.write(instr);
+    exec_fwd_chan.write(instr);
+    mem_fwd_chan.write(instr);
+  }
+}
+
+void writeback(ClkInstChan &in)
+{
+  while (true) {
+    instr_t instr = in.get();
+    update_pipe_report(WritebackStage,instr);
+    arch.commit(instr);
+  }
+}
+
+//
+// Start of setup code.
+//
+	
+void hangup();
+
+void microarch_setup()
+{
+  arch.set_instr_class("lb", Load);
+  arch.set_instr_class("lbu",Load);
+  arch.set_instr_class("ld", Load);
+  arch.set_instr_class("lf", Load);
+  arch.set_instr_class("lh", Load);
+  arch.set_instr_class("lhu",Load);
+  arch.set_instr_class("lw", Load);
+  arch.set_instr_class("sb", Store);
+  arch.set_instr_class("sd", Store);
+  arch.set_instr_class("sf", Store);
+  arch.set_instr_class("sh", Store);
+  arch.set_instr_class("sw", Store);
+  arch.set_instr_class("beqz", Branch);
+  arch.set_instr_class("bfpf", Branch);
+  arch.set_instr_class("bfpt", Branch);
+  arch.set_instr_class("bnez", Branch);
+  arch.set_instr_class("j",    Branch);
+  arch.set_instr_class("jal",  Branch); 
+  arch.set_instr_class("jalr", Branch);
+  arch.set_instr_class("jr",   Branch);
+  arch.set_instr_class("halt", Branch);
+  arch.set_halt_func(hangup);
+
+  set_stage_name(FetchStage,    "fetch    ");
+  set_stage_name(DecodeStage,   "decode   ");
+  set_stage_name(ExecStage,     "exec     ");
+  set_stage_name(MemStage,      "mem      ");
+  set_stage_name(WritebackStage,"writeback");
+}
+
+// Watchdog timer stops the simulation after a specified amount of time.
+void watchdog(unsigned n) 
+{
+  cout << "\nTimeout is " << n << " cycles\n\n";
+  while (true) {
+    atclock(10);
+    printf(".");
+    if (pTime() > n) {
+      cout << "\nStopping- timeout at " << pTime() << endl;
+      pExit(1);
+    }
+  }
+}
+
+// This function is called when the machine is halted.
+void hangup()
+{
+  if (options._ep) {
+    cout << "\n<STATE>\n";
+    arch.print_state(cout,true);
+    cout << "\n";
+    arch.print_mem(cout,true);
+    cout << "</STATE>\n";
+  } else {
+    // Make sure that there's a final pipeline report.
+    if (options._pr) {
+      pipe_report(cout,0);
+    }
+    cout << "\n\n"
+         << "End of simulation at time " << dec << pTime() << "\n"
+         << "Number of fetches:  " << arch.get_num_fetches() << "\n"
+         << "Number of commits:  " << arch.get_num_commits() << "\n";
+    arch.print_state(cout);
+    cout << "\n";
+    arch.print_mem(cout);
+  }
+  pExit(0);
+}
+
+int pipeline_report(unsigned delay) 
+{
+  pDelay(delay);
+  while (true) {
+    atclock();
+    pipe_report(cout,delay);
+  }
+  return 0;
+}
+
+// Shut off preemption.
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+bool init(int argc,const char *argv[])
+{
+  printf("\n\n\n\n"
+         "Simple 5-stage DLX pipeline\n");
+
+  if (!process_args(options,argc,argv)) {
+    return false;
+  }
+  
+  if (!load_files(arch,options._files)) {
+    return false;
+  }
+
+  if (options._pr) {
+    spawn(pipeline_report(1));
+  }
+
+  microarch_setup();
+
+  printf("\nCode and registers initialised.");
+  return true;
+}
+
+int pMain(int argc,const char *argv[]) 
+{
+  if (!init(argc,argv)) {
+    return usage(argv[0]);
+  }
+
+  //
+  // Define the communication channels.
+  // 
+
+  ClkInstChan 
+    fetch2decode(Clock),
+    br_decode2fetch(Clock),
+    decode2exec(Clock),
+    exec2mem(Clock),
+    mem2wb(Clock/2);
+
+  NbInstChan
+    fetch2fetch(Clock),
+    decode2decode(Clock),
+    exec2decode(Clock),
+    exec2exec(Clock),
+    mem2decode(Clock),
+    mem2exec(Clock),
+    mem2mem(Clock);
+
+  ClkIntChan
+    decode2fetch(Clock);
+
+  //
+  // Define the connectivity and launch each thread.
+  //
+  par {
+    watchdog(10000);
+    fetch(fetch2fetch,br_decode2fetch,decode2fetch,fetch2decode);
+    decode(fetch2decode,decode2fetch,br_decode2fetch,decode2decode,exec2decode,mem2decode,decode2exec);
+    exec(decode2exec,mem2exec,exec2exec,exec2decode,exec2mem);
+    mem(exec2mem,mem2decode,mem2exec,mem2mem,mem2wb);
+    writeback(mem2wb);
+  }
+
+  // We never get here- the watchdog stops the simulation.
+  return 0;
+}

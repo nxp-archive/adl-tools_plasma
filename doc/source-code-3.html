@@ -20,7 +20,7 @@
 
 <body class="section" bgcolor="#ffffff">
 <table width="100%" class="skribetitle"><tbody>
-<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>3 Example Source Code -- Embedded Application Example</big></big></big></strong></div><center>
+<tr><td align="center" bgcolor="#8381de"><div class="skribetitle"><strong><big><big><big>3 Example Source Code -- Network System Example</big></big></big></strong></div><center>
 </center>
 </td></tr></tbody></table>
 <table cellpadding="3" cellspacing="0" width="100%" class="skribe-margins"><tr>
@@ -38,9 +38,10 @@
 <tr bgcolor="#ffffff"><td align="center" colspan="1" rowspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="source-code-1.html#RISC-Pipeline-Example">RISC Pipeline Example</a></td></tr>
- <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="source-code-2.html#Network-System-Example">Network System Example</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="source-code-3.html#Embedded-Application-Example">Embedded Application Example</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="source-code-4.html#Desktop-Application-Example">Desktop Application Example</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="source-code-2.html#RISC-Pipeline-Example-2">RISC Pipeline Example 2</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="source-code-3.html#Network-System-Example">Network System Example</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="source-code-4.html#Embedded-Application-Example">Embedded Application Example</a></td></tr>
+ <tr><td valign="top" align="left">5</td><td colspan="4" width="100%"><a href="source-code-5.html#Desktop-Application-Example">Desktop Application Example</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -48,1287 +49,853 @@
 </center>
 </div></td>
 <td align="left" valign="top" class="skribe-body"><div class="skribe-body">
-<!-- Header Files -->
-<a name="Header-Files"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1 Header Files</font>
+<!-- eav/eav.pa -->
+<a name="eav/eav.pa"></a>
+<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.1 eav/eav.pa</font>
 </h3></td></tr></table>
 </div><div class="subsection">
-<!-- ecu/angle.h -->
-<a name="ecu/angle.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.1 ecu/angle.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// angle.pa</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em>#ifndef _ANGLE_H_
-<em> 6: </em><font color="#1919af"><strong>#define</strong></font> _ANGLE_H_
-<em> 7: </em>
-<em> 8: </em>int32 curr_angle(int32 time);
-<em> 9: </em>void angle_manager(int32 num_cylinders, Chan &amp;teeth, Chans &amp;ask, Chans &amp;wakeups);
-<em>10: </em>
-<em>11: </em><font color="#1919af"><strong>#endif</strong></font>
-<em>12: </em>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/car.h -->
-<a name="ecu/car.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.2 ecu/car.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// car.h:  Accelerator, etc..</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em>#ifndef _CAR_H_
-<em> 6: </em><font color="#1919af"><strong>#define</strong></font> _CAR_H_
-<em> 7: </em>
-<em> 8: </em>void accelerator(int32 simtime, Chan &amp;acc_query, Chan &amp;acc_val);
-<em> 9: </em>void starter(Chan &amp;to_starter, Chan &amp;started);
-<em>10: </em>
-<em>11: </em><font color="#1919af"><strong>#endif</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/configuration.h -->
-<a name="ecu/configuration.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.3 ecu/configuration.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// configuration.sw</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em><font color="#ffa600"><em>// configuration globals</em></font>
-<em> 6: </em>
-<em> 7: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
-<em> 8: </em>
-<em> 9: </em>#ifndef _CONFIGURATION_
-<em>10: </em><font color="#1919af"><strong>#define</strong></font> _CONFIGURATION_
-<em>11: </em>
-<em>12: </em><strong>extern</strong> const char *version;
-<em>13: </em><strong>extern</strong> const char *copyright;
-<em>14: </em>
-<em>15: </em><strong>typedef</strong> int int32;
-<em>16: </em>
-<em>17: </em><font color="#ffa600"><em>// platform</em></font>
-<em>18: </em><strong>extern</strong> plasma::Processor zen;
-<em>19: </em><strong>extern</strong> plasma::Processor tpu;
-<em>20: </em><strong>extern</strong> plasma::Processor hardware;
-<em>21: </em>
-<em>22: </em><font color="#ffa600"><em>// performance</em></font>
-<em>23: </em><strong>extern</strong> int32 cpu_MIPS[3];       <font color="#ffa600"><em>// slot n holds mips for cpu n</em></font>
-<em>24: </em>
-<em>25: </em><strong>extern</strong> const int32 zen_mips;
-<em>26: </em><strong>extern</strong> const int32 tpu_mips;
-<em>27: </em>
-<em>28: </em><font color="#ffa600"><em>// ticks per second</em></font>
-<em>29: </em><strong>extern</strong> const int32 ticks_per_second;            <font color="#ffa600"><em>// a tick is a microsecond</em></font>
-<em>30: </em>
-<em>31: </em><font color="#ffa600"><em>// globals</em></font>
-<em>32: </em><strong>extern</strong> double fuelrate;                     <font color="#ffa600"><em>// units of fuel per second:    ml per sec</em></font>
-<em>33: </em><strong>extern</strong> double fuelpush;                     <font color="#ffa600"><em>// impulse per unit of fuel:    newton-seconds per ml</em></font>
-<em>34: </em><strong>extern</strong> double mass;                         <font color="#ffa600"><em>// 'weight' of car :            kg</em></font>
-<em>35: </em><strong>extern</strong> double speed;                    <font color="#ffa600"><em>// car speed:                   meters/sec</em></font>
-<em>36: </em>
-<em>37: </em><strong>extern</strong> double speedratio;               <font color="#ffa600"><em>// 'rpm' per unit speed</em></font>
-<em>38: </em><strong>extern</strong> double friction;                     <font color="#ffa600"><em>// coefficient of friction</em></font>
-<em>39: </em>
-<em>40: </em><strong>extern</strong> int32 num_teeth;                 <font color="#ffa600"><em>// number of teeth on flywheel</em></font>
-<em>41: </em><strong>extern</strong> int32 num_cylinders;             <font color="#ffa600"><em>// number of cylinders.</em></font>
-<em>42: </em>const int32 cylinder_max = 64;	    <font color="#ffa600"><em>// don't handle engines with more than this num of cyls</em></font>
-<em>43: </em>
-<em>44: </em><strong>extern</strong> int32 tooth_chunk;
-<em>45: </em>                                 
-<em>46: </em><strong>extern</strong> const int32 circle;	<font color="#ffa600"><em>// a complete circle has this number of units (a million)</em></font>
-<em>47: </em>
-<em>48: </em><font color="#ffa600"><em>// the shared accelerator variable</em></font>
-<em>49: </em><strong>extern</strong> int32 gAccelerator;
-<em>50: </em>
-<em>51: </em><font color="#ffa600"><em>// ecu asking injector to squirt fuel</em></font>
-<em>52: </em><strong>struct</strong> fuel_request <font color="red"><strong>{</strong></font>
-<em>53: </em>  int32 squirt_time;
-<em>54: </em>  double fuel_amount;
-<em>55: </em><font color="red"><strong>}</strong></font>;
-<em>56: </em>
-<em>57: </em><strong>typedef</strong> plasma::Channel&lt;int&gt; Chan;
-<em>58: </em><strong>typedef</strong> plasma::Channel&lt;fuel_request&gt; FuelChan;
-<em>59: </em>
-<em>60: </em><strong>typedef</strong> std::vector&lt;Chan&gt; Chans;
-<em>61: </em><strong>typedef</strong> std::vector&lt;FuelChan&gt; FuelChans;
-<em>62: </em>
-<em>63: </em><font color="#ffa600"><em>// logging file.</em></font>
-<em>64: </em><strong>extern</strong> FILE *logfile;
-<em>65: </em>    
-<em>66: </em><font color="#ffa600"><em>// the shared variables for angle management</em></font>
-<em>67: </em><strong>extern</strong> int32 measured_angle, est_angle_rate, est_angle_accel;       <font color="#ffa600"><em>// parameters of angle movement</em></font>
-<em>68: </em><strong>extern</strong> int32 measured_t;                                    <font color="#ffa600"><em>// time at which params valid</em></font>
-<em>69: </em>
-<em>70: </em><font color="#1919af"><strong>#endif</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/constants.h -->
-<a name="ecu/constants.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.4 ecu/constants.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>// constants.sw</em></font>
-<em> 2: </em>
-<em> 3: </em><font color="#ffa600"><em>// names for the base values of time, mass,  distance, volume and force</em></font>
-<em> 4: </em>
-<em> 5: </em>#ifndef _CONSTANTS_
-<em> 6: </em><font color="#1919af"><strong>#define</strong></font> _CONSTANTS_
-<em> 7: </em>
-<em> 8: </em>const double    musec   = 1.0,
-<em> 9: </em>                msec    = musec * 1000.0,
-<em>10: </em>                sec     = msec * 1000.0,
-<em>11: </em>                min     = sec * 60.0,
-<em>12: </em>                hour    = min * 60.0,
-<em>13: </em>                day     = hour * 24.0,
-<em>14: </em>                
-<em>15: </em>                mugram  = 1.0,
-<em>16: </em>                mgram   = mugram * 1000.0,
-<em>17: </em>                gram    = mgram * 1000.0,
-<em>18: </em>                kg      = gram * 1000.0,
-<em>19: </em>                
-<em>20: </em>                mum     = 1.0,
-<em>21: </em>                mm      = 1000.0 * mum,
-<em>22: </em>                meter   = 1000.0 * mm,
-<em>23: </em>                km      = 1000.0 * meter,
-<em>24: </em>                
-<em>25: </em>                mul     = 1.0,
-<em>26: </em>                ml      = 1000.0 * mul,
-<em>27: </em>                liter   = 1000.0 * ml,
-<em>28: </em>                
-<em>29: </em>                mn      = 1000.0,
-<em>30: </em>                newton  = 1000.0 * mn;
-<em>31: </em>
-<em>32: </em><font color="#1919af"><strong>#endif</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/engine.h -->
-<a name="ecu/engine.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.5 ecu/engine.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// engine.h:  Engine model.</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em>#ifndef _ENGINE_H_
-<em> 6: </em><font color="#1919af"><strong>#define</strong></font> _ENGINE_H_
-<em> 7: </em>
-<em> 8: </em>void engine(FuelChans &amp;inject, Chans &amp;spark);
-<em> 9: </em>void flywheel(Chan &amp;from_flywheel, Chan &amp;to_starter);
-<em>10: </em>
-<em>11: </em><font color="#1919af"><strong>#endif</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/utilities.h -->
-<a name="ecu/utilities.h"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.1.6 ecu/utilities.h</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// utilities.h</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em>#ifndef _UTILITIES_H_
-<em> 6: </em><font color="#1919af"><strong>#define</strong></font> _UTILITIES_H_
-<em> 7: </em>
-<em> 8: </em>void Compute(int32 work);
-<em> 9: </em>
-<em>10: </em><font color="#1919af"><strong>#endif</strong></font>
-<em>11: </em>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-</div>
-<!-- Implementation Files -->
-<a name="Implementation-Files"></a>
-<div class="skribesubsectiontitle"><table width="100%"><tr><td bgcolor="#ffffff"><h3><font color="#8381de">3.2 Implementation Files</font>
-</h3></td></tr></table>
-</div><div class="subsection">
-<!-- ecu/angle.pa -->
-<a name="ecu/angle.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.7 ecu/angle.pa</font>
-</h4></div><div class="subsubsection">
 <table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"><em>  1: </em><font color="#ffa600"><em>//</em></font>
-<em>  2: </em><font color="#ffa600"><em>// angle.pa</em></font>
+<em>  2: </em><font color="#ffa600"><em>// eav.sw: a simplistic model of the eav</em></font>
 <em>  3: </em><font color="#ffa600"><em>//</em></font>
 <em>  4: </em>
-<em>  5: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>
-<em>  6: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;utilities.h&quot;</font>
-<em>  7: </em>
-<em>  8: </em>using namespace std;
-<em>  9: </em>using namespace plasma;
+<em>  5: </em><font color="#1919af"><strong>#include</strong></font> &lt;vector&gt;
+<em>  6: </em>
+<em>  7: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
+<em>  8: </em>
+<em>  9: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;Random.h&quot;</font>
 <em> 10: </em>
-<em> 11: </em><font color="#ffa600"><em>// the angle manager for the ecu</em></font>
-<em> 12: </em>
-<em> 13: </em><font color="#ffa600"><em>// ---------------------- curr_angle ---------------</em></font>
-<em> 14: </em>int32 curr_angle(int32 time) 
-<em> 15: </em><font color="red"><strong>{</strong></font>
-<em> 16: </em>  <font color="#ffa600"><em>// returns best estimate of current angle using global angle, time and angle rate info</em></font>
-<em> 17: </em>  int32 d_angle, angle_now, dt;
-<em> 18: </em>    
-<em> 19: </em>  <font color="#ffa600"><em>// find out what the angle was when the last tooth was seen</em></font>
-<em> 20: </em>  <font color="#ffa600"><em>// then compute where we should be given that and the angle rate</em></font>
-<em> 21: </em>    
-<em> 22: </em>  <font color="#ffa600"><em>//printf(&quot;\ncurr_angle::last angle =%ld at %ld&quot;, measured_angle, measured_t);</em></font>
-<em> 23: </em>  dt = time - measured_t;
-<em> 24: </em>  <font color="#ffa600"><em>//printf(&quot;::dt=%ld&quot;, dt);</em></font>
-<em> 25: </em>  d_angle = dt * est_angle_rate;
-<em> 26: </em>  angle_now = measured_angle + d_angle;
-<em> 27: </em>  <font color="#ffa600"><em>//printf(&quot;::dangle=%ld rate=%ld ==&gt; angle now = %ld&quot;, d_angle, est_angle_rate, angle_now);</em></font>
-<em> 28: </em>  <strong>return</strong> angle_now;
-<em> 29: </em><font color="red"><strong>}</strong></font>
+<em> 11: </em>using namespace std;
+<em> 12: </em>using namespace plasma;
+<em> 13: </em>
+<em> 14: </em><font color="#ffa600"><em>//	this model says the eav is </em></font>
+<em> 15: </em><font color="#ffa600"><em>//	a set of user processes who squirt messages every now and then</em></font>
+<em> 16: </em><font color="#ffa600"><em>//      to a comms multiplexer</em></font>
+<em> 17: </em><font color="#ffa600"><em>//	a comms multiplexer who passes the messages on to a free transaction</em></font>
+<em> 18: </em><font color="#ffa600"><em>//      agent (there are fewer agents than terminals) </em></font>
+<em> 19: </em><font color="#ffa600"><em>//	tp agents who call upon database routines to effect transactions and</em></font>
+<em> 20: </em><font color="#ffa600"><em>//      who pass messages on to a memory manager </em></font>
+<em> 21: </em><font color="#ffa600"><em>//	the memory manager plays with journals and records and so forth, waiting</em></font>
+<em> 22: </em><font color="#ffa600"><em>//      for access to complete when needed.</em></font>
+<em> 23: </em><font color="#ffa600"><em>//	the system behavior is explored by having the memory manager sometimes use</em></font>
+<em> 24: </em><font color="#ffa600"><em>//      fast memory for storage and sometimes use a disk manager; the ratio </em></font>
+<em> 25: </em><font color="#ffa600"><em>//      between the two is a cache hit rate (ignoring writethru) and on an</em></font>
+<em> 26: </em><font color="#ffa600"><em>//      enterprise attack vehicle the hit rate is assumed to be 100%</em></font>
+<em> 27: </em><font color="#ffa600"><em>//	this version doesn't worry about contention for record locks between</em></font>
+<em> 28: </em><font color="#ffa600"><em>//      transactions</em></font>
+<em> 29: </em><font color="#ffa600"><em>//	this version uses a TP-1 like transaction - two reads and a write</em></font>
 <em> 30: </em>
-<em> 31: </em><font color="#ffa600"><em>// ---------------------- angle_to_time ------------</em></font>
-<em> 32: </em><strong>static</strong> int32 angle_to_time(int32 time, int32 target_angle) 
-<em> 33: </em><font color="red"><strong>{</strong></font>
-<em> 34: </em>  <font color="#ffa600"><em>// uses stored angle info to convert a future angle to expected time of arrival</em></font>
-<em> 35: </em>  <font color="#ffa600"><em>// initially just use angle rate (wrap in accel later)</em></font>
-<em> 36: </em>  <font color="#ffa600"><em>// returns how long you must wait to get to the angle</em></font>
-<em> 37: </em>        
-<em> 38: </em>  int32 dt, angle_now;
-<em> 39: </em>        
-<em> 40: </em>  <font color="#ffa600"><em>// estimate what our current engine angle is</em></font>
-<em> 41: </em>  angle_now = curr_angle(time);
-<em> 42: </em>        
-<em> 43: </em>  <font color="#ffa600"><em>// see whether the target angle is more than this or less</em></font>
-<em> 44: </em>  <font color="#ffa600"><em>// if less, then it is for the next time around</em></font>
-<em> 45: </em>        
-<em> 46: </em>  <font color="#ffa600"><strong>/*</strong></font>
-<em> 47: </em><font color="#ffa600"><strong>    if (target_angle &lt; angle_now) {</strong></font>
-<em> 48: </em><font color="#ffa600"><strong>    target_angle = target_angle + circle;</strong></font>
-<em> 49: </em><font color="#ffa600"><strong>    }</strong></font>
-<em> 50: </em><font color="#ffa600"><strong>  */</strong></font>    
-<em> 51: </em>  <font color="#ffa600"><em>// now compute how long we have to wait to get to target angle</em></font>
-<em> 52: </em>  dt = (target_angle - angle_now)/est_angle_rate; 
-<em> 53: </em>        
-<em> 54: </em>  <font color="#ffa600"><em>//printf(&quot;..wait %ld ticks for angle&quot;, dt);</em></font>
-<em> 55: </em>  
-<em> 56: </em>  <strong>if</strong> (dt &lt; 0) <font color="red"><strong>{</strong></font>
-<em> 57: </em>    printf(<font color="red">&quot;\n\t*** angle-to-time for %d at %d: negative dt %d&quot;</font>,
-<em> 58: </em>           target_angle, time, dt);
-<em> 59: </em>    dt = 0;
-<em> 60: </em>  <font color="red"><strong>}</strong></font>
-<em> 61: </em>  <strong>return</strong> dt;
-<em> 62: </em><font color="red"><strong>}</strong></font>
-<em> 63: </em>
-<em> 64: </em><font color="#ffa600"><em>// ---------------------- signal_cylinder ------------	</em></font>
-<em> 65: </em>void signal_cylinder(int32 wakeangle, Chan &amp;awake) 
-<em> 66: </em><font color="red"><strong>{</strong></font>       
-<em> 67: </em>  <font color="#ffa600"><em>// compute the time we need to wake up at</em></font>
-<em> 68: </em>  int32 dt = angle_to_time(pTime(), wakeangle);
-<em> 69: </em>  <font color="#ffa600"><em>//printf(&quot;\n\tsignal::angle = %ld;dt -&gt; %ld&quot;, wakeangle, dt);</em></font>
-<em> 70: </em>  
-<em> 71: </em>  <font color="#ffa600"><em>// tell the cylinder</em></font>
-<em> 72: </em>  awake.write(dt);  
-<em> 73: </em><font color="red"><strong>}</strong></font>
-<em> 74: </em>
-<em> 75: </em><font color="#ffa600"><em>// ---------------------- track ------------------	</em></font>
-<em> 76: </em><strong>static</strong> void track(Chan &amp;teeth, Chans &amp;tooth_marks) 
-<em> 77: </em><font color="red"><strong>{</strong></font>
-<em> 78: </em>  <font color="#ffa600"><em>// a simple digital filter to extract tooth rate</em></font>
-<em> 79: </em>  <font color="#ffa600"><em>// every time it gets a tooth, it broadcasts to the cylinders so they can do The Right Thing</em></font>
-<em> 80: </em>  int32 tooth, angle_rate1;
-<em> 81: </em>        
-<em> 82: </em>  pSetPriority(1);
-<em> 83: </em>                            
-<em> 84: </em>  measured_t = pTime();
-<em> 85: </em>
-<em> 86: </em>  measured_angle = 0;
-<em> 87: </em>  est_angle_rate = 0;
-<em> 88: </em>  est_angle_accel = 0;
-<em> 89: </em>  printf(<font color="red">&quot;\n%08lld::tooth digital filter starting..&quot;</font>, pTime());
-<em> 90: </em>        
-<em> 91: </em>  <font color="#ffa600"><em>// first sample</em></font>
-<em> 92: </em>  tooth = teeth.get();
-<em> 93: </em>  measured_angle = tooth;
-<em> 94: </em>  est_angle_rate = tooth_chunk/(pTime() - measured_t);              <font color="#ffa600"><em>// a tooth's worth of degrees in time dt</em></font>
-<em> 95: </em>  measured_t = pTime();                                         <font color="#ffa600"><em>// timestamp the data</em></font>
-<em> 96: </em>        
-<em> 97: </em>  printf(<font color="red">&quot;\n%08lld::tooth digital filter received sample 1..&quot;</font>, pTime());
-<em> 98: </em>  printf(<font color="red">&quot;\n\tangle = %d rate = %d, accel = %d &quot;</font>, measured_angle, est_angle_rate, est_angle_accel);
-<em> 99: </em>  Compute(50);
-<em>100: </em>        
-<em>101: </em>  <font color="#ffa600"><em>// second sample</em></font>
-<em>102: </em>  tooth = teeth.get();
-<em>103: </em>  angle_rate1 = tooth_chunk/(pTime() - measured_t);
-<em>104: </em>  est_angle_rate = (est_angle_rate + angle_rate1)/2;
-<em>105: </em>        
-<em>106: </em>  measured_t = pTime();
-<em>107: </em>  printf(<font color="red">&quot;\n%08lld::tooth digital filter received sample 2..&quot;</font>, pTime());
-<em>108: </em>  printf(<font color="red">&quot;\n\tangle = %d rate = %d&quot;</font>, measured_angle, est_angle_rate);
-<em>109: </em>        
-<em>110: </em>  Compute(50);
-<em>111: </em>        
-<em>112: </em>  <font color="#ffa600"><em>// loop</em></font>
-<em>113: </em>  
-<em>114: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
-<em>115: </em>    int32 dt;
-<em>116: </em>            
-<em>117: </em>    <font color="#ffa600"><em>// tooth digital filter loop</em></font>
-<em>118: </em>    tooth = teeth.get();
-<em>119: </em>            
-<em>120: </em>    <font color="#ffa600"><em>//load = ExecInfo(TaskInstructions);</em></font>
-<em>121: </em>            
-<em>122: </em>    measured_angle = tooth * tooth_chunk;
-<em>123: </em>            
-<em>124: </em>    dt = pTime() - measured_t;
-<em>125: </em>            
-<em>126: </em>    <font color="#ffa600"><em>//printf(&quot;\n%ld::tooth %ld seen -&gt; angle %ld; measured time = %ld; dt = %ld&quot;, </em></font>
-<em>127: </em>    <font color="#ffa600"><em>//	Now, tooth, measured_angle, measured_t, dt);</em></font>
-<em>128: </em>    measured_t = pTime();
-<em>129: </em>            
-<em>130: </em>    <strong>if</strong> (dt &gt; 0) <font color="red"><strong>{</strong></font>
-<em>131: </em>      fprintf(logfile, <font color="red">&quot;\nTDF::%8lld::tooth %d&quot;</font>, pTime(), tooth);
-<em>132: </em>                
-<em>133: </em>      est_angle_rate = tooth_chunk/dt;                              <font color="#ffa600"><em>// rate from prev tooth</em></font>
-<em>134: </em>      <font color="#ffa600"><em>//printf(&quot; ==&gt; est_angle_rate = %ld&quot;, est_angle_rate); </em></font>
-<em>135: </em>                
-<em>136: </em>    <font color="red"><strong>}</strong></font>
-<em>137: </em>                
-<em>138: </em>    <font color="#ffa600"><em>// now notify all cylinders of tooth arrival</em></font>
-<em>139: </em>    pfor (int i = 0; i != num_cylinders; ++i) <font color="red"><strong>{</strong></font>
-<em>140: </em>      tooth_marks[i].write(tooth);
-<em>141: </em>    <font color="red"><strong>}</strong></font>
-<em>142: </em>            
-<em>143: </em>    <font color="#ffa600"><em>//load = ExecInfo(TaskInstructions) - load;</em></font>
-<em>144: </em>    <font color="#ffa600"><em>//printf(&quot;\n---tooth digital filter loop - compute() is for %ld ticks&quot;, load);</em></font>
-<em>145: </em>    Compute(350);
-<em>146: </em>  <font color="red"><strong>}</strong></font> 
-<em>147: </em><font color="red"><strong>}</strong></font>
-<em>148: </em>
-<em>149: </em><font color="#ffa600"><em>// --------------------- cylinder_wake -----------------    </em></font>
-<em>150: </em><strong>static</strong> void cylinder_wake(int32 index, Chan &amp;tooth, Chan &amp;ask, Chan &amp;awake) 
-<em>151: </em><font color="red"><strong>{</strong></font>
-<em>152: </em>  <font color="#ffa600"><em>// one instance per cylinder</em></font>
-<em>153: </em>  <font color="#ffa600"><em>// tooth counts toothticks from the digital filter; </em></font>
-<em>154: </em>  <font color="#ffa600"><em>// ask specifies a tooth to wait for from my cylinder</em></font>
-<em>155: </em>  <font color="#ffa600"><em>// awake sigals back to the cylinder, the value being the time at which he should awake</em></font>
-<em>156: </em>        
-<em>157: </em>  <font color="#ffa600"><em>//int32 waketime;                 // the time to wake up at</em></font>
-<em>158: </em>  int32 waketooth;          <font color="#ffa600"><em>// the tooth to wake up on</em></font>
-<em>159: </em>  int32 currtooth;          <font color="#ffa600"><em>// the tooth we just saw</em></font>
-<em>160: </em>  int32 wakeangle;          <font color="#ffa600"><em>// the angle we want to wake up at</em></font>
-<em>161: </em>        
-<em>162: </em>  printf(<font color="red">&quot;\nCylinder-wake[%d] starting...&quot;</font>, index);
-<em>163: </em>        
-<em>164: </em>  waketooth = -1;
-<em>165: </em>  currtooth = -2;
-<em>166: </em>  wakeangle = 0;
-<em>167: </em>        
-<em>168: </em>  pSetPriority(1);
-<em>169: </em>        
-<em>170: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
-<em>171: </em>    alt <font color="red"><strong>{</strong></font>
-<em>172: </em>      tooth.port(int ct) <font color="red"><strong>{</strong></font>
-<em>173: </em>        currtooth = ct;
-<em>174: </em>
-<em>175: </em>        <font color="#ffa600"><em>// we just got a current tooth</em></font>
-<em>176: </em>        <font color="#ffa600"><em>//printf(&quot;\n\tcylinder-wake[%ld] saw tooth %ld want t %ld&quot;, index, currtooth, waketooth);</em></font>
-<em>177: </em>        <strong>if</strong> (waketooth == currtooth) <font color="red"><strong>{</strong></font>
-<em>178: </em>          <font color="#ffa600"><em>// note the match</em></font>
-<em>179: </em>          <font color="#ffa600"><em>//printf(&quot;\n\tcylinder-wake[%ld] saw tooth %ld matches tooth %ld for wakeangle %ld&quot;, </em></font>
-<em>180: </em>          <font color="#ffa600"><em>//    index, currtooth, waketooth, wakeangle);</em></font>
-<em>181: </em>    
-<em>182: </em>          signal_cylinder(wakeangle, awake);
-<em>183: </em>          waketooth = -1;
-<em>184: </em>          Compute(83);
-<em>185: </em>        <font color="red"><strong>}</strong></font>
-<em>186: </em>      <font color="red"><strong>}</strong></font>
-<em>187: </em>                    
-<em>188: </em>      ask.port(int wa) <font color="red"><strong>{</strong></font>
-<em>189: </em>        wakeangle = wa;
-<em>190: </em>        int32 angle_now;
-<em>191: </em>        int32 target_tooth;
-<em>192: </em>        <font color="#ffa600"><em>// we just got given an angle request, which we've captured in wakeangle                    </em></font>
-<em>193: </em>                    
-<em>194: </em>        <font color="#ffa600"><em>// see if this is for a smaller angle than where we're already at</em></font>
-<em>195: </em>        angle_now = curr_angle(pTime());
-<em>196: </em>        target_tooth =      wakeangle/tooth_chunk;
-<em>197: </em>        <font color="#ffa600"><em>//printf(&quot;\n%ld::cylinder-wake[%ld] saw request for %ld; curr angle ~ %ld waketooth=%ld target_tooth=%ld&quot;, </em></font>
-<em>198: </em>        <font color="#ffa600"><em>//	Now, index, wakeangle, angle_now, waketooth, target_tooth); </em></font>
-<em>199: </em>        <strong>if</strong> (angle_now &gt; wakeangle) <font color="red"><strong>{</strong></font>
-<em>200: </em>          <font color="#ffa600"><em>// then we need to wake up in the future CHECK THIS FIRST!!</em></font>
-<em>201: </em>          waketooth = wakeangle / tooth_chunk;              <font color="#ffa600"><em>// tooth before the angle we want</em></font>
-<em>202: </em>          <font color="#ffa600"><em>//printf(&quot;==&gt; toothchunk = %ld tooth wanted = %ld&quot;, tooth_chunk, waketooth);</em></font>
-<em>203: </em>          Compute(77);
-<em>204: </em>        <font color="red"><strong>}</strong></font> 
-<em>205: </em>        <strong>else</strong> <strong>if</strong> (target_tooth == currtooth) <font color="red"><strong>{</strong></font>
-<em>206: </em>          <font color="#ffa600"><em>// ok, we're still in this tooth</em></font>
-<em>207: </em>          <font color="#ffa600"><em>//printf(&quot;==&gt; got request for currtooth %ld == targettooth&quot;, currtooth);	</em></font>
-<em>208: </em>          waketooth = -1;
-<em>209: </em>          signal_cylinder(wakeangle, awake);
-<em>210: </em>          Compute(95);
-<em>211: </em>        <font color="red"><strong>}</strong></font>
-<em>212: </em>        <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em>213: </em>          waketooth = wakeangle / tooth_chunk;
-<em>214: </em>          <font color="#ffa600"><em>//printf(&quot;==&gt; need new waketooth %ld&quot;, waketooth);</em></font>
-<em>215: </em>          Compute(51);
-<em>216: </em>        <font color="red"><strong>}</strong></font>
-<em>217: </em>      <font color="red"><strong>}</strong></font>
-<em>218: </em>    <font color="red"><strong>}</strong></font>
-<em>219: </em>  <font color="red"><strong>}</strong></font>
-<em>220: </em><font color="red"><strong>}</strong></font>
-<em>221: </em>    
-<em>222: </em><font color="#ffa600"><em>// ---------------------- angle_manager -----------------</em></font>
-<em>223: </em>void angle_manager(int32 num_cylinders, Chan &amp;teeth, Chans &amp;ask, Chans &amp;wakeups) 
-<em>224: </em><font color="red"><strong>{</strong></font>
-<em>225: </em>  <font color="#ffa600"><em>// we get raw ticks on teeth (we get the tooth number)</em></font>
-<em>226: </em>  <font color="#ffa600"><em>// ask[] provides a request that a client gets woken up at a specific angle</em></font>
-<em>227: </em>  <font color="#ffa600"><em>// clients being numbered by index</em></font>
-<em>228: </em>  <font color="#ffa600"><em>// client suspends on responses[index] and gets woken up when angle turns up</em></font>
-<em>229: </em>  
-<em>230: </em>  Chans tooth_marks(cylinder_max);
-<em>231: </em>  Chans requests(cylinder_max);
-<em>232: </em>  Chan tooth_request;
-<em>233: </em>                                                            
-<em>234: </em>  pSetPriority(1);
-<em>235: </em>        
-<em>236: </em>  par <font color="red"><strong>{</strong></font>
-<em>237: </em>    pfor(int i = 0; i != num_cylinders; ++i) <font color="red"><strong>{</strong></font>
-<em>238: </em>      <font color="#ffa600"><em>//service_request(i, ask[i], tooth_request, tooth_marks[i], wakeups[i]);</em></font>
-<em>239: </em>      cylinder_wake(i, tooth_marks[i], ask[i], wakeups[i]);
-<em>240: </em>    <font color="red"><strong>}</strong></font>
-<em>241: </em>    track(teeth, tooth_marks);
-<em>242: </em>  <font color="red"><strong>}</strong></font>
-<em>243: </em><font color="red"><strong>}</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/car.pa -->
-<a name="ecu/car.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.8 ecu/car.pa</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// car.pa</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>
-<em> 6: </em>
-<em> 7: </em>using namespace std;
-<em> 8: </em>using namespace plasma;
-<em> 9: </em>
-<em>10: </em><font color="#ffa600"><em>// ----------------- respond ---------------</em></font>
-<em>11: </em><strong>static</strong> void respond(Chan &amp;req, Chan &amp;accel_val, int32 simtime, int32 &amp;position) 
-<em>12: </em><font color="red"><strong>{</strong></font>
-<em>13: </em>  <font color="#ffa600"><em>// if someone wants to know what the accelerator setting is, respond() tells 'em</em></font>
-<em>14: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
-<em>15: </em>    req.get();
-<em>16: </em>    <font color="#ffa600"><em>// printf(&quot;\n**Accelerator asked for position; responding with %ld at %ld&quot;, position, Now);</em></font>
-<em>17: </em>    accel_val.write(position);
-<em>18: </em>  <font color="red"><strong>}</strong></font>
-<em>19: </em><font color="red"><strong>}</strong></font>
-<em>20: </em>
-<em>21: </em><font color="#ffa600"><em>// ------------------ profile ----------------	</em></font>
-<em>22: </em>void profile(int32 simtime,int32 &amp;position) 
-<em>23: </em><font color="red"><strong>{</strong></font>
-<em>24: </em>  <font color="#ffa600"><em>// change the accelerator setting over time</em></font>
-<em>25: </em>  int32 slices, i;
-<em>26: </em>  slices = 100;
-<em>27: </em>  i = 0;
-<em>28: </em>  <strong>while</strong> ((int)pTime() &lt; simtime) <font color="red"><strong>{</strong></font>
-<em>29: </em>    pDelay(simtime/slices);
-<em>30: </em>    int32 f = (i * 90)/slices;
-<em>31: </em>    position = 10 + f;
-<em>32: </em>    <font color="#ffa600"><em>//printf(&quot;\n***Accelerator moved to %ld at %ld&quot;, position, Now);</em></font>
-<em>33: </em>    i = i + 1;
-<em>34: </em>    gAccelerator = position;
-<em>35: </em>  <font color="red"><strong>}</strong></font>
-<em>36: </em>  printf(<font color="red">&quot;\n*** Accelerator profiling halting.&quot;</font>);
-<em>37: </em><font color="red"><strong>}</strong></font>
-<em>38: </em>
-<em>39: </em><font color="#ffa600"><em>// ------------------------ accelerator -------------------</em></font>
-<em>40: </em>void accelerator(int32 simtime, Chan &amp;acc_query, Chan &amp;acc_val)
-<em>41: </em><font color="red"><strong>{</strong></font>
-<em>42: </em>  <font color="#ffa600"><em>// moves accelerator in appropriate manner and tells anyone who asks where it is</em></font>
-<em>43: </em>  int32 position;
-<em>44: </em>        
-<em>45: </em>  printf(<font color="red">&quot;\nAccelerator starting..&quot;</font>);
-<em>46: </em>  position = 10;
-<em>47: </em>  gAccelerator = position;
-<em>48: </em>  par <font color="red"><strong>{</strong></font>
-<em>49: </em>    respond(acc_query, acc_val, simtime, position);
-<em>50: </em>    profile(simtime,position);
-<em>51: </em>  <font color="red"><strong>}</strong></font>
-<em>52: </em><font color="red"><strong>}</strong></font>
-<em>53: </em>    
-<em>54: </em><font color="#ffa600"><em>// ------------------------ starter ---------------------</em></font>
-<em>55: </em>void starter(Chan &amp;to_starter, Chan &amp;started)
-<em>56: </em><font color="red"><strong>{</strong></font>
-<em>57: </em>  printf(<font color="red">&quot;\nStarter motor starting...&quot;</font>);
-<em>58: </em>  to_starter.get();
-<em>59: </em>  printf (<font color="red">&quot;\nSending starter-started message.&quot;</font>);
-<em>60: </em>  started.write(true);
-<em>61: </em>  printf (<font color="red">&quot;\nDone sending starter-started message.&quot;</font>);
-<em>62: </em><font color="red"><strong>}</strong></font>
-<em>63: </em>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/configuration.pa -->
-<a name="ecu/configuration.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.9 ecu/configuration.pa</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// configuration.pa</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em><font color="#ffa600"><em>// configuration globals</em></font>
-<em> 6: </em>
-<em> 7: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>
-<em> 8: </em>
-<em> 9: </em>const char *version = <font color="red">&quot;v0.03, 6 February 2003&quot;</font>;
-<em>10: </em>const char *copyright = <font color="red">&quot;copyright Freescale 2004-2005, all rights reserved.&quot;</font>;
-<em>11: </em>
-<em>12: </em><font color="#ffa600"><em>// platform.  the &quot;names&quot; are integers so that we can look up their</em></font>
-<em>13: </em><font color="#ffa600"><em>// MIPS in the cpu_MIPS array.</em></font>
-<em>14: </em>plasma::Processor zen((const char *)0);
-<em>15: </em>plasma::Processor tpu((const char *)1);
-<em>16: </em>plasma::Processor hardware((const char *)2);
-<em>17: </em>
-<em>18: </em><font color="#ffa600"><em>// performance</em></font>
-<em>19: </em>int32 cpu_MIPS[3];      <font color="#ffa600"><em>// slot n holds mips for cpu n</em></font>
-<em>20: </em>
-<em>21: </em>const int32 zen_mips = 100;
-<em>22: </em>const int32 tpu_mips = 37;
-<em>23: </em>
-<em>24: </em><font color="#ffa600"><em>// ticks per second</em></font>
-<em>25: </em>const int32 ticks_per_second = 1000000;             <font color="#ffa600"><em>// a tick is a microsecond</em></font>
-<em>26: </em>
-<em>27: </em><font color="#ffa600"><em>// globals</em></font>
-<em>28: </em>double fuelrate;                    <font color="#ffa600"><em>// units of fuel per second:    ml per sec</em></font>
-<em>29: </em>double fuelpush;                    <font color="#ffa600"><em>// impulse per unit of fuel:    newton-seconds per ml</em></font>
-<em>30: </em>double mass;                        <font color="#ffa600"><em>// 'weight' of car :            kg</em></font>
-<em>31: </em>double speed;                   <font color="#ffa600"><em>// car speed:                   meters/sec</em></font>
-<em>32: </em>
-<em>33: </em>double speedratio;              <font color="#ffa600"><em>// 'rpm' per unit speed</em></font>
-<em>34: </em>double friction;                <font color="#ffa600"><em>// coefficient of friction</em></font>
-<em>35: </em>int32 num_teeth;                <font color="#ffa600"><em>// number of teeth on flywheel</em></font>
-<em>36: </em>int32 num_cylinders;            <font color="#ffa600"><em>// number of cylinders.</em></font>
-<em>37: </em>
-<em>38: </em>int32 tooth_chunk;
-<em>39: </em>                                 
-<em>40: </em>const int32 circle = 1000000;   <font color="#ffa600"><em>// a complete circle has this number of units (a million)</em></font>
-<em>41: </em>
-<em>42: </em><font color="#ffa600"><em>// the shared accelerator variable</em></font>
-<em>43: </em>int32 gAccelerator;
-<em>44: </em>
-<em>45: </em>FILE *logfile = 0;
-<em>46: </em>    
-<em>47: </em><font color="#ffa600"><em>// the shared variables for angle management</em></font>
-<em>48: </em>int32 measured_angle, est_angle_rate, est_angle_accel;      <font color="#ffa600"><em>// parameters of angle movement</em></font>
-<em>49: </em>int32 measured_t;                                   <font color="#ffa600"><em>// time at which params valid</em></font>
-<em>50: </em>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/utilities.pa -->
-<a name="ecu/utilities.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.10 ecu/utilities.pa</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em> 1: </em><font color="#ffa600"><em>//</em></font>
-<em> 2: </em><font color="#ffa600"><em>// utilities.sw</em></font>
-<em> 3: </em><font color="#ffa600"><em>//</em></font>
-<em> 4: </em>
-<em> 5: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>
-<em> 6: </em>
-<em> 7: </em>using namespace std;
-<em> 8: </em>using namespace plasma;
-<em> 9: </em>
-<em>10: </em><font color="#ffa600"><em>// --------------------- Compute ------------------------</em></font>
-<em>11: </em>
-<em>12: </em>void Compute(int32 work)
-<em>13: </em><font color="red"><strong>{</strong></font>
-<em>14: </em>  <font color="#ffa600"><em>// this scales the amount of computation to the speed of the host cpu</em></font>
-<em>15: </em>  int32 cpu = (int)pCurProc().name();
-<em>16: </em>  int32 mips = cpu_MIPS[cpu];
-<em>17: </em>  int32 dt = work/mips;
-<em>18: </em>  
-<em>19: </em>  <font color="#ffa600"><em>//printf(&quot;\n\tCompute %ld on cpu %ld (%ld mips)  -&gt; %ld ticks\n&quot;, work, cpu, mips, dt);</em></font>
-<em>20: </em>  pBusy(dt);
-<em>21: </em><font color="red"><strong>}</strong></font>
-<em>22: </em>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-<!-- ecu/engine.pa -->
-<a name="ecu/engine.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.11 ecu/engine.pa</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em>  1: </em><font color="#ffa600"><em>//</em></font>
-<em>  2: </em><font color="#ffa600"><em>// engine.pa</em></font>
-<em>  3: </em><font color="#ffa600"><em>//</em></font>
-<em>  4: </em>
-<em>  5: </em><font color="#1919af"><strong>#include</strong></font> &lt;cstdio&gt;
-<em>  6: </em><font color="#1919af"><strong>#include</strong></font> &lt;cmath&gt;
-<em>  7: </em>
-<em>  8: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>
-<em>  9: </em>
-<em> 10: </em>using namespace std;
-<em> 11: </em>using namespace plasma;
-<em> 12: </em>
-<em> 13: </em><font color="#ffa600"><em>// ----------------------- accelerate --------------------</em></font>
-<em> 14: </em>
-<em> 15: </em><strong>static</strong> double accelerate(double t, double fuel, double fuelpush, 
-<em> 16: </em>                         double mass, double u) 
-<em> 17: </em><font color="red"><strong>{</strong></font>
-<em> 18: </em>  <font color="#ffa600"><em>// t is time interval                         : seconds</em></font>
-<em> 19: </em>  <font color="#ffa600"><em>// fuel is amount of fuel burned in dt        : ml</em></font>
-<em> 20: </em>  <font color="#ffa600"><em>// fuelpush is 'specific impulse' of fuel     : newton-seconds per ml</em></font>
-<em> 21: </em>  <font color="#ffa600"><em>// mass is vehicle mass                       : kg</em></font>
-<em> 22: </em>  <font color="#ffa600"><em>// u is initial speed                         : m/sec</em></font>
-<em> 23: </em>  <font color="#ffa600"><em>// returns new speed                      : m/sec</em></font>
-<em> 24: </em>    
-<em> 25: </em>  <font color="#ffa600"><em>// Physics: Newtonian acceleration</em></font>
-<em> 26: </em>  <font color="#ffa600"><em>// v**2 = u**2 + 2as</em></font>
-<em> 27: </em>  <font color="#ffa600"><em>// s = ut + 0.5 * a * t**2</em></font>
-<em> 28: </em>  <font color="#ffa600"><em>// p = ma;</em></font>
-<em> 29: </em>  <font color="#ffa600"><em>// a = m/((fuel * fuelpush) - frictional_force)</em></font>
-<em> 30: </em>  <font color="#ffa600"><em>// Friction: rises sharply with speed</em></font>
-<em> 31: </em>  <font color="#ffa600"><em>// f = (friction * v) ** 2</em></font>
-<em> 32: </em>    
-<em> 33: </em>  double s, v, a, f;
-<em> 34: </em>    
-<em> 35: </em>  <font color="#ffa600"><em>//printf(&quot;\naccelerate: t = %f, fuel = %f, fuelpush = %f, mass = %fm u = %f&quot;,</em></font>
-<em> 36: </em>  <font color="#ffa600"><em>//    t, fuel, fuelpush, mass, u);</em></font>
-<em> 37: </em>        
-<em> 38: </em>  <font color="#ffa600"><em>// compute effects of friction</em></font>
-<em> 39: </em>  f = friction * u;                         <font color="#ffa600"><em>// assume speed constant enough over interval, and..</em></font>
-<em> 40: </em>  f = f * f ;                               <font color="#ffa600"><em>// .. compute frictional force just for starting speed</em></font>
-<em> 41: </em>  <font color="#ffa600"><em>//printf(&quot;\n\tfrictional force = %f&quot;, f);</em></font>
-<em> 42: </em>        
-<em> 43: </em>  f = (fuel * fuelpush) - f;                <font color="#ffa600"><em>// force = fuel's impulse - frictional force</em></font>
-<em> 44: </em>    
-<em> 45: </em>    
-<em> 46: </em>  <font color="#ffa600"><em>//printf(&quot;effective force = %f&quot;, f);</em></font>
-<em> 47: </em>  a = f / mass;                             <font color="#ffa600"><em>// p = ma, rearranged</em></font>
-<em> 48: </em>    
-<em> 49: </em>  <font color="#ffa600"><em>//printf(&quot;\n\ta = %f&quot;, a);</em></font>
-<em> 50: </em>    
-<em> 51: </em>  s = (u * t) + ((a * t * t)/2.0);      <font color="#ffa600"><em>// how far have we gone?</em></font>
-<em> 52: </em>  <font color="#ffa600"><em>//printf(&quot;\n\ts = %f&quot;, s);</em></font>
-<em> 53: </em>    
-<em> 54: </em>  v = (u * u) + (2 * a * s);                <font color="#ffa600"><em>// compute new speed</em></font>
-<em> 55: </em>  <font color="#ffa600"><em>//printf(&quot;\n\tvsqu = %f&quot;, v);</em></font>
-<em> 56: </em>    
-<em> 57: </em>  <font color="#ffa600"><em>// if v is negative, somehow friction is driving our car backwards, which is unlikely</em></font>
-<em> 58: </em>  <font color="#ffa600"><em>// thus our dynamic simplifications must be at fault. just make car motionless</em></font>
-<em> 59: </em>  int32 v_int = (int32)v;
-<em> 60: </em>  <strong>if</strong> (v_int &lt; 0) <font color="red"><strong>{</strong></font>
-<em> 61: </em>    <font color="#ffa600"><em>// ooo! strong friction done slowed us to a halt</em></font>
-<em> 62: </em>    v = 0.0;
-<em> 63: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-<em> 64: </em>    <font color="#ffa600"><em>// otherwise compute sqrt</em></font>
-<em> 65: </em>    v = sqrt(v); 
-<em> 66: </em>  <font color="red"><strong>}</strong></font>
-<em> 67: </em>  
-<em> 68: </em>  <font color="#ffa600"><em>//printf(&quot;\n\tv = %f&quot;, v);</em></font>
-<em> 69: </em>    
-<em> 70: </em>  <strong>return</strong> v;
-<em> 71: </em><font color="red"><strong>}</strong></font>
-<em> 72: </em>    
-<em> 73: </em>
-<em> 74: </em><font color="#ffa600"><em>// ---------------------- inject_fuel -----------------</em></font>
-<em> 75: </em>
-<em> 76: </em><strong>static</strong> void inject_fuel(int32 squirt, double fuel) 
-<em> 77: </em><font color="red"><strong>{</strong></font>
-<em> 78: </em>  <font color="#ffa600"><em>// dummy for the moment.</em></font>
-<em> 79: </em>  <font color="#ffa600"><em>// squirt says how long to hold the injector open</em></font>
-<em> 80: </em>  <font color="#ffa600"><em>// later, we'll compute how much fuel we'll get given fuel line pressure</em></font>
-<em> 81: </em>  
-<em> 82: </em><font color="red"><strong>}</strong></font>
-<em> 83: </em>        
-<em> 84: </em><font color="#ffa600"><em>// ---------------------- fire_spark -----------------</em></font>
-<em> 85: </em>
-<em> 86: </em><strong>static</strong> void fire_spark(int32 cylinder, int32 flash, double fuel) 
-<em> 87: </em><font color="red"><strong>{</strong></font>
-<em> 88: </em>  <font color="#ffa600"><em>// dummy for the moment</em></font>
-<em> 89: </em>  <font color="#ffa600"><em>// eventually we'll create a signature for knock detect to look at</em></font>
-<em> 90: </em>    
-<em> 91: </em>  <font color="#ffa600"><em>// compute car dynamics, using accelerate()</em></font>
-<em> 92: </em>  double new_speed, fuel_amnt;
-<em> 93: </em>    
-<em> 94: </em>  fuel_amnt = fuel;
-<em> 95: </em>    
-<em> 96: </em>  <font color="#ffa600"><em>// compute our new speed; assume the fuel is delivered in unit time</em></font>
-<em> 97: </em>  new_speed = accelerate(1.0, fuel_amnt, fuelpush, mass, speed);
-<em> 98: </em>    
-<em> 99: </em>  printf(<font color="red">&quot;\n***FireSpark at %lld for cyl[%d]::&quot;</font>, pTime(), cylinder);
-<em>100: </em>  printf(<font color="red">&quot;fuel=%2.2f, startspeed=%2.2f newspeed=%2.2f&quot;</font>, fuel_amnt, speed, new_speed);
-<em>101: </em>    
-<em>102: </em>    
-<em>103: </em>  <font color="#ffa600"><em>// log the new speed and the fact we sparked</em></font>
-<em>104: </em>  fprintf(logfile, <font color="red">&quot;\nFSF::%8lld::&quot;</font>, pTime());
-<em>105: </em>  fprintf(logfile, <font color="red">&quot;spark %2.2f&quot;</font>, fuel);
-<em>106: </em>  fprintf(logfile, <font color="red">&quot;\nFSS::%8lld::&quot;</font>, pTime());
-<em>107: </em>  fprintf(logfile, <font color="red">&quot;speed %2.2f ++ %2.2f&quot;</font>, speed, new_speed);
-<em>108: </em>    
-<em>109: </em>  speed = new_speed;
-<em>110: </em>    
-<em>111: </em><font color="red"><strong>}</strong></font>
-<em>112: </em>    
-<em>113: </em><font color="#ffa600"><em>// ----------------------- cylinder --------------------</em></font>
-<em>114: </em><strong>static</strong> void cylinder(int32 cyl, FuelChan &amp;do_inject, Chan &amp;do_spark) 
-<em>115: </em><font color="red"><strong>{</strong></font>
-<em>116: </em>  <font color="#ffa600"><em>// models one cylinder</em></font>
-<em>117: </em>  <font color="#ffa600"><em>// channels do_inject, do_spark carry commands from the engine controller </em></font>
-<em>118: </em>  <font color="#ffa600"><em>// to inject or spark immediately</em></font>
-<em>119: </em>  <font color="#ffa600"><em>// it is assumed that the ecu knows what the angular status of each cylinder is</em></font>
-<em>120: </em>    
-<em>121: </em>  bool engine_running = true;
-<em>122: </em>  double fuel = 0;
-<em>123: </em>    
-<em>124: </em>  printf(<font color="red">&quot;\nCylinder %d starting...&quot;</font>, cyl);
-<em>125: </em>    
-<em>126: </em>  <strong>while</strong> (engine_running) <font color="red"><strong>{</strong></font>
-<em>127: </em>    alt <font color="red"><strong>{</strong></font>
-<em>128: </em>      do_inject.port(fuel_request request) <font color="red"><strong>{</strong></font>
-<em>129: </em>        int32 squirt = request.squirt_time;
-<em>130: </em>        fuel = request.fuel_amount;
-<em>131: </em>        inject_fuel(squirt, fuel);
-<em>132: </em>        printf(<font color="red">&quot;\n%lld::#### Engine cylinder %d &quot;</font>, pTime(), cyl);
-<em>133: </em>        printf(<font color="red">&quot;received request to inject %2.2f&quot;</font>, fuel);
-<em>134: </em>        printf(<font color="red">&quot;for %d&quot;</font>, squirt);
-<em>135: </em>        engine_running = (fuel &gt; 0);
-<em>136: </em>      <font color="red"><strong>}</strong></font>
-<em>137: </em>      do_spark.port(int flash) <font color="red"><strong>{</strong></font>
-<em>138: </em>        printf(<font color="red">&quot;\n%lld::**** Engine cylinder %d received request to fire spark&quot;</font>, pTime(), cyl);
-<em>139: </em>        fire_spark(cyl, flash, fuel);
-<em>140: </em>        engine_running = flash;
-<em>141: </em>      <font color="red"><strong>}</strong></font>
-<em>142: </em>    <font color="red"><strong>}</strong></font>
-<em>143: </em>  <font color="red"><strong>}</strong></font>
-<em>144: </em>  printf(<font color="red">&quot;\n..cylinder %d closing down at %lld&quot;</font>, cyl, pTime());
+<em> 31: </em><font color="#ffa600"><em>// bkahne 21 june 2004</em></font>
+<em> 32: </em><font color="#ffa600"><em>//      conversion to plasma</em></font>
+<em> 33: </em><font color="#ffa600"><em>//</em></font>
+<em> 34: </em><font color="#ffa600"><em>// pete 26 july 1990</em></font>
+<em> 35: </em><font color="#ffa600"><em>//      modified june 3 1994: change to order of summary tps computation</em></font>
+<em> 36: </em>
+<em> 37: </em>
+<em> 38: </em><font color="#ffa600"><em>// timeunits.sw</em></font>
+<em> 39: </em><font color="#ffa600"><em>// names for the base values of time</em></font>
+<em> 40: </em>
+<em> 41: </em><strong>typedef</strong> int int32;
+<em> 42: </em>
+<em> 43: </em>const int32 musec = 1;
+<em> 44: </em>const int32 msec  = musec * 1000;
+<em> 45: </em>const int32 sec       = msec * 1000;
+<em> 46: </em>const int32 minute= sec * 60;
+<em> 47: </em>const int32 hour  = minute * 60;
+<em> 48: </em>const int32 day       = hour * 24;
+<em> 49: </em>
+<em> 50: </em><font color="#ffa600"><em>// configuration</em></font>
+<em> 51: </em>
+<em> 52: </em>const int32 ThinkTime = 1000;       <font color="#ffa600"><em>// average think time for user(msec)</em></font>
+<em> 53: </em>const int32 ThinkVar  = 250;        <font color="#ffa600"><em>// half the think range(msec)</em></font>
+<em> 54: </em>
+<em> 55: </em><font color="#ffa600"><em>// Instruction Path Lengths for Various Things</em></font>
+<em> 56: </em><font color="#ffa600"><em>// these numbers are from Tony Pizzarello's figures</em></font>
+<em> 57: </em>
+<em> 58: </em>const int32 ReadPath        = 25000;    <font color="#ffa600"><em>// transaction path length (read)</em></font>
+<em> 59: </em>const int32 WritePath       = 25000;    <font color="#ffa600"><em>// .. after a write to db</em></font>
+<em> 60: </em>const int32 TermInPath          = 1500;     <font color="#ffa600"><em>// read message from terminal</em></font>
+<em> 61: </em>const int32 TermOutPath     = 1500;     <font color="#ffa600"><em>// send message to terminal</em></font>
+<em> 62: </em>const int32 DiskCmndPath    = 900;      <font color="#ffa600"><em>// instrucs to launch disk access</em></font>
+<em> 63: </em>const int32 DiskResponsePath    = 1200;             <font color="#ffa600"><em>// to read stuff back</em></font>
+<em> 64: </em>const int32 LockPath        = 7500;     <font color="#ffa600"><em>// to set a lock</em></font>
+<em> 65: </em>const int32 UnlockPath      = 500;      <font color="#ffa600"><em>// to unset a lock</em></font>
+<em> 66: </em>
+<em> 67: </em>const int32 VT100 = 0;
+<em> 68: </em>const int32 SuperMIPS = 1;
+<em> 69: </em>const int32 Interphase = 2;
+<em> 70: </em>const int32 num_terminals = 1000;       <font color="#ffa600"><em>// max number of terminals</em></font>
+<em> 71: </em>const int32 num_drives  = 100;          <font color="#ffa600"><em>// max number of drives</em></font>
+<em> 72: </em>
+<em> 73: </em><strong>typedef</strong> vector&lt;int&gt; IntVect;
+<em> 74: </em><strong>typedef</strong> Channel&lt;int32&gt; Chan;
+<em> 75: </em><strong>typedef</strong> vector&lt;Chan&gt; Chans;
+<em> 76: </em>
+<em> 77: </em>Processors terminals(num_terminals);
+<em> 78: </em>Processor mainframe;
+<em> 79: </em>Processors diskdrives(num_drives);
+<em> 80: </em>
+<em> 81: </em><font color="#ffa600"><em>// Random number generation.</em></font>
+<em> 82: </em>Random&lt;&gt; Rand(1);
+<em> 83: </em>
+<em> 84: </em><font color="#ffa600"><em>//</em></font>
+<em> 85: </em><font color="#ffa600"><em>// Miscellaneous output routines to mirror those of sw.</em></font>
+<em> 86: </em><font color="#ffa600"><em>//</em></font>
+<em> 87: </em>
+<em> 88: </em>void say(const char *s)
+<em> 89: </em><font color="red"><strong>{</strong></font>
+<em> 90: </em>  mprintf (<font color="red">&quot;%s&quot;</font>,s);
+<em> 91: </em><font color="red"><strong>}</strong></font>
+<em> 92: </em>
+<em> 93: </em>void saynum(int32 d)
+<em> 94: </em><font color="red"><strong>{</strong></font>
+<em> 95: </em>  mprintf (<font color="red">&quot;%d&quot;</font>,d);
+<em> 96: </em><font color="red"><strong>}</strong></font>
+<em> 97: </em>
+<em> 98: </em>void sayflush()
+<em> 99: </em><font color="red"><strong>{</strong></font>
+<em>100: </em>  fflush(stdout);
+<em>101: </em><font color="red"><strong>}</strong></font>
+<em>102: </em>
+<em>103: </em><font color="#ffa600"><em>// Prints out x/y to 2 decimal places when x&gt;=0 and y&gt;=0</em></font>
+<em>104: </em>void printfixed(uint64 x, uint64 y) 
+<em>105: </em><font color="red"><strong>{</strong></font>
+<em>106: </em>  <strong>if</strong> (x == 0) <font color="red"><strong>{</strong></font>
+<em>107: </em>    mprintf(<font color="red">&quot;0.00&quot;</font>);
+<em>108: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (y == 0) <font color="red"><strong>{</strong></font>
+<em>109: </em>    mprintf(<font color="red">&quot;Infinity&quot;</font>);
+<em>110: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>111: </em>    uint64 vi = x/y;
+<em>112: </em>    uint64 vf = vi * y;
+<em>113: </em>    vf = x - vf;
+<em>114: </em>    <strong>if</strong> (vf &gt; 20000000) <font color="red"><strong>{</strong></font>
+<em>115: </em>      y = y/100;
+<em>116: </em>    <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>117: </em>      vf = vf * 100;
+<em>118: </em>    <font color="red"><strong>}</strong></font>
+<em>119: </em>    vf = vf / y;
+<em>120: </em>    mprintf (<font color="red">&quot;%lld.%02lld&quot;</font>, vi, vf);
+<em>121: </em>  <font color="red"><strong>}</strong></font>
+<em>122: </em><font color="red"><strong>}</strong></font>
+<em>123: </em>
+<em>124: </em><font color="#ffa600"><em>// Debugging output:  Only displays if debug variable is set.</em></font>
+<em>125: </em>bool Debug = false;
+<em>126: </em>int dprintf(const char *fmt, ... )
+<em>127: </em><font color="red"><strong>{</strong></font>
+<em>128: </em>  <strong>if</strong> (Debug) <font color="red"><strong>{</strong></font>
+<em>129: </em>    va_list ap;
+<em>130: </em>    va_start (ap,fmt);
+<em>131: </em>    int c = mprintf(fmt,ap);
+<em>132: </em>    va_end (ap);
+<em>133: </em>    <strong>return</strong> c;
+<em>134: </em>  <font color="red"><strong>}</strong></font>
+<em>135: </em>  <strong>return</strong> 0;
+<em>136: </em><font color="red"><strong>}</strong></font>
+<em>137: </em>
+<em>138: </em><font color="#ffa600"><em>//////////////////////////// think /////////////////////////////// </em></font>
+<em>139: </em>
+<em>140: </em><font color="#ffa600"><em>// uses up compute time for the right number of microseconds</em></font>
+<em>141: </em><font color="#ffa600"><em>// given the number of instructions and the MIPS rate</em></font>
+<em>142: </em>void think(int32 mips, int32 instructions) 
+<em>143: </em><font color="red"><strong>{</strong></font>
+<em>144: </em>  pBusy(instructions/mips);
 <em>145: </em><font color="red"><strong>}</strong></font>
 <em>146: </em>
-<em>147: </em><font color="#ffa600"><em>// ------------- cylinders -------------</em></font>
-<em>148: </em><strong>static</strong> void cylinders(int32 n, FuelChans &amp;inject, Chans &amp;spark) 
-<em>149: </em><font color="red"><strong>{</strong></font>
-<em>150: </em>  printf(<font color="red">&quot;\nStarting cylinders 0..%d&quot;</font>, n);
-<em>151: </em>  pfor (int i = 0; i != n; ++i) <font color="red"><strong>{</strong></font>
-<em>152: </em>    cylinder(i, inject[i], spark[i]);
-<em>153: </em>  <font color="red"><strong>}</strong></font>
-<em>154: </em><font color="red"><strong>}</strong></font>
-<em>155: </em>
-<em>156: </em><font color="#ffa600"><em>// ---------------------- engine --------------------</em></font>
-<em>157: </em>void engine(FuelChans &amp;inject, Chans &amp;spark)
-<em>158: </em><font color="red"><strong>{</strong></font>
-<em>159: </em>  <font color="#ffa600"><em>// channel from ecu provides instructions to engine</em></font>
-<em>160: </em>  printf(<font color="red">&quot;\nEngine starting...&quot;</font>);   
-<em>161: </em>  cylinders(num_cylinders, inject, spark);
-<em>162: </em><font color="red"><strong>}</strong></font>
-<em>163: </em>    
-<em>164: </em><font color="#ffa600"><em>// function to convert from speed to teeth-per-sec</em></font>
-<em>165: </em><font color="#ffa600"><em>// ---------------- tps ------------------</em></font>
-<em>166: </em><strong>static</strong> double tps(double speed) 
-<em>167: </em><font color="red"><strong>{</strong></font>
-<em>168: </em>  <font color="#ffa600"><em>// compute teeth per second from speed</em></font>
-<em>169: </em>  <strong>return</strong> (speed * speedratio * num_teeth)/60.0;
-<em>170: </em><font color="red"><strong>}</strong></font>
-<em>171: </em>
-<em>172: </em><font color="#ffa600"><em>// ----------------------- flywheel ----------------------</em></font>
-<em>173: </em>void flywheel(Chan &amp;from_flywheel, Chan &amp;to_starter) 
-<em>174: </em><font color="red"><strong>{</strong></font>
-<em>175: </em>  <font color="#ffa600"><em>// models the flywheel's generation of flywheel ticks</em></font>
-<em>176: </em>  <font color="#ffa600"><em>// we simply sample car speed at some fast enough rate</em></font>
-<em>177: </em>  <font color="#ffa600"><em>// and compute when we'll see the next tick from a flywheel tooth</em></font>
-<em>178: </em>  <font color="#ffa600"><em>// output a tick down the channel when it's time</em></font>
-<em>179: </em>  <font color="#ffa600"><em>// we convert speed to degrees per second using speed ratio via rpm</em></font>
-<em>180: </em>  <font color="#ffa600"><em>// we convert to teeth per second and look for the moments when elapsed</em></font>
-<em>181: </em>  <font color="#ffa600"><em>// teeth equals next tooth </em></font>
-<em>182: </em>    
-<em>183: </em>  int32 engine_running = 1;
-<em>184: </em>  double teeth = 0.0;                   <font color="#ffa600"><em>// floaty representation of where we are in the teeth</em></font>
-<em>185: </em>  int32 next_tooth = 1;                 <font color="#ffa600"><em>// integer number of next tooth</em></font>
-<em>186: </em>  bool started = false;
-<em>187: </em>            
-<em>188: </em>  printf(<font color="red">&quot;\nFlywheel starting...&quot;</font>);
-<em>189: </em>    
-<em>190: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
-<em>191: </em>    <font color="#ffa600"><em>// sample car speed and compute when next tooth will hit</em></font>
-<em>192: </em>    double fraction = 0.02;                     <font color="#ffa600"><em>// expect 50 samples per tooth interval</em></font>
-<em>193: </em>    double dt;                              <font color="#ffa600"><em>// time interval</em></font>
-<em>194: </em>    double new_speed;                       <font color="#ffa600"><em>// intermediate convenience value</em></font>
-<em>195: </em>    int32 wait_time;
-<em>196: </em>    int32 sampling;             
-<em>197: </em>    double tooth_target;
-<em>198: </em>    double old_speed;
-<em>199: </em>
-<em>200: </em>    sampling = true;
-<em>201: </em>    <font color="#ffa600"><em>//printf(&quot;\n%ld::\tFlywheel&quot;, Now);</em></font>
-<em>202: </em>    <font color="#ffa600"><em>//teethpersec = tps(speed);</em></font>
-<em>203: </em>    <font color="#ffa600"><em>//printf(&quot;\nSpeed = %f; teethpersec = %f&quot;, speed, teethpersec);</em></font>
-<em>204: </em>        
-<em>205: </em>    dt = (next_tooth - teeth) / tps(speed);     <font color="#ffa600"><em>// 100% of time to next tooth at curr speed</em></font>
-<em>206: </em>    dt = dt * fraction;                         <font color="#ffa600"><em>// fraction of expected time</em></font>
-<em>207: </em>    wait_time = (int32) dt;
-<em>208: </em>    <strong>if</strong> (wait_time == 0) <font color="red"><strong>{</strong></font>
-<em>209: </em>      wait_time = 1;
-<em>210: </em>    <font color="red"><strong>}</strong></font>
-<em>211: </em>    tooth_target = next_tooth;
-<em>212: </em>    old_speed = speed;
-<em>213: </em>        
-<em>214: </em>    <font color="#ffa600"><em>//printf(&quot;\n%ld::Flywheel-compute delay till tooth %ld waittime=%ld&quot;, </em></font>
-<em>215: </em>    <font color="#ffa600"><em>//	Now, next_tooth, wait_time);</em></font>
-<em>216: </em>    <font color="#ffa600"><em>//printf(&quot;speed=%2.2f teeth = %2.2f dt=%2.2f&quot;, speed, teeth, dt);</em></font>
-<em>217: </em>    <strong>while</strong> (sampling) <font color="red"><strong>{</strong></font>
-<em>218: </em>      double dtooth;
-<em>219: </em>      double teethpersec;
-<em>220: </em>            
-<em>221: </em>      pDelay(wait_time);
-<em>222: </em>            
-<em>223: </em>      <font color="#ffa600"><em>// where have we got to with teeth?</em></font>
-<em>224: </em>      teethpersec = tps(speed);             <font color="#ffa600"><em>// recompute because speed can change twixt teeth</em></font>
-<em>225: </em>      teeth = teeth + (teethpersec * dt);
-<em>226: </em>      dtooth = tooth_target - teeth;
-<em>227: </em>      <strong>if</strong> (dtooth &lt;= 0.0) <font color="red"><strong>{</strong></font>
-<em>228: </em>        <font color="#ffa600"><em>// got to tooth time</em></font>
-<em>229: </em>        sampling = false;
-<em>230: </em>      <font color="red"><strong>}</strong></font>
-<em>231: </em>    <font color="red"><strong>}</strong></font>
-<em>232: </em>    <font color="#ffa600"><em>//printf(&quot;\n\n ==== ToothTick! %f&quot;, teeth);</em></font>
-<em>233: </em>        
-<em>234: </em>    <font color="#ffa600"><em>// on every tooth, compute car speed anew</em></font>
-<em>235: </em>    new_speed = accelerate(1.0, 0.0, 0.0, mass, speed);
-<em>236: </em>    <font color="#ffa600"><em>//fprintf(logfile, &quot;\n\tfriction is slowing car: u=%2.2f v=%2.2f&quot;, speed, new_speed);</em></font>
-<em>237: </em>        
-<em>238: </em>    fprintf(logfile, <font color="red">&quot;\nTFS::%8lld::Tooth &quot;</font>, pTime(), next_tooth);
-<em>239: </em>    fprintf(logfile, <font color="red">&quot;speed %2.2f -- %2.2f&quot;</font>, speed, new_speed);
-<em>240: </em>    speed = new_speed;
-<em>241: </em>        
-<em>242: </em>    <font color="#ffa600"><em>// create tooth interrupt</em></font>
-<em>243: </em>    from_flywheel.write(next_tooth);
-<em>244: </em>        
-<em>245: </em>    <font color="#ffa600"><em>// set up for next tooth</em></font>
-<em>246: </em>    <font color="#ffa600"><em>//printf(&quot;\n%ld::Created tooth interrupt t[%ld]&quot;, Now, next_tooth);</em></font>
-<em>247: </em>        
-<em>248: </em>    teeth = next_tooth;
-<em>249: </em>    next_tooth = next_tooth + 1;
-<em>250: </em>    <font color="#ffa600"><em>//printf(&quot;\t==&gt;teeth = %2.2f&quot;, teeth);</em></font>
-<em>251: </em>        
-<em>252: </em>    <strong>if</strong> (next_tooth == num_teeth) <font color="red"><strong>{</strong></font>
-<em>253: </em>      <font color="#ffa600"><em>// handle cyclic nature of tooth number</em></font>
-<em>254: </em>      next_tooth = 0;   
-<em>255: </em>      teeth = 0.0;
-<em>256: </em>      engine_running = engine_running - 1;
-<em>257: </em>      
-<em>258: </em>      <font color="#ffa600"><em>// handle starter</em></font>
-<em>259: </em>      <strong>if</strong> (!started) <font color="red"><strong>{</strong></font>
-<em>260: </em>        started = true;                 <font color="#ffa600"><em>// yay! we're running!</em></font>
-<em>261: </em>        to_starter.write(true);
-<em>262: </em>      <font color="red"><strong>}</strong></font>
-<em>263: </em>    <font color="red"><strong>}</strong></font>
-<em>264: </em>  <font color="red"><strong>}</strong></font> 
-<em>265: </em><font color="red"><strong>}</strong></font>
+<em>147: </em><font color="#ffa600"><em>//////////////////////////// user //////////////////////////////////</em></font>
+<em>148: </em>
+<em>149: </em><font color="#ffa600"><em>// a user</em></font>
+<em>150: </em>void user(Chan &amp;in, Chan &amp;out, int32 usernum, int32 max_in,
+<em>151: </em>          int32 &amp;transactions1, int32 &amp;times1, int32 &amp;transactions, int32 &amp;times)
+<em>152: </em><font color="red"><strong>{</strong></font>
+<em>153: </em>  int32 sigma_t = 0, dt;
+<em>154: </em>  int32 count = 0;
+<em>155: </em>  pDelay(Rand.uniform(0, 0, ThinkTime * msec)); <font color="#ffa600"><em>//stagger the start-ups of the users</em></font>
+<em>156: </em>  ptime_t now, max = max_in;
+<em>157: </em>  <strong>while</strong> ((now = pTime()) &lt; max) <font color="red"><strong>{</strong></font>
+<em>158: </em>    int32 dummy, t;
+<em>159: </em>    t = now;
+<em>160: </em>    dprintf (<font color="red">&quot;user %d:  Sent request\n&quot;</font>,usernum);
+<em>161: </em>    out.write(usernum);
+<em>162: </em>    dummy = in.get();
+<em>163: </em>    dprintf (<font color="red">&quot;user %d:  Got response.\n&quot;</font>,usernum);
+<em>164: </em>    dt = (now - t)/msec;            <font color="#ffa600"><em>// delta t in milliseconds</em></font>
+<em>165: </em>    count = count + 1;              <font color="#ffa600"><em>// number of transactions</em></font>
+<em>166: </em>    sigma_t = sigma_t + dt;             <font color="#ffa600"><em>// total response time</em></font>
+<em>167: </em>    transactions1 = transactions1 + 1;      <font color="#ffa600"><em>// global transaction sigma</em></font>
+<em>168: </em>    times1 = times1 + dt;                   <font color="#ffa600"><em>// global response time sigma</em></font>
+<em>169: </em>    pDelay(Rand.uniform(0, (ThinkTime - ThinkVar) * msec, 
+<em>170: </em>                 (ThinkTime + ThinkVar) * msec));
+<em>171: </em>    dprintf (<font color="red">&quot;user %d:  Total transactions %d at time %lld\n&quot;</font>,usernum,transactions1,now);
+<em>172: </em>  <font color="red"><strong>}</strong></font>
+<em>173: </em>  dprintf (<font color="red">&quot;user %d:  Done.\n&quot;</font>);
+<em>174: </em>  transactions = transactions + count;
+<em>175: </em>  times = times + sigma_t;
+<em>176: </em><font color="red"><strong>}</strong></font>
+<em>177: </em>
+<em>178: </em><font color="#ffa600"><em>///////////////////////// curr_stats ////////////////////////</em></font>
+<em>179: </em>
+<em>180: </em>void curr_stats(int32 maxtime, int32 &amp;transactions, int32 &amp;time) 
+<em>181: </em><font color="red"><strong>{</strong></font>
+<em>182: </em>  say(<font color="red">&quot;\n..&quot;</font>);
+<em>183: </em>  printfixed(pTime(), sec);
+<em>184: </em>  say(<font color="red">&quot; secs of &quot;</font>);
+<em>185: </em>  printfixed(maxtime, sec);
+<em>186: </em>  say(<font color="red">&quot; did &quot;</font>);
+<em>187: </em>  saynum(transactions);
+<em>188: </em>  say(<font color="red">&quot; = &quot;</font>);
+<em>189: </em>  printfixed(time, transactions);
+<em>190: </em>  say(<font color="red">&quot;ms/t;&quot;</font>);
+<em>191: </em><font color="red"><strong>}</strong></font>
+<em>192: </em>    
+<em>193: </em><font color="#ffa600"><em>////////////////////////////// dots ////////////////////////////////</em></font>
+<em>194: </em>
+<em>195: </em><font color="#ffa600"><em>// simply prints a dot every dt time units</em></font>
+<em>196: </em>void dots(int32 dt) 
+<em>197: </em><font color="red"><strong>{</strong></font>
+<em>198: </em>  <strong>if</strong> (dt &lt;= 0) <font color="red"><strong>{</strong></font>
+<em>199: </em>    dt = 1;
+<em>200: </em>  <font color="red"><strong>}</strong></font>
+<em>201: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>202: </em>    say(<font color="red">&quot;.&quot;</font>);
+<em>203: </em>    sayflush();
+<em>204: </em>    pDelay(dt);
+<em>205: </em>  <font color="red"><strong>}</strong></font>
+<em>206: </em><font color="red"><strong>}</strong></font>
+<em>207: </em>
+<em>208: </em><font color="#ffa600"><em>//////////////////////////// timestamp /////////////////////////////</em></font>
+<em>209: </em>
+<em>210: </em><font color="#ffa600"><em>// simply prints time every dt units</em></font>
+<em>211: </em>void timestamp(int32 dt, int32 maxtime, int32 &amp;transactions, int32 &amp;time) 
+<em>212: </em><font color="red"><strong>{</strong></font>
+<em>213: </em>  int32 newtime = 0;
+<em>214: </em>  ptime_t EndTime;
+<em>215: </em>  int32 LastCount = 0, LastTime = 0;
+<em>216: </em>  int32 newtrans, newdt, oldtrans = 0, olddt = 0;
+<em>217: </em>    
+<em>218: </em>  EndTime = (maxtime + (10 * ((ThinkTime + ThinkVar)* msec)));
+<em>219: </em>  <strong>if</strong> (maxtime &lt; 0) <font color="red"><strong>{</strong></font>
+<em>220: </em>    maxtime = 0x7fffffff;
+<em>221: </em>  <font color="red"><strong>}</strong></font>
+<em>222: </em>  <strong>if</strong> (EndTime &lt; 0) <font color="red"><strong>{</strong></font>
+<em>223: </em>    EndTime = 0x7fffffff;
+<em>224: </em>  <font color="red"><strong>}</strong></font>
+<em>225: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>226: </em>    <strong>if</strong> (pTime() &gt; EndTime) <font color="red"><strong>{</strong></font>
+<em>227: </em>      say(<font color="red">&quot;\n====Running much longer than expected; asked-for time is &quot;</font>);
+<em>228: </em>      printfixed(maxtime, msec);
+<em>229: </em>      say(<font color="red">&quot;\n\tmsec and now is &quot;</font>);
+<em>230: </em>      saynum(pTime()/msec);
+<em>231: </em>      say(<font color="red">&quot; msec.\n\n&quot;</font>);
+<em>232: </em>      curr_stats(maxtime, transactions, time);
+<em>233: </em>      pExit(1);
+<em>234: </em>    <font color="red"><strong>}</strong></font>
+<em>235: </em>    
+<em>236: </em>    curr_stats(maxtime, transactions, time);
+<em>237: </em>    <font color="#ffa600"><em>// now give average msec/transaction since last time</em></font>
+<em>238: </em>    newtrans = transactions - LastCount;
+<em>239: </em>    newdt   = time - LastTime;
+<em>240: </em>    <strong>if</strong> (newtrans &gt; 0) <font color="red"><strong>{</strong></font>     
+<em>241: </em>      int32 n, t;   
+<em>242: </em>      say(<font color="red">&quot; (&quot;</font>);
+<em>243: </em>      t = (newdt + olddt)/2;
+<em>244: </em>      n = (newtrans + oldtrans)/2;
+<em>245: </em>      printfixed(t, n);
+<em>246: </em>      olddt = t;
+<em>247: </em>      oldtrans = n;
+<em>248: </em>      LastCount = transactions;
+<em>249: </em>      LastTime	= time; 
+<em>250: </em>      say(<font color="red">&quot;ms/t)&quot;</font>);
+<em>251: </em>    <font color="red"><strong>}</strong></font>
+<em>252: </em>  
+<em>253: </em>    say(<font color="red">&quot;-&gt;&quot;</font>);
+<em>254: </em>    printfixed(newtrans, dt/sec);
+<em>255: </em>    say(<font color="red">&quot;tps.&quot;</font>);
+<em>256: </em>    sayflush();
+<em>257: </em>    pDelay((newtime + dt) - pTime());
+<em>258: </em>    newtime = newtime + dt;
+<em>259: </em>  <font color="red"><strong>}</strong></font>
+<em>260: </em><font color="red"><strong>}</strong></font>   
+<em>261: </em>    
+<em>262: </em><font color="#ffa600"><em>/////////////////////////// comms_in //////////////////////////</em></font>
+<em>263: </em>
+<em>264: </em><font color="#ffa600"><em>// comms_in listens to the terminals and sends their messages on to</em></font>
+<em>265: </em><font color="#ffa600"><em>//	one of the available transaction processes</em></font>
 <em>266: </em>
-<em>267: </em>    
+<em>267: </em>void comms_in(int32 mips, Chans &amp;in, Chans &amp;out, Chans &amp;free) 
+<em>268: </em><font color="red"><strong>{</strong></font>
+<em>269: </em>  int32 terminal, tp;
+<em>270: </em>  say(<font color="red">&quot;\nComms starting.&quot;</font>);
+<em>271: </em>  <strong>while</strong> (1) <font color="red"><strong>{</strong></font>
+<em>272: </em>    afor (int i = 0; i != (int)in.size(); ++i) <font color="red"><strong>{</strong></font>
+<em>273: </em>      in[i].port(int v) <font color="red"><strong>{</strong></font>
+<em>274: </em>        <font color="#ffa600"><em>// Drain a value from the input channels.</em></font>
+<em>275: </em>        terminal = v;
+<em>276: </em>        dprintf (<font color="red">&quot;comms_in:  Got a value from terminal %d\n&quot;</font>,v);
+<em>277: </em>      <font color="red"><strong>}</strong></font>
+<em>278: </em>    <font color="red"><strong>}</strong></font>
+<em>279: </em>    <font color="#ffa600"><em>// Got input from a terminal; now find a free tp process</em></font>
+<em>280: </em>    afor (int i = 0; i != (int)free.size(); ++i) <font color="red"><strong>{</strong></font>
+<em>281: </em>      free[i].port() <font color="red"><strong>{</strong></font>
+<em>282: </em>        tp = i;
+<em>283: </em>        dprintf (<font color="red">&quot;comms_in:  Got a tp process %d\n&quot;</font>,tp);
+<em>284: </em>      <font color="red"><strong>}</strong></font>
+<em>285: </em>    <font color="red"><strong>}</strong></font>
+<em>286: </em>    <font color="#ffa600"><em>// Compute.</em></font>
+<em>287: </em>    think(mips, TermInPath);
+<em>288: </em>    dprintf (<font color="red">&quot;comms_in:  Finished thinking.\n&quot;</font>);
+<em>289: </em>    <font color="#ffa600"><em>// Send value.</em></font>
+<em>290: </em>    out[tp].write(terminal);
+<em>291: </em>    dprintf (<font color="red">&quot;comms_in:  Wrote value %d to tp %d\n&quot;</font>,terminal,tp);
+<em>292: </em>  <font color="red"><strong>}</strong></font>
+<em>293: </em><font color="red"><strong>}</strong></font>
+<em>294: </em>
+<em>295: </em><font color="#ffa600"><em>/////////////////////////////// comms_out /////////////////////////</em></font>
+<em>296: </em>
+<em>297: </em><font color="#ffa600"><em>// This collects up the outputs from the tp agents and sends them</em></font>
+<em>298: </em><font color="#ffa600"><em>// back out to the terminals    </em></font>
+<em>299: </em>void comms_out(int32 mips, Chans &amp;from_agents, Chans &amp;to_terminals)
+<em>300: </em><font color="red"><strong>{</strong></font>
+<em>301: </em>  int32 terminal;
+<em>302: </em>  <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>303: </em>    afor(unsigned i = 0; i != from_agents.size(); ++i) <font color="red"><strong>{</strong></font>
+<em>304: </em>      from_agents[i].port(int v) <font color="red"><strong>{</strong></font>
+<em>305: </em>        terminal = v;
+<em>306: </em>        dprintf (<font color="red">&quot;comms_out:  Got tp message of %d.\n&quot;</font>,terminal);
+<em>307: </em>      <font color="red"><strong>}</strong></font>
+<em>308: </em>    <font color="red"><strong>}</strong></font>
+<em>309: </em>    <font color="#ffa600"><em>// ok, got the value back from the system. give it to a terminal</em></font>
+<em>310: </em>    think(mips, TermOutPath);
+<em>311: </em>    dprintf (<font color="red">&quot;comms_out:  Finished thinking.\n&quot;</font>);
+<em>312: </em>    to_terminals[terminal].write(terminal);
+<em>313: </em>    dprintf (<font color="red">&quot;comms_out:  Send messageof %d to terminal %d.\n&quot;</font>,terminal,terminal);
+<em>314: </em>  <font color="red"><strong>}</strong></font>
+<em>315: </em><font color="red"><strong>}</strong></font>
+<em>316: </em>    
+<em>317: </em><font color="#ffa600"><em>//////////////////////// transaction routines /////////////////////</em></font>
+<em>318: </em>
+<em>319: </em><font color="#ffa600"><em>// these routines 'do transactions'; they call upon the memory manager</em></font>
+<em>320: </em><font color="#ffa600"><em>//	(who can be in essence a ram manager or a disk manager) to read,</em></font>
+<em>321: </em><font color="#ffa600"><em>//	lock, write, free etc things, and they wait for writes to complete</em></font>
+<em>322: </em><font color="#ffa600"><em>//	appropriately thus getting the right amount of performance-sapping</em></font>
+<em>323: </em><font color="#ffa600"><em>//	synchronisation</em></font>
+<em>324: </em>
+<em>325: </em><font color="#ffa600"><em>//	in this version, everybody just tosses pennies; there's no representation</em></font>
+<em>326: </em><font color="#ffa600"><em>//	of real records. also, we assume no contention for records for the moment</em></font>
+<em>327: </em><font color="#ffa600"><em>//	and further, we assume that no record is locked over multiple terminal</em></font>
+<em>328: </em><font color="#ffa600"><em>//	requests.</em></font>
+<em>329: </em>
+<em>330: </em><font color="#ffa600"><em>///////////////////////// DISKS ////////////////////////////////</em></font>
+<em>331: </em>
+<em>332: </em>const int32 Read = 0, Write_synch = 1, Write_asynch = 2;
+<em>333: </em>
+<em>334: </em><font color="#ffa600"><em>//////////////////////// disk_manager //////////////////////////</em></font>
+<em>335: </em>
+<em>336: </em><font color="#ffa600"><em>// the disk manager listens to all the tp agents who may sometimes</em></font>
+<em>337: </em><font color="#ffa600"><em>// call upon him to do disk accesses</em></font>
+<em>338: </em><font color="#ffa600"><em>// the disk manager runs a number of disks, which he chooses between </em></font>
+<em>339: </em><font color="#ffa600"><em>// at random for a request. each disk is represented by a process</em></font>
+<em>340: </em><strong>class</strong> DiskManager <font color="red"><strong>{</strong></font>
+<em>341: </em>
+<em>342: </em>public:
+<em>343: </em>
+<em>344: </em>  <font color="#ffa600"><em>// a sequential buffer implementation</em></font>
+<em>345: </em>  void drive_buffer(int32 buff_size, Chan &amp;in, Chan &amp;out, int32 number) 
+<em>346: </em>  <font color="red"><strong>{</strong></font>
+<em>347: </em>    IntVect stuff(buff_size);
+<em>348: </em>
+<em>349: </em>    Chan in_to_out, out_to_in;
+<em>350: </em>    bool in_asleep = false, out_asleep = true;
+<em>351: </em>    int32 inptr = 0, outptr = 0, count = 0;
+<em>352: </em>
+<em>353: </em>    <font color="#ffa600"><em>// the input handler    </em></font>
+<em>354: </em>    par <font color="red"><strong>{</strong></font>
+<em>355: </em>      <font color="red"><strong>{</strong></font>
+<em>356: </em>        int32 any;
+<em>357: </em>        <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>358: </em>          int32 data = in.get();
+<em>359: </em>          stuff[inptr] = data;
+<em>360: </em>          inptr = (inptr + 1) % buff_size;	<font color="#ffa600"><em>// increment in pointer</em></font>
+<em>361: </em>          count = count + 1;            <font color="#ffa600"><em>// increment count</em></font>
+<em>362: </em>          <strong>if</strong> (out_asleep) <font color="red"><strong>{</strong></font>
+<em>363: </em>            out_asleep = false;
+<em>364: </em>            in_to_out.write(any);
+<em>365: </em>          <font color="red"><strong>}</strong></font>
+<em>366: </em>          <strong>if</strong> (count == buff_size) <font color="red"><strong>{</strong></font>
+<em>367: </em>            <font color="#ffa600"><em>// buffer is full</em></font>
+<em>368: </em>            in_asleep = true;
+<em>369: </em>            any = out_to_in.get();
+<em>370: </em>          <font color="red"><strong>}</strong></font>
+<em>371: </em>        <font color="red"><strong>}</strong></font>
+<em>372: </em>      <font color="red"><strong>}</strong></font>
+<em>373: </em>      <font color="red"><strong>{</strong></font>
+<em>374: </em>        <font color="#ffa600"><em>// the output handler   </em></font>
+<em>375: </em>        int32 data, any;
+<em>376: </em>        <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>377: </em>          <font color="#ffa600"><em>// first see if we got any data</em></font>
+<em>378: </em>          <strong>if</strong> (out_asleep) <font color="red"><strong>{</strong></font>
+<em>379: </em>            any = in_to_out.get();	<font color="#ffa600"><em>// wait for stuff</em></font>
+<em>380: </em>          <font color="red"><strong>}</strong></font>
+<em>381: </em>          data = stuff[outptr];
+<em>382: </em>          out.write(data);
+<em>383: </em>          outptr = (outptr + 1) % buff_size;
+<em>384: </em>          count = count - 1;
+<em>385: </em>          <strong>if</strong> (in_asleep) <font color="red"><strong>{</strong></font>
+<em>386: </em>            <font color="#ffa600"><em>// in has gone to sleep</em></font>
+<em>387: </em>            in_asleep = false;
+<em>388: </em>            out_to_in.write(any);   <font color="#ffa600"><em>// wake him up</em></font>
+<em>389: </em>          <font color="red"><strong>}</strong></font>
+<em>390: </em>          <strong>if</strong> (count == 0) <font color="red"><strong>{</strong></font>
+<em>391: </em>            out_asleep = true;
+<em>392: </em>          <font color="red"><strong>}</strong></font>
+<em>393: </em>        <font color="red"><strong>}</strong></font>    
+<em>394: </em>      <font color="red"><strong>}</strong></font>
+<em>395: </em>    <font color="red"><strong>}</strong></font>
+<em>396: </em>  <font color="red"><strong>}</strong></font>
+<em>397: </em>
+<em>398: </em>  <font color="#ffa600"><em>//////////////////////// drive /////////////////////////</em></font>
+<em>399: </em>
+<em>400: </em>  void drive(Chan &amp;in, Chan &amp;out, int32 n) 
+<em>401: </em>  <font color="red"><strong>{</strong></font>
+<em>402: </em>    int32 cmnd;
+<em>403: </em>    const int32 rotation_time = 10 * msec;
+<em>404: </em>    const int32 seek_time = 100 * musec;    <font color="#ffa600"><em>// per track</em></font>
+<em>405: </em>    const int32 settling_time = 1 * msec;
+<em>406: </em>    const int32 num_tracks	= 100;
+<em>407: </em>    <font color="#ffa600"><em>// these disks have a rotation speed of 10 msec, a head movement and</em></font>
+<em>408: </em>    <font color="#ffa600"><em>// settling time of 100musec/track + 1 msec, 100 tracks, and are </em></font>
+<em>409: </em>    <font color="#ffa600"><em>// unsynchronised.</em></font>
+<em>410: </em>    
+<em>411: </em>    int32 agent;
+<em>412: </em>    int32 track = 0;
+<em>413: </em>    int32 newtrack = 0;
+<em>414: </em>    int32 dtrack;
+<em>415: </em>    
+<em>416: </em>    pDelay(Rand.uniform(0, 10 * msec, 20 * msec));
+<em>417: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>418: </em>      int32 wait_time;
+<em>419: </em>      
+<em>420: </em>      cmnd = in.get();             <font color="#ffa600"><em>// get the composite command</em></font>
+<em>421: </em>      agent = cmnd &gt;&gt; 16;          <font color="#ffa600"><em>// resolve into agent number</em></font>
+<em>422: </em>      cmnd = cmnd &amp; 255;           <font color="#ffa600"><em>// ..and command</em></font>
+<em>423: </em>      newtrack = Rand.uniform(0, 0, num_tracks);
+<em>424: </em>      <strong>if</strong> (newtrack &lt; track) <font color="red"><strong>{</strong></font>
+<em>425: </em>    dtrack = track - newtrack;
+<em>426: </em>      <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>427: </em>        dtrack = newtrack - track;
+<em>428: </em>      <font color="red"><strong>}</strong></font>
+<em>429: </em>      wait_time = Rand.uniform(0, 0, rotation_time) + <font color="#ffa600"><em>// rotate latency</em></font>
+<em>430: </em>        (dtrack * seek_time) +      <font color="#ffa600"><em>// seek latency</em></font>
+<em>431: </em>        settling_time;
+<em>432: </em>      pDelay(wait_time);
+<em>433: </em>      <font color="#ffa600"><em>// synchronous command?</em></font>
+<em>434: </em>      <strong>if</strong> ((cmnd == Read) || (cmnd == Write_synch)) <font color="red"><strong>{</strong></font>
+<em>435: </em>    out.write(agent);
+<em>436: </em>      <font color="red"><strong>}</strong></font>
+<em>437: </em>      pDelay(100 * musec);
+<em>438: </em>    <font color="red"><strong>}</strong></font>
+<em>439: </em>  <font color="red"><strong>}</strong></font>
+<em>440: </em>
+<em>441: </em>  <font color="#ffa600"><em>///////////////////////// manager /////////////////////////</em></font>
+<em>442: </em>    
+<em>443: </em>  <font color="#ffa600"><em>// Accepts commands from tp agents and sends to drives</em></font>
+<em>444: </em>  void manager(int32 mips, int32 disks, Chans &amp;commands, Chans &amp;to_drives)
+<em>445: </em>  <font color="red"><strong>{</strong></font>  
+<em>446: </em>    int32 cmnd, agent, drivenum, composite;
+<em>447: </em>    say(<font color="red">&quot;\nDisk manager starting.&quot;</font>);    
+<em>448: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>449: </em>      dprintf (<font color="red">&quot;disk manager:  waiting for command.\n&quot;</font>,cmnd,agent);
+<em>450: </em>      afor(unsigned i = 0; i != commands.size(); ++i) <font color="red"><strong>{</strong></font>
+<em>451: </em>        commands[i].port(int v) <font color="red"><strong>{</strong></font>
+<em>452: </em>          cmnd = v;
+<em>453: </em>          agent = i;
+<em>454: </em>          dprintf (<font color="red">&quot;disk manager:  command %d from %d.\n&quot;</font>,cmnd,agent);
+<em>455: </em>        <font color="red"><strong>}</strong></font>
+<em>456: </em>      <font color="red"><strong>}</strong></font>
+<em>457: </em>      <font color="#ffa600"><em>// got a request from a tp agent; assign it to a drive</em></font>
+<em>458: </em>      drivenum = Rand.uniform(0, 0, disks);     <font color="#ffa600"><em>// chooses rv in 0..disks-1</em></font>
+<em>459: </em>      composite = cmnd + (agent &lt;&lt; 16);
+<em>460: </em>      think(mips, DiskCmndPath);        <font color="#ffa600"><em>// IO-issuing path length</em></font>
+<em>461: </em>      to_drives[drivenum].write(composite);
+<em>462: </em>      dprintf (<font color="red">&quot;disk manager:  wrote message to drives.\n&quot;</font>);
+<em>463: </em>    <font color="red"><strong>}</strong></font>
+<em>464: </em>  <font color="red"><strong>}</strong></font>
+<em>465: </em>
+<em>466: </em>  <font color="#ffa600"><em>///////////////////////// responder ////////////////////////////</em></font>
+<em>467: </em>
+<em>468: </em>  <font color="#ffa600"><em>// the disk interrupt handler; catches 'done' messages from disks,</em></font>
+<em>469: </em>  <font color="#ffa600"><em>// sends signal to appropriate tp agent</em></font>
+<em>470: </em>  void responder(int32 mips, Chans &amp;to_agents, Chans &amp;from_disks) 
+<em>471: </em>  <font color="red"><strong>{</strong></font>
+<em>472: </em>    int32 agent;
+<em>473: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>474: </em>      afor (unsigned i = 0; i != from_disks.size(); ++i) <font color="red"><strong>{</strong></font>
+<em>475: </em>        from_disks[i].port(int v) <font color="red"><strong>{</strong></font>
+<em>476: </em>          agent = v;
+<em>477: </em>        <font color="red"><strong>}</strong></font>
+<em>478: </em>      <font color="red"><strong>}</strong></font>
+<em>479: </em>      to_agents[agent].write(agent);
+<em>480: </em>      think(mips, DiskResponsePath);            
+<em>481: </em>    <font color="red"><strong>}</strong></font>
+<em>482: </em>  <font color="red"><strong>}</strong></font>
+<em>483: </em>
+<em>484: </em>public:
+<em>485: </em>  <font color="#ffa600"><em>// Now, the body of the disk manager just runs the manager on the</em></font>
+<em>486: </em>  <font color="#ffa600"><em>// computer and the drives on themselves</em></font>
+<em>487: </em>  void operator()(int32 mips, int32 buff_size, int32 disks, Chans &amp;in, Chans &amp;out) 
+<em>488: </em>  <font color="red"><strong>{</strong></font>
+<em>489: </em>    Chans to_drives(disks), from_drives(disks), buff_to_drives(disks);
+<em>490: </em>    
+<em>491: </em>    par <font color="red"><strong>{</strong></font>
+<em>492: </em>      par <font color="red"><strong>{</strong></font>
+<em>493: </em>        on (mainframe) <font color="red"><strong>{</strong></font>
+<em>494: </em>          manager(mips, disks, in, to_drives);
+<em>495: </em>        <font color="red"><strong>}</strong></font>
+<em>496: </em>        on (mainframe) <font color="red"><strong>{</strong></font>
+<em>497: </em>          responder(mips, out, from_drives);
+<em>498: </em>        <font color="red"><strong>}</strong></font>
+<em>499: </em>      <font color="red"><strong>}</strong></font>
+<em>500: </em>      pfor (int i = 0; i != disks; ++i) <font color="red"><strong>{</strong></font>
+<em>501: </em>        on (diskdrives[i]) <font color="red"><strong>{</strong></font>
+<em>502: </em>          drive(buff_to_drives[i], from_drives[i], i);
+<em>503: </em>        <font color="red"><strong>}</strong></font>
+<em>504: </em>      <font color="red"><strong>}</strong></font>
+<em>505: </em>      pfor (int i = 0; i != disks; ++i) <font color="red"><strong>{</strong></font>      
+<em>506: </em>        on (diskdrives[i]) <font color="red"><strong>{</strong></font>
+<em>507: </em>          drive_buffer(buff_size, to_drives[i], buff_to_drives[i], i); 
+<em>508: </em>        <font color="red"><strong>}</strong></font>
+<em>509: </em>      <font color="red"><strong>}</strong></font>
+<em>510: </em>    <font color="red"><strong>}</strong></font>
+<em>511: </em>  <font color="red"><strong>}</strong></font>
+<em>512: </em>
+<em>513: </em><font color="red"><strong>}</strong></font>;
+<em>514: </em>
+<em>515: </em><font color="#ffa600"><em>// reads a block from disk by sending the disk manager a message    </em></font>
+<em>516: </em>void disk_read(Chan &amp;to_disks, Chan &amp;from_disks) 
+<em>517: </em><font color="red"><strong>{</strong></font>
+<em>518: </em>  dprintf (<font color="red">&quot;disk_read:  start %d.\n&quot;</font>,Read);
+<em>519: </em>  to_disks.write(Read);
+<em>520: </em>  dprintf (<font color="red">&quot;disk_read:  before get.\n&quot;</font>);
+<em>521: </em>  from_disks.get();
+<em>522: </em>  dprintf (<font color="red">&quot;disk_read:  finish.\n&quot;</font>);
+<em>523: </em><font color="red"><strong>}</strong></font>
+<em>524: </em>
+<em>525: </em><font color="#ffa600"><em>// writes a block to the disk controller</em></font>
+<em>526: </em>void disk_write_asynch(Chan &amp;to_disks, Chan &amp;from_disks) 
+<em>527: </em><font color="red"><strong>{</strong></font>
+<em>528: </em>  to_disks.write(Write_asynch);
+<em>529: </em><font color="red"><strong>}</strong></font>
+<em>530: </em>    
+<em>531: </em><font color="#ffa600"><em>// writes a block to the disk</em></font>
+<em>532: </em>void disk_write_synch(Chan &amp;to_disks, Chan &amp;from_disks) 
+<em>533: </em><font color="red"><strong>{</strong></font>
+<em>534: </em>  to_disks.write(Write_synch);
+<em>535: </em>  from_disks.get();
+<em>536: </em><font color="red"><strong>}</strong></font>
+<em>537: </em>
+<em>538: </em><font color="#ffa600"><em>//////////////////////////// MEMORY /////////////////////////////</em></font>
+<em>539: </em>
+<em>540: </em><font color="#ffa600"><em>// asks for stuff from the memory system; in a normal system, this means</em></font>
+<em>541: </em><font color="#ffa600"><em>// going to a disk; in a giant memory system, it means reading memory. we</em></font>
+<em>542: </em><font color="#ffa600"><em>// treat the thing as cached, with a supplied hit rate. with 100% hit, we</em></font>
+<em>543: </em><font color="#ffa600"><em>// always go to memory; with 90% hit rate we go to disk 10% of the time</em></font>
+<em>544: </em><a name="544" class="mark"></a><font color="#ffa600"><em></em></font>
+<em>545: </em>void mem_read(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>546: </em><font color="red"><strong>{</strong></font>
+<em>547: </em>  dprintf (<font color="red">&quot;mem_read:  starting.\n&quot;</font>);
+<em>548: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
+<em>549: </em>    dprintf (<font color="red">&quot;mem_read:  disk write asynch start.\n&quot;</font>);
+<em>550: </em>    <font color="#ffa600"><em>// hit_rate is an integer in 0..999; if our rv is larger than hitrate</em></font>
+<em>551: </em>    <font color="#ffa600"><em>//then we have a MISS   </em></font>
+<em>552: </em>    disk_read(to_disks, from_disks);
+<em>553: </em>    dprintf (<font color="red">&quot;mem_read:  disk write asynch finish.\n&quot;</font>);
+<em>554: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>555: </em>    <font color="#ffa600"><em>// memory read; this is quick; assume 10 microseconds</em></font>
+<em>556: </em>    dprintf (<font color="red">&quot;mem_read:  delay start.\n&quot;</font>);
+<em>557: </em>    pDelay(15 * musec);
+<em>558: </em>    dprintf (<font color="red">&quot;mem_read:  delay finish.\n&quot;</font>);
+<em>559: </em>  <font color="red"><strong>}</strong></font>
+<em>560: </em>  dprintf (<font color="red">&quot;mem_read:  finished.\n&quot;</font>);
+<em>561: </em><font color="red"><strong>}</strong></font>
+<em>562: </em>    
+<em>563: </em>void mem_write_synch(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>564: </em><font color="red"><strong>{</strong></font>
+<em>565: </em>  <font color="#ffa600"><em>// gives stuff to the memory system and waits for write to finish</em></font>
+<em>566: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
+<em>567: </em>    <font color="#ffa600"><em>// hit_rate is an integer in 0..999; if our rv is larger than hitrate</em></font>
+<em>568: </em>    <font color="#ffa600"><em>// then we have a MISS</em></font>
+<em>569: </em>    disk_write_synch(to_disks, from_disks);
+<em>570: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>571: </em>    <font color="#ffa600"><em>// memory write; this is quick; assume 10 microseconds</em></font>
+<em>572: </em>    pDelay(15 * musec);
+<em>573: </em>  <font color="red"><strong>}</strong></font>
+<em>574: </em><font color="red"><strong>}</strong></font>
+<em>575: </em>    
+<em>576: </em>void mem_write_asynch(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
+<em>577: </em><font color="red"><strong>{</strong></font>
+<em>578: </em>  dprintf (<font color="red">&quot;mem_write_asynch:  starting.\n&quot;</font>);
+<em>579: </em>  <font color="#ffa600"><em>// gives stuff to the memory system</em></font>
+<em>580: </em>  <strong>if</strong> (Rand.uniform(0, 0, 1000) &gt; hit_rate) <font color="red"><strong>{</strong></font>
+<em>581: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  disk write asynch start.\n&quot;</font>);
+<em>582: </em>    disk_write_asynch(to_disks, from_disks);
+<em>583: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  disk write asynch finish.\n&quot;</font>);
+<em>584: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>585: </em>    <font color="#ffa600"><em>// memory write; this is quick; assume 10 microseconds</em></font>
+<em>586: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  delay start.\n&quot;</font>);
+<em>587: </em>    pDelay(15 * musec);
+<em>588: </em>    dprintf (<font color="red">&quot;mem_write_asynch:  delay finish.\n&quot;</font>);
+<em>589: </em>  <font color="red"><strong>}</strong></font>
+<em>590: </em>  dprintf (<font color="red">&quot;mem_write_asynch:  finished.\n&quot;</font>);
+<em>591: </em><font color="red"><strong>}</strong></font>
+<em>592: </em>
+<em>593: </em><font color="#ffa600"><em>//////////////////// RECORDS AND JOURNALS /////////////////////////</em></font>
+<em>594: </em>
+<em>595: </em>void before_journal(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>596: </em><font color="red"><strong>{</strong></font>
+<em>597: </em>  <font color="#ffa600"><em>// this writes an entry to the before journal; no synchronisation is needed</em></font>
+<em>598: </em>  <font color="#ffa600"><em>//say(&quot;\n\tBeforeJrnl&quot;);</em></font>
+<em>599: </em>  mem_write_asynch(to_disks, from_disks, hit_rate);
+<em>600: </em><font color="red"><strong>}</strong></font>
+<em>601: </em>    
+<em>602: </em>void after_journal(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>603: </em><font color="red"><strong>{</strong></font>
+<em>604: </em>  <font color="#ffa600"><em>// this write an entry to the after journal; must wait until complete</em></font>
+<em>605: </em>  mem_write_synch(to_disks, from_disks, hit_rate);
+<em>606: </em><font color="red"><strong>}</strong></font>
+<em>607: </em>    
+<em>608: </em>void get_record(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>609: </em><font color="red"><strong>{</strong></font>
+<em>610: </em>  <font color="#ffa600"><em>// reads a record from the database</em></font>
+<em>611: </em>  mem_read(to_disks, from_disks, hit_rate);
+<em>612: </em><font color="red"><strong>}</strong></font>
+<em>613: </em>    
+<em>614: </em>void put_record(Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate) 
+<em>615: </em><font color="red"><strong>{</strong></font>
+<em>616: </em>  <font color="#ffa600"><em>// synchronised write to memory</em></font>
+<em>617: </em>  mem_write_synch(to_disks, from_disks, hit_rate);
+<em>618: </em><font color="red"><strong>}</strong></font>
+<em>619: </em>
+<em>620: </em>void read_record(int32 mips, Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
+<em>621: </em><font color="red"><strong>{</strong></font>
+<em>622: </em>  <font color="#ffa600"><em>// this routine does a read operation on one record</em></font>
+<em>623: </em>  dprintf (<font color="red">&quot;read_record:  start.\n&quot;</font>);
+<em>624: </em>  before_journal(to_disks, from_disks, hit_rate);
+<em>625: </em>  think(mips, ReadPath);
+<em>626: </em>  dprintf (<font color="red">&quot;read_record:  before get.\n&quot;</font>);
+<em>627: </em>  get_record(to_disks, from_disks, hit_rate);
+<em>628: </em>  dprintf (<font color="red">&quot;read_record:  finish.\n&quot;</font>);
+<em>629: </em><font color="red"><strong>}</strong></font>
+<em>630: </em>    
+<em>631: </em>void update_record(int32 mips, Chan &amp;to_disks, Chan &amp;from_disks, int32 hit_rate)
+<em>632: </em><font color="red"><strong>{</strong></font>
+<em>633: </em>  <font color="#ffa600"><em>// this does a write operation to one record</em></font>
+<em>634: </em>  before_journal(to_disks, from_disks, hit_rate);
+<em>635: </em>  think(mips, WritePath);
+<em>636: </em>  put_record(to_disks, from_disks, hit_rate);
+<em>637: </em>  after_journal(to_disks, from_disks, hit_rate);
+<em>638: </em><font color="red"><strong>}</strong></font>
+<em>639: </em>        
+<em>640: </em><font color="#ffa600"><em>///////////////////////// TP /////////////////////////////</em></font>
+<em>641: </em>
+<em>642: </em><font color="#ffa600"><em>// the tp process does all the transaction work. there are multiple</em></font>
+<em>643: </em><font color="#ffa600"><em>//	instantiations; each catches stuff on its in, passes stuff on through</em></font>
+<em>644: </em><font color="#ffa600"><em>//	its out and signals its free to the comms mux via the free channel</em></font>
+<em>645: </em>
+<em>646: </em><strong>class</strong> Agents <font color="red"><strong>{</strong></font>
+<em>647: </em>
+<em>648: </em>public: 
+<em>649: </em>  void lock_record(int32 mips) 
+<em>650: </em>  <font color="red"><strong>{</strong></font>
+<em>651: </em>    <font color="#ffa600"><em>// we simply compute a bit -    locks are in memory</em></font>
+<em>652: </em>    think(mips, LockPath);          
+<em>653: </em>  <font color="red"><strong>}</strong></font>
+<em>654: </em>    
+<em>655: </em>  void unlock_record(int32 mips) 
+<em>656: </em>  <font color="red"><strong>{</strong></font>
+<em>657: </em>    <font color="#ffa600"><em>// same again</em></font>
+<em>658: </em>    think(mips, UnlockPath);
+<em>659: </em>  <font color="red"><strong>}</strong></font>
+<em>660: </em>
+<em>661: </em>  void tp_agent(int32 mips, Chan &amp;in, Chan &amp;out, Chan &amp;free, Chan &amp;to_disks, Chan &amp;from_disks,
+<em>662: </em>                int32 tp_num, int32 hit_rate)
+<em>663: </em>  <font color="red"><strong>{</strong></font>         
+<em>664: </em>    int32 terminal = 0,freecount = 0;
+<em>665: </em>    pSetPriority(3);            <font color="#ffa600"><em>// lower priority</em></font>
+<em>666: </em>    <strong>while</strong>(1) <font color="red"><strong>{</strong></font>
+<em>667: </em>      dprintf (<font color="red">&quot;tp agent  %d:  is free.\n&quot;</font>,tp_num);
+<em>668: </em>      free.write(freecount++);	<font color="#ffa600"><em>// signal i'm free</em></font>
+<em>669: </em>      dprintf (<font color="red">&quot;tp agent  %d:  waiting for input.\n&quot;</font>,tp_num);
+<em>670: </em>      terminal = in.get();	<font color="#ffa600"><em>// get some input</em></font>
+<em>671: </em>      dprintf (<font color="red">&quot;tp agent %d:  got message from terminal %d.\n&quot;</font>,tp_num,terminal);
+<em>672: </em>      lock_record(mips);    <font color="#ffa600"><em>// lock all the records</em></font>
+<em>673: </em>      lock_record(mips);
+<em>674: </em>      lock_record(mips);
+<em>675: </em>      dprintf (<font color="red">&quot;tp agent  %d:  done with locking record.\n&quot;</font>,tp_num);
+<em>676: </em>            
+<em>677: </em>      read_record(mips, to_disks, from_disks, hit_rate);
+<em>678: </em>      read_record(mips, to_disks, from_disks, hit_rate);
+<em>679: </em>      dprintf (<font color="red">&quot;tp agent  %d:  done with reading record.\n&quot;</font>,tp_num);
+<em>680: </em>      update_record(mips, to_disks, from_disks, hit_rate);
+<em>681: </em> 
+<em>682: </em>      dprintf (<font color="red">&quot;tp agent  %d:  sent message to terminal %d.\n&quot;</font>,tp_num,terminal);
+<em>683: </em>      out.write(terminal);      <font color="#ffa600"><em>// provide results to terminal</em></font>
+<em>684: </em>            
+<em>685: </em>      unlock_record(mips);
+<em>686: </em>      unlock_record(mips);
+<em>687: </em>      unlock_record(mips);
+<em>688: </em>      dprintf (<font color="red">&quot;tp agent  %d:  records unlocked.\n&quot;</font>,tp_num);
+<em>689: </em>    <font color="red"><strong>}</strong></font>
+<em>690: </em>  <font color="red"><strong>}</strong></font>
+<em>691: </em>
+<em>692: </em>public:
+<em>693: </em>  void operator()(int32 mips, Chans &amp;in, Chans &amp;out, Chans &amp;free, Chans &amp;to_disks, Chans &amp;from_disks, 
+<em>694: </em>         int32 num_agents, int32 hit_rate) 
+<em>695: </em>  <font color="red"><strong>{</strong></font>
+<em>696: </em>    <font color="#ffa600"><em>//	the body, forking the agents..</em></font>
+<em>697: </em>    say(<font color="red">&quot;\nTP agent starting.&quot;</font>);
+<em>698: </em>    pfor (int i = 0; i != num_agents; ++i) <font color="red"><strong>{</strong></font>
+<em>699: </em>      tp_agent(mips, in[i], out[i], free[i], to_disks[i], from_disks[i], i, hit_rate);
+<em>700: </em>    <font color="red"><strong>}</strong></font>
+<em>701: </em>  <font color="red"><strong>}</strong></font>
+<em>702: </em>
+<em>703: </em><font color="red"><strong>}</strong></font>;
+<em>704: </em>    
+<em>705: </em><font color="#ffa600"><em>/////////////////////////// mainbody ////////////////////////////////////</em></font>
+<em>706: </em>
+<em>707: </em>void pSetup(ConfigParms &amp;cp)
+<em>708: </em><font color="red"><strong>{</strong></font>
+<em>709: </em>  cp._numpriorities = 4;
+<em>710: </em>  cp._busyokay = true;
+<em>711: </em><font color="red"><strong>}</strong></font>
+<em>712: </em>
+<em>713: </em>int pMain(int argc,const char *argv[]) 
+<em>714: </em><font color="red"><strong>{</strong></font>       
+<em>715: </em>  GC_disable();
+<em>716: </em>
+<em>717: </em>  int32 actual_users, hit_rate, mips, buff_size, disks, tp_agents, SimulationTime, ReportInterval;
+<em>718: </em>  
+<em>719: </em>  int32 transactions = 0, times = 0, sigma_transac = 0, sigma_response = 0;
+<em>720: </em>
+<em>721: </em>  <font color="#ffa600"><em>// main body	</em></font>
+<em>722: </em>  mprintf(<font color="red">&quot;\nThe Enterprise Attack Vehicle MkII (v1.01) lifts off..\nWe have some arguments: %ld&quot;</font>, argc);
+<em>723: </em>        
+<em>724: </em>  <strong>if</strong> (argc &lt; 2) <font color="red"><strong>{</strong></font>
+<em>725: </em>    <font color="#ffa600"><em>// no arguments offered at all; use defaults</em></font>
+<em>726: </em>    actual_users = 100; <font color="#ffa600"><em>// 100</em></font>
+<em>727: </em>    hit_rate = 15;
+<em>728: </em>    mips = 10; <font color="#ffa600"><em>// 10</em></font>
+<em>729: </em>    buff_size = 128;
+<em>730: </em>    disks = 40;     <font color="#ffa600"><em>// 40</em></font>
+<em>731: </em>    tp_agents = 4;      <font color="#ffa600"><em>// 4</em></font>
+<em>732: </em>    SimulationTime = 500; <font color="#ffa600"><em>// 500;</em></font>
+<em>733: </em>    ReportInterval = 50; <font color="#ffa600"><em>// 50</em></font>
+<em>734: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <strong>if</strong> (argc &lt; 9) <font color="red"><strong>{</strong></font>
+<em>735: </em>    <font color="#ffa600"><em>// wrong number offered</em></font>
+<em>736: </em>    mprintf(<font color="red">&quot;\nEAV: usage&quot;</font>);
+<em>737: </em>    mprintf(<font color="red">&quot;\n\tNum Users [0..%ld]&quot;</font>, num_terminals);
+<em>738: </em>    mprintf(<font color="red">&quot;\n\tDiskCache HitRate [0..1000]&quot;</font>);
+<em>739: </em>    mprintf(<font color="red">&quot;\n\tProcessor speed in Mips&quot;</font>);
+<em>740: </em>    mprintf(<font color="red">&quot;\n\tPer-Disk Command buffer size [0..]&quot;</font>);
+<em>741: </em>    mprintf(<font color="red">&quot;\n\tNumber of Disks [0..%ld]&quot;</font>, num_drives);
+<em>742: </em>    mprintf(<font color="red">&quot;\n\tNumber of TP daemons [1..]&quot;</font>);
+<em>743: </em>    mprintf(<font color="red">&quot;\n\tMax Simulation Time in seconds [0..1500]&quot;</font>);
+<em>744: </em>    mprintf(<font color="red">&quot;\n\tReporting interval in seconds [0..1500]&quot;</font>);
+<em>745: </em>    mprintf(<font color="red">&quot;\nSimulation will halt almost immediately.\n\n&quot;</font>);
+<em>746: </em>    pExit(1);
+<em>747: </em>  <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
+<em>748: </em>    <font color="#ffa600"><em>// Init parms.</em></font>
+<em>749: </em>    int i = 1;
+<em>750: </em>    actual_users = atoi(argv[i++]);
+<em>751: </em>    hit_rate = atoi(argv[i++]);
+<em>752: </em>    mips = atoi(argv[i++]);
+<em>753: </em>    buff_size = atoi(argv[i++]);
+<em>754: </em>    disks = atoi(argv[i++]);
+<em>755: </em>    tp_agents = atoi(argv[i++]);
+<em>756: </em>    SimulationTime = atoi(argv[i++]);
+<em>757: </em>    ReportInterval = atoi(argv[i++]);
+<em>758: </em>  <font color="red"><strong>}</strong></font>
+<em>759: </em>
+<em>760: </em>  <strong>if</strong> (actual_users &gt; num_terminals) <font color="red"><strong>{</strong></font>
+<em>761: </em>    actual_users = num_terminals;
+<em>762: </em>  <font color="red"><strong>}</strong></font>
+<em>763: </em>  
+<em>764: </em>  mprintf(<font color="red">&quot;\n\tActual Number of users   = %ld&quot;</font>, actual_users);
+<em>765: </em>  mprintf(<font color="red">&quot;\n\tUser Think time (msec)   = %ld&quot;</font>, ThinkTime);
+<em>766: </em>  mprintf(<font color="red">&quot;\n\tNumber of TP Agents	= %ld&quot;</font>, tp_agents);
+<em>767: </em>  mprintf(<font color="red">&quot;\n\tProcessor speed (mips) = %ld&quot;</font>, mips);
+<em>768: </em>  mprintf(<font color="red">&quot;\n\tDisk Buffer Hit Rate     = &quot;</font>);
+<em>769: </em>  printfixed(hit_rate, 10);
+<em>770: </em>  mprintf(<font color="red">&quot; percent&quot;</font>);
+<em>771: </em>  <strong>if</strong> (disks &gt; num_drives) <font color="red"><strong>{</strong></font>
+<em>772: </em>    disks = num_drives;
+<em>773: </em>  <font color="red"><strong>}</strong></font>
+<em>774: </em>  mprintf(<font color="red">&quot;\n\tNumber of Disks      = %ld&quot;</font>, disks);
+<em>775: </em>  mprintf(<font color="red">&quot;\n\tPer Disk Buffer size     = %ld commands&quot;</font>, buff_size);
+<em>776: </em>  mprintf(<font color="red">&quot;\n\tSimulation will run for %ld simulated seconds&quot;</font>, SimulationTime);
+<em>777: </em>  <strong>if</strong> (ReportInterval &lt;= 0) <font color="red"><strong>{</strong></font>
+<em>778: </em>    ReportInterval = 1;
+<em>779: </em>  <font color="red"><strong>}</strong></font>
+<em>780: </em>  mprintf(<font color="red">&quot;\n\tProgress reports every %ld seconds\n&quot;</font>, ReportInterval);
+<em>781: </em>  ReportInterval = ReportInterval * sec;
+<em>782: </em>
+<em>783: </em>  <font color="#ffa600"><em>// create the dynamically-sized interconnect</em></font>
+<em>784: </em>  Chans 
+<em>785: </em>    terms_to_comms(actual_users), 
+<em>786: </em>    comms_to_terms(actual_users),
+<em>787: </em>    comms_to_tp(tp_agents),
+<em>788: </em>    tp_to_comms(tp_agents),
+<em>789: </em>    free(tp_agents),
+<em>790: </em>    tp_to_disks(tp_agents),
+<em>791: </em>    disks_to_tp(tp_agents);
+<em>792: </em>    
+<em>793: </em>  par <font color="red"><strong>{</strong></font>
+<em>794: </em>    par <font color="red"><strong>{</strong></font>
+<em>795: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
+<em>796: </em>        comms_in(mips, terms_to_comms, comms_to_tp, free);
+<em>797: </em>      <font color="red"><strong>}</strong></font>
+<em>798: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
+<em>799: </em>        comms_out(mips, tp_to_comms, comms_to_terms);
+<em>800: </em>      <font color="red"><strong>}</strong></font>
+<em>801: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
+<em>802: </em>        DiskManager disk_manager;
+<em>803: </em>        disk_manager(mips,buff_size,disks,tp_to_disks,disks_to_tp);
+<em>804: </em>      <font color="red"><strong>}</strong></font>
+<em>805: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
+<em>806: </em>        Agents agents;
+<em>807: </em>        agents(mips, comms_to_tp, tp_to_comms, free, 
+<em>808: </em>               tp_to_disks, disks_to_tp, tp_agents, hit_rate);
+<em>809: </em>      <font color="red"><strong>}</strong></font>
+<em>810: </em>      on (mainframe) <font color="red"><strong>{</strong></font>
+<em>811: </em>        timestamp(ReportInterval, SimulationTime * sec, 
+<em>812: </em>                  transactions, times);
+<em>813: </em>      <font color="red"><strong>}</strong></font>
+<em>814: </em>    <font color="red"><strong>}</strong></font>
+<em>815: </em>    <font color="red"><strong>{</strong></font>
+<em>816: </em>      pfor (int i = 0; i != actual_users; ++i) <font color="red"><strong>{</strong></font>
+<em>817: </em>        on (terminals[i]) <font color="red"><strong>{</strong></font>
+<em>818: </em>          user(comms_to_terms[i], terms_to_comms[i],
+<em>819: </em>               i, SimulationTime * sec, transactions, times, 
+<em>820: </em>               sigma_transac, sigma_response);
+<em>821: </em>        <font color="red"><strong>}</strong></font>
+<em>822: </em>      <font color="red"><strong>}</strong></font>
+<em>823: </em>      
+<em>824: </em>      say(<font color="red">&quot;\nThe users have all finished..\nTotal of &quot;</font>);
+<em>825: </em>      saynum(transactions);
+<em>826: </em>      say(<font color="red">&quot; in &quot;</font>);
+<em>827: </em>      printfixed(pTime(), sec);
+<em>828: </em>      say(<font color="red">&quot; seconds for a transaction rate of &quot;</font>);
+<em>829: </em>      <font color="#ffa600"><em>//mprintfixed(transactions * sec, Now);</em></font>
+<em>830: </em>      printfixed(transactions, pTime()/sec);
+<em>831: </em>      say (<font color="red">&quot; tps\n&quot;</font>);
+<em>832: </em>      pExit(0);
+<em>833: </em>    <font color="red"><strong>}</strong></font>
+<em>834: </em>  <font color="red"><strong>}</strong></font>
+<em>835: </em>  <strong>return</strong> 0;
+<em>836: </em><font color="red"><strong>}</strong></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></div>
-<!-- ecu/ecu.pa -->
-<a name="ecu/ecu.pa"></a>
-<div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.12 ecu/ecu.pa</font>
-</h4></div><div class="subsubsection">
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><em>  1: </em><font color="#ffa600"><em>// ecu.pa</em></font>
-<em>  2: </em><font color="#ffa600"><em>// a simplistic model of an automotive engine controller (and engine)</em></font>
-<em>  3: </em><font color="#ffa600"><em>// pete october/november 2002</em></font>
-<em>  4: </em>
-<em>  5: </em><font color="#ffa600"><strong>/* ========================= history =======================</strong></font>
-<em>  6: </em>
-<em>  7: </em><font color="#ffa600"><strong>    july 3 2004:  conversion to plasma.</strong></font>
-<em>  8: </em><font color="#ffa600"><strong>    november 14 2002: structural first approximation sans logging. pre-alpha quality at best</strong></font>
-<em>  9: </em><font color="#ffa600"><strong>        to do:  fuel injection and firing should drive motor; it doesn't</strong></font>
-<em> 10: </em><font color="#ffa600"><strong>                need some appropriate logging file format</strong></font>
-<em> 11: </em><font color="#ffa600"><strong>   =========================================================</strong></font>
-<em> 12: </em><font color="#ffa600"><strong>*/</strong></font>
-<em> 13: </em>
-<em> 14: </em><font color="#ffa600"><strong>/* ========================= description =======================</strong></font>
-<em> 15: </em>
-<em> 16: </em><font color="#ffa600"><strong>the goal here is to get the 'architecture' of an engine controller captured, so that</strong></font>
-<em> 17: </em><font color="#ffa600"><strong>we can understand how the bits play together. when complete, this model will NOT contain (eg) 'real</strong></font>
-<em> 18: </em><font color="#ffa600"><strong>strategy code', but will contain at least placeholders for real code which could be refined</strong></font>
-<em> 19: </em><font color="#ffa600"><strong>in a later model</strong></font>
-<em> 20: </em>
-<em> 21: </em><font color="#ffa600"><strong>what it will do is to allow us to </strong></font>
-<em> 22: </em><font color="#ffa600"><strong>    - look at context switch rates</strong></font>
-<em> 23: </em><font color="#ffa600"><strong>    - look at partitioning the sw across more than one processor</strong></font>
-<em> 24: </em><font color="#ffa600"><strong>    - look for APU opportunities</strong></font>
-<em> 25: </em><font color="#ffa600"><strong>    - confirm the architecture</strong></font>
-<em> 26: </em><font color="#ffa600"><strong>    - look at the gross effects of scheduling and multiple processors on event jitter</strong></font>
-<em> 27: </em>
-<em> 28: </em><font color="#ffa600"><strong>for a next step:</strong></font>
-<em> 29: </em><font color="#ffa600"><strong>with 'real code' and a 'real OS' we can construct an exact analogue of this system at the </strong></font>
-<em> 30: </em><font color="#ffa600"><strong>'algorithmic' level of deatil, in which plausible code is running in a simulated realtime </strong></font>
-<em> 31: </em><font color="#ffa600"><strong>environment. then we can further</strong></font>
-<em> 32: </em><font color="#ffa600"><strong>    - look at the effects of task switching on cache behaviour</strong></font>
-<em> 33: </em><font color="#ffa600"><strong>    - look for mechanisms which speed actual code</strong></font>
-<em> 34: </em><font color="#ffa600"><strong>    - look for mechanisms which shrink code footprint</strong></font>
-<em> 35: </em><font color="#ffa600"><strong>    - confirm it's code that needs shrining, not data</strong></font>
-<em> 36: </em><font color="#ffa600"><strong>    - compare 'locks' and 'messages' for footprint and efficiency</strong></font>
-<em> 37: </em><font color="#ffa600"><strong>    - ...</strong></font>
-<em> 38: </em><font color="#ffa600"><strong>    </strong></font>
-<em> 39: </em>
-<em> 40: </em><font color="#ffa600"><strong>what we model is a (very!) simplified engine and engine controller</strong></font>
-<em> 41: </em><font color="#ffa600"><strong>    - the engine is an n-cyclinder engine</strong></font>
-<em> 42: </em><font color="#ffa600"><strong>    - it has a flywheel with t teeth on it, sensed by a hall-effect sensor whose sensitivity</strong></font>
-<em> 43: </em><font color="#ffa600"><strong>varies with speed (low at low speeds) and which needs thresholding for effective digitisation</strong></font>
-<em> 44: </em><font color="#ffa600"><strong>    - there is an accelerator pedal</strong></font>
-<em> 45: </em><font color="#ffa600"><strong>    - there is an external environment which imposes frictional and mass-based forces on the motor</strong></font>
-<em> 46: </em><font color="#ffa600"><strong>so that there is a maximum speed it can attain with any particular rate of fuel feed and a </strong></font>
-<em> 47: </em><font color="#ffa600"><strong>maximum acceleration at a given fuel feed rate</strong></font>
-<em> 48: </em><font color="#ffa600"><strong>    - there is a fuel injector per cylinder, which squirts fuel in when the injector is open. the</strong></font>
-<em> 49: </em><font color="#ffa600"><strong>amount of fuel injected is a function of fuel line pressure and open time</strong></font>
-<em> 50: </em><font color="#ffa600"><strong>    - there is a spark plug per cylinder, which must be zapped to have the fuel-air mixture go bang. </strong></font>
-<em> 51: </em><font color="#ffa600"><strong>however, if it's asked to go bang at the wrong time, it might knock - get pre-ignition - nasty</strong></font>
-<em> 52: </em><font color="#ffa600"><strong>    - there is a fuel pressure detector</strong></font>
-<em> 53: </em><font color="#ffa600"><strong>    - there is a microphone per cylinder to listen for knocking</strong></font>
-<em> 54: </em><font color="#ffa600"><strong>    </strong></font>
-<em> 55: </em><font color="#ffa600"><strong>we will eventually try partitioning this software across a different mix of cpus, including a</strong></font>
-<em> 56: </em><font color="#ffa600"><strong>zen, an etpu and a cpm (or rather, logical equivalents thereof).</strong></font>
-<em> 57: </em>
-<em> 58: </em><font color="#ffa600"><strong>   =========================================================</strong></font>
-<em> 59: </em><font color="#ffa600"><strong>*/</strong></font>
-<em> 60: </em>
-<em> 61: </em><font color="#1919af"><strong>#include</strong></font> &lt;cmath&gt;
-<em> 62: </em><font color="#1919af"><strong>#include</strong></font> &lt;cstdio&gt;
-<em> 63: </em>
-<em> 64: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;constants.h&quot;</font>              <font color="#ffa600"><em>// useful units</em></font>
-<em> 65: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;configuration.h&quot;</font>          <font color="#ffa600"><em>// globals specifying configuration (eg, num cyclinders)</em></font>
-<em> 66: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;engine.h&quot;</font>                     <font color="#ffa600"><em>// the engine model</em></font>
-<em> 67: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;car.h&quot;</font>                        <font color="#ffa600"><em>// accelerator etc</em></font>
-<em> 68: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;utilities.h&quot;</font>              <font color="#ffa600"><em>// Compute()</em></font>
-<em> 69: </em><font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;angle.h&quot;</font>                  <font color="#ffa600"><em>// angle manager</em></font>
-<em> 70: </em>
-<em> 71: </em>using namespace plasma;
-<em> 72: </em>using namespace std;
-<em> 73: </em>
-<em> 74: </em><font color="#ffa600"><em>// statistics</em></font>
-<em> 75: </em>
-<em> 76: </em>int32 deadline_average[cylinder_max];
-<em> 77: </em>double deadline_variance[cylinder_max];
-<em> 78: </em>int32 num_samples;
-<em> 79: </em>
-<em> 80: </em><font color="#ffa600"><em>// --------------------- init_statistics ----------------</em></font>
-<em> 81: </em>
-<em> 82: </em>void init_statistics() 
-<em> 83: </em><font color="red"><strong>{</strong></font>
-<em> 84: </em>  num_samples = 0;
-<em> 85: </em>  <strong>for</strong> (int i = 0; i != num_cylinders; ++i) <font color="red"><strong>{</strong></font>
-<em> 86: </em>    deadline_average[i] = 0;
-<em> 87: </em>    deadline_variance[i] = 0.0;
-<em> 88: </em>  <font color="red"><strong>}</strong></font>
-<em> 89: </em><font color="red"><strong>}</strong></font>
-<em> 90: </em>    
-<em> 91: </em><font color="#ffa600"><em>// --------------------- report_statisticts --------------</em></font>
-<em> 92: </em>
-<em> 93: </em>void report_statistics() 
-<em> 94: </em><font color="red"><strong>{</strong></font>
-<em> 95: </em>  num_samples = num_samples/(num_cylinders);
-<em> 96: </em>  printf(<font color="red">&quot;\n\n\n============================================================\n&quot;</font>);
-<em> 97: </em>  printf(<font color="red">&quot;\nDeadline statistics for injection and firing:\n&quot;</font>);
-<em> 98: </em>  <strong>for</strong> (int i = 0; i != num_cylinders; ++i) <font color="red"><strong>{</strong></font>
-<em> 99: </em>    double v = 0, deg;
-<em>100: </em>    int32 av = 0;
-<em>101: </em>    <strong>if</strong> (num_samples) <font color="red"><strong>{</strong></font>
-<em>102: </em>      av = deadline_average[i]/num_samples;
-<em>103: </em>      v = deadline_variance[i]/num_samples;
-<em>104: </em>    <font color="red"><strong>}</strong></font>
-<em>105: </em>        
-<em>106: </em>    printf(<font color="red">&quot;\nCylinder[%d] varied by %d angle units&quot;</font>, i, av);
-<em>107: </em>    deg = av * 360;
-<em>108: </em>    deg = deg/circle;
-<em>109: </em>    printf(<font color="red">&quot; [%2.2f deg]&quot;</font>, deg);
-<em>110: </em>    deg = v * 360;
-<em>111: </em>    deg = deg/circle;
-<em>112: </em>    printf(<font color="red">&quot; var=%2.2f [%2.2f deg]&quot;</font>, v, deg);
-<em>113: </em>    v = sqrt(v);
-<em>114: </em>    deg = v * 360;
-<em>115: </em>    deg = deg/circle;
-<em>116: </em>    printf(<font color="red">&quot; std=%2.2f [%2.2f deg]&quot;</font>, v, deg);
-<em>117: </em>  <font color="red"><strong>}</strong></font>
-<em>118: </em>  printf(<font color="red">&quot;\n\n\n============================================================\n&quot;</font>);
-<em>119: </em><font color="red"><strong>}</strong></font>
-<em>120: </em>    
-<em>121: </em><font color="#ffa600"><em>// ---------------------- init_vehicle ------------------</em></font>
-<em>122: </em>void init_vehicle() 
-<em>123: </em><font color="red"><strong>{</strong></font>
-<em>124: </em>  fuelpush = 0.631;             <font color="#ffa600"><em>// newton-seconds per ml</em></font>
-<em>125: </em>  mass = 2000.0;                <font color="#ffa600"><em>// car weighs about a ton</em></font>
-<em>126: </em>  speed = 0.0;
-<em>127: </em>  speedratio = 0.05;
-<em>128: </em>  friction = 0.631;             <font color="#ffa600"><em>// squared multiplier term in speed-dependent comp of friction</em></font>
-<em>129: </em>  num_cylinders = 8;
-<em>130: </em>  num_teeth = 36;               <font color="#ffa600"><em>// one every 10 degrees; a couple o milliseconds between teesh at 8000rpm</em></font>
-<em>131: </em>  tooth_chunk = circle/num_teeth; <font color="#ffa600"><em>// portion of a circle for a tooth</em></font>
-<em>132: </em><font color="red"><strong>}</strong></font>
-<em>133: </em>    
-<em>134: </em><font color="#ffa600"><em>// ---------------------- cylinder_process ---------------</em></font>
-<em>135: </em>void cylinder_process(int32 c, int32 n, FuelChan &amp;inject, Chan &amp;spark, Chan &amp;ask, Chan &amp;wakeup) 
-<em>136: </em><font color="red"><strong>{</strong></font>
-<em>137: </em>  <font color="#ffa600"><em>// this process controls a single cylinder c of n cylinders, choosing how much</em></font>
-<em>138: </em>  <font color="#ffa600"><em>// fuel to squirt, when, and when to fire</em></font>
-<em>139: </em>  <font color="#ffa600"><em>// the firing order is an (unrealistic) 0, 1, 2, 3....</em></font>
-<em>140: </em>  <font color="#ffa600"><em>// inject is the channel we tell cylinder to inject fuel, value is amount</em></font>
-<em>141: </em>  <font color="#ffa600"><em>// spark is channel we tell cylinder's sparkplug to fire</em></font>
-<em>142: </em>  <font color="#ffa600"><em>// ask is the channel we ask to be woken up at the appropriate angle</em></font>
-<em>143: </em>    
-<em>144: </em>  <font color="#ffa600"><em>// first choose our (fixed) firing angle (get adaptive later)</em></font>
-<em>145: </em>  <font color="#ffa600"><em>// cylinder 0 fires at nominal angle 0.1, cylinder 1 at 0.1 + (1/n) later </em></font>
-<em>146: </em>  <font color="#ffa600"><em>//...angles measured as fractions of a circle</em></font>
-<em>147: </em>  <font color="#ffa600"><em>// fuel needs to be squirted before ignition</em></font>
-<em>148: </em>  <font color="#ffa600"><em>// since angular velocity of engine changes, we can't predict the time at</em></font>
-<em>149: </em>  <font color="#ffa600"><em>// which the angle is reached massively in advance (although</em></font>
-<em>150: </em>  <font color="#ffa600"><em>// we'll try by having a 2nd-order fit filter on angular velocity of flywheel</em></font>
-<em>151: </em>    
-<em>152: </em>  int32 fire_angle, inject_angle;
-<em>153: </em>    
-<em>154: </em>  printf(<font color="red">&quot;\n\tCylinderManager Process starting for cylinder[%d] on &quot;</font>, c);
-<em>155: </em>    
-<em>156: </em>  inject_angle = c * (circle/(n + 1));          <font color="#ffa600"><em>// compute default fire angle for cylinder c of n+1</em></font>
-<em>157: </em>  inject_angle = inject_angle + (circle/100);
-<em>158: </em>  fire_angle = inject_angle + (circle/200);
-<em>159: </em>    
-<em>160: </em>  printf(<font color="red">&quot;\n\t..injects at %d, fires at %d&quot;</font>, inject_angle, fire_angle);
-<em>161: </em>    
-<em>162: </em>  <font color="#ffa600"><em>// now, loop</em></font>
-<em>163: </em>    
-<em>164: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>
-<em>165: </em>    int32 accelerator, dt;
-<em>166: </em>    int32 req_angle;
-<em>167: </em>    fuel_request f_req;
-<em>168: </em>    <font color="#ffa600"><em>// find out where the accelerator is</em></font>
-<em>169: </em>        
-<em>170: </em>    accelerator = gAccelerator;
-<em>171: </em>    <font color="#ffa600"><em>//printf(&quot;\n\t***c[%ld] reads accelerator as %ld\n&quot;, c, accelerator);</em></font>
-<em>172: </em>        
-<em>173: </em>    <font color="#ffa600"><em>// placeholder for strategy code to compute where we need to be</em></font>
-<em>174: </em>        
-<em>175: </em>    Compute(3500);
-<em>176: </em>        
-<em>177: </em>    <font color="#ffa600"><em>//printf(&quot;\n\t***c[%ld] has completed strategy code&quot;, c);</em></font>
-<em>178: </em>        
-<em>179: </em>    <font color="#ffa600"><em>// set up for injection</em></font>
-<em>180: </em>        
-<em>181: </em>    <font color="#ffa600"><em>//printf(&quot;\n\t***c[%ld] wants to wake up for angle %ld&quot;, c, inject_angle);</em></font>
-<em>182: </em>        
-<em>183: </em>    ask.write(inject_angle);            <font color="#ffa600"><em>// ask to be told when we get to the tooth before this angle</em></font>
-<em>184: </em>        
-<em>185: </em>    dt = wakeup.get();              <font color="#ffa600"><em>// get given time we need to suspend for        </em></font>
-<em>186: </em>    pDelay(dt);
-<em>187: </em>        
-<em>188: </em>    req_angle = curr_angle(pTime()) - inject_angle;
-<em>189: </em>    num_samples = num_samples + 1;
-<em>190: </em>    deadline_average[c] = deadline_average[c] + req_angle;
-<em>191: </em>    deadline_variance[c] = deadline_variance[c] + (req_angle * req_angle);
-<em>192: </em>    <font color="#ffa600"><em>// tell injector to inject</em></font>
-<em>193: </em>    f_req.squirt_time = 1;
-<em>194: </em>    f_req.fuel_amount = accelerator * 3;
-<em>195: </em>        
-<em>196: </em>    <font color="#ffa600"><em>//printf(&quot;\n\t***c[%ld] injecting at %ld; &quot;, c, Now);</em></font>
-<em>197: </em>    <font color="#ffa600"><em>//printf(&quot;fuel_amount = %2.2f&quot;, f_req.fuel_amount);</em></font>
-<em>198: </em>    inject.write(f_req);
-<em>199: </em>
-<em>200: </em>    <font color="#ffa600"><em>// set up for fire</em></font>
-<em>201: </em>    printf(<font color="red">&quot;\n%lld::***c[%d] INJECTED (dtheta=%d)&quot;</font>, pTime(), c, req_angle);
-<em>202: </em>        
-<em>203: </em>    ask.write(fire_angle);
-<em>204: </em>    dt = wakeup.get();
-<em>205: </em>    <font color="#ffa600"><em>//printf(&quot;\n%ld::c[%ld] told to sleep for %ld ticks to reach fire angle&quot;, Now, c, dt);</em></font>
-<em>206: </em>        
-<em>207: </em>    <font color="#ffa600"><em>// sleep till we get here</em></font>
-<em>208: </em>    pDelay(dt);
-<em>209: </em>        
-<em>210: </em>    <font color="#ffa600"><em>//printf(&quot;\n\t***c[%ld] firing at %ld&quot;, c, Now);</em></font>
-<em>211: </em>    req_angle = curr_angle(pTime()) - fire_angle;
-<em>212: </em>    num_samples = num_samples + 1;
-<em>213: </em>    deadline_average[c] = deadline_average[c] + req_angle;
-<em>214: </em>    deadline_variance[c] = deadline_variance[c] + (req_angle * req_angle);
-<em>215: </em>
-<em>216: </em>    spark.write(25);
-<em>217: </em>        
-<em>218: </em>    printf(<font color="red">&quot;\n%lld::***c[%d] FIRED (dtheta=%d)&quot;</font>, pTime(), c, req_angle);
-<em>219: </em>  <font color="red"><strong>}</strong></font>
-<em>220: </em><font color="red"><strong>}</strong></font>
-<em>221: </em>    
-<em>222: </em><font color="#ffa600"><em>// ---------------------- baseload --------------------</em></font>
-<em>223: </em>void baseload(const char *name, int32 quantum) 
-<em>224: </em><font color="red"><strong>{</strong></font>
-<em>225: </em>  <font color="#ffa600"><em>// we set ourselves a very low priority and use up spare processor compute cycles</em></font>
-<em>226: </em>  <font color="#ffa600"><em>// run on all 'computers' (but not the hardware)</em></font>
-<em>227: </em>    
-<em>228: </em>  pSetPriority(6);
-<em>229: </em>  printf(<font color="red">&quot;\nBaseload starting on %s at %lld with priority %d&quot;</font>, name, pTime(), pGetPriority());
-<em>230: </em>    
-<em>231: </em>  <strong>while</strong> (true) <font color="red"><strong>{</strong></font>        
-<em>232: </em>    <font color="#ffa600"><em>// compute load by seeing how long we take to do a quantum of computer</em></font>
-<em>233: </em>    int32 t = pTime();
-<em>234: </em>    pBusy(quantum);                     <font color="#ffa600"><em>// use 'nude' compute...</em></font>
-<em>235: </em>    t = pTime() - t;
-<em>236: </em>    double capacity = quantum;
-<em>237: </em>    capacity = quantum/t;
-<em>238: </em>    capacity = 100.0 - (capacity * 100.0);
-<em>239: </em>    printf(<font color="red">&quot;\nBaseload at %lld::running at &quot;</font>, pTime());
-<em>240: </em>    printf(<font color="red">&quot;%2.1f%% &quot;</font>, capacity); 
-<em>241: </em>    printf(<font color="red">&quot;of %s capacity [took %d ticks for %d compute quanta]&quot;</font>, name, t, quantum); 
-<em>242: </em>  <font color="red"><strong>}</strong></font>
-<em>243: </em><font color="red"><strong>}</strong></font>
-<em>244: </em>
-<em>245: </em><font color="#ffa600"><em>// -------------------- cylinders -------------------</em></font>
-<em>246: </em><strong>static</strong> void cylinders(int32 n, Chan &amp;started, FuelChans &amp;inject, Chans &amp;spark, Chans &amp;ask, Chans &amp;wakeups) 
-<em>247: </em><font color="red"><strong>{</strong></font>
-<em>248: </em>  printf(<font color="red">&quot;\nCreate cylinder manager 0..%d&quot;</font>, n-1);
-<em>249: </em>  <font color="#ffa600"><em>// now we have to wait one revolution for the engine to start</em></font>
-<em>250: </em>  pSetPriority(1);
-<em>251: </em>  started.get();
-<em>252: </em>  printf(<font color="red">&quot;\nGot starter message.&quot;</font>);
-<em>253: </em>                
-<em>254: </em>  printf(<font color="red">&quot;\nECU: starter motor has got engine moving; start cylinder management&quot;</font>);
-<em>255: </em>  pfor (int i = 0; i != n; ++i) <font color="red"><strong>{</strong></font>
-<em>256: </em>    cylinder_process(i, n, inject[i], spark[i], ask[i], wakeups[i]);
-<em>257: </em>  <font color="red"><strong>}</strong></font>
-<em>258: </em><font color="red"><strong>}</strong></font>
-<em>259: </em>    
-<em>260: </em><font color="#ffa600"><em>// ----------------------- ecu ------------------------</em></font>
-<em>261: </em>void ecu(Chan &amp;started, Chan &amp;tick, Chan &amp;acc_query, Chan &amp;acc_val,
-<em>262: </em>         int32 num_cylinders, FuelChans &amp;inject, Chans &amp;spark, Chans &amp;wakeups) 
-<em>263: </em><font color="red"><strong>{</strong></font>
-<em>264: </em>  <font color="#ffa600"><em>//array chan wakeups[cylinder_max];</em></font>
-<em>265: </em>  Chans ask(cylinder_max);
-<em>266: </em>            
-<em>267: </em>  <font color="#ffa600"><em>// now we can start the ecu</em></font>
-<em>268: </em>  printf(<font color="red">&quot;\nECU starting with a %d-cylinder engine to control...&quot;</font>, num_cylinders);
-<em>269: </em>
-<em>270: </em><a name="270" class="mark"></a>  <font color="#ffa600"><em></em></font>
-<em>271: </em>  par <font color="red"><strong>{</strong></font>
-<em>272: </em>    on (tpu) <font color="red"><strong>{</strong></font> angle_manager(num_cylinders, tick, ask, wakeups); <font color="red"><strong>}</strong></font>
-<em>273: </em>    on (zen) <font color="red"><strong>{</strong></font> cylinders(num_cylinders, started, inject, spark, ask, wakeups); <font color="red"><strong>}</strong></font>
-<em>274: </em>    on (zen) <font color="red"><strong>{</strong></font> baseload(<font color="red">&quot;zen&quot;</font>, 2500); <font color="red"><strong>}</strong></font>
-<em>275: </em>    on (tpu) <font color="red"><strong>{</strong></font> baseload(<font color="red">&quot;tpu&quot;</font>, 2500); <font color="red"><strong>}</strong></font>
-<em>276: </em>  <font color="red"><strong>}</strong></font>
-<em>277: </em><font color="red"><strong>}</strong></font>
-<em>278: </em>
-<em>279: </em><font color="#ffa600"><em>// ----------------------- vehicle_status ---------------</em></font>
-<em>280: </em>void vehicle_status() 
-<em>281: </em><font color="red"><strong>{</strong></font>
-<em>282: </em>  double rpm = speed/speedratio;
-<em>283: </em>  printf(<font color="red">&quot;\nT=%lld::\t&quot;</font>, pTime());
-<em>284: </em>  printf(<font color="red">&quot;V=%2.3f, RPM=%3.1f&quot;</font>, speed, rpm);
-<em>285: </em><font color="red"><strong>}</strong></font>
-<em>286: </em>    
-<em>287: </em><font color="#ffa600"><em>// ---------------------- report ------------------------</em></font>
-<em>288: </em>void report(int32 dt, int32 stop_time) 
-<em>289: </em><font color="red"><strong>{</strong></font>
-<em>290: </em>  <font color="#ffa600"><em>// gives status every dt until stop_time, when it kills the sim</em></font>
-<em>291: </em>  printf(<font color="red">&quot;\nReports starting; report every %d until %d&quot;</font>, dt, stop_time);
-<em>292: </em>  <strong>while</strong> ((int)pTime() &lt; stop_time) <font color="red"><strong>{</strong></font>
-<em>293: </em>    vehicle_status();
-<em>294: </em>    pDelay(dt * 4);
-<em>295: </em>  <font color="red"><strong>}</strong></font>
-<em>296: </em>  printf(<font color="red">&quot;\n\n====== ECU/Engine simulation closing down ==========\n\n&quot;</font>);
-<em>297: </em>  report_statistics();
-<em>298: </em>  pExit(0);
-<em>299: </em><font color="red"><strong>}</strong></font>
-<em>300: </em>
-<em>301: </em>void pSetup(ConfigParms &amp;cp)
-<em>302: </em><font color="red"><strong>{</strong></font>
-<em>303: </em>  cp._busyokay = true;
-<em>304: </em><font color="red"><strong>}</strong></font>
-<em>305: </em>    
-<em>306: </em><font color="#ffa600"><em>//------------------------- main -------------------------</em></font>
-<em>307: </em>int pMain(int argc,const char *argv[]) 
-<em>308: </em><font color="red"><strong>{</strong></font>
-<em>309: </em>  double t, dt, dv;
-<em>310: </em>  Chan tick, acc_query, acc_val, started, to_starter;
-<em>311: </em>  Chans spark(cylinder_max), wakeups(cylinder_max);
-<em>312: </em>  
-<em>313: </em>  FuelChans inject(cylinder_max);
-<em>314: </em>
-<em>315: </em>  int32 simtime;
-<em>316: </em>        
-<em>317: </em>  printf(<font color="red">&quot;\n\n\nSimple Generic Engine &amp; ECU\n\t%s\n\t%s&quot;</font>, version, copyright);
-<em>318: </em>    
-<em>319: </em>  t = 0.0;
-<em>320: </em>  dt = 0.1;
-<em>321: </em>  dv = 0.0;
-<em>322: </em>  init_vehicle();
-<em>323: </em>  init_statistics();
-<em>324: </em>    
-<em>325: </em>  <font color="#ffa600"><em>// configuration</em></font>
-<em>326: </em>  cpu_MIPS[(int)zen.name()] = zen_mips;
-<em>327: </em>  cpu_MIPS[(int)tpu.name()] = tpu_mips;
-<em>328: </em>  cpu_MIPS[(int)hardware.name()] = 0;
-<em>329: </em>    
-<em>330: </em>  <font color="#ffa600"><em>// run the engine</em></font>
-<em>331: </em>    
-<em>332: </em>  speed = 0.15;
-<em>333: </em>  simtime = 500000;
-<em>334: </em>  const char *logname = <font color="red">&quot;LogFile&quot;</font>;
-<em>335: </em>  <strong>if</strong> (!(logfile = fopen(logname, <font color="red">&quot;w&quot;</font>))) <font color="red"><strong>{</strong></font>
-<em>336: </em>    pAbort(<font color="red">&quot;Unable to open logfile.&quot;</font>);
-<em>337: </em>  <font color="red"><strong>}</strong></font>
-<em>338: </em>
-<em>339: </em><a name="339" class="mark"></a>  <font color="#ffa600"><em></em></font>
-<em>340: </em>  par <font color="red"><strong>{</strong></font>
-<em>341: </em>    
-<em>342: </em>    <font color="#ffa600"><em>// the simulated machinery</em></font>
-<em>343: </em>    on (hardware) <font color="red"><strong>{</strong></font> report(1000, simtime);  <font color="red"><strong>}</strong></font>               <font color="#ffa600"><em>// cyclic status reports and sim time-out</em></font>
-<em>344: </em>        
-<em>345: </em>    on (hardware) <font color="red"><strong>{</strong></font> flywheel(tick, to_starter);     <font color="red"><strong>}</strong></font>           <font color="#ffa600"><em>// interrupt per tooth</em></font>
-<em>346: </em>    on (hardware) <font color="red"><strong>{</strong></font> starter(to_starter, started); <font color="red"><strong>}</strong></font>             <font color="#ffa600"><em>// gets engine turning</em></font>
-<em>347: </em>    on (hardware) <font color="red"><strong>{</strong></font> engine(inject, spark); <font color="red"><strong>}</strong></font>    <font color="#ffa600"><em>// the engine itself</em></font>
-<em>348: </em>    on (hardware) <font color="red"><strong>{</strong></font> accelerator(simtime, acc_query, acc_val); <font color="red"><strong>}</strong></font>     <font color="#ffa600"><em>// the stimulus</em></font>
-<em>349: </em>        
-<em>350: </em>    <font color="#ffa600"><em>// the simulated software and processors</em></font>
-<em>351: </em>    on (zen) <font color="red"><strong>{</strong></font> ecu(started, tick, acc_query, acc_val, num_cylinders, inject, spark, wakeups); <font color="red"><strong>}</strong></font>
-<em>352: </em>  <font color="red"><strong>}</strong></font>
-<em>353: </em>    
-<em>354: </em>  printf(<font color="red">&quot;\n==== Closing Down =====\n&quot;</font>);
-<em>355: </em>  fclose(logfile);
-<em>356: </em>  <strong>return</strong> 0;
-<em>357: </em><font color="red"><strong>}</strong></font>
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></div>
-</div>
 </div></td>
 </tr></table><div class="skribe-ending">
 <hr> 
@@ -1336,6 +903,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 21 15:10:18 2004</em>.</font></p></div>
+Last update <em>Mon Nov  8 16:37:58 2004</em>.</font></p></div>
 </body>
 </html>
