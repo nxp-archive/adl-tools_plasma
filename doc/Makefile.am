@@ -44,6 +44,8 @@ docinstall: all-am
 
 index.html: $(skribe_src) source-code.html
 
+source-code.html: pipe2.pa
+
 index.pdf: $(skribe_src)
 
 %.html : %.skb ;

@@ -27,6 +27,9 @@ const int Clock = 10;
 // Command-line options.
 Options options;
 
+// Start time of simulation.
+ptime_t starttime = 0;
+
 // Stage identifiers.
 const int FetchStage = 0;
 const int DecodeStage = 1;
@@ -59,7 +62,7 @@ void stall(int n,ClkInstChan &chan)
 // Start of micro-architecture description.
 //
 		
-void fetch(NbInstChan &succ_chan,ClkInstChan &branch_update, 
+void fetch(NbInstChan &prev_chan,ClkInstChan &branch_update, 
            ClkIntChan &refetch_chan, ClkInstChan &out)
 {
   while (true) {
@@ -68,14 +71,14 @@ void fetch(NbInstChan &succ_chan,ClkInstChan &branch_update,
     instr_t bupdate = (branch_update.ready()) ? branch_update.get() : 0;
     instr_t instr = arch.fetch(bupdate);
     update_pipe_report(FetchStage,instr);
-    instr_t succ = succ_chan.get();
+    instr_t prev = prev_chan.get();
 
     int refetch = (refetch_chan.ready()) ? refetch_chan.get() : 0;
-    if (succ.is_of_class(Branch)) {
+    if (prev.is_of_class(Branch)) {
       refetch = true;
     }
 
-    succ_chan.write(instr); 
+    prev_chan.write(instr); 
     if (instr.is_of_class(Branch) || refetch) {
       // This is just needed to keep us from fetching past a branch
       // until we know the target.  This mainly just matters to avoid
@@ -83,7 +86,7 @@ void fetch(NbInstChan &succ_chan,ClkInstChan &branch_update,
       arch.incr_iar(-4);
     }      
     if (refetch) {
-      succ_chan.write(instr_t()); 
+      prev_chan.write(instr_t()); 
       continue;
     }
 
@@ -92,7 +95,7 @@ void fetch(NbInstChan &succ_chan,ClkInstChan &branch_update,
 }
 
 void decode(ClkInstChan &in, ClkIntChan &refetch_chan, ClkInstChan &branch_update,
-            NbInstChan &succ_chan, NbInstChan &exec_fwd, NbInstChan &mem_fwd, 
+            NbInstChan &prev_chan, NbInstChan &exec_fwd, NbInstChan &mem_fwd, 
             ClkInstChan &out)
 {
   while (true) {
@@ -101,26 +104,26 @@ void decode(ClkInstChan &in, ClkIntChan &refetch_chan, ClkInstChan &branch_updat
 
     while (true) {
       arch.read_operands(instr);
-      instr_t succ  = succ_chan.get();
+      instr_t prev  = prev_chan.get();
       instr_t exec  = exec_fwd.get();
       instr_t mem   = mem_fwd.get();
 
       // Check for stalls here:
       //  Prior instruction is a load and our op uses the target.
       //  This instruction is a branch and op uses prior target.
-      if (succ.is_of_class(Load) && arch.operand_conflict(instr,succ)) {
+      if (prev.is_of_class(Load) && arch.operand_conflict(instr,prev)) {
         // Insert bubble.
         stall(1,out);
         // Issue instruction.
-        succ_chan.write(instr);
+        prev_chan.write(instr);
         out.write(instr);
         // Go to next cycle.
         atclock();
         break;
       } else if (instr.is_of_class(Branch) ) {
-        if (arch.operand_conflict(instr,succ)) {
+        if (arch.operand_conflict(instr,prev)) {
           refetch_chan.write(1);
-          succ_chan.write(instr_t());
+          prev_chan.write(instr_t());
           stall(1,out);
           continue;
         }
@@ -133,7 +136,7 @@ void decode(ClkInstChan &in, ClkIntChan &refetch_chan, ClkInstChan &branch_updat
         branch_update.write(instr);
       }
       // Normal condition- pass data to next stage.
-      succ_chan.write(instr);
+      prev_chan.write(instr);
       out.write(instr);
       break;
     }
@@ -224,9 +227,11 @@ void microarch_setup()
 }
 
 // Watchdog timer stops the simulation after a specified amount of time.
-void watchdog(unsigned n) 
+void watchdog() 
 {
+  ptime_t n = (options._timeout == 0) ? 10000 : options._timeout;
   cout << "\nTimeout is " << n << " cycles\n\n";
+  n *= Clock;
   while (true) {
     atclock(10);
     printf(".");
@@ -251,10 +256,14 @@ void hangup()
     if (options._pr) {
       pipe_report(cout,0);
     }
+    ptime_t finishtime = getusec();
+    double secs = (finishtime-starttime)/1000000;
     cout << "\n\n"
          << "End of simulation at time " << dec << pTime() << "\n"
          << "Number of fetches:  " << arch.get_num_fetches() << "\n"
-         << "Number of commits:  " << arch.get_num_commits() << "\n";
+         << "Number of commits:  " << arch.get_num_commits() << "\n"
+         << "Elapsed time:       " << secs << "s\n"
+         << "Instruction/sec:   " <<  arch.get_num_commits()/secs << "\n";
     arch.print_state(cout);
     cout << "\n";
     arch.print_mem(cout);
@@ -307,6 +316,8 @@ int pMain(int argc,const char *argv[])
     return usage(argv[0]);
   }
 
+  starttime = getusec();
+
   //
   // Define the communication channels.
   // 
@@ -334,7 +345,9 @@ int pMain(int argc,const char *argv[])
   // Define the connectivity and launch each thread.
   //
   par {
-    watchdog(10000);
+    {
+      if (!options._nw) watchdog();
+    }
     fetch(fetch2fetch,br_decode2fetch,decode2fetch,fetch2decode);
     decode(fetch2decode,decode2fetch,br_decode2fetch,decode2decode,exec2decode,mem2decode,decode2exec);
     exec(decode2exec,mem2exec,exec2exec,exec2decode,exec2mem);
