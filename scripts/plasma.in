@@ -3,7 +3,7 @@
 
 =head1 NAME
 
-plasma:  PLASMA (Parallel LAnguage for System Modelling and Analysis) compiler.
+B<plasma>:  PLASMA (Parallel LAnguage for System Modelling and Analysis) compiler.
 
 =head1 SYNOPSIS
 
@@ -15,17 +15,33 @@ If no source file exists, only linking will be performed on the files present
 (.o files, .a files, etc.).  Note that any unrecognized options are passed
 directly to B<g++>, since it has so many different options.
 
-B<-h> : Display this help message.
+=head1 OPTIONS
 
-B<-man> : Display more documentation using the I<man> format.
+=over 8
 
-B<-v> : Verbose mode: Display commands issued by the wrapper script and by the
-compiler front-end.
+=item B<--help, --h>
 
-B<-E> : Stop after conversion to C++.  The resulting file is <source file>.ii.
+Display this help message.
 
-B<-c> : Compile but do not link.  Linking is suppressed and only an object file
-is produced.
+=item B<--man>
+
+Display more documentation using the I<man> format.
+
+=item B<-v>
+
+Verbose mode: Display commands issued by the wrapper script and by the compiler
+front-end.
+
+=item B<-E>
+
+Stop after conversion to C++.  The resulting file is <source file>.ii.
+
+=item B<-c>
+
+Compile but do not link.  Linking is suppressed and only an object file is
+produced.
+
+=back
 
 =head1 DESCRIPTION
 
@@ -47,8 +63,10 @@ Within a makefile, use the $(shell <cmd>) function to execute this script.  Type
 
 for more options.
 
-B<Note:> B<Plasma> calls B<g++> without a full path.  Therefore, the version of
-the compiler actually invokes depends upon your current environment.  Therefore,
+=head1 NOTES
+
+B<Plasma> calls B<g++> without a full path.  Therefore, the version of the
+compiler actually invokes depends upon your current environment.  Therefore,
 make sure that your PATH (or your wrapper policy, if operating in the SUE
 environment with the B<wrapper>) points to a sufficiently modern version of
 B<g++>.  A I<3.x> version is recommended.
