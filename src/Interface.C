@@ -107,4 +107,9 @@ namespace plasma {
     processor.unlock();
   }
 
+  bool pIsLocked()
+  {
+    return processor.locked();
+  }
+
 }

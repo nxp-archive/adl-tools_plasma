@@ -26,9 +26,14 @@ check_PROGRAMS = \
 	spawn1 \
 	spawn2 \
 	spawn3 \
-	spawn4
+	spawn4 \
+	mutex1
 
-DEPENDENCIES = $(top_srcdir)/src/libplasma.a $(top_srcdir)/parser/Plasma.so
+DEPENDENCIES = \
+	$(top_srcdir)/src/libplasma.a \
+	$(top_srcdir)/parser/Plasma.so \
+	$(top_srcdir)/parser/Wrapper.so \
+	$(top_srcdir)/parser/Mutex.so
 
 par1_SOURCES = par1.pa
 
@@ -64,6 +69,8 @@ spawn3_SOURCES = spawn3.pa
 
 spawn4_SOURCES = spawn4.pa
 
+mutex1_SOURCES = mutex1.pa
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src
 
 DEP_FILES=\
@@ -83,7 +90,8 @@ DEP_FILES=\
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
-	./$(DEPDIR)/spawn4.Po
+	./$(DEPDIR)/spawn4.Po \
+	./$(DEPDIR)/mutex1.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -100,6 +108,7 @@ include ./$(DEPDIR)/chan9.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po
+include ./$(DEPDIR)/mutex1.Po
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

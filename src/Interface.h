@@ -88,6 +88,9 @@ namespace plasma {
   // Unlock processor.
   void pUnlock(void);        
 
+  // Returns lock status.
+  bool pIsLocked();
+
   // Terminate program with return code .
   void pExit(int code);
 

@@ -93,6 +93,11 @@ my @Tests = (
 	      cmd     => "./spawn4",
 	      checker => \&check_spawn4,
 	     },
+	     # Mutex test w/shared data structure.
+	     {
+	      cmd     => "./mutex1",
+	      checker => \&check_mutex1,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -404,5 +409,33 @@ sub check_spawn4 {
   }
   if ($found != $expected) {
     die "Expected $expected items, found $found.\n";
+  }
+}
+
+# We check to make sure that each number is only received once and that we get
+# all expected numbers.
+sub check_mutex1 {
+  my @lines = split /\n/,shift;
+  my %data;
+  my %done = ( "Producer"  => 0,
+	       "Consumer" => 0,
+	       "pMain" => 0 );
+  @data{0..999} = (0) x 1000;
+  for (@lines) {
+    if ( /Q result:\s+(\d+)/ ) {
+      ++$data{$1};
+    } elsif ( /(\S+)\s+done/ ) {
+      ++$done{$1};
+    }
+  }
+  for my $i (keys (%data)) {
+    if ($data{$i} != 1) {
+      die "Bad data count for item $i:  $data{$i}.\n";
+    }
+  }
+  for my $i (keys (%done)) {
+    if ($done{$i} != 1) {
+      die "Bad done count for item $i:  $done{$i}.\n";
+    }
   }
 }

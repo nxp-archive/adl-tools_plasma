@@ -1,3 +1,31 @@
+2004-05-20  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added support for shared data structures.  To make a class
+	shared, simply add a modifier of pMutex to the front of its
+	declaration.  This will protect all public functions (except
+	constructors and the destructor) with locking code.  Note that
+	varargs functions are not supported because I don't know how to
+	pass on the variable arguments to another function.
+
+	To prevent a public function from being protected, add a modifier
+	of pNoMutex to the front.
+
+	Example:
+
+		pMutex class Foo {
+		public:
+		  // Not protected.
+		  Foo();
+		  ~Foo();
+		  // Protected.
+		  int a();
+		  // Not protected.
+		  pNoMutex int b();
+		private:
+		  // Not protected.
+		  int c();
+		};
+
 2004-05-19  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added QueueChan, a queued channel classs.  This allows multiple

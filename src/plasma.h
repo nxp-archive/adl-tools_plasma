@@ -16,16 +16,19 @@ namespace plasma {
   // a second write before a read will block.  This is designed
   // for a single producer to feed data to a single consumer.
   template <class Data>
-  class Channel {
+  pTMutex class Channel {
   public:
     Channel() : _ready(false), _readt(0), _writet(0) {};
     void write(const Data &d);
-    void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
-    THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
     bool ready() const { return _ready; };
     void clear_ready() { _ready = false; };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+
+    // These are marked as non-mutex b/c they are used by alt, which already
+    // does the locking.
+    pNoMutex void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+    pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
     void set_writenotify(THandle t) { assert(!_writet); _writet = t; };
     THandle clear_writenotify() { THandle t = _writet; _writet = 0; return t; };
@@ -43,20 +46,21 @@ namespace plasma {
   // channel is full.  This is designed for multiple producers to feed data to
   // a single consumer.
   template <class Data>
-  class QueueChan {
+  pTMutex class QueueChan {
     typedef std::list<Data>      Store;
     typedef std::vector<THandle> Writers;
   public:
     QueueChan(int size = -1) : _maxsize(size), _size(0), _readt(0) {};
     void write(const Data &d);
-    void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
-    THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
     bool ready() const { return !_store.empty(); };
     int size() const { return _size; };
-    int maxsize() const { return _maxsize; };
+    pNoMutex int maxsize() const { return _maxsize; };
     void clear_ready() { pLock(); --_size; _store.pop_back(); pUnlock(); };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+
+    pNoMutex void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+    pNoMutex THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
   private:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
@@ -79,7 +83,7 @@ namespace plasma {
   // order for ready() to return true again.  This is done so that repeated reads using an alt
   // block will work.
   template <class Data>
-  class ResChan : private Result<Data> {
+  pTMutex class ResChan : private Result<Data> {
   public:
     ResChan(const Result<Data> &r) : Result<Data>(r), _rt(0), _read(false) {};
     
@@ -87,8 +91,9 @@ namespace plasma {
     Data read() { return value(); };
     Data get() { _read = true; return value(); };
     void clear_ready() { _read = false; };
-    void set_notify(THandle t,int h);
-    THandle clear_notify();
+
+    pNoMutex void set_notify(THandle t,int h);
+    pNoMutex THandle clear_notify();
   private:
     THandle _rt;
     bool    _read;
@@ -105,7 +110,6 @@ namespace plasma {
   template <class Data>
   Data Channel<Data>::read_internal(bool clearready)
   {
-    pLock();
     if (!_ready) {
       set_notify(pCurThread(),0);
       pSleep();
@@ -113,18 +117,15 @@ namespace plasma {
     if (_writet) {
       pAddReady(clear_writenotify());
     }
-    Data temp = _data;
     if (clearready) {
       clear_ready();
     }
-    pUnlock();
-    return temp;
+    return _data;
   }
 
   template <class Data>
   void Channel<Data>::write(const Data &d) 
   { 
-    pLock();
     if (_ready) {
       set_writenotify(pCurThread());
       pSleep();
@@ -134,7 +135,6 @@ namespace plasma {
     if (_readt) {
       pWake(clear_notify(),_h);
     }
-    pUnlock();
   };
 
   /////////////// QueueChan ///////////////
@@ -142,7 +142,6 @@ namespace plasma {
   template <class Data>
   Data QueueChan<Data>::read_internal(bool clearready)
   {
-    pLock();
     // If no data- sleep until we get some.
     if (!ready()) {
       set_notify(pCurThread(),0);
@@ -157,14 +156,12 @@ namespace plasma {
     if (clearready) {
       clear_ready();
     }
-    pUnlock();
     return temp;
   }
 
   template <class Data>
   void QueueChan<Data>::write(const Data &d) 
   { 
-    pLock();
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
     // data to again fill the queue, the thread will again sleep.
@@ -179,7 +176,6 @@ namespace plasma {
     if (_readt) {
       pWake(clear_notify(),_h);
     }
-    pUnlock();
   };
 
   /////////////// ResChan ///////////////

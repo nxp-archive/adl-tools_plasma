@@ -3,15 +3,78 @@
 #include <iostream>
 
 #include "Interface.h"
-#include "plasma.h"
 
 using namespace std;
 using namespace plasma;
 
+// We can't use the plasma.h channel b/c it uses Plasma constructs.
+// So, we declare it here in C++.
+template <class Data>
+class Channel {
+public:
+  Channel() : _ready(false), _readt(0), _writet(0) {};
+  void write(const Data &d);
+  bool ready() const { return _ready; };
+  void clear_ready() { _ready = false; };
+  Data read() { return read_internal(false); };
+  Data get() { return read_internal(true); };
+
+  // These are marked as non-mutex b/c they are used by alt, which already
+  // does the locking.
+  void set_notify(THandle t,int h) { assert(!_readt); _readt = t; _h = h; };
+  THandle clear_notify() { THandle t = _readt; _readt = 0; return t; };
+private:
+  void set_writenotify(THandle t) { assert(!_writet); _writet = t; };
+  THandle clear_writenotify() { THandle t = _writet; _writet = 0; return t; };
+  Data read_internal(bool clear_ready);
+
+  Data    _data;
+  bool    _ready;
+  THandle _readt;
+  THandle _writet;
+  int     _h;
+};
+
+  template <class Data>
+  Data Channel<Data>::read_internal(bool clearready)
+  {
+    pLock();
+    if (!_ready) {
+      set_notify(pCurThread(),0);
+      pSleep();
+    }
+    if (_writet) {
+      pAddReady(clear_writenotify());
+    }
+    Data temp = _data;
+    if (clearready) {
+      clear_ready();
+    }
+    pUnlock();
+    return temp;
+  }
+
+  template <class Data>
+  void Channel<Data>::write(const Data &d) 
+  { 
+    pLock();
+    if (_ready) {
+      set_writenotify(pCurThread());
+      pSleep();
+    }
+    _data = d;
+    _ready = true;
+    if (_readt) {
+      pWake(clear_notify(),_h);
+    }
+    pUnlock();
+  };
+
+
 void producer(void *);
 void consumer(void *);
 
-typedef plasma::Channel<int> IntChan;
+typedef Channel<int> IntChan;
 
 struct PArg {
   int      val;

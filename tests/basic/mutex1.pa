@@ -1,0 +1,102 @@
+//
+// Test of mutex data structures.  We create a shared queue written to by a
+// producer and read by a consumer.  The idea is that the queue class is written
+// in such a way that its data will be clobbered unless it's protected by mutex
+// operations.
+//
+
+#include <iostream>
+#include <list>
+#include <stdarg.h>
+
+using namespace std;
+using namespace plasma;
+
+struct M {
+  static void msg(const char *fmt, ...) {
+    pLock();
+    va_list ap;
+    va_start(ap,fmt);
+    vprintf(fmt,ap);
+    va_end(ap);
+    pUnlock();
+  }
+};
+
+pMutex class Queue {
+public:
+  Queue() : _rt(0) {};
+
+  void write(int d) {
+    _temp = d;
+    int x = 0;
+    for (int i = 0; i != 100000; ++i) {
+      ++x;
+    }
+    _list.push_front(_temp);
+    if (_rt) {
+      pAddReady(_rt);
+      _rt = 0;
+    }
+  };
+
+  int read() {
+    _temp = 0;
+    int x;
+    for (int i = 0; i != 10000; ++i) {
+      ++x;
+    }
+    if (_list.empty()) {
+      _rt = pCurThread();
+      pSleep();
+    }
+    _temp = _list.back();
+    _list.pop_back();
+    return _temp;
+  };
+
+private:
+  typedef list<int> List;
+
+  THandle _rt;
+  int     _temp;
+  List    _list;
+};
+
+void pSetup(ConfigParms &cp)
+{
+  cp._timeslice = 10;
+}
+
+int pMain(int,const char*[])
+{
+  Queue q;
+  par {
+    {
+      THandle me = pCurThread();
+      // Producer.
+      for (int i = 0; i != 1000; ++i) {
+        q.write(i);
+        int x = 0;
+        for (int i = 0; i != 10000; ++i) {
+          ++x;
+        }
+      }
+      q.write(-1);
+      M::msg("Producer done.\n");
+    }
+    {
+      // Consumer.
+      int v;
+      do {
+        v = q.read();
+        M::msg("Q result:  %d\n",v);
+      } while(v >= 0);
+      M::msg("Consumer done.\n");
+    }
+  }
+  M::msg("pMain done.\n");
+  return 0;
+}
+
+
