@@ -1,5 +1,7 @@
         ======= plasma release 0.8.5 (v0_8_5) on Linux (cde-tx32-ldt189) =======
 
+        ======= plasma release 0.8.5 (v0_8_5) on Linux (cde-tx32-ldt189) =======
+
 2004-12-03  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added support for multiple consumers to clocked channels.  You
