@@ -1,3 +1,22 @@
+2004-09-15  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Moved thecluster and thesystem out of the plasma namespace to
+	faciliate better debugging: GDB couldn't see them, for some
+	reason.
+
+	* Removed SIGBUS and SIGSEGV catching from Init.C since the GC
+	uses those for itself.
+
+	* Fixed gc bugs:  We now push on roots defined by
+	Thread::stackbegin() and Thread::stackend().  For the main thread,
+	stackbegin() comes from GC_stackbottom.  This means that the main
+	thread is now scanned.
+
+	* Since I fixed the above problem, I now derive QVect from gc so
+	that it can be gc'd.  Previously, I couldn't do it b/c the main
+	processor's ready queue was being collected due to the main thread
+	not being scanned.
+
         ======= plasma release 0.5.0 (v0_5_0) on Linux (cde-tx32-ldt189) =======
 
 

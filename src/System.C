@@ -77,7 +77,7 @@ namespace plasma {
     Thread *n = _active_list;
     while (n) {
       if (n->thread() && n->stackend()) {
-        //printf ("push_other_roots  %p:  %p:%p.\n",n,(ptr_t)n->thread(),(ptr_t)n->stackend()+1);
+        //printf ("push_other_roots  %p:  %p:%p.\n",n,(ptr_t)n->stackbegin(),(ptr_t)n->stackend()+1);
         GC_push_all_stack((ptr_t)n->thread(),(ptr_t)n->stackend()+1);
       }
       n = n->nt();

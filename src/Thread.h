@@ -31,8 +31,13 @@ namespace plasma {
 
     void *stack() const { return _stack; };
     void *stackend() const { return _stackend; };
+    void *stackbegin() const { return _thread; };
 
+    // Set the current top of the stack for this thread.
     void setStackEnd();
+    // Shouldn't normally be used- only used to set the beginning
+    // for the main thread.
+    void setStackBegin(void *);
 
     // Add a thread to the wait list.
     void add_waiter(THandle t);
@@ -117,6 +122,11 @@ namespace plasma {
   {
     volatile void *dummy;
     _stackend = &dummy; 
+  }
+
+  inline void Thread::setStackBegin(void *s)
+  {
+    _thread = (qt_t *)s; 
   }
 
   inline void Thread::add_waiter(THandle t)

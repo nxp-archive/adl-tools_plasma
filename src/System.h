@@ -108,8 +108,9 @@ namespace plasma {
     return _wantshutdown;
   }
 
-  // Main system object (only one per system).
-  extern System thesystem;
 }
+
+// Main system object (only one per system).
+extern plasma::System thesystem;
 
 #endif

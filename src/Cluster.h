@@ -166,10 +166,10 @@ namespace plasma {
     return _curproc;
   }
 
-  // cluster-object, statically allocated in address space of current process
-  extern Cluster thecluster;
-
 }
+
+// cluster-object, statically allocated in address space of current process
+extern plasma::Cluster thecluster;
 
 #endif
 

@@ -99,6 +99,7 @@ namespace plasma {
     static bool dummy = init();
 
     System::add_active_thread(&_main);
+    _main.setStackBegin(GC_stackbottom);
 
     setalarm();                              // set alarm timer
   }
@@ -126,7 +127,6 @@ namespace plasma {
 
   void Cluster::reset(Proc *p)
   {
-    //    _main.setStack(GC_stackbottom);
     _curproc = p;
     p->setState(Proc::Running);
 
