@@ -13,10 +13,16 @@ SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")"
 
 DOCCLEANFILES = *.sui *.html
 
+install:
+	@echo "***"
+	@echo "*** Documentation is not installed by default."
+	@echo "*** Use the 'docinstall' target to install it."
+	@echo "***"
+
 docclean:
 	rm -f $(DOCCLEANFILES)
 
-install: all-am
+docinstall: all-am
 	$(mkinstalldirs) $(DESTDIR)$(webdir)
 	@list=$$(ls *.html); for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
