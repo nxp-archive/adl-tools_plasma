@@ -1,3 +1,15 @@
+2005-01-20  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Re-wrote how alt works:  It no longer uses a handle.  Instead, a
+	thread goes asleep and when it wakes, it jumps back to the
+	checking logic.  This was done to fix a subtle bug with prialt:
+	If two channels become ready at the same time, the priorities
+	should be obeyed even if the lower priority thread is what wakes
+	the channel.  Using the handle, it wasn't possible to ensure
+	this.  The handle is still there, but will be removed next.
+
+	* Added chan25 to test the prialt issue mentioned above.
+
         ======= plasma release 0.8.9 (v0_8_9) on Linux (cde-tx32-ldt189) =======
 
 2005-01-17  Brian Kahne  <bkahne@ibmoto.com>

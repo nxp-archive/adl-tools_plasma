@@ -46,6 +46,7 @@ check_PROGRAMS = \
 	chan22 \
 	chan23 \
 	chan24 \
+	chan25 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -202,6 +203,9 @@ chan23_DEPENDENCIES = $(DEPENDENCIES)
 
 chan24_SOURCES = chan24.pa
 chan24_DEPENDENCIES = $(DEPENDENCIES)
+
+chan25_SOURCES = chan25.pa
+chan25_DEPENDENCIES = $(DEPENDENCIES)
 
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
@@ -379,6 +383,7 @@ include ./$(DEPDIR)/chan21.Po
 include ./$(DEPDIR)/chan22.Po
 include ./$(DEPDIR)/chan23.Po
 include ./$(DEPDIR)/chan24.Po
+include ./$(DEPDIR)/chan25.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po

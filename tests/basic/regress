@@ -189,6 +189,11 @@ my @Tests = (
 			  cmd     => "./chan24",
 			  checker => \&check_chan23,
 			 },
+			 # Test that prialt works if two channels are ready at once.
+			 {
+			  cmd     => "./chan25",
+			  checker => \&check_chan25,
+			 },
 			 # Spawn test- C++ only.
 			 {
 			  cmd     => "./spawn1",
@@ -821,6 +826,23 @@ sub check_chan23 {
 Done with writes.
 Did the clear.
 Result:  100
+EOD
+}
+
+# Test that prialt works if two channels are ready at once.
+sub check_chan25 {
+  str_rdiff(@_[0],<<'EOD');
+Test 1:
+Producer done.
+Got a value from port c0:  20
+c1 also has a value:  10
+Consumer done.
+Test 2:
+Producer done.
+Got a value from port c0:  20
+c1 also has a value:  10
+Consumer done.
+Done.
 EOD
 }
 

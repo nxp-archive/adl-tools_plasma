@@ -852,8 +852,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
   Ptree *label  = Ptree::GenSym();
   Ptree *handle = Ptree::GenSym();
   Ptree *sindex = Ptree::GenSym();
-  Ptree *uflag  = Ptree::GenSym();
-  Ptree *doover = Ptree::GenSym();
+  Ptree *loop  = Ptree::GenSym();
 
   PortList pv;
   flatten(pv,origpv);
@@ -865,9 +864,10 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
     Ptree::List(Ptree::Make("{\n"));
   Ptree *cur = start;
 
-  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"
-                                 "plasma::HandleType `handle`(0,0);\n"
-                                 "`doover`:\n"));
+  cur = lappend(cur,Ptree::qMake("plasma::pLock();\n"));
+
+  // Start of main loop.
+  cur = lappend(cur,Ptree::qMake("`loop`:\n"));
 
   // For each afor entry, write out initial statement loop statement.
   // Create auxiliary stack if needed.
@@ -888,21 +888,19 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
     }
   }
 
-  // If we have any loops then we need an update flag.
-  if (haveloops && !defaultblock) {
-    cur = lappend(cur,Ptree::qMake("bool `uflag` = false;\n"));
-  }
+  // Create index variable.
+  cur = lappend(cur,Ptree::qMake("int `handle`;\n"));
 
   // If needed, create index variable for use w/auxiliary stacks.
   if (needsindex) {
-    cur = lappend(cur,Ptree::qMake("int `sindex` = 0;\n"));
+    cur = lappend(cur,Ptree::qMake("int `sindex`;\n"));
   }
 
   // For each entry, write out ready-query logic.
   int index = 0;
   for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter,++index) {
     const Port &p = iter->port();
-    cur = lappend(cur,Ptree::qMake("`handle`.first = `index`;\n"));
+    cur = lappend(cur,Ptree::qMake("`handle` = `index`;\n"));
     if (p.isloop()) {
       // Afor code.
       cur = lappend(cur,Ptree::qMake("for ( ; `p.s2` ; `p.s3`) {\n"
@@ -917,7 +915,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
   // If we have a default block, this becomes the last index in our
   // case statement.  We jump directly there if we reach this point.
   if (defaultblock) {
-    cur = lappend(cur,Ptree::qMake("`handle`.first = `(int)(pv.size())`;\n"));
+    cur = lappend(cur,Ptree::qMake("`handle` = `(int)(pv.size())`;\n"));
   } else {
     // This generated code is only reached if no ports were ready.
     // In that case, we set each channel to notify us when it has data.
@@ -944,16 +942,9 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
       }
     }
 
-    // If we have any loops, then toggle the update flag to truee here- when we
-    // wake up and jump to the proper case spot, this will tell us to update the
-    // loop variable from the second element of the handle.
-    if (haveloops && !defaultblock) {
-      cur = lappend(cur,Ptree::qMake("`uflag` = true;\n"));
-    }
-
     // Next, we sleep.  When we wake up, we get the handle of the channel
     // which awoke us.
-    cur = lappend(cur,Ptree::qMake("`handle` = plasma::pSleep();\n"
+    cur = lappend(cur,Ptree::qMake("plasma::pSleep();\n"
                                    "plasma::pLock();\n"));
 
     // Clear all notification, since we have a value.
@@ -969,7 +960,13 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
     }
   }
 
-  if ( (cur = generateAltBody(env,cur,label,handle,uflag,doover,pv,defaultblock)) == nil) {
+  // End of main loop, if we have no default block.  If we have a default block,
+  // then we fall through.
+  if (!defaultblock) {
+    cur = lappend(cur,Ptree::qMake("goto `loop`;\n"));
+  }
+
+  if ( (cur = generateAltBody(env,cur,label,handle,pv,defaultblock)) == nil) {
     return nil;
   }
 
@@ -997,13 +994,13 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortList &origpv,Ptree *d
 
 // Generates the case statement for the alt action code.
 Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *handle,
-                               Ptree *uflag,Ptree *doover,const PortList &pv,Ptree *defaultblock)
+                               const PortList &pv,Ptree *defaultblock)
 {
   // Unlock processors- may be redundant for some cases, but is needed
   // for default blocks and non-standard channels.
   // Jump to the code for the relevant handle.
   cur = lappend(cur,Ptree::qMake("`label`:\n"
-                                 "switch(`handle`.first) {\n"));
+                                 "switch(`handle`) {\n"));
 
   // Handling code.  Each value should be a valid declaration.
   // The second statement represents the channel to be queried.
@@ -1011,21 +1008,6 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
   for (PortList::const_iterator iter = pv.begin(); iter != pv.end(); ++iter,++index) {
     const Port &p = iter->port();
     cur = lappend(cur,Ptree::qMake("case `index`: {\n"));
-    // If we have a loop, we copy the handle's second item to the loopvar so
-    // that it can be used by the body of the code.
-    if (p.isloop() && !defaultblock) {
-      cur = lappend(cur,Ptree::qMake("if (`uflag`) {\n"));
-      if (p.needstack()) {
-        cur = lappend(cur,Ptree::qMake("`p.loopvar` = `p.stack`[`handle`.second];\n"));
-      } else {
-        TypeInfo t = p.indextype;
-        cur = lappend(cur,Ptree::qMake("`p.loopvar` = ((`t.MakePtree(0)`)`handle`.second);\n"));
-      }
-      cur = lappend(cur,Ptree::qMake("}\n"));
-    }
-    // Make sure that we still have data.  If somebody else grabbed it (only happens in
-    // a multi-consumer situation), then we have to start all over.
-    cur = lappend(cur,Ptree::qMake(" if ( !(`p.chan`) `p.op` ready()) { goto `doover`; }\n"));
     if (p.val) {
       if (p.val->Length() > 1) {
         ErrorMessage(env,"Invalid port statement:  Only one declaration is allowed.",nil,p.val);
