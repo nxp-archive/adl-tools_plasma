@@ -628,10 +628,16 @@ data is not accessible.  This is useful for channels whose data is simply a
 boolean state, such as a time-out channel.])
 
 (p [Upon entry to the ,(b [alt]) block, all channels are checked for data.  If a
-channel has data, the body of the corresponding ,(b [port]) statement is executed.
-If more than one channel is ready, a single port statement is selected
-non-deterministically.  If no channels are ready, the thread will sleep until a
-channel has data.])
+channel has data, the body of the corresponding ,(b [port]) statement is
+executed.  If no channels are ready, the thread will sleep until a channel has
+data.  If more than one channel is ready, a single port statement is selected
+non-deterministically.  ])
+
+(p [The ,(b [prialt]) block should be used when the order of the channels is
+important.  For example, use ,(b [prialt]) when a ,(i [stop]) channel should
+have a higher priority than the normal data channels.  The syntax is exactly the
+same; the only difference is that the channels are guaranteed to be scanned
+sequentially, from the top down, when determining if any are ready.])
 
 (p [If a default block is specified, the ,(b [alt]) block will never cause the thread
 to sleep.  Instead, if no channels have data, the default block will be
@@ -720,6 +726,12 @@ on a collection and an override channel:])
   }
 
 ])
+
+(p [A prioritized version of ,(b [afor]) exists and is called ,(b [priafor]).
+This guarantees that the channels will be scanned sequentially.  In general, the
+,(b [afor]) and ,(b [priafor]) will behave identically.  However, if the
+compiler can determine that the loop is constant, it may choose to unroll an ,(b
+[afor]) and then re-order the channel querying.])
 
 )
 

@@ -578,10 +578,14 @@ an optional declaration which will receive the channel value.  The <strong>port<
 has access to this value.  If no value declaration is specified, the channel's
 data is not accessible.  This is useful for channels whose data is simply a
 boolean state, such as a time-out channel.</p><p>Upon entry to the <strong>alt</strong> block, all channels are checked for data.  If a
-channel has data, the body of the corresponding <strong>port</strong> statement is executed.
-If more than one channel is ready, a single port statement is selected
-non-deterministically.  If no channels are ready, the thread will sleep until a
-channel has data.</p><p>If a default block is specified, the <strong>alt</strong> block will never cause the thread
+channel has data, the body of the corresponding <strong>port</strong> statement is
+executed.  If no channels are ready, the thread will sleep until a channel has
+data.  If more than one channel is ready, a single port statement is selected
+non-deterministically.  </p><p>The <strong>prialt</strong> block should be used when the order of the channels is
+important.  For example, use <strong>prialt</strong> when a <em>stop</em> channel should
+have a higher priority than the normal data channels.  The syntax is exactly the
+same; the only difference is that the channels are guaranteed to be scanned
+sequentially, from the top down, when determining if any are ready.</p><p>If a default block is specified, the <strong>alt</strong> block will never cause the thread
 to sleep.  Instead, if no channels have data, the default block will be
 executed.</p><p><strong>alt</strong> and <strong>afor</strong> (explained below) blocks may be nested within <strong>alt</strong>
 blocks.  This allows the user to block on multiple collections of channels, or a
@@ -650,7 +654,10 @@ on a collection and an override channel:</p><table cellspacing="0" class="color"
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table></div>
+</tbody></table><p>A prioritized version of <strong>afor</strong> exists and is called <strong>priafor</strong>.
+This guarantees that the channels will be scanned sequentially.  In general, the
+<strong>afor</strong> and <strong>priafor</strong> will behave identically.  However, if the
+compiler can determine that the loop is constant, it may choose to unroll an <strong>afor</strong> and then re-order the channel querying.</p></div>
 <!-- Shared Data Structures -->
 <a name="Shared-Data-Structures"></a>
 <div class="skribesubsubsectiontitle"><h4><font color="#8381de">1.2.5.10 Shared Data Structures</font>
@@ -838,6 +845,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Sep 17 11:05:33 2004</em>.</font></p></div>
+Last update <em>Mon Sep 20 11:28:26 2004</em>.</font></p></div>
 </body>
 </html>

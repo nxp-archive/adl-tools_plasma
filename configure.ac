@@ -1,25 +1,10 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([src/Interface.C])
-
-PLASMA_MAJOR_VERSION=0
-PLASMA_MINOR_VERSION=5
-PLASMA_MICRO_VERSION=1
-PLASMA_VERSION=$PLASMA_MAJOR_VERSION.$PLASMA_MINOR_VERSION.$PLASMA_MICRO_VERSION
-
-AC_SUBST(PLASMA_MAJOR_VERSION)
-AC_SUBST(PLASMA_MINOR_VERSION)
-AC_SUBST(PLASMA_MICRO_VERSION)
-AC_SUBST(PLASMA_VERSION)
-
-VERSION=$PLASMA_VERSION
-PACKAGE=plasma
-
-AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
-AM_CONFIG_HEADER(config.h)
+AC_INIT([plasma],[0.6.0])
+AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
+
 AC_CANONICAL_BUILD
 AC_PROG_CC
-AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
@@ -84,7 +69,6 @@ AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
 AC_SUBST(WEBHOME)
 AC_SUBST(DOCDIR)
-AC_SUBST(TRIP)
 
 # If compiling on x86, we can compile test programs generated
 # by the sample compiler in the regression suite.
@@ -96,6 +80,7 @@ fi
 AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
 
+# Generate configuration files.
 AC_CONFIG_FILES([\
    Makefile \
    macros/Makefile \
@@ -119,7 +104,7 @@ AC_CONFIG_FILES([\
 	tests/cc/compile_check.pm
 ],[chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm ])
 
-# We always want to enable C++ support.
+# We always want to enable C++ support (argument taken by GC library).
 export enable_cplusplus=yes
 AC_CONFIG_SUBDIRS(gc)
 

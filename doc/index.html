@@ -358,7 +358,11 @@ Peter Wilson</i></font>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>In the above example, the thread will suspend unless a channel
-	    in <code>ichannels</code> or the channel <code>xc</code> has data.</p></div>
+	    in <code>ichannels</code> or the channel <code>xc</code> has data.</p><p>As mentioned above, the ordering in which channels will be read
+	    for <code>alt</code> and <code>afor</code> blocks is indeterminate.  To
+	    guarantee a specific ordering, the <code>prialt</code> and <code>priafor</code> constructs may be used.  These take the same form as
+	    <code>alt</code> and <code>afor</code> except that the channels will be
+	    queried in the order specified by the user.</p></div>
 <!-- Synchronous Communication -->
 <a name="Synchronous-Communication"></a>
 <div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.2 Synchronous Communication</font>
@@ -567,6 +571,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Sep 17 11:05:33 2004</em>.</font></p></div>
+Last update <em>Mon Sep 20 11:28:26 2004</em>.</font></p></div>
 </body>
 </html>
