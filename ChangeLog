@@ -1,5 +1,8 @@
 2004-08-19  Brian Kahne  <bkahne@ibmoto.com>
 
+	* minicc: Fixed bug: I wasn't calling setinfo on all of the Node
+	objects that I should have, in cparser.yy.
+
 	* minicc: Added symbol-table generation.  I decided to remove the
 	double-dispatch stuff, because it really doesn't work that well
 	(refer to "More Effective C++" for why the double-virtual function

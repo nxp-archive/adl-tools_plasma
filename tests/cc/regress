@@ -38,6 +38,13 @@ my @Tests = (
 			  stderr  => 1,
 			  fail    => 1,
 			 },
+			 # Simple symbol-table parsing.
+			 {
+			  cmd     => "./minicc -syms tests/in7.c",
+			  diff    => "tests/test6.out",
+			  stderr  => 1,
+			  fail    => 1,
+			 },
 	    );
 
 doTest(\@Tests);

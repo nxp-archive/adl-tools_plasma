@@ -52,6 +52,7 @@ translation_unit ::= extern_decl_list(B). {
 
 extern_decl_list(A) ::= extern_decl(B). {
   A = new TranslationUnit(B);
+  cp->setinfo(A);
 }
 extern_decl_list(A) ::= extern_decl_list(B) extern_decl(C). {
   A = B;
@@ -69,12 +70,14 @@ function_definition(A) ::= type_specifier(B) declarator(C) compound_statement(D)
   Declaration &d = dynamic_cast<Declaration&>(*C);  
   d.set_base_type(B);
   A = new FunctionDefn(C,D);
+  cp->setinfo(A);
 }
 function_definition(A) ::= STATIC type_specifier(B) declarator(C) compound_statement(D). {
   Declaration &d = dynamic_cast<Declaration&>(*C);  
   d.set_static();
   d.set_base_type(B);
   A = new FunctionDefn(C,D);
+  cp->setinfo(A);
 }
 
 declaration(A) ::= type_specifier(B) declarator(C) SEMICOLON. {
@@ -89,6 +92,7 @@ declaration(A) ::= EXTERN type_specifier(B) declarator(C) SEMICOLON. {
 
 declaration_list_opt(A) ::= . {
   A = new NullNode();
+  cp->setinfo(A);
 }
 declaration_list_opt(A) ::= declaration_list(B). {
   A = B;
@@ -96,6 +100,7 @@ declaration_list_opt(A) ::= declaration_list(B). {
 
 declaration_list(A) ::= declaration(B). {
   A = new DeclarationList(B);
+  cp->setinfo(A);
 }
 declaration_list(A) ::= declaration_list(B) declaration(C). {
   A = B;
@@ -120,6 +125,7 @@ declarator(A) ::= ASTERISK declarator(B). {
 
 direct_declarator(A) ::= IDENTIFIER(B). {
   A = new Declaration(String(B._str.p,B._str.l));
+  cp->setinfo(A);
 }
 direct_declarator(A) ::= direct_declarator(B) LPAREN parameter_type_list(C) RPAREN. {
   A = B;
@@ -140,6 +146,7 @@ parameter_type_list(A) ::= parameter_list(B) COMMA ELLIPSIS. {
 
 parameter_list(A) ::= parameter_declaration(B). {
   A = new ParamList(B);
+  cp->setinfo(A);
 }
 parameter_list(A) ::= parameter_list(B) COMMA parameter_declaration(C). {
   A = B;
@@ -152,9 +159,11 @@ parameter_declaration(A) ::= type_specifier(B) declarator(C). {
 
 compound_statement(A) ::= LBRACE declaration_list_opt(B) statement_list(C) RBRACE. {
   A = new CompoundStatement(B,C);
+  cp->setinfo(A);
 }
 compound_statement(A) ::= LBRACE declaration_list_opt(B) RBRACE. {
   A = new CompoundStatement(B,new NullNode());
+  cp->setinfo(A);
 }
 
 expression_statement(A) ::= expression(B) SEMICOLON. {
@@ -166,12 +175,15 @@ expression(A) ::= equality_expression(B). {
 }
 expression(A) ::= equality_expression(B) ASSIGN(Op) expression(C). {
   A = new Binop(B,Op._tok,C);
+  cp->setinfo(A);
 }
 expression(A) ::= equality_expression(B) ADD_ASSIGN(Op) expression(C). {
   A = new Binop(B,Op._tok,C);
+  cp->setinfo(A);
 }
 expression(A) ::= equality_expression(B) SUB_ASSIGN(Op) expression(C). {
   A = new Binop(B,Op._tok,C);
+  cp->setinfo(A);
 }
 
 equality_expression(A) ::= relational_expression(B). {
@@ -205,12 +217,15 @@ postfix_expression(A) ::= primary_expression(B). {
 }
 postfix_expression(A) ::= postfix_expression(B) LPAREN argument_expression_list(C) RPAREN. {
   A = new FunctionExpression(B,C);
+  cp->setinfo(A);
 }
 postfix_expression(A) ::= postfix_expression(B) LPAREN RPAREN. {
   A = new FunctionExpression(B,new ArgumentList);
+  cp->setinfo(A);
 }
 postfix_expression(A) ::= postfix_expression(B) LBRACKET expression(C) RBRACKET. {
   A = new ArrayExpression(B,C);
+  cp->setinfo(A);
 }  
 
 argument_expression_list(A) ::= expression(B). {

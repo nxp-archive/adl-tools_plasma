@@ -73,7 +73,7 @@ bool SymTab::add(String name,Node *value,bool raise)
     if (first->_level == _level) {
       // We have a duplicate.
       if (raise) {
-        Error(value,"Duplicate identifier.  Original is at " << first->_n->filename() << ":" << first->_n->linenumber() << ".");
+        Error(value,"Duplicate identifier.  Original is at " << first->_n->filename() << ":" << first->_n->linenumber() << ".");        
       } else {
         return false;
       }
