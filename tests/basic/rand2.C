@@ -28,14 +28,13 @@ int main(int argc,const char *argv[])
   }
 
   cout << "Seed:  " << seed << endl;
-
   testDbl(seed);
   testUniform(seed);
   testTriangle(seed);
   testExponential(seed);
   testNormal(seed);
 
-//  printDbl(seed);
+  // printDbl(seed);
 }
 
 void testDbl(unsigned s)
@@ -163,6 +162,10 @@ void testExponential(unsigned seed)
   unsigned lc = 0, hc = 0;
   for (int i = 0; i != N*10; ++i) {
     unsigned p = r.exponential(0,1000,5);
+    if (p > 1000) {
+      cerr << "exponential:  Exceeded scale value." << endl;
+      exit (1);
+    }
     //cout << "p:  " << p << endl;
     if (p < 100) ++lc;
     if (p > 500) ++hc;
@@ -221,8 +224,9 @@ void printDbl(unsigned seed)
 
   double min = 0, max = 0;
   for (unsigned i = 0; i != N; ++i) {
-    //    double p = r.normal(0,1000,100);
-    double p = r.triangle(0,0,50,100);
+    //double p = r.normal(0,1000,100);
+    //double p = r.triangle(0,0,50,100);
+    double p = r.exponential(0,1000,10);
     val[i] = p;
     //cout << "p:  " << p << endl;
     if (p < min) min = p;
@@ -240,7 +244,10 @@ void printDbl(unsigned seed)
 
   double x = min;
   for (unsigned i = 0; i != B; ++i) {
-    cout << x << "  " << buf[i] << endl;
+    if (buf[i]) {
+      double p = buf[i]/N;
+      cout << x << "  " << p << endl;
+    }
     x += bin;
   }
 }

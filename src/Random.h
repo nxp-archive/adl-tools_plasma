@@ -123,13 +123,14 @@ namespace plasma {
   {
     assert(lambda);
     double result = (-log(1-gendbl(s)))/lambda;
-    return (unsigned)(result * scale);
+    unsigned r = (unsigned)(result * scale);
+    return (r > scale) ? scale : r;
   }
 
   template <class Gen>
   unsigned Random<Gen>::normal(unsigned s,unsigned mean,double std_dev)
   {
-    return normalImpl(mean,std_dev,gendbl(s),gendbl(s));
+    return (unsigned)normalImpl(mean,std_dev,gendbl(s),gendbl(s));
   }
 
   template <class Gen>

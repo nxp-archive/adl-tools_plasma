@@ -102,7 +102,7 @@ The **spawn** operator returns an object of type **Result<T>**, where **T** is
 the return type of the invoked function.  Calling the *value()* method returns
 the result of the thread; if the thread is not yet finished, it will block.
 Calling *wait()* will wait until the thread is finished and calling *kill()*
-will termminate the thread.  In the latter case, the result of the thread will
+will terminate the thread.  In the latter case, the result of the thread will
 be the default constructor value of the return type.
 
 A simple example is::
@@ -176,7 +176,7 @@ There are three main functions for the time mode:
     disabled; the only thread switches will be during alt, wait, delay, or busy
     commands.
 
-    Lowest priority threads are timesliced.  The time slice value is set by
+    Lowest priority threads are time-sliced.  The time slice value is set by
     setting ``ConfigParms::_simtimeslice`` in ``pSetup()``.  What this means is
     that a busy command will be divided up until these timeslices, allowing the
     same processor to squeeze in work from other threads.
@@ -436,7 +436,7 @@ There are a few restrictions to follow for the **afor** block:
 
 As noted above, an **afor** block may be nested within an **alt** block.  This
 allows you to block on one or more collections and/or to block on a collection
-plus one or more single channels.  For example, thhe following code will block
+plus one or more single channels.  For example, the following code will block
 on a collection and an override channel:::
 
   alt {
@@ -456,7 +456,7 @@ on a collection and an override channel:::
 Shared Data Structures
 ----------------------
 
-Threads may also commmunicate using shared data structures whose access methods
+Threads may also communicate using shared data structures whose access methods
 are protected by special synchronization primitives.  There are two means to do
 this.  The easiest is to declare a class as being a mutex class::
 
@@ -527,6 +527,111 @@ This will allocate a block of memory that is managed by the collector.
 
 You may delete memory that is managed, but this is generally discouraged, since
 the collector will collect it when it is safe to do so.
+
+----------------
+Library Features
+----------------
+
+This section describes functions and classes provided by the Plasma standard
+library, ``plasma.h``.
+
+I/O Routines
+------------
+
+A series of **printf**-style routines are provided which implement
+mutex-protected I/O routines.  These are:
+
+* ``int mprintf(const char *format, ... );``
+* ``int mfprintf(FILE *,const char *format, ...);``
+* ``int mvprintf(const char *format, va_list ap);``
+* ``int mvfprintf(FILE *,const char *format,va_list ap);``
+
+These behave just like the standard routines, except that they are protected
+from preemption while they are executing.
+
+String Routines
+---------------
+
+Strings, such as **Processor** names, are garbage collected in Plasma.  This may
+interfere with using the C++ string class, since it generally manages its own
+memory.  Thus, when passing a string to a **Processor** via ``setName()`` or a
+constructor, if the string is not a constant, you should duplicate it using
+``gc_strdup()``.
+
+* ``char *gc_strdup(const char *);``
+
+* ``char *gc_strdup(const std::string &s);``
+
+Both of the above routines duplicate their argument using GC-allocated memory.
+
+Random Number Generation
+------------------------
+
+The template ``Random<Gen>`` is provided for random number generation.  It takes
+as a parameter a generator class, which does the actual work of generating
+pseudo-random numbers.  The *Random* class wraps this generator and provides
+various functionality, such as supporting **N** streams of independent
+random number generation and the ability to read and write the state of these
+generators using C++ streams.
+
+Several different generators are provided:
+
+1.  *LcgRand*:  Linear-congruential generator with period of 2:sup:`32`.  This is a
+    reversible function.  Its state is stored in one 32-bit word.
+
+2.  *KissRand*:  A combination of several generators, it has a period of 2:sup:`127`.
+    It is not reversible.  Its state is stored in 5 32-bit words.
+
+3.  *MtRand*:  The Mersenne Twist random number generator has a period of
+    2:sup:`19937`-1.  It is reversible.  Its state is stored in 625 32-bit words.
+
+The default generator is *KissRand*.
+
+The simplest way to use *Random* is to simply generate an unsigned integer by
+calling ``genrand()`` or generate a double in the range of [0,1] by calling
+``gendbl()``.  For example::
+
+         Random<> Rand;                // Instantiate w/default generator.
+
+         unsigned x = Rand.genrand();  // Generate unsigned integer in [0,0xffffffff].
+         double y = Rand.gendbl();     // Generate double in [0,1].
+
+To create 3 independent generators with the Mersenne Twist algorithm::
+
+         Random<MtRand> Rand(3);
+
+         unsigned x = Rand.genrand(0); // Generate using stream 0.
+         unsigned y = Rand.genrand(1); // Generate using stream 1.
+         unsigned z = Rand.genrand(2); // Generate using stream 2.
+
+The class can then be saved to a stream, for example to checkpoint the current
+state of a simulation::
+
+         ostringstream os;
+         Rand.save(os);                // Save the generators' state.
+
+         istringstream is(os.str());
+         Rand.load(is);                // Load the generators' state.
+
+*Random* may also generate numbers using several distributions.  Currently, the
+distribution functions only support unsigned integers.  The various
+distributions are shown below.  For each function, the first parameter specifies
+which stream to use for generation.
+
+1.  ``unsigned uniform(unsigned s,unsigned base,unsigned limit)``: Generates a
+    uniform random number in [*base*, *limit*).  The *limit* must be greater than
+    *base*.
+
+2.  ``unsigned triangle(unsigned s,unsigned l,unsigned mode,unsigned u)``:
+    Generates using a triangle distribution in [*l*, *u*), with the peak of the
+    distribution specified by *mode*.  Upper must be greater than lower.
+
+3.  ``unsigned exponential(unsigned s,unsigned scale,double lambda)``: Generates
+    an exponential distribution in [0, *scale* ] with *lambda* describing the
+    fall-off rate.
+
+4.  ``unsigned normal(unsigned s,unsigned mean,double std_dev)``: Generates a
+    normal distribution with the curve centered around *mean*.
 
 ------------------------------
 Additional Language Constructs
