@@ -1,0 +1,60 @@
+//
+// Tests clearing a queued channel.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef QueueChan<int> IntChan;
+
+void producer(IntChan &c,int val)
+{
+  cout << "Wrote " << val << endl;
+  for (int i = 0; i != 5; ++i) {
+    c.write(val);
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  IntChan c(10);
+
+  // Create a bunch of processes trying to write to the channel.
+  spawn(producer(c,10));
+  spawn(producer(c,20));
+  spawn(producer(c,30));
+  spawn(producer(c,40));
+  spawn(producer(c,50));
+
+  cout << "Done with writes." << endl;
+
+  // Delay in order to make sure that they all get scheduled.
+  pDelay(1);
+
+  // Now clear the channel.  This should eliminate the writers.
+  c.clear();
+
+  cout << "Did the clear." << endl;
+
+  // Now try and write something.  If this didn't work, we'll exit
+  // immediately due to deadlock.
+  c.write(100);
+
+  // Now print out anything in the channel.  We delay to make sure that
+  // any pending writers (there shouldn't be any!) are scheduled.
+  while (c.ready()) {
+    cout << "Result:  " << c.get() << endl;
+    pDelay(1);
+  }
+
+  return 0;
+}

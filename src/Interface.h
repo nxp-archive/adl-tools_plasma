@@ -135,8 +135,7 @@ namespace plasma {
   // passed by pWake.
   HandleType pSleep();
 
-  // Wake the specified thread, giving it the handle values.  This switches
-  // to this thread.
+  // Wake the specified thread, giving it the handle values.
   void pWake(std::pair<THandle,HandleType>);
 
   // Wake a busy thread that was made busy by pBusySleep.

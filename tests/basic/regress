@@ -179,6 +179,16 @@ my @Tests = (
 			  cmd     => "./chan22",
 			  checker => \&check_chan22,
 			 },
+			 # Test of clearing a basic channel.
+			 {
+			  cmd     => "./chan23",
+			  checker => \&check_chan23,
+			 },
+			 # Test of clearing a queued channel.
+			 {
+			  cmd     => "./chan24",
+			  checker => \&check_chan23,
+			 },
 			 # Spawn test- C++ only.
 			 {
 			  cmd     => "./spawn1",
@@ -373,6 +383,16 @@ my @Tests = (
 			 {
 			  cmd     => "./clock9",
 			  checker => \&check_clock9,
+			 },
+			 # Test of clearing a clocked channel.
+			 {
+			  cmd     => "./clock10",
+			  checker => \&check_clock10,
+			 },
+			 # Test of a clocked broadcaster.
+			 {
+			  cmd     => "./clock11",
+			  checker => \&check_clock11,
 			 },
 			 # Simple test of the quantity class.
 			 {
@@ -783,6 +803,15 @@ sub check_chan21 {
 sub check_chan22 {
   my @data = ([10..19,100..109]);
   check_channel (@_[0],"Got a value on (\\d+):\\s+(\\d+)",\@data);
+}
+
+# Test of clearing a channel.
+sub check_chan23 {
+  str_rdiff(@_[0],<<'EOD');
+Done with writes.
+Did the clear.
+Result:  100
+EOD
 }
 
 sub check_spawn1 {
@@ -1312,11 +1341,42 @@ EOD
 
   str_rdiff(@_[0],<<'EOD');
 10: Response to 2:  0
-20: Response to 2:  50
-40: Response to 4:  1000
+30: Response to 2:  50
+50: Response to 4:  1000
 EOD
 }
 
+# Test of clearing a clocked channel.
+sub check_clock10 {
+  str_rdiff(@_[0],<<'EOD');
+0:  Done with writes.
+1:  Before the clear.
+1:  After the clear.
+10:  Result:  1000
+20:  Result:  2000
+EOD
+}
+
+# Test of a clocked broadcaster.
+sub check_clock11 {
+  str_rdiff(@_[0],<<'EOD');
+\d:  10:  Result:  100
+\d:  10:  Result:  100
+\d:  10:  Result:  100
+\d:  15:  Result:  200
+\d:  15:  Result:  200
+\d:  15:  Result:  200
+\d:  20:  Flushed.
+\d:  20:  Flushed.
+\d:  20:  Flushed.
+\d:  25:  Result:  69
+\d:  25:  Result:  69
+\d:  25:  Result:  69
+\d:  30:  Result:  1000
+\d:  30:  Result:  1000
+\d:  30:  Result:  1000
+EOD
+}
 
 sub check_quantity1 {
   str_rdiff(@_[0],<<'EOD');

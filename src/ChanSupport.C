@@ -57,13 +57,13 @@ namespace plasma {
     _readt = t;
     _h = h;
     assert(!_writet);
-    _writet = pSpawn(timeout,this,-1);
+    _writet = pSpawn(timeout,this,0);
   }
 
   /////////////// ClockChan ///////////////
 
   ClockChanImpl::ClockChanImpl(ptime_t p,ptime_t s,unsigned ms) : 
-    _period(p), _skew(s), _maxsize(ms), _size(0)
+    _period(p), _skew(s), _maxsize(ms), _size(0), _clear_mode(0)
   {}
 
   // Returns true if we're on a clock edge, given a clock period.
@@ -135,13 +135,13 @@ namespace plasma {
     if (!_waket) {
       _delay = next_phi() - pTime();
       assert(!_waket);
-      _waket = pSpawn(sc_delayed_waker,this,-1);
+      _waket = pSpawn(sc_delayed_waker,this,0);
     }
   }
 
   void SingleConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if (is_phi() && current_data) {
+    if ((is_phi() && current_data) || clear_mode()) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker();
@@ -153,7 +153,7 @@ namespace plasma {
     }
   }
 
-  void SingleConsumerClockChannel::delayed_reader_wakeup(bool have_data)
+  void SingleConsumerClockChannel::delayed_reader_wakeup()
   {
     // If we're not empty, and we're here, then it's because we're not on a clock
     // edge- in that case we'll start a waker thread.
@@ -238,9 +238,16 @@ namespace plasma {
     }
   }
 
+  // A clear operation takes precedence- wake the clearing thread
+  // and ignore other consumers.
   void MultiConsumerClockChannel::delayed_wakeup(bool current_data)
   {
-    if (is_phi() && current_data) {
+    if (clear_mode()) {
+      MClkInfo::iterator cm = _cons.find(clear_mode());
+      cancel_waker(cm);
+      pWake(reset(cm));
+    }
+    else if (is_phi() && current_data) {
       // We're on a clock edge- wake up thread.
       // Cancel a waker thread if it exists.
       cancel_waker(_cons.begin());
@@ -252,7 +259,7 @@ namespace plasma {
     }
   }
 
-  void MultiConsumerClockChannel::delayed_reader_wakeup(bool have_data)
+  void MultiConsumerClockChannel::delayed_reader_wakeup()
   {
     // If we're not empty, and we're here, then it's because we're not on a clock
     // edge- in that case we'll start a waker thread.

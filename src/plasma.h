@@ -7,10 +7,11 @@
 #define _PLASMA_H_
 
 #include <stdarg.h>
-#include <vector>
 #include <list>
 
 #include "ChanSupport.h"
+
+#define pTMutex
 
 namespace plasma {
 
@@ -38,6 +39,7 @@ namespace plasma {
     void write(const Data &d);
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+    void clear();
 
   private:
     Data read_internal(bool clear_ready);
@@ -62,6 +64,7 @@ namespace plasma {
     void write(const Data &d);
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+    void clear();
 
   private:
     Data read_internal(bool clear_ready);
@@ -89,12 +92,14 @@ namespace plasma {
     int size() const { return _size; };
     pNoMutex int maxsize() const { return _maxsize; };
     void setMaxSize(int ms) { _maxsize = ms; }
-    void clear_ready() { pLock(); if (_size) { --_size; _store.pop_back(); } pUnlock(); };
+    void clear_ready() { if (_size) { --_size; _store.pop_back(); } };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+    void clear();
 
   private:
     void check_size() const { assert(!_maxsize || _size <= _maxsize); }
+    void clear_data() { _store.clear(); _size = 0; }
     Data read_internal(bool clear_ready);
 
     unsigned   _maxsize;   // Max size.  If 0, no fixed size.
@@ -144,9 +149,10 @@ namespace plasma {
     void write(const Data &d);
     bool ready() const { return current_data() && Base::is_phi(); };
 
-    void clear_ready() { pLock(); if (!empty()) { Base::decr_size(); _store.pop_back(); } pUnlock(); };
+    void clear_ready() { if (!empty()) { Base::decr_size(); _store.pop_back(); } };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
+    void clear();
 
     using Base::maxsize;
     using Base::setMaxSize;
@@ -163,6 +169,64 @@ namespace plasma {
     ptime_t curr_time() const { return pTime(); };
 
     Store      _store;
+  };
+
+  // This class replicates data from the input channel to each of its output
+  // channels.
+  template <class InChan,class OutChan>
+  class Broadcaster {
+    typedef Broadcaster<InChan,OutChan> This;
+  public:
+    typedef InChan input_channel;
+    typedef OutChan output_channel;
+
+    // Create n output channels.  If clear is true, we will clear the channel
+    // before writing to it.  it then acts as a broadcast mechanism, allowing
+    // consumers to ignore a broadcast.  However, it disables the natural
+    // flow-control ability, so you need for there to be time consumption in
+    // order to order the producer and consumers.  If the channels take
+    // arguments, you can supply a version to copy in the constructor.
+    Broadcaster(unsigned n,bool clear = false,const InChan & = InChan(),const OutChan & = OutChan());
+
+    bool empty() const { return _sinks.empty(); };
+    unsigned size() const { return _sinks.size(); };
+
+    // Retrieve a reference to an output channel.
+    OutChan &get_sink(unsigned n) { return _sinks.at(n); };
+    const OutChan &get_sink(unsigned n) const { return _sinks.at(n); };
+
+    InChan &get_source() { return _source; };
+    const InChan &get_source() const { return _source; };
+  private:
+    static void reflect(void *);
+
+    typedef std::vector<OutChan,traceable_allocator<OutChan> > Sinks;
+
+    bool   _clear;
+    InChan _source;
+    Sinks  _sinks;
+  };
+
+  // This is a convenience class for implementing a clocked broadcaster.
+  // The input is a clocked channel and the output are non-clocked channels.
+  // However, the refector runs as a high priority thread so that the updates to
+  // the reflected channels should occur before the receiving threads run, thus
+  // avoiding race conditions.
+  template <typename Data>
+  struct ClkBroadcaster : Broadcaster<ClockChan<Data>, Channel<Data> > {
+    typedef ClockChan<Data> Chan;
+    typedef Broadcaster<ClockChan<Data>, Channel<Data> > Base;
+   
+    // n:    Number of sinks.
+    // p:    Clock period.
+    // s:    Clock skew (default is 0).
+    // size: Queue size for clocked channel (default is 1).
+    ClkBroadcaster(unsigned n,plasma::ptime_t p,plasma::ptime_t s = 0,unsigned size = 1) : 
+      Base(n,true,Chan(p,s,size)) {};
+    
+    // Same interface as Broadcaster.
+    using Base::get_source;
+    using Base::get_sink;
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -222,6 +286,19 @@ namespace plasma {
     }    
   };
 
+  template <class Data,class Base>
+  void Channel<Data,Base>::clear()
+  {
+    clear_ready();
+    while (have_writers()) {
+      pAddReady(next_writer());
+      Base::set_notify(pCurThread(),HandleType());
+      pSleep();
+      Base::clear_notify();
+      clear_ready();
+    }
+  }
+
   /////////////// BusyChan ///////////////
 
   template <class Data,class Base>
@@ -269,6 +346,19 @@ namespace plasma {
       pBusyWake(Base::notify_reader());
     }    
   };
+
+  template <class Data,class Base>
+  void BusyChan<Data,Base>::clear()
+  {
+    clear_ready();
+    while (Base::have_writers()) {
+      pAddReady(next_writer());
+      Base::set_notify(pCurThread(),HandleType());
+      pSleep();
+      Base::clear_notify();
+      clear_ready();
+    }
+  }
 
   /////////////// QueueChan ///////////////
 
@@ -318,6 +408,20 @@ namespace plasma {
     }
   };
 
+  template <typename Data,typename Base,typename Container>
+  void QueueChan<Data,Base,Container>::clear() 
+  { 
+    clear_data();
+    // Now loop- for each writer, let it write its data, then clear it.
+    while (have_writers()) {
+      pAddReady(next_writer());
+      Base::set_notify(pCurThread(),HandleType());
+      pSleep();
+      Base::clear_notify();
+      clear_data();
+    }
+  }
+
   /////////////// ResChan ///////////////
 
   template <class Data>
@@ -356,7 +460,7 @@ namespace plasma {
     }
     // If no data- sleep until we get some.
     while (!ready()) {
-      delayed_reader_wakeup(!empty());
+      Base::delayed_reader_wakeup();
     }
     Data temp = _store.back().first;
     if (clearready) {
@@ -376,7 +480,7 @@ namespace plasma {
       Base::delayed_wakeup(current_data());
     }
     // Sleep if queue is full.  This is a loop so that if a waiting
-    // writer is awakened and then another thread jumps in and writess
+    // writer is awakened and then another thread jumps in and writes
     // data to again fill the queue, the thread will again sleep.
     while (Base::full()) {
       set_writenotify(pCurThread());
@@ -391,6 +495,59 @@ namespace plasma {
       Base::delayed_wakeup(current_data());
     }
   };
+
+  template <typename Data,typename Base,typename Container>
+  void ClockChan<Data,Base,Container>::clear()
+  {
+    _store.clear();
+    Base::set_size(0);
+    // Turn on clear mode.  This will cause reader wakeup to happen
+    // immediately.
+    Base::set_clear_mode(pCurThread());
+    // Now loop- for each writer, let it write its data, then clear it.
+    while (have_writers()) {
+      pAddReady(next_writer());
+      Base::delayed_reader_wakeup();
+      _store.clear();
+      Base::set_size(0);
+    }
+    Base::set_clear_mode(0);
+  }
+
+  //
+  // Broadcaster
+  //
+  
+  template <typename InChan,typename OutChan>
+  Broadcaster<InChan,OutChan>::Broadcaster(unsigned n,bool clear,const InChan &in,const OutChan &out) : 
+    _clear(clear),
+    _source(in),
+    _sinks(n,out) 
+  {
+    // Start the refector thread.
+    pSpawn(reflect,this,0);
+  }
+
+  // This is the reflector thread- it listens to the input channel and
+  // broadcasts anything it gets to the output channel.
+  template <typename InChan,typename OutChan>
+  void Broadcaster<InChan,OutChan>::reflect(void *args)
+  {
+    typedef typename InChan::value_type Data;
+
+    This &bc = *( (This *)args );
+
+    while (true) {
+      Data data = bc._source.get();
+
+      for (typename Sinks::iterator i = bc._sinks.begin(); i != bc._sinks.end(); ++i) {
+        if (bc._clear) {
+          i->clear();
+        }
+        i->write(data);
+      }
+    }
+  }
 
 }
 

@@ -25,12 +25,13 @@ void responder(ClkDataChan &in,IntChan &request,IntChan &reply)
   IntHash h;
 
   while (true) {
-    alt {
+    prialt {
       in.port(Data p) {
-        //        cout << pTime() << ": Got update:  " << p.first << ":  " << p.second << endl;
+        cout << pTime() << ": Got update:  " << p.first << ":  " << p.second << endl;
         h[p.first] = p.second;
       }
       request.port(int r) {
+        cout << pTime() << ": Got request for " << r << endl;
         IntHash::const_iterator i = h.find(r);
         if (i != h.end()) {
           reply.write(i->second);
@@ -65,7 +66,8 @@ void queryer(IntChan &request,IntChan &reply)
   request.write(2);
   response = reply.get();
   cout << pTime() << ": Response to 2:  " << response << endl;
-  pDelay(Clock);
+  pDelay(Clock*2);
+  cout << pTime() << ": Requesting 2 again." << endl;
   request.write(2);
   response = reply.get();
   cout << pTime() << ": Response to 2:  " << response << endl;

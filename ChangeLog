@@ -1,7 +1,20 @@
-        ======= plasma release 0.8.6 (v0_8_6) on Linux (cde-tx32-ldt189) =======
+
+2004-12-22  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Created a simple broadcaster template that takes input from a
+	channel and writes it to its output channels, clearing them
+	first.  Added a convenience class for clocked channels that
+	creates a broadcaster with an input clocked channel and an output
+	that's non-clocked.  The channels are cleared so that the
+	broadcast can be ignored without backing anything up, e.g. if one
+	consumer doesn't care, the data is wiped out on the next read.
 
         ======= plasma release 0.8.6 (v0_8_6) on Linux (cde-tx32-ldt189) =======
 
+2004-12-21  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added clear methods to the channels.  This will clear out the
+	data and any pending writers.
 
 2004-12-14  Brian Kahne  <bkahne@ibmoto.com>
 

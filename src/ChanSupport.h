@@ -6,6 +6,7 @@
 #ifndef _CHANSUPPORT_H_
 #define _CHANSUPPORT_H_
 
+#include <deque>
 #include <assert.h>
 #include <ext/hash_map>
 
@@ -14,13 +15,13 @@ namespace plasma {
   // Base class for channels that allow multiple producers.  An actual
   // channel should inherit from this class and implement write, read, and get.
   class MultiProducerChannel {
-    typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
+    typedef std::deque<THandle,traceable_allocator<THandle> > Writers;
   public:
 
   protected:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     bool have_writers() const { return !_writers.empty(); };
-    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
+    THandle next_writer() { THandle t = _writers.front(); _writers.pop_front(); return t; };
 
     Writers    _writers;
   };
@@ -135,19 +136,27 @@ namespace plasma {
     bool empty() const { return _size == 0; };
     unsigned size() const { return _size; };
 
+    unsigned period() const{ return _period; };
+
     unsigned maxsize() const { return _maxsize; };
     void setMaxSize(unsigned ms) { _maxsize = ms; }
-    bool full() const { return _maxsize && _size >= _maxsize; };
+    bool full() const { return (_maxsize > 0) && _size >= _maxsize; };
 
+    void set_size(unsigned s) { _size = s; };
     void incr_size() { ++_size; };
     void decr_size() { --_size; };
-    void check_size() const { assert(!_maxsize || _size <= _maxsize); }
+    void check_size() const { assert(_maxsize < 0 || _size <= _maxsize); }
+
+    THandle clear_mode() const { return _clear_mode; };
+    void set_clear_mode(THandle c) { _clear_mode = c; };
     
   private:
     ptime_t    _period;    // Clock period.
     ptime_t    _skew;      // Skew- offset from clock edge.
-    unsigned   _maxsize;   // Max size.  If 0, no fixed size.
+    unsigned   _maxsize;   // Max size.  If -1, no fixed size.  0 means a writer blocks
+                           // until a reader consumes the data.
     unsigned   _size;      // Number of items in channel.
+    THandle    _clear_mode;
   };
 
   // Base class used for single-consumer clocked channels.
@@ -159,7 +168,7 @@ namespace plasma {
     void set_notify(THandle t,HandleType h);
     void clear_notify();
     void delayed_wakeup(bool current_data);
-    void delayed_reader_wakeup(bool have_data);
+    void delayed_reader_wakeup();
     void start_waker();
     TPair reset();
     void cancel_waker();
@@ -181,21 +190,25 @@ namespace plasma {
   typedef __gnu_cxx::hash_map<THandle,MClk,HashTHandle> MClkInfo;
 
   // Base class used for multi-consumer clocked channels.
+  // If _broadcast is true, we will deliver a wakeup to all
+  // registered consumers, rather than just one.
   class MultiConsumerClockChannel : public ClockChanImpl {
   public:
     MultiConsumerClockChannel(ptime_t p,ptime_t s,unsigned maxsize);
 
+    void set_broadcast() { _broadcast = true; };
     bool have_reader() const { return !_cons.empty(); };
     void set_notify(THandle t,HandleType h);
     void clear_notify();
     void cancel_waker(MClkInfo::iterator iter);
     // This wakes up the next available reader.
     void delayed_wakeup(bool current_data);
-    void delayed_reader_wakeup(bool have_data);
+    void delayed_reader_wakeup();
     void start_waker(MClkInfo::iterator);
     TPair reset(MClkInfo::iterator);
 
   private:
+    bool        _broadcast;
     MClkInfo    _cons;
   };
 

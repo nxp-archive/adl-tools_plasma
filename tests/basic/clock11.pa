@@ -1,0 +1,78 @@
+//
+// Test of a clocked broadcast channel.
+//
+
+#include <iostream>
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+const int Clock = 5;
+
+typedef ClkBroadcaster<int> IntClkBroadcaster;
+
+typedef IntClkBroadcaster::input_channel input_channel;
+typedef IntClkBroadcaster::output_channel output_channel;
+
+void producer(input_channel &c)
+{
+  static int data[] = {100,200,300,69,1000,0};
+  int *cur = data;
+  while (*cur > 0) {
+    pDelay(Clock);
+    cout << pTime() << ":  Wrote " << *cur << endl;
+    c.write(*cur);
+    ++cur;
+  }
+}
+
+void flusher(input_channel &f)
+{
+  pDelay(Clock*3);
+  cout << pTime() << ":  Sending flush." << endl;
+  f.write(1);
+}
+
+void consumer(output_channel &c,output_channel &f,int id)
+{
+  while (true) {
+    pDelay(Clock);
+
+    prialt {
+      f.port() {
+        cout << id << ":  " << pTime() << ":  Flushed." << endl;
+      }
+      c.port(int r) {
+        cout << id << ":  " << pTime() << ":  Result:  " << r << endl;
+      }
+    }
+  }
+}
+
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  IntClkBroadcaster ibc(4,Clock);
+  IntClkBroadcaster ibf(4,Clock);
+
+  // We specifically launch fewer consumers than total number of
+  // sinks so that we make sure that the broadcast functionality works-
+  // if a channel isn't read, it doesn't block things up.  Instead, the
+  // channel is cleared and a new item is sent.
+  par {
+    producer(ibc.get_source());
+    flusher (ibf.get_source());
+    consumer(ibc.get_sink(0),ibf.get_sink(0),1);
+    consumer(ibc.get_sink(1),ibf.get_sink(1),2);
+    consumer(ibc.get_sink(2),ibf.get_sink(2),3);
+  }
+
+  return 0;
+}
