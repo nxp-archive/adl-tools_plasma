@@ -27,6 +27,7 @@ namespace plasma {
   // Time is a 64-bit integer.  This may need to be changed depending
   // upon the compiler used.
   typedef unsigned long long int uint64;
+  typedef long long int int64;
   typedef uint64 ptime_t;
 
   //

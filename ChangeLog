@@ -1,5 +1,11 @@
+
+2004-11-12  Brian Kahne  <bkahne@ibmoto.com>
+
         ======= plasma release 0.8.3 (v0_8_3) on Linux (cde-tx32-ldt189) =======
 
+	* Fixed next_phi() equation b/c clocked channels with a skew could
+	have multiple reads at the same time if the second read occurred
+	on a cycle boundary.
 
 2004-11-11  Brian Kahne  <bkahne@ibmoto.com>
 

@@ -238,7 +238,11 @@ namespace plasma {
   // to get the next edge.
   ptime_t ClockChanImpl::next_phi() const
   {
-    return (pTime() / _period)*_period + ( (!_skew) ? _period : _skew);
+    //    return (pTime() / _period)*_period + ( (!_skew) ? _period : _skew);
+
+
+    return ( (((pTime()+_period)-_skew) / _period )*_period)+_skew;
+
   }
 
   THandle ClockChanImpl::reset() 

@@ -1,0 +1,51 @@
+//
+// This tests that multiple accesses to a clocked channel
+// with a skew will result in monotonically increasing access
+// times, i.e. you won't get two reads at the same time.
+//
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef ClockChan<int> IntChan;
+
+const int Clock = 10;
+
+void p1(IntChan &out) 
+{
+  out.write(1);
+}
+
+void p2(IntChan &out) 
+{
+  out.write(2);
+}
+
+void consumer(IntChan &in)
+{
+  while (true) {
+    int d = in.get();
+    mprintf ("consumer:  Got from port c0 at time %lld:  %d\n",pTime(),d);
+  }
+  plasma::mprintf ("consumer:  Done.\n");
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan chan1(Clock,Clock/2);
+
+  par {
+    p1(chan1);
+    p2(chan1);
+    consumer(chan1);
+  }
+  mprintf ("Done.\n");
+  return 0;
+}
