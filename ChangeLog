@@ -1,5 +1,19 @@
 2004-08-09  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added the lemon parser generator.  The source can be obtained
+	from here:  
+
+		http://www.hwaci.com/sw/lemon/
+
+	A tutorial can be obtained from here:
+
+		http://sourceforge.net/project/showfiles.php?group_id=79320&package_id=124528
+
+	* Added a parsing class, which wraps a lemon parser.
+	Proof-of-concept lemon parser created which just parses simple
+	mathematical expressions.  It runs in its own thread and gets
+	tokens from the tokenizer thread.
+
 	* Implemented the tokenizer stage for the compiler.
 	
 	* Started on an example multithreaded C compiler.  The basic

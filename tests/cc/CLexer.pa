@@ -10,6 +10,8 @@
 
 #include "Channels.h"
 #include "CLexer.h"
+#include "Tokens.h"
+#include "cparse.h"
 
 using namespace plasma;
 using namespace std;

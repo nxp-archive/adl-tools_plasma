@@ -17,7 +17,8 @@
 #include "String.h"
 #include "CFlexLexer.h"
 
-#include "tokens.h"
+#include "Tokens.h"
+#include "cparse.h"
 
   using namespace std;
 
@@ -125,34 +126,36 @@ L?\"(\\.|[^\\"])*\"	{ send_string(); }
 "=="			{ send(EQ_OP); }
 "!="			{ send(NE_OP); }
 
-";"			{ send(';'); }
-("{"|"<%")	{ send('{'); }
-("}"|"%>")	{ send('}'); }
-","			{ send(','); }
-":"			{ send(':'); }
-"="			{ send('='); }
-"("			{ send('('); }
-")"			{ send(')'); }
-("["|"<:")	{ send('['); }
-("]"|":>")	{ send(']'); }
-"."			{ send('.'); }
-"&"			{ send('&'); }
-"!"			{ send('!'); }
-"~"			{ send('~'); }
-"-"			{ send('-'); }
-"+"			{ send('+'); }
-"*"			{ send('*'); }
-"/"			{ send('/'); }
-"%"			{ send('%'); }
-"<"			{ send('<'); }
-">"			{ send('>'); }
-"^"			{ send('^'); }
-"|"			{ send('|'); }
-"?"			{ send('?'); }
+";"			{ send(SEMICOLON); }
+("{"|"<%")	{ send(LBRACE); }
+("}"|"%>")	{ send(RBRACE); }
+","			{ send(COMMA); }
+":"			{ send(COLON); }
+"="			{ send(EQUALS); }
+"("			{ send(LPAREN); }
+")"			{ send(RPAREN); }
+("["|"<:")	{ send(LBRACKET); }
+("]"|":>")	{ send(RBRACKET); }
+"."			{ send(DOT); }
+"&"			{ send(AND); }
+"!"			{ send(NOT); }
+"~"			{ send(COMPL); }
+"-"			{ send(MINUS); }
+"+"			{ send(PLUS); }
+"*"			{ send(MULT); }
+"/"			{ send(DIVIDE); }
+"%"			{ send(MOD); }
+"<"			{ send(LESS); }
+">"			{ send(GREATER); }
+"^"			{ send(XOR); }
+"|"			{ send(OR); }
+"?"			{ send(QUESTION); }
 
 \n          { _linenumber++;  }
 
 .			{ /* ignore bad characters */ }
+
+<<EOF>>     { send(0); return 0; };
 
 %%
 

@@ -1,0 +1,17 @@
+==========================
+The LEMON Parser Generator
+==========================
+
+Source
+======
+
+http://www.hwaci.com/sw/lemon/
+
+Description
+===========
+
+This is a parser generator, similar to bison.  However,
+it's reentrant and has a slightly nicer grammar.  It
+also expects an external tokenizer, which makes it easier
+to fit into the scheme used for the sample mini-C compiler.
+

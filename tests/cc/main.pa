@@ -3,11 +3,12 @@
 
 #include "String.h"
 #include "CLexer.h"
+#include "CParser.h"
 #include "Channels.h"
 
 using namespace std;
 
-void tokenize(int argc,const char *argv[],CLexer &cl);
+void tokenize(int argc,const char *argv[],TokChan &tc);
 void parse(TokChan &tc);
 
 int pMain(int argc,const char *argv[])
@@ -19,17 +20,17 @@ int pMain(int argc,const char *argv[])
   }
 
   TokChan tc;
-  CLexer cl(tc);
 
   par {
-    tokenize(argc,argv,cl);
+    tokenize(argc,argv,tc);
     parse(tc);
   }
   return 0;
 }
 
-void tokenize(int argc,const char *argv[],CLexer &cl)
+void tokenize(int argc,const char *argv[],TokChan &tc)
 {
+  CLexer cl(tc);
   // Tokenize all files.
   for (int i = 1; i != argc; ++i) {
     cl.reset(argv[i]);
@@ -40,28 +41,10 @@ void tokenize(int argc,const char *argv[],CLexer &cl)
 
 void parse(TokChan &tc)
 {
-  // Parse the token stream.
-  Tokens tk;
-  do {
+  CParser cp;
+  while(true) {
     Tokens tk = tc.get();
-    switch (tk._tok) {
-    case IDENTIFIER:
-      cout << "Identifier:  " << String(tk) << endl;
-      break;
-    case STRING_LITERAL:
-      cout << "String Literal:  \"" << String(tk) << "\"" << endl;
-      break;      
-    case INTCONST:
-      cout << "Integer:  " << tk._int << endl;
-      break;
-    case FPCONST:
-      cout << "Float:  " << tk._fp << endl;
-      break;
-    case ALL_DONE:
-      cout << "Done." << endl;
-      break;
-    default:
-      cout << "Token " << tk._tok << " on line " << tk._ln << endl;
-    }
-  } while (tk._tok >= 0);
+    if (tk._tok < 0) break;
+    cp.parse(tk._tok,tk);
+  }
 }

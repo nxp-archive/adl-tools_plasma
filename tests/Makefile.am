@@ -1,2 +1,2 @@
 
-SUBDIRS = basic sw eav ecu cc
+SUBDIRS = basic sw eav ecu lemon cc

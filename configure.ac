@@ -27,6 +27,7 @@ AC_LANG_CPLUSPLUS
 AM_PROG_AS
 AM_CPP_SETUP(3,2)
 AC_PROG_LEX
+AC_PROG_YACC
 
 #########################################################################
 #  Configure arguments 
@@ -100,6 +101,7 @@ AC_CONFIG_FILES([\
    tests/sw/Makefile \
    tests/eav/Makefile \
    tests/ecu/Makefile \
+   tests/lemon/Makefile \
    tests/cc/Makefile
 ])
 

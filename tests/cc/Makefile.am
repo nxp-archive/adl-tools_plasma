@@ -4,7 +4,9 @@ mytest_SOURCES = \
 	String.C \
 	main.pa \
 	CLexer.pa \
-	clex.ll
+	CParser.pa \
+	clex.ll \
+	cparse.yy
 
 mytest_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -12,12 +14,17 @@ DEP_FILES=\
 	./$(DEPDIR)/main.Po \
 	./$(DEPDIR)/String.Po \
 	./$(DEPDIR)/CLexer.Po \
+	./$(DEPDIR)/CParser.Po \
+	./$(DEPDIR)/cparse.Po \
 	./$(DEPDIR)/clex.Po
 
 include ./$(DEPDIR)/main.Po
 include ./$(DEPDIR)/CLexer.Po
+include ./$(DEPDIR)/CParser.Po
 
 BUILT_SOURCES = clex.cc
+
+LEMON = ../lemon/lemon
 
 mytest_CPPFLAGS = -I$(top_srcdir)/gc/include
 
@@ -30,10 +37,14 @@ clex_lflag = -Cfe
 %.cc : %.ll ;
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $(@:.cc=.ll)
 
+%.cc : %.yy ;
+	$(LEMON) $<
+	mv $(patsubst %.yy,%.c,$<) $(patsubst %.yy,%.cc,$<)
+
 include $(top_srcdir)/tests/Makefile.rules
 
 # For some stupid reason, Automake thinks that this is a C++ project, so
 # I have to fool it here.
 CXXLINK = $(PLASMA) -o $@
 
-CLEANFILES += clex.cc
+CLEANFILES += clex.cc cparse.cc cparse.h

@@ -6,7 +6,7 @@
 #define _COMMUNICATION_H_
 
 #include "plasma.h"
-#include "tokens.h"
+#include "Tokens.h"
 
 struct TokChan : public plasma::Channel<Tokens> {};
 
