@@ -1,3 +1,5 @@
+        ======= plasma release 0.8.2 (v0_8_2) on Linux (cde-tx32-ldt189) =======
+
 2004-11-04  Brian Kahne  <bkahne@ibmoto.com>
 
 	* All channels now define value_type as the type of the channel.
