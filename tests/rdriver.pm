@@ -5,33 +5,51 @@ driver:  Regression driver.
 
 =head1 SYNOPSIS
 
-Command-line arguments:
+The regression driver is a framework for a regression suite.  Refer
+to the full man page for more information.
 
-B<l>
-B<list>    :  List the tests in this regression.
+=head1 OPTIONS
 
-B<t>=I<r>
-B<tests>=I<r>  :  Specify what tests to run.  Should be a number or a range, where
-the numbers refer to indices of the test array (1 is the first test).
+Command-line options:
 
-B<x>=I<r>
-B<exclude>=I<r>:  Exclude tests.  Should be a number or a range.  Range format is
-the same as for the "tests" parameter.
+=over 8
 
-B<s>=I<str>
-B<string>=I<str> :  Run any tests which contain string I<str>.  This is a simple substring
-search, not a regular expression search.
+=item B<--list, --l>
 
-B<r>=I<re>
-B<regex>=I<re>  :  Run any tests which match regular expression I<re>.
+List the tests in this regression.
 
-B<ko>
-B<keepoutput>:  Do not delete temporary files. 
+=item B<--tests=range, --t=range>
 
-B<d>
-B<debug>      :  Enable debug messages.
+Specify what tests to run.  Should be a number or a range, where the numbers
+refer to indices of the test array (1 is the first test).
 
-B<seed>       :  Specify a seed value.
+=item B<--exclude=range, --x=range>
+
+Exclude tests.  Should be a number or a range.  Range format is the same as for
+the "tests" parameter.
+
+=item B<--string=str, --s=str>
+
+Run any tests which contain string I<str>.  This is a simple substring search,
+not a regular expression search.
+
+=item B<--regex=re, --r=re>
+
+Run any tests which match regular expression I<re>.
+
+=item B<--keepoutput, --ko>
+
+Do not delete temporary files. 
+
+=item B<--debug, --d>
+
+Enable debug messages.
+
+=item B<--seed>
+
+Specify a seed value.
+
+=back
 
 The valid range forms are:
 
@@ -43,6 +61,8 @@ The valid range forms are:
 
 Note:  Multiple parms are allowed and are concatenated together.
 
+=head1 DESCRIPTION
+
 Library usage:
 
 use lib "..";
@@ -50,54 +70,87 @@ use rdriver;
 
 doTest(@tests_list);
 
-=head1 DESCRIPTION
+B<doTest>, the main entry function, takes an array reference as a parameter.
 
-    doTest takes an array reference as a parameter.
+=head2 Hash Keys
 
-    Each entry in the supplied array should be a hash.
-    These are the allowed keys:
+Each entry in the supplied array should be a hash.  These are the allowed keys:
 
-    cmd    :  Command-line to execute.   If the token &seed is found, it will be replaced
-              with a numerical seed.  This value will either be the value specified by the
-              seed command-line parameter, or the current result of time().
-    cmts   :  Preserve comments in diff.  Default is 0 (do not preserve).
-    stderr :  If 1, stderr and stdout are both captured.  Otherwise, only stdout
-              is captured.  The default is 0.
-    diff   :  Diff the output with the file specified.
-    dpfx:     Only diff the output that starts with the given prefix.
-              This may be a regular expression.
-    checker:  If present, this should be a function reference.  The function is called
-              with the test output as its argument and should die if an error occurs.
-    fail   :  If this is 1 then the cmd run is expected to have a non-zero return value. The
-              test will fail if 0 is returned.  The checking commands will still be executed
-              if they are present.
-    temps   : Specify temporary files.  These will be unlinked after the test is complete,
-              unless the --keepoutput option is set on the command-line.
+=over 8
 
-    Utility Functions:
+=item B<cmd>
 
-    file_rdiff(<filename>,<array ref of regular expressions>)
+Command-line to execute.  If the token &seed is found, it will be replaced with
+a numerical seed.  This value will either be the value specified by the seed
+command-line parameter, or the current result of time().
 
-    This is a simple function for checking a file.  The second argument is a
-    reference to an array of strings.  Each string is considered to be a regular
-    expression.  The function must be able to successfully match lines in the
-    file against the array elements, proceeding to the end of the array, or else
-    it fails and calls die.
+=item B<cmts>
 
-    str_rdiff(<input string>,<array ref of regular expressions>)
+Preserve comments in diff.  Default is 0 (do not preserve).
 
-    Same as file_rdiff, except that we take the input, split on newlines, then
-    try and match against the regular expressions.
+=item B<stderr>
 
-    dprint(...)
+If 1, stderr and stdout are both captured.  Otherwise, only stdout is captured.
+The default is 0.
 
-    Same functionality as print if the --debug option is specified on the
-    command-line.  Otherwise, nothing is printed.
+=item B<diff>
 
-    dprintf(...)
+Diff the output with the file specified.
 
-    Same functionality as printf if the --debug option is specified on the
-    command-line.  Otherwise, nothing is printed.
+=item B<dpfx>
+
+Only diff the output that starts with the given prefix.  This may be a regular
+expression.
+
+=item B<checker>
+
+If present, this should be a function reference.  The function is called with
+the test output as its argument and should die if an error occurs.
+
+=item B<fail>
+
+If this is 1 then the cmd run is expected to have a non-zero return value. The
+test will fail if 0 is returned.  The checking commands will still be executed
+if they are present.
+
+=item B<temps>
+
+Specify temporary files.  These will be unlinked after the test is complete,
+unless the --keepoutput option is set on the command-line.
+
+=over
+
+=head2 Utility Functions
+
+The library also contains a number of utility functions.  These are listed
+below.
+
+=back 8
+
+=item file_rdiff(<filename>,<array ref of regular expressions>)
+
+This is a simple function for checking a file.  The second argument is a
+reference to an array of strings.  Each string is considered to be a regular
+expression.  The function must be able to successfully match lines in the file
+against the array elements, proceeding to the end of the array, or else it fails
+and calls die.
+
+=item str_rdiff(<input string>,<array ref of regular expressions>)
+
+Same as file_rdiff, except that we take the input, split on newlines, then try
+and match against the regular expressions.
+
+=item dprint(...)
+
+Same functionality as print if the --debug option is specified on the
+command-line.  Otherwise, nothing is printed.
+
+=item dprintf(...)
+
+Same functionality as printf if the --debug option is specified on the
+command-line.  Otherwise, nothing is printed.
+
+=back
 
 =cut
     
