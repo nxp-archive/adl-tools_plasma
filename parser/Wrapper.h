@@ -7,7 +7,7 @@
 #ifndef _WRAPPER_H_
 #define _WRAPPER_H_
 
-#include "opencxx/mop.h"
+#include "opencxx-bk/mop.h"
 
 // Wraps public member functions.  Derive from this and override
 // MakeWrapperBody() to generate the desired wrapper code.  It 

@@ -34,7 +34,7 @@ AC_DEFUN([AM_OCC],
   orig_CXX="$CXX"
   CXX="./libtool --mode=link $CXX"
   AC_LINK_IFELSE([
-    #include <opencxx/ptree-core.h>
+    #include <opencxx-bk/ptree-core.h>
 
     using namespace Opencxx;
 

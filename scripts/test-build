@@ -11,10 +11,12 @@
 ##
 rm -rf plasma plasma-* bin lib share include
 
+prefix=`pwd`
+
 # Build the project.
-( cvs checkout plasma && \
+(   cvs checkout plasma && \
     cd plasma && \
-    ./autogen.sh --enable-opt --prefix=$proj && \
+    ./autogen.sh --enable-opt --prefix=${prefix} && \
     make check &&
     make install &&
     make dist )
@@ -30,5 +32,5 @@ fi
 # Now build from the distribution.
 ( tar zxvf plasma/plasma-*.tar.gz && \
     cd plasma-* && \
-    ./configure --enable-opt --prefix=$proj && \
+    ./configure --enable-opt --prefix=${prefix} && \
     make check )

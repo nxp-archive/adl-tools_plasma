@@ -4,19 +4,14 @@
 ## variables accordingly.  The idea is that you include the variable CPPSETUP
 ## when defining CXXFLAGS.
 ##
-## If the --enable-opt option is set, then OPT is set to a flag.
-##
-## Test to see if --enable-profile is set.  If it is, we clear FPIC (if
-## on Solaris).
+## If the --disable-opt option is set, we disable optimization.  Otherwise,
+## it's on by default.
 ##
 ## If --enable-profile is set, PROFILE is set to a flag.
 ## 
 ## If --enable-efence is set, we set EFENCE to the location of the library
 ## and substitute that variable.  The user can specify a location of Electric Fence
 ## by supplying a value for this option.
-##
-## Test to see if fpic is needed.  We assume it is required Solaris.
-## If it is required, we set the variable FPIC to the contents of the flag.
 ##
 ## We also define, and substitute, the variable RFLAG, which is set to something
 ## that should act as an option to encode a path for library lookup.  You can use
@@ -29,29 +24,18 @@
 ##
 AC_DEFUN([AM_CPP_SETUP],
 [
-AC_MSG_CHECKING( to see if -fPIC is needed)
-MY_OS=`/usr/bin/env uname -s`
-if test x$MY_OS = xSunOS ; then
-   AC_MSG_RESULT([yes])
-   FPIC="-fPIC"
-else
-   FPIC=
-   AC_MSG_RESULT([no])
-fi
 
 RFLAG="-Wl,-R"
 AC_SUBST(RFLAG)
 
 AC_ARG_ENABLE(opt,
 [  --enable-opt    Enable optimization flag (-O3), disables debug],
- OPT="$CXXFLAGS -O3"
+ if [[ x${enableval} != no ]] ; then
+   OPT="-O3"
+ fi
  AC_MSG_RESULT([Optimizing with -O3]),
-)
-
-AC_ARG_ENABLE(static,
-[  --enable-static    Enable static building],
- FPIC=""
- AC_MSG_RESULT([Static build selected.]),
+ OPT="-O3"
+ AC_MSG_RESULT([Optimizing with -O3 by default.]),
 )
 
 PROFILE=
@@ -59,10 +43,6 @@ AC_ARG_ENABLE(profile,
 [  --enable-profile    Enable profiling],
  PROFILE="-pg"
  AC_MSG_RESULT("Profiling with -pg")
- if test x$OS = xSunOS ; then
-   echo "Turning off position-independent code b/c we're on Solaris and we are profiling."
-   FPIC=
- fi,
 )
 
 default_efence="/nfs/ibmoto/tools/tlv4/raptor/lib/obj.SunOS/libefence.a"
@@ -90,7 +70,7 @@ AC_SUBST(EFENCE)
 ##
 ## Include this flag in CXXFLAGS.
 ##
-CPPSETUP="$OPT $FPIC $PROFILE"
+CPPSETUP="$OPT $PROFILE"
 
 ##
 ## Remember GCC major, minor, and micro versions. Sometimes

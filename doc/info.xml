@@ -15,7 +15,7 @@
     based upon Occam.
     </description>
     <keywords>
-    frontend systems modeling language
+    frontend systems modeling modelling language
     </keywords>
     <customers>
     Plasma is a prototype and thus does not yet have any official customers.
@@ -113,7 +113,7 @@
            slightly modified version which is kept under revision control in the
            same CVSROOT location as Plasma, with a module name of
            <b>opencxx-bk</b>.  It is installed in GAIN with a policy of
-           <b>opencxx-bk-/2.7.7</b></li>
+           <b>opencxx-bk-/2.7.9</b></li>
 
          </ul>
       </dependencies>
@@ -129,7 +129,10 @@
          This will check the project out of CVS and build it in the appropriate
          location in GAIN.
          </p>
-        
+         <p>
+         To create a distribution, run <b>make dist</b> after you have run
+         <b>autogen.sh</b>
+         </p>        
       </releaseprocess>
       <bugreporting>
          Since Plasma is not currently an official project with customers, no

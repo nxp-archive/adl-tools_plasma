@@ -12,7 +12,7 @@
 #include "gc_cpp.h"
 #include "gc_allocator.h"
 
-#include "opencxx/walker.h"
+#include "opencxx-bk/walker.h"
 # include <ext/hash_set>
 using namespace __gnu_cxx;
 

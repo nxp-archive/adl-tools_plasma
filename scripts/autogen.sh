@@ -17,10 +17,14 @@ autoreconf --install --symlink --include=./macros || exit 1
 
 echo "Done with automake processing."
 
-conf_flags="--enable-maintainer-mode --enable-compile-warnings" #--enable-iso-c
+# Default configure flags:  Enable makefile dependency rules 
+# and disable optimization.
+conf_flags="--enable-maintainer-mode --disable-opt"
 
+# Run configure unless NOCONFIGURE is set.
 if test x$NOCONFIGURE = x; then
   echo Running $srcdir/configure $conf_flags "$@" ...
+  echo "To not run configure, run this script prefixed with NOCONFIGURE=1"
   $srcdir/configure $conf_flags "$@" \
   && echo Now type \`make\' to compile $PKG_NAME || exit 1
 else
