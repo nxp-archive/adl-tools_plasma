@@ -257,7 +257,17 @@ my @Tests = (
 	     # Test distributions.
 	     {
 	      cmd     => "./rand2",
-	     }
+	     },
+	     # Test a simple clocked channel.
+	     {
+	      cmd     => "./clock1",
+	      checker => \&check_clock1,
+	     },
+	     # Test of multiple clocked-channels.
+	     {
+	      cmd     => "./clock2",
+	      checker => \&check_clock2,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -874,6 +884,24 @@ sub check_time5 {
 		   "End of foo at 1000.",
 		   "Done.",
 		   ]);
+}
+
+sub check_clock1 {
+  my @data = (
+	      [10..19],
+	     );
+  check_clocked_channel (@_[0],"Got a value from port c(\\d+) at time (\\d+):\\s+(\\d+)",\@data,5,2);
+}
+
+sub check_clock2 {
+  my @data = (
+	      [3..12],
+	      [30..39],
+	      [300..309],
+	      [3000..3009],
+	      [30000..30009],
+	     );
+  check_clocked_channel (@_[0],"Got a value from port c(\\d+) at time (\\d+):\\s+(\\d+)",\@data,5,6);
 }
 
 ##

@@ -1,3 +1,14 @@
+2004-07-12  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added a clocked channel, ClockChan.  This is similar to
+	QueueChan, except that the constructor's first argument is a clock
+	period.  The second argument is the size of the queue (default is
+	1).  This behaves like a normal channel, except that reads must
+	occur on clock-cycle boundaries, i.e. (pTime() % period) == 0.
+	Thus, a writer doesn't immediately wake up a reader- it dispatches
+	a thread that delays for the requisite amount of time, then wakes
+	up the reader.  Added clock1 and clock2 to test this.
+
 2004-07-09  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed the distributions.  The one change is that exponential now

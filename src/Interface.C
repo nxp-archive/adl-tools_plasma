@@ -188,8 +188,10 @@ namespace plasma {
 
   THandle Timeout::clear_notify()
   {
-    pTerminate(_writet);
-    _writet = 0;
+    if (_writet) {
+      pTerminate(_writet);
+      _writet = 0;
+    }
     return reset();
   }
 
@@ -206,6 +208,79 @@ namespace plasma {
     _h = h;
     assert(!_writet);
     _writet = pSpawn(timeout,this,-1);
+  }
+
+  /////////////// ClockChan ///////////////
+
+  // Returns true if we're on a clock edge, given a clock period.
+  bool ClockChanImpl::is_phi() const
+  {
+    return (pTime() % _period) == 0;
+  }
+
+  // Returns the time of the next clock cycle.
+  ptime_t ClockChanImpl::next_phi() const
+  {
+    return (pTime() / _period + 1)*_period;
+  }
+
+  THandle ClockChanImpl::reset() 
+  { 
+    THandle t = _readt; 
+    _readt = 0; 
+    _waket = 0;
+    return t; 
+  }
+
+  THandle ClockChanImpl::clear_notify()
+  {
+    if (_waket) {
+      pTerminate(_waket);
+      _waket = 0;
+    }
+    return reset();
+  }
+
+  void delayed_waker(void *a)
+  {
+    ClockChanImpl *cc = (ClockChanImpl *)a;
+    pDelay(cc->_delay);
+    pWake(cc->reset(),cc->_h);
+  }
+
+  // Start a wake-up thread only if one doesn't already exist.
+  void ClockChanImpl::start_waker()
+  {
+    if (!_waket) {
+      _delay = next_phi() - pTime();
+      assert(!_waket);
+      _waket = pSpawn(delayed_waker,this,-1);
+    }
+  }
+
+  void ClockChanImpl::delayed_wakeup(bool current_data)
+  {
+    if (is_phi() && current_data) {
+      // We're on a clock edge- wake up thread.
+      pWake(reset(),_h);
+    } else {
+      // Not on a clock edge- schedule a thread to
+      // wake up the reader at the correct time.
+      start_waker();
+    }
+  }
+
+  void ClockChanImpl::delayed_reader_wakeup(bool have_data)
+  {
+    if (have_data) {
+      // We're not empty, so we're not ready b/c
+      // we're not on a clock edge.  Launch a
+      // wakeup thread if we don't have on already.
+      start_waker();
+    }
+    // We're empty- sleep until we get data.
+    set_notify(pCurThread(),HandleType());
+    pSleep();
   }
 
   //

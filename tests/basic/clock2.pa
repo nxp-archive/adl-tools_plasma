@@ -1,0 +1,53 @@
+//
+// Simple test of clocked channels with multiple producers
+// feeding a single consumer.
+//
+
+#include "plasma.h"
+
+using namespace plasma;
+using namespace std;
+
+typedef plasma::ClockChan<int> IntChan;
+typedef vector<IntChan> Chans;
+
+void producer(int val,IntChan &chan) 
+{
+  for (int i = 0; i != 10; ++i) {
+    chan.write(val+i);
+    for (int j = 0; j != 100000; ++j) {
+      int x = x + 1;
+    }
+  }
+  chan.write(-1);
+  plasma::mprintf ("Producer done.\n");
+}
+
+void consumer(Chans &c)
+{
+  unsigned dc = 0;
+  while (dc < c.size()) {
+    afor (unsigned i = 0; i != c.size(); ++i) {
+      c[i].port(int d) {
+        mprintf ("Got a value from port c%d at time %lld:  %d\n",i,pTime(),d);
+        if (d < 0) { ++dc; };
+      }
+    }
+  }
+  plasma::mprintf ("Consumer done.\n");
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  const int N = 5;
+  Chans chans(N,IntChan(5));
+
+  par {
+    consumer(chans);
+    pfor (int i = 0,x=3; i != N; ++i, x*=10) {
+      producer(x,chans[i]);
+    }
+  }
+  plasma::mprintf ("Done.\n");
+  return 0;
+}

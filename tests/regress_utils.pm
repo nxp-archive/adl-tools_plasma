@@ -6,8 +6,10 @@ package regress_utils;
 
 require Exporter;
 
-our @ISA = ("Exporter");
-our @EXPORT = qw( check_channel check_qchannel check_spawn check_sequence check_time_seq check_times );
+our @ISA = ("Exporter"); 
+our @EXPORT = qw( check_channel check_qchannel
+		  check_clocked_channel check_spawn 
+		  check_sequence check_time_seq check_times );
 
 use lib ".";
 use rdriver;
@@ -142,6 +144,92 @@ sub check_qchannel {
     die "Did not find main-thread finish message.\n";
   }
 }
+
+# Similar to check_channel, but expects there to be a time value for each data message.
+# The time value must be monotonically increasing and have a period equal to the supplied value.
+sub check_clocked_channel {
+  my ($input,$regex,$odata,$period,$expNumFinish,$expstr) = (shift,shift,shift,shift,shift,shift);
+
+  # Store expected expressions in a hash.
+  my %exphash;
+  if ($expstr) {
+    @exphash{@$expstr} = (0) x @$expstr;
+  }
+  # Convert array of arrays into an array of hashes.
+  my @data;
+  for my $i ( @{ $odata } ) {
+    my %hash;
+    @hash{@$i} = (1) x @$i;
+    push @data,\%hash;
+  }
+  # Each data line has a time entry that must increase by the specified amount.
+  my @times = (-1) x @{ $odata };
+  dprint "Expected data:  ",Dumper(\@data),"\n";
+  my @lines = split /\n/,$input;
+  my $max = 10;
+  my $numFinish = 0;
+  my $done = 0;
+  dprint "Regex:  $regex\n";
+  for (@lines) {
+    dprint "Line:  $_\n";
+    if ( /$regex/ ) {
+      my ($chan,$time,$val) = (eval $1,eval $2,eval $3);
+      dprint "Read $val from channel $chan at time $time.\n";
+      if ( exists $data[$chan]->{$val} ) {
+	delete $data[$chan]->{$val};
+	if ($period && ($time % $period)) {
+	  print "Bad time value of $time for channel $chan:  Must have a period of $period.\n";
+	  die;
+	}
+	if ($times[$chan] < 0) {
+	  # First time through- save value.
+	  $times[$chan] = $time;
+	} else {
+	  # Check value.
+	  if ($time <= $times[$chan]) {
+	    print "Bad time value of $time for channel $chan:  Expected value greater than $times[$chan].\n";
+	    die;
+	  }
+	}
+      } else {
+	print "Data out of bound for channel $chan:  Got $val, expected data left:  ",
+	  join(',',keys(%{ $data[$chan] })),"\n";
+	die;
+      }
+    } elsif ( /(Producer|Consumer) done./ ) {
+      ++$numFinish;
+    } elsif ( /Done\./ ) {
+      ++$done;
+    }
+    for my $k (keys %exphash ) {
+      if ( /$k/ ) {
+	++$exphash{$k};
+      }
+    }
+  }
+  if ($expNumFinish) {
+    if ($numFinish != $expNumFinish) {
+      print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
+      die;
+    }
+  }
+  if (!$done) {
+    die "Did not find main-thread finish message.\n";
+  }
+  for my $i (0..$#data) {
+    if (keys(%{$data[$i]})) {
+      print "Not all data was found for channel $i:  ",join(',',keys(%{ $data[$i] })),"\n";
+      die;
+    }
+  }
+  for my $i (keys %exphash) {
+    if (!$exphash{$i}) {
+      print "Expected to find an occurrance of \"$i\" but did not.\n";
+      die;
+    }
+  }
+}
+
 
 # Makes sure expected results are found.
 sub check_spawn {

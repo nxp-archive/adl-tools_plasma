@@ -233,6 +233,29 @@ namespace plasma {
     HandleType _h;
   };
 
+  // Non-templated implementation class used by ClockChan- do not use this
+  // directly.
+  class ClockChanImpl {
+  public:
+    ClockChanImpl(ptime_t p) : _period(p), _readt(0), _waket(0), _delay(0) {};
+
+    bool is_phi() const;
+    ptime_t next_phi() const;
+
+    void set_notify(THandle t,HandleType h) { assert(!_readt); _readt = t; _h = h; };
+    THandle reset();
+    THandle clear_notify();
+    void delayed_wakeup(bool current_data);
+    void delayed_reader_wakeup(bool have_data);
+    void start_waker();
+
+    ptime_t    _period;    // Clock period.
+    THandle    _readt;     // Read thread.
+    THandle    _waket;     // Thread which wakes reader at the correct time.
+    int        _delay;     // Stores delay time for waker.
+    HandleType _h;
+  };
+  
   //////////////////////////////////////////////////////////////////////////////
   //
   // Implementation.

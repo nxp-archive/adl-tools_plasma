@@ -59,7 +59,9 @@ check_PROGRAMS = \
 	time4 \
 	time5 \
 	rand1 \
-	rand2
+	rand2 \
+	clock1 \
+	clock2
 
 DEPENDENCIES = $(top_srcdir)/src/libplasma.a
 
@@ -213,6 +215,12 @@ rand1_DEPENDENCIES = $(DEPENDENCIES)
 rand2_SOURCES = rand2.C
 rand2_DEPENDENCIES = $(DEPENDENCIES)
 
+clock1_SOURCES = clock1.pa
+clock1_DEPENDENCIES = $(DEPENDENCIES)
+
+clock2_SOURCES = clock2.pa
+clock2_DEPENDENCIES = $(DEPENDENCIES)
+
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
 DEP_FILES=\
@@ -265,7 +273,9 @@ DEP_FILES=\
 	./$(DEPDIR)/time4.Po \
 	./$(DEPDIR)/time5.Po \
 	./$(DEPDIR)/rand1.Po \
-	./$(DEPDIR)/rand2.Po
+	./$(DEPDIR)/rand2.Po \
+	./$(DEPDIR)/clock1.Po \
+	./$(DEPDIR)/clock2.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -312,6 +322,8 @@ include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po
 include ./$(DEPDIR)/time4.Po
 include ./$(DEPDIR)/time5.Po
+include ./$(DEPDIR)/clock1.Po
+include ./$(DEPDIR)/clock2.Po
 
 AM_LDFLAGS = -L$(top_srcdir)/src -L$(top_srcdir)/qt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
 LDADD =  -lplasma -lqt  -lgc -ldl

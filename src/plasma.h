@@ -67,11 +67,12 @@ namespace plasma {
   public:
     QueueChan(int size = -1) : _maxsize(size), _size(0), _readt(0) {};
     void write(const Data &d);
-    bool ready() const { return !_store.empty(); };
+    bool ready() const { return !empty(); };
+    bool empty() const { return _size == 0; };
     int size() const { return _size; };
     pNoMutex int maxsize() const { return _maxsize; };
     void setMaxSize(int ms) { _maxsize = ms; }
-    void clear_ready() { pLock(); --_size; _store.pop_back(); pUnlock(); };
+    void clear_ready() { pLock(); if (_size) { --_size; _store.pop_back(); } pUnlock(); };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
 
@@ -114,6 +115,41 @@ namespace plasma {
   private:
     THandle _rt;
     bool    _read;
+  };
+
+  // Clocked channel class: This is a queued channel which only allows reading
+  // every n time units.  This is useful for simulating a clocked design.
+  template <typename Data,typename Container = std::list<std::pair<Data,ptime_t>,traceable_allocator<std::pair<Data,ptime_t> > > >
+  pTMutex class ClockChan : ClockChanImpl {
+    typedef std::pair<Data,ptime_t> DP;
+    typedef Container Store;
+    typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
+  public:
+    ClockChan(ptime_t p,int size = 1) : ClockChanImpl(p), _maxsize(size), _size(0) {};
+    void write(const Data &d);
+    bool ready() const { return current_data() && is_phi(); };
+    bool empty() const { return _size == 0; };
+    int size() const { return _size; };
+    pNoMutex int maxsize() const { return _maxsize; };
+    void setMaxSize(int ms) { _maxsize = ms; }
+    void clear_ready() { pLock(); if (_size) { --_size; _store.pop_back(); } pUnlock(); };
+    Data read() { return read_internal(false); };
+    Data get() { return read_internal(true); };
+
+    using ClockChanImpl::clear_notify;
+    using ClockChanImpl::set_notify;
+
+  private:
+    bool current_data() const;
+    void set_writenotify(THandle t) { _writers.push_back(t); };
+    bool have_writers() const { return !_writers.empty(); };
+    THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
+    Data read_internal(bool clear_ready);
+
+    int        _maxsize;   // Max size.  If -1, no fixed size.
+    int        _size;      // Current size of queue.
+    Store      _store;
+    Writers    _writers;   // One or more blocked writers.
   };
 
   //////////////////////////////////////////////////////////////////////////////
@@ -236,6 +272,61 @@ namespace plasma {
     pClearWaiter(thread(),_rt); 
     _rt = 0; 
     return t; 
+  };
+
+  /////////////// ClockChan ///////////////
+
+  template <typename Data,typename Container>
+  bool ClockChan<Data,Container>::current_data() const
+  {
+    return (_size && _store.front().second < pTime());
+  }
+
+  template <typename Data,typename Container>
+  Data ClockChan<Data,Container>::read_internal(bool clearready)
+  {
+    // If there's a waiting writer (queue is full) and we're
+    // going to remove an item, then unblock the next writer here.
+    bool r = ready();
+    if (r && have_writers() && clearready) {
+      pAddReady(next_writer());
+    }
+    // If no data- sleep until we get some.
+    if (!r) {
+      delayed_reader_wakeup(!empty());
+    }
+    Data temp = _store.back().first;
+    if (clearready) {
+      clear_ready();
+    }
+    if (have_writers() && clearready) {
+      pAddReady(next_writer());
+    }
+    return temp;
+  }
+
+  template <typename Data,typename Container>
+  void ClockChan<Data,Container>::write(const Data &d) 
+  { 
+    // If we have a waiting reader, wake it up.
+    if (_readt) {
+      delayed_wakeup(current_data());
+    }
+    // Sleep if queue is full.  This is a loop so that if a waiting
+    // writer is awakened and then another thread jumps in and writess
+    // data to again fill the queue, the thread will again sleep.
+    while (_maxsize >= 0 && _size >= _maxsize) {
+      set_writenotify(pCurThread());
+      pSleep();
+    }
+    // Add data element w/time of next clock cycle.
+    _store.push_front(std::make_pair(d,next_phi()));
+    ++_size;
+    assert(_maxsize < 0 || _size <= _maxsize);
+    // Reactivate a reader if one appeared while we were asleep.
+    if (_readt) {
+      delayed_wakeup(current_data());
+    }
   };
 
 }
