@@ -15,6 +15,8 @@ namespace plasma {
 
   typedef std::vector<Thread *> TVect;
 
+  typedef Thread * THandle;
+
   //
   // This defines parameters that are adjustable by the user.
   //
@@ -33,21 +35,21 @@ namespace plasma {
 
   // Create a new thread and add it to the ready queue.
   // Returns a handle to the new thread.
-  Thread *pSpawn(UserFunc *f,void *args);
+  THandle pSpawn(UserFunc *f,void *args);
 
   // Same as above, except that the data pointed to be args is copied to the
   // thread stack (nbytes worth).  The thread will receive a pointer to this
   // information.
-  Thread *pSpawn(UserFunc *f,int nbytes,void *args);
+  THandle pSpawn(UserFunc *f,int nbytes,void *args);
 
   // Add a thread to the ready queue, but do not task switch.
-  void pAddReady(Thread *t);
+  void pAddReady(THandle);
 
   // Return a handle to the current thread.
-  Thread *pCurThread();
+  THandle pCurThread();
 
   // Wait on the specified thread.
-  void pWait(Thread *);
+  void pWait(THandle);
 
   // Switch to next ready thread.
   void pYield();
@@ -58,7 +60,7 @@ namespace plasma {
 
   // Wake the specified thread, giving it the handle value.  This switches
   // to this thread.
-  void pWake(Thread *t,int h);
+  void pWake(THandle,int);
 
   // Kill the current thread.
   void pTerminate();

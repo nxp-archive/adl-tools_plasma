@@ -82,7 +82,7 @@ Channels (Basic Alt block)
 
 Status:
 
-    Scheduled for 5/14/2004
+    Completed for 5/12/2004
 
 Description:
 
@@ -95,8 +95,8 @@ Description:
     Basic syntax is::
 
           alt {
-            with(chan1,x): ....
-            with(chan2,x): ....
+            port(<value decl> ; <channel expr>): ....
+            [ { default block } ]
           }
 
 Implementation:
@@ -175,59 +175,52 @@ Dependencies:
 
 Regressions:
 
-    TBD
+    1.  basic/chan1.pa
+
+    2.  basic/chan2.pa
+
+    3.  basic/chan3.pa
 
 Looping Alt Block
 -----------------
 
 Status:
 
-    TBD
+    Completed 5/12/2004
 
 Description:
 
-    TBD
+    Same as alt block, but allows the user to loop over a data structure.
+    Syntax is::
+
+      afor ( <s1> ; <s2> ; <s3> ) {
+        port (<value decl> ; <channel expr> ; ) { <body> }
+        [ { <default block> } ]
+      }
+
+    Only one port statement is allowed.  An iterator variable must be declared
+    in <s1>.
 
 Implementation:
 
-    TBD
+    Same as for alt, except that we replicate the loop condition as a for-loop
+    each time we deal with channnels.  If the iterator is not an integer, we
+    create an auxiliary vector and store the values there.  We then store the
+    corresponding index of the entry as the handle in each channel.
 
 Dependencies:
 
-    TBD
+    Completion of alt.
 
 Regressions:
 
-    TBD
+    1.  basic/chan4.pa
 
+    2.  basic/chan5.pa
 
-Garbage Collection
-------------------
+    3.  basic/chan6.pa
 
-Status:
-
-    TBD
-
-Description:
-
-    Plasma is going to have a lot of producer/consumer type code, where the
-    ownership of a particular piece of memory will be hard to track.  Garbage
-    collection will make the code much easier to understand and less error-prone.
-
-Implementation:
-
-    Boehm garbage collector.
-
-Dependencies:
-
-    The main issue is getting it to handle user-threads.  It handles kernel
-    threads and should be able to handle user-threads, but I don't know how to
-    do it yet.
-
-Regressions:
-
-    TBD
-
+    4.  basic/chan7.pa
 
 Spawn Operator
 --------------
@@ -278,11 +271,15 @@ Status:
 Description:
 
     Shared data structures will allow serialized access to data, i.e. mutexes
-    will wrap the actual data access, ensuring safe use between threads.
+    will wrap the actual data access, ensuring safe use between threads.  The
+    most likely syntax will be a class attribute, e.g. pMutex class ... The
+    public methods will then be wrapped with mutex access code.  A per-method
+    modifier will allow this to be disabled (will implement only if easy to do
+    with OpenC++).
 
 Implementation:
 
-    TBD
+    Should be a straight-forward use of OpenC++'s MOP.
 
 Dependencies:
 
@@ -292,10 +289,67 @@ Regressions:
 
     TBD
 
+Thread Priorities
+-----------------
+
+Status:
+
+    TBD
+
+Decription:
+
+    A thread will be able to change its priority using a function
+    (pSetPriority(int)).  The lowest level of priority will be timesliced.
+    Otherwise, all threads of the highest priority (0) will run to completion
+    before any others.
+
+    API:
+
+    1. ``pSetPriority(int)``:  Set current thread's priority.  Spawned threads will
+       run at their parents priority.
+
+    2. ``pNumPriorities()``:  Return number of allowed priorities n, where
+       priorities are (0..n-1).
+
+    2. New config parameter in pSetup to set number of priorities.  Default is
+       32.
+
+Implementation:
+    
+    Array of thread queeues.  Scheduler will run high priority threads first.
+    Timeslicing will only be turned on when running the lowest-priority threads.
+
 Time Model
 ----------
 
 Refer to twiki page for now.
+
+Garbage Collection
+------------------
+
+Status:
+
+    TBD
+
+Description:
+
+    Plasma is going to have a lot of producer/consumer type code, where the
+    ownership of a particular piece of memory will be hard to track.  Garbage
+    collection will make the code much easier to understand and less error-prone.
+
+Implementation:
+
+    Boehm garbage collector.
+
+Dependencies:
+
+    The main issue is getting it to handle user-threads.  It handles kernel
+    threads and should be able to handle user-threads, but I don't know how to
+    do it yet.
+
+Regressions:
+
+    TBD
 
 Kernel Threads
 --------------

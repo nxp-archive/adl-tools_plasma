@@ -35,11 +35,12 @@ order may change based upon external factors.</p>
 <li><a class="reference" href="#pfor-block" id="id2" name="id2">Pfor block</a></li>
 <li><a class="reference" href="#channels-basic-alt-block" id="id3" name="id3">Channels (Basic Alt block)</a></li>
 <li><a class="reference" href="#looping-alt-block" id="id4" name="id4">Looping Alt Block</a></li>
-<li><a class="reference" href="#garbage-collection" id="id5" name="id5">Garbage Collection</a></li>
-<li><a class="reference" href="#spawn-operator" id="id6" name="id6">Spawn Operator</a></li>
-<li><a class="reference" href="#shared-data-structures" id="id7" name="id7">Shared Data Structures</a></li>
+<li><a class="reference" href="#spawn-operator" id="id5" name="id5">Spawn Operator</a></li>
+<li><a class="reference" href="#shared-data-structures" id="id6" name="id6">Shared Data Structures</a></li>
+<li><a class="reference" href="#thread-priorities" id="id7" name="id7">Thread Priorities</a></li>
 <li><a class="reference" href="#time-model" id="id8" name="id8">Time Model</a></li>
-<li><a class="reference" href="#kernel-threads" id="id9" name="id9">Kernel Threads</a></li>
+<li><a class="reference" href="#garbage-collection" id="id9" name="id9">Garbage Collection</a></li>
+<li><a class="reference" href="#kernel-threads" id="id10" name="id10">Kernel Threads</a></li>
 </ul>
 </div>
 <div class="section" id="par-block">
@@ -109,7 +110,7 @@ passed by value, while everything else is passed by reference.</blockquote>
 <h1><a class="toc-backref" href="#id3" name="channels-basic-alt-block">Channels (Basic Alt block)</a></h1>
 <p>Status:</p>
 <blockquote>
-Scheduled for 5/14/2004</blockquote>
+Completed for 5/12/2004</blockquote>
 <p>Description:</p>
 <blockquote>
 <p>Define channel interface and implement basic alt block.  The alt block is
@@ -120,8 +121,8 @@ and executes the code associated with that guard.</p>
 <p>Basic syntax is:</p>
 <pre class="literal-block">
 alt {
-  with(chan1,x): ....
-  with(chan2,x): ....
+  port(&lt;value decl&gt; ; &lt;channel expr&gt;): ....
+  [ { default block } ]
 }
 </pre>
 </blockquote>
@@ -236,50 +237,52 @@ index of loop).</dd>
 </blockquote>
 <p>Regressions:</p>
 <blockquote>
-TBD</blockquote>
+<ol class="arabic simple">
+<li>basic/chan1.pa</li>
+<li>basic/chan2.pa</li>
+<li>basic/chan3.pa</li>
+</ol>
+</blockquote>
 </div>
 <div class="section" id="looping-alt-block">
 <h1><a class="toc-backref" href="#id4" name="looping-alt-block">Looping Alt Block</a></h1>
 <p>Status:</p>
 <blockquote>
-TBD</blockquote>
+Completed 5/12/2004</blockquote>
 <p>Description:</p>
 <blockquote>
-TBD</blockquote>
+<p>Same as alt block, but allows the user to loop over a data structure.
+Syntax is:</p>
+<pre class="literal-block">
+afor ( &lt;s1&gt; ; &lt;s2&gt; ; &lt;s3&gt; ) {
+  port (&lt;value decl&gt; ; &lt;channel expr&gt; ; ) { &lt;body&gt; }
+  [ { &lt;default block&gt; } ]
+}
+</pre>
+<p>Only one port statement is allowed.  An iterator variable must be declared
+in &lt;s1&gt;.</p>
+</blockquote>
 <p>Implementation:</p>
 <blockquote>
-TBD</blockquote>
+Same as for alt, except that we replicate the loop condition as a for-loop
+each time we deal with channnels.  If the iterator is not an integer, we
+create an auxiliary vector and store the values there.  We then store the
+corresponding index of the entry as the handle in each channel.</blockquote>
 <p>Dependencies:</p>
 <blockquote>
-TBD</blockquote>
+Completion of alt.</blockquote>
 <p>Regressions:</p>
 <blockquote>
-TBD</blockquote>
-</div>
-<div class="section" id="garbage-collection">
-<h1><a class="toc-backref" href="#id5" name="garbage-collection">Garbage Collection</a></h1>
-<p>Status:</p>
-<blockquote>
-TBD</blockquote>
-<p>Description:</p>
-<blockquote>
-Plasma is going to have a lot of producer/consumer type code, where the
-ownership of a particular piece of memory will be hard to track.  Garbage
-collection will make the code much easier to understand and less error-prone.</blockquote>
-<p>Implementation:</p>
-<blockquote>
-Boehm garbage collector.</blockquote>
-<p>Dependencies:</p>
-<blockquote>
-The main issue is getting it to handle user-threads.  It handles kernel
-threads and should be able to handle user-threads, but I don't know how to
-do it yet.</blockquote>
-<p>Regressions:</p>
-<blockquote>
-TBD</blockquote>
+<ol class="arabic simple">
+<li>basic/chan4.pa</li>
+<li>basic/chan5.pa</li>
+<li>basic/chan6.pa</li>
+<li>basic/chan7.pa</li>
+</ol>
+</blockquote>
 </div>
 <div class="section" id="spawn-operator">
-<h1><a class="toc-backref" href="#id6" name="spawn-operator">Spawn Operator</a></h1>
+<h1><a class="toc-backref" href="#id5" name="spawn-operator">Spawn Operator</a></h1>
 <p>Status:</p>
 <blockquote>
 TBD</blockquote>
@@ -313,17 +316,21 @@ TBD</blockquote>
 TBD</blockquote>
 </div>
 <div class="section" id="shared-data-structures">
-<h1><a class="toc-backref" href="#id7" name="shared-data-structures">Shared Data Structures</a></h1>
+<h1><a class="toc-backref" href="#id6" name="shared-data-structures">Shared Data Structures</a></h1>
 <p>Status:</p>
 <blockquote>
 TBD</blockquote>
 <p>Description:</p>
 <blockquote>
 Shared data structures will allow serialized access to data, i.e. mutexes
-will wrap the actual data access, ensuring safe use between threads.</blockquote>
+will wrap the actual data access, ensuring safe use between threads.  The
+most likely syntax will be a class attribute, e.g. pMutex class ... The
+public methods will then be wrapped with mutex access code.  A per-method
+modifier will allow this to be disabled (will implement only if easy to do
+with OpenC++).</blockquote>
 <p>Implementation:</p>
 <blockquote>
-TBD</blockquote>
+Should be a straight-forward use of OpenC++'s MOP.</blockquote>
 <p>Dependencies:</p>
 <blockquote>
 TBD</blockquote>
@@ -331,12 +338,60 @@ TBD</blockquote>
 <blockquote>
 TBD</blockquote>
 </div>
+<div class="section" id="thread-priorities">
+<h1><a class="toc-backref" href="#id7" name="thread-priorities">Thread Priorities</a></h1>
+<p>Status:</p>
+<blockquote>
+TBD</blockquote>
+<p>Decription:</p>
+<blockquote>
+<p>A thread will be able to change its priority using a function
+(pSetPriority(int)).  The lowest level of priority will be timesliced.
+Otherwise, all threads of the highest priority (0) will run to completion
+before any others.</p>
+<p>API:</p>
+<ol class="arabic simple">
+<li><tt class="literal"><span class="pre">pSetPriority(int)</span></tt>:  Set current thread's priority.  Spawned threads will
+run at their parents priority.</li>
+<li><tt class="literal"><span class="pre">pNumPriorities()</span></tt>:  Return number of allowed priorities n, where
+priorities are (0..n-1).</li>
+<li>New config parameter in pSetup to set number of priorities.  Default is
+32.</li>
+</ol>
+</blockquote>
+<p>Implementation:</p>
+<blockquote>
+Array of thread queeues.  Scheduler will run high priority threads first.
+Timeslicing will only be turned on when running the lowest-priority threads.</blockquote>
+</div>
 <div class="section" id="time-model">
 <h1><a class="toc-backref" href="#id8" name="time-model">Time Model</a></h1>
 <p>Refer to twiki page for now.</p>
 </div>
+<div class="section" id="garbage-collection">
+<h1><a class="toc-backref" href="#id9" name="garbage-collection">Garbage Collection</a></h1>
+<p>Status:</p>
+<blockquote>
+TBD</blockquote>
+<p>Description:</p>
+<blockquote>
+Plasma is going to have a lot of producer/consumer type code, where the
+ownership of a particular piece of memory will be hard to track.  Garbage
+collection will make the code much easier to understand and less error-prone.</blockquote>
+<p>Implementation:</p>
+<blockquote>
+Boehm garbage collector.</blockquote>
+<p>Dependencies:</p>
+<blockquote>
+The main issue is getting it to handle user-threads.  It handles kernel
+threads and should be able to handle user-threads, but I don't know how to
+do it yet.</blockquote>
+<p>Regressions:</p>
+<blockquote>
+TBD</blockquote>
+</div>
 <div class="section" id="kernel-threads">
-<h1><a class="toc-backref" href="#id9" name="kernel-threads">Kernel Threads</a></h1>
+<h1><a class="toc-backref" href="#id10" name="kernel-threads">Kernel Threads</a></h1>
 <p>Status:</p>
 <blockquote>
 TBD</blockquote>
@@ -390,7 +445,7 @@ TBD</blockquote>
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="schedule.rst">View document source</a>.
-Generated on: 2004/05/12 11:07:18 CDT.
+Generated on: 2004/05/12 12:02:05 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>
