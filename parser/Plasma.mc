@@ -933,15 +933,18 @@ Ptree *Plasma::generateAltBody(Environment *env,Ptree *cur,Ptree *label,Ptree *h
         return nil;
       }
       // User specified a type, so use it directly.
-
       cur = lappend(cur,Ptree::qMake("`p.val` = (`p.chan`) `p.op` get();\n"));
+      // Add it to the environment so that we can translate the body and it
+      // will recognize it.
+      Class *pclass = new Class(env,p.val->Ca_ar());
+      env->RecordVariable(p.val->Car()->Second()->Car()->ToString(),pclass);
     } else {
       // Simple case- no value.  We still have to call get in order to drain the value,
       // but we don't assign it to anything.
       cur = lappend(cur,Ptree::qMake("(`p.chan`) `p.op` get();\n"));
     }
     cur = lappend(cur,Ptree::qMake("{\n"
-                                   "`p.body`\n"
+                                   "`TranslateExpression(env,p.body)`\n"
                                    "} } break;\n")); 
   }
 

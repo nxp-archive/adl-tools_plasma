@@ -55,6 +55,11 @@ my @Tests = (
 	      cmd     => "./cim",
 	      checker => \&check_cim,
 	     },
+	     # Simple ALU pipeline.
+	     {
+	      cmd     => "./clock &seed",
+	      checker => \&check_clock,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -303,6 +308,112 @@ sub check_cim {
 
   if ($reports != $exp_reports) {
     print "Did not find expected number of reports (founnd $reports, expected $exp_reports).\n";
+    die;
+  }
+}
+
+# Makes sure that each operation's result is correct and that the
+# flow through the pipeline is correct.
+sub check_clock {
+  my @lines = split /\n/,@_[0];
+
+  my $check_time_state = sub {
+    my ($stage,$tnum,$trans,$expstate,$time) = (shift,shift,shift,shift,shift);
+    if ( exists $trans->{$tnum} ) {
+      my $t = $trans->{$tnum};
+      dprint "check_time_state $stage:  ",Dumper($t),"\n";
+      my $st = ($t->{state}+1) * 4;
+      my $et = $t->{time}+$st;
+      if ($time != $et) {
+	print "$tnum:  Expected $stage at $et but found it at $time.\n";
+	die;
+      }
+      if ($t->{state} != $expstate) {
+	print "$tnum:  Bad state- expected to find $expstate, found $t->{state}.\n";
+	die;
+      }
+      # Bump state.
+      $t->{state}++;
+    } else {
+      print "$tnum:  Calculation occurred before issue.\n";
+      die;
+    }
+  };
+
+  # The flow of data goes through three stages:  Issue, execute, complete.
+  # We should get 10 completions, each state should take 4 cycles, and the
+  # calculation result should be correct.
+  # We store transaction progress in this hash, by transaction number.
+  # Format is { tnum => <transaction #>, time => <time>, state => <state>, op => <op>, op1 => <op1>, op2 => <op2>, carry => [0|1] }
+  #   where state is 0 => issue, 1 => calc, 2 => complete.
+  my %trans;
+  # Expected/actual # of completions,
+  my ($expcompletes,$completes) = (10,0);
+  my $seed = 0;
+  for (@lines) {
+    if ( /(\d+) \((\d+)\):\s+(.*)/ ) {
+      my $tnum = eval $1;
+      my $time = eval $2;
+      my $cmd  = $3;
+      if ( $cmd =~ /Issuing\s+(\d+)\s+([^\s])\s+(\d+)( with carry)?/ ) {
+	# Issue command.
+	my ($op1,$op2) = (eval $1,eval $3);
+	my $c = ($4) ? 1 : 0;
+	$trans{$tnum} = { tnum  => $tnum, time => $time, state => 0, op => $2, op1 => $op1, op2 => $op2, carry => $c };
+	dprint "$tnum:  Issue:  ",Dumper($trans{$tnum}),"\n";
+      } elsif ($cmd =~ /Calculating/ ) {
+	# Executing command.
+	&$check_time_state("calc",$tnum,\%trans,0,$time);
+      } elsif ($cmd =~ /Result is (\d+) with carry\/borrow (\d+)/) {
+	my ($result,$cout) = (eval $1,eval $2);
+	# Completing command.
+	&$check_time_state("complete",$tnum,\%trans,1,$time);
+	# Record completion.
+	++$completes;
+	# Make sure that result is correct.
+	my $t = $trans{$tnum};
+	my $op  = $t->{op};
+	my $op1 = $t->{op1};
+	my $op2 = $t->{op2};
+	my $c   =  $t->{carry};
+	my ($e_res,$e_co) = (0,0);
+	if ( $op eq "+" ) {
+	  $e_res = $op1 + $op2 + $c;
+	  if ($e_res > 255) {
+	    $e_co = 1;
+	    $e_res = $e_res % 256;
+	  }
+	} elsif ( $op eq "-" ) {
+	  if ($c == 1) {
+	    $op1 += 256;
+	  } elsif ($op2 > $op1) {
+	    $e_co = 1;
+	    $op1 += 256;
+	  }
+	  $e_res = $op1 - $op2;
+	} elsif ( $op eq "&" ) {
+	  $e_res = $op1 & $op2;
+	} elsif ( $op eq "|" ) {
+	  $e_res = $op1 | $op2;
+	} elsif ( $op eq "^" ) {
+	  $e_res = $op1 ^ $op2;
+	} else {
+	  printf ("$tnum:  Unknown operator found:  $op.\n");
+	  die;
+	}
+	if ($e_res != $result) {
+	  print ("$tnum:  Expected a result of $e_res, found $result.\n");
+	  die;
+	}
+	if ($e_co != $cout) {
+	  print ("$tnum:  Expected a carry-out of $e_co, found $cout.\n");
+	  die;
+	}
+      }
+    }
+  }
+  if ($completes != $expcompletes) {
+    print "Expected to find $expcompletes completions, found $completes.\n";
     die;
   }
 }

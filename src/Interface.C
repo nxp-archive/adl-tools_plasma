@@ -232,6 +232,18 @@ namespace plasma {
     return t; 
   }
 
+  void ClockChanImpl::set_notify(THandle t,HandleType h) 
+  { 
+    assert(!_readt); 
+    _readt = t; 
+    _h = h; 
+    // If we have data, start the waker.  We don't need to check whether
+    // the data is current b/c we wouldn't be here if it weren't.
+    if (!empty()) {
+      start_waker();
+    }
+  }
+
   THandle ClockChanImpl::clear_notify()
   {
     if (_waket) {

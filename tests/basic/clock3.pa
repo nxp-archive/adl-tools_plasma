@@ -1,0 +1,86 @@
+//
+// This creates a simple pipeline and passes data through it- each
+// stage of the pipeline uses a clocked channel so that time advances.
+// This also makes sure that par blocks can be nested within alt blocks
+// and that port variables are correctly added to the environment so that
+// a nested par block will know to make it an argument.
+//
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef Channel<int> Chan;
+typedef ClockChan<int> ClkChan;
+
+void start(ClkChan &out1,Chan &out2)
+{
+  for (int i = 0; i != 10; ++i) {
+    int v2 = i * 20;
+    int v1 = i * 10;
+    par {
+      out1.write(v1);
+      out2.write(v2);
+    }
+    printf ("producer:  Data is %d,%d at %lld.\n",v1,v2,pTime());
+  }
+  out1.write(-1);
+  out2.write(-1);
+}
+
+void middle(int c,ClkChan &in1,Chan &in2,ClkChan &out1,Chan &out2)
+{
+  while (true) {
+    alt {
+      in1.port(int v1) {
+        int v2 = in2.get();
+        v1 *= 10;
+        v2 *= 10;
+        printf ("con%d:  Data is %d,%d at %lld.\n",c,v1,v2,pTime());
+        par {
+          out1.write(v1);  // Note:  Port variable used in par block.
+          out2.write(v2);
+        }
+      }
+    }
+  }
+}
+
+void end(int c,ClkChan &in1,Chan &in2)
+{
+  while (true) {
+    alt {
+      in1.port(int v1) {
+        int v2 = in2.get();
+        v1 *= 10;
+        v2 *= 10;
+        printf ("con%d:  Data is %d,%d at %lld.\n",c,v1,v2,pTime());
+        if (v1 < 0 && v2 < 0) {
+          printf ("Done.\n");
+          pExit(0);
+        }
+      }
+    }
+  }
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int,const char*[])
+{
+  ClkChan clk1(10),clk2(10),clk3(10),clk4(10);
+  Chan d1,d2,d3,d4;
+
+  par {
+    start(clk1,d1);
+    middle(1,clk1,d1,clk2,d2);
+    middle(2,clk2,d2,clk3,d3);
+    middle(3,clk3,d3,clk4,d4);
+    end(4,clk4,d4);
+  }
+  return 0;
+}

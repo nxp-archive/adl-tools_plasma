@@ -1,5 +1,5 @@
 //
-// Tests a queued channel- all producer write to the same
+// Tests a queued channel- all producers write to the same
 // channel, which is then read by the consumer.  The size
 // of the queue is not fixed.
 //

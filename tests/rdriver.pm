@@ -31,6 +31,8 @@ B<keepoutput>:  Do not delete temporary files.
 B<d>
 B<debug>      :  Enable debug messages.
 
+B<seed>       :  Specify a seed value.
+
 The valid range forms are:
 
       x-y:  Run tests x through y.  Example:  --tests=3-5
@@ -55,7 +57,9 @@ doTest(@tests_list);
     Each entry in the supplied array should be a hash.
     These are the allowed keys:
 
-    cmd    :  Command-line to execute.
+    cmd    :  Command-line to execute.   If the token &seed is found, it will be replaced
+              with a numerical seed.  This value will either be the value specified by the
+              seed command-line parameter, or the current result of time().
     cmts   :  Preserve comments in diff.  Default is 0 (do not preserve).
     stderr :  If 1, stderr and stdout are both captured.  Otherwise, only stdout
               is captured.  The default is 0.
@@ -110,6 +114,7 @@ $tmpfile = "cmp.out";
 $debug = 0;
 
 # These are global because Perl's closures are *broken*!!!!.
+$seed = 0;
 $cmd = "";
 $fails = 0;
 $keepoutput = 0;
@@ -123,7 +128,7 @@ sub error {
 
 use strict;
 
-use vars qw(@Tests $diff $tmpfile $cmd $fails $keepoutput $debug);
+use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $keepoutput $debug);
 
 # Main test code:  For each test, execute it, then scan the output for
 # the tags we look for.  After that, check everything.
@@ -140,6 +145,7 @@ sub doTest($) {
     print " Test $iter...\n";
     my $t = $$tests{$iter};
     $cmd = $t->{cmd};
+    $cmd =~ s/&seed/$seed/g;
     if ($t->{stderr}) {
       $cmd .= " 2>&1";
     } else {
@@ -269,6 +275,7 @@ sub get_run_list {
        "s|string=s"    => \@slist,
        "r|regex=s",    => \@rlist,
        "ko|keepoutput" => \$keepoutput,
+       "seed=i"        => \$seed,
       )) {
     printhelp(1,1);
   }
@@ -281,6 +288,10 @@ sub get_run_list {
   # List tests, if requested to do so.
   if ($list) {
     listtests($tests);
+  }
+
+  if (!$seed) {
+    $seed = time();
   }
 
   # This converts a list of range expressions (arg1)

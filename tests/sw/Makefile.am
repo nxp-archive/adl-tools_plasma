@@ -16,6 +16,7 @@ check_PROGRAMS = \
 	ptimeout \
 	queues \
 	share \
+	clock \
 	fhr \
 	example \
 	cim
@@ -40,6 +41,9 @@ queues_DEPENDENCIES = $(DEPENDENCIES)
 share_SOURCES = share.pa
 share_DEPENDENCIES = $(DEPENDENCIES)
 
+clock_SOURCES = clock.pa
+clock_DEPENDENCIES = $(DEPENDENCIES)
+
 fhr_SOURCES = fhr.pa
 fhr_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -57,6 +61,8 @@ DEP_FILES=\
 	./$(DEPDIR)/nalt.Po \
 	./$(DEPDIR)/ptimeout.Po \
 	./$(DEPDIR)/queues.Po \
+	./$(DEPDIR)/share.Po \
+	./$(DEPDIR)/clock.Po \
 	./$(DEPDIR)/fhr.Po \
 	./$(DEPDIR)/example.Po \
 	./$(DEPDIR)/cim.Po
@@ -66,6 +72,8 @@ include ./$(DEPDIR)/comm.Po
 include ./$(DEPDIR)/nalt.Po
 include ./$(DEPDIR)/ptimeout.Po
 include ./$(DEPDIR)/queues.Po
+include ./$(DEPDIR)/share.Po
+include ./$(DEPDIR)/clock.Po
 include ./$(DEPDIR)/fhr.Po
 include ./$(DEPDIR)/example.Po
 include ./$(DEPDIR)/cim.Po

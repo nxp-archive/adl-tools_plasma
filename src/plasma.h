@@ -59,15 +59,16 @@ namespace plasma {
   // Queued channel class:  The class may store either an arbitrary number of
   // objects or a fixed number.  If a fixed number, a write will block if the
   // channel is full.  This is designed for multiple producers to feed data to
-  // a single consumer.
+  // a single consumer.  If size is 0, then no max size exists.
   template <typename Data,typename Container = std::list<Data,traceable_allocator<Data> > >
   pTMutex class QueueChan {
     typedef Container Store;
     typedef std::vector<THandle,traceable_allocator<THandle>> Writers;
   public:
-    QueueChan(int size = -1) : _maxsize(size), _size(0), _readt(0) {};
+    QueueChan(int size = 0) : _maxsize(size), _size(0), _readt(0) {};
     void write(const Data &d);
     bool ready() const { return !empty(); };
+    bool full() const { return _maxsize && _size >= _maxsize; };
     bool empty() const { return _size == 0; };
     int size() const { return _size; };
     pNoMutex int maxsize() const { return _maxsize; };
@@ -81,11 +82,12 @@ namespace plasma {
   private:
     void set_writenotify(THandle t) { _writers.push_back(t); };
     bool have_writers() const { return !_writers.empty(); };
+    void check_size() const { assert(!_maxsize || _size <= _maxsize); }
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
 
-    int        _maxsize;   // Max size.  If -1, no fixed size.
-    int        _size;      // Current size of queue.
+    unsigned   _maxsize;   // Max size.  If 0, no fixed size.
+    unsigned   _size;      // Current size of queue.
     Store      _store;
     THandle    _readt;     // A blocked read thread.
     Writers    _writers;   // One or more blocked writers.
@@ -125,17 +127,20 @@ namespace plasma {
     typedef Container Store;
     typedef std::vector<THandle,traceable_allocator<THandle> > Writers;
   public:
-    ClockChan(ptime_t p,int size = 1) : ClockChanImpl(p), _maxsize(size), _size(0) {};
+    ClockChan(ptime_t p,int size = 1) : ClockChanImpl(p), _maxsize(size) {};
     void write(const Data &d);
     bool ready() const { return current_data() && is_phi(); };
-    bool empty() const { return _size == 0; };
-    int size() const { return _size; };
+
     pNoMutex int maxsize() const { return _maxsize; };
     void setMaxSize(int ms) { _maxsize = ms; }
-    void clear_ready() { pLock(); if (_size) { --_size; _store.pop_back(); } pUnlock(); };
+    bool full() const { return _maxsize && _size >= _maxsize; };
+
+    void clear_ready() { pLock(); if (!empty()) { --_size; _store.pop_back(); } pUnlock(); };
     Data read() { return read_internal(false); };
     Data get() { return read_internal(true); };
 
+    using ClockChanImpl::size;
+    using ClockChanImpl::empty;
     using ClockChanImpl::clear_notify;
     using ClockChanImpl::set_notify;
 
@@ -143,11 +148,13 @@ namespace plasma {
     bool current_data() const;
     void set_writenotify(THandle t) { _writers.push_back(t); };
     bool have_writers() const { return !_writers.empty(); };
+    void check_size() const { assert(!_maxsize || _size <= _maxsize); }
     THandle next_writer() { THandle t = _writers.back(); _writers.pop_back(); return t; };
     Data read_internal(bool clear_ready);
+    ptime_t curr_data_time() const { return _store.back().second; };
+    ptime_t curr_time() const { return pTime(); };
 
-    int        _maxsize;   // Max size.  If -1, no fixed size.
-    int        _size;      // Current size of queue.
+    unsigned   _maxsize;   // Max size.  If 0, no fixed size.
     Store      _store;
     Writers    _writers;   // One or more blocked writers.
   };
@@ -241,13 +248,13 @@ namespace plasma {
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
     // data to again fill the queue, the thread will again sleep.
-    while (_maxsize >= 0 && _size >= _maxsize) {
+    while (full()) {
       set_writenotify(pCurThread());
       pSleep();
     }
     _store.push_front(d);
     ++_size;
-    assert(_maxsize < 0 || _size <= _maxsize);
+    check_size();
     // Reactivate a reader if one appeared while we were asleep.
     if (_readt) {
       pWake(clear_notify(),_h);
@@ -279,7 +286,7 @@ namespace plasma {
   template <typename Data,typename Container>
   bool ClockChan<Data,Container>::current_data() const
   {
-    return (_size && _store.front().second < pTime());
+    return (!empty() && curr_data_time() < curr_time());
   }
 
   template <typename Data,typename Container>
@@ -315,14 +322,14 @@ namespace plasma {
     // Sleep if queue is full.  This is a loop so that if a waiting
     // writer is awakened and then another thread jumps in and writess
     // data to again fill the queue, the thread will again sleep.
-    while (_maxsize >= 0 && _size >= _maxsize) {
+    while (full()) {
       set_writenotify(pCurThread());
       pSleep();
     }
     // Add data element w/time of next clock cycle.
-    _store.push_front(std::make_pair(d,next_phi()));
+    _store.push_front(std::make_pair(d,curr_time()));
     ++_size;
-    assert(_maxsize < 0 || _size <= _maxsize);
+    check_size();
     // Reactivate a reader if one appeared while we were asleep.
     if (_readt) {
       delayed_wakeup(current_data());

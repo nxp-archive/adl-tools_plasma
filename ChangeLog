@@ -1,3 +1,17 @@
+2004-07-13  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed bug w/alt parsing:  We didn't handle par blocks nested
+	w/in alt.  Fixed this by calling TranslateExpression on p.body and
+	adding the port variable to the environment so that the VarWalker
+	would find it.  The test clock3 tests this.
+
+	* Fixed bug in clocked channels- if a data value was already
+	present, but not at the current time, we needed set_notify to
+	create a waker.  The test clock3 tests this.
+
+	* Added clock.pa to tests/sw to demonstrate a simple cpu/alu
+	pipeline.
+
 2004-07-12  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added a clocked channel, ClockChan.  This is similar to

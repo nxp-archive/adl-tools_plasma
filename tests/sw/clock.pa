@@ -1,0 +1,168 @@
+//
+// clock.sw
+//
+//  A simple example of a clocked (synchronous) system. It consists of
+//    an ALU and a CPU.  The CPU spits out values and ops to the ALU
+//    just before each clock signal.  The ALU reads them on the rising
+//    edge of the clock, does the operation, and spits the result out
+//    just before the next clock signal.  The CPU then reads the results
+//    and prints them out.
+//
+
+#include "plasma.h"
+#include "Random.h"
+
+using namespace std;
+using namespace plasma;
+
+Processor cpu("cpu");
+Processor alu("alu");
+
+const int Add      = 0;
+const int Subtract = 1;
+const int And      = 2;
+const int Or       = 3;
+const int Xor      = 4;
+
+typedef Channel<int> Chan;
+typedef ClockChan<int> ClkChan;
+
+//
+// alu_op: perform 8-bit unsigned arithmetic with carry in and out
+//
+void alu_op(Chan &register1, Chan &register2, Chan &carryin, 
+            ClkChan &op, ClkChan &result, Chan &carryout)
+{
+  int count = 1;
+  while(true) {
+    alt {
+      op.port(int operation) {
+        // we have the operation, now read the two values
+        int v1 = register1.get();
+        int v2 = register2.get();
+        int c_in = carryin.get();
+        printf("%d (%lld):  Calculating\n",count,pTime());
+        // decode the instruction and compute the result
+        int c_out = 0;
+        int v3;
+        switch (operation) {
+        case Add:
+          v3 = v1 + v2 + c_in;
+          if ( v3 > 255 ) { 
+            c_out = 1; 
+            v3 = v3 % 256; 
+          }
+          break;
+        case Subtract:
+          if (c_in == 1) { 
+            v1 = v1 + 256; 
+          } else if (v2 > v1) { 
+            c_out = 1; 
+            v1 = v1 + 256; 
+          }          
+          v3 = v1 - v2;
+          break;
+        case And:
+          v3 = v1 & v2;
+          break;
+        case Or:
+          v3 = v1 | v2;
+          break;
+        case Xor:
+          v3 = v1 ^ v2;
+          break;
+        }
+        ++count;
+        // provide result and carry out to output
+        par {
+            result.write(v3);
+            carryout.write(c_out);
+        }
+      }
+    }
+  }
+}
+
+void cpu_gen(Random<> &Rand,Chan &register1, Chan &register2, Chan &carryin_flag, ClkChan &op_register)
+{
+  int count = 1;
+  while (true) {
+    int v1   = Rand.uniform(0, 0, 256);
+    int v2   = Rand.uniform(0, 0, 256);
+    int c_in = Rand.uniform(0, 0, 2);
+    int op   = Rand.uniform(0, 0, 5);
+    par {
+      op_register.write(op);
+      register1.write(v1);
+      register2.write(v2);
+      carryin_flag.write(c_in);
+    }
+    printf("%d (%lld):  Issuing %d",count,pTime(),v1);
+    switch (op) {
+      case Add: 
+        printf(" + "); 
+        break;
+      case Subtract: 
+        printf(" - "); 
+        break;
+      case And: 
+        printf(" & ");
+        break;
+      case Or: 
+        printf(" | ");
+        break;
+      case Xor: 
+        printf(" ^ ");
+        break;
+    default:
+      printf("\nUnknown op value %d\n",op);
+    }
+    printf("%d",v2);
+    if  (c_in == 1) {
+      printf(" with carry"); 
+    }
+    printf ("\n");
+    ++count;
+  }
+}
+
+void cpu_read(ClkChan &result_register, Chan &carryout_flag)
+{
+  int count = 1;
+  while(true) {
+    alt {
+      result_register.port(int result) {
+        // we have the result, now read the carry and print out
+        int c_out = carryout_flag.get();
+        printf("%d (%lld):  Result is %d with carry/borrow %d\n",count,pTime(),result,c_out);
+        ++count;
+        if (count > 10) { 
+          printf("Done.\n"); 
+          pExit(0); 
+        }
+      }
+    }
+  }
+}
+
+int pMain(int argc,const char *argv[])
+{
+  int seed = 0;
+  if (argc > 1) {
+    seed = atoi(argv[1]);
+  }
+  printf ("Seed:  %d\n",seed);
+  Random<> Rand(1,seed);
+
+  const int clock = 4;
+  Chan register1, register2;
+  Chan carryin_flag, carryout_flag;
+  ClkChan op_register(clock), result_register(clock);
+  
+  par {
+    on (alu) { alu_op(register1, register2, carryin_flag, op_register, result_register, carryout_flag); }
+    on (cpu) { cpu_gen(Rand,register1, register2, carryin_flag, op_register); }
+    on (cpu) { cpu_read(result_register, carryout_flag); }
+  }
+  return 0;
+}
