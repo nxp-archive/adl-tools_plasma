@@ -17,6 +17,9 @@ tests      :  Specify what tests to run.  Should be a number or a range, where
 ko
 keepoutpput:  Do not delete temporary files. 
 
+d
+debug      :  Enable debug messages.
+
 The valid range forms are:
 
       x-y:  Run tests x through y.  Example:  --tests=3-5
@@ -68,6 +71,16 @@ doTest(@tests_list);
     function must be able to successfully match lines in the file against the array elements,
     proceeding to the end of the array, or else it fails and calls die.
 
+    dprint(...)
+
+    Same functionality as print if the --debug option is specified on the command-line.
+    Otherwise, nothing is printed.
+
+    dprintf(...)
+
+    Same functionality as printf if the --debug option is specified on the command-line.
+    Otherwise, nothing is printed.
+
 =cut
     
 package rdriver;
@@ -75,10 +88,12 @@ package rdriver;
 require Exporter;
 
 our @ISA = ("Exporter");
-our @EXPORT = qw( doTest rdiff );
+our @EXPORT = qw( doTest rdiff dprint dprintf );
 
 $diff = "diff -bi";
 $tmpfile = "cmp.out";
+
+$debug = 0;
 
 # These are global because Perl's closures are *broken*!!!!.
 $cmd = "";
@@ -94,7 +109,7 @@ sub error {
 
 use strict;
 
-use vars qw(@Tests $diff $tmpfile $cmd $fails $keepoutput);
+use vars qw(@Tests $diff $tmpfile $cmd $fails $keepoutput $debug);
 
 # Main test code:  For each test, execute it, then scan the output for
 # the tags we look for.  After that, check everything.
@@ -225,10 +240,11 @@ sub get_run_list {
   # list of ranges to include and a list of ranges to exclude.
   if (!&GetOptions
       (
-       "l|list" => \$list,
-       "h|help" => \$help,
-       "t|tests=s" => \@ilist,
-       "x|excludes=s" => \@xlist,
+       "l|list"        => \$list,
+       "h|help"        => \$help,
+       "d|debug"       => \$debug,
+       "t|tests=s"     => \@ilist,
+       "x|excludes=s"  => \@xlist,
        "ko|keepoutput" => \$keepoutput,
       )) {
     printhelp(1);
@@ -335,6 +351,20 @@ sub rdiff {
     print "  Failed to match '$r->[$i]' in file '$f'.\n";
     die;
   }
+}
+
+# This is a debug print function:  If debug is enabled, the output will show up.
+sub dprint {
+    if ($debug) {
+        print @_;
+    }
+}
+
+# Equivalent of above for printf.
+sub dprintf {
+    if ($debug) {
+        printf @_;
+    }
 }
 
 1;

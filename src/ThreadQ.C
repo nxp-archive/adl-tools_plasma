@@ -25,6 +25,7 @@ Thread *ThreadQ::get()
   Thread *next = _head;         // first thread in queue
   _head = next->getnext();      // next thread in queue
   if (!_head) _tail = 0;        // queue is empty
+  next->setnext(0);
   return(next);                 // return thread
 }
 

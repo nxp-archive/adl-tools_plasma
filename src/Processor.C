@@ -82,7 +82,8 @@ static void preempt(int)
 Processor::Processor() :
   _main(),
   _cur(0),
-  _kernel(true)
+  _kernel(true),
+  _handle(-1)
 {
   static bool dummy = init();
 
@@ -185,6 +186,24 @@ void Processor::wait(Thread *t)
   exec_block();
 }
 
+int Processor::sleep()
+{
+  // Prevent preemption.
+  lock();
+  // Switch to next thread- do not add this thread back to ready queue.
+  exec_block();
+  // Return handle, which was set by waking thread.
+  return _handle;
+}
+
+void Processor::wake(Thread *t,int h)
+{
+  lock();
+  _handle = h;
+  Thread *old = _cur;
+  exec_ready(t,old);
+}
+
 void Processor::add_ready(Thread *t)
 {
   thesystem.add_ready(t);
@@ -193,6 +212,7 @@ void Processor::add_ready(Thread *t)
 // Switch to next running thread from current thread.
 void Processor::yield()
 {
+  lock();
   Thread *ready = thesystem.get_ready();
   Thread *old = _cur;
   exec_ready(ready,old);

@@ -2,8 +2,8 @@
 // Main system class.  Only one of these ever exists.
 //
 
+#include "plasma-interface.h"
 #include "System.h"
-#include "Interface.h"
 
 System::System() :
   _size(0x1000), 

@@ -3,7 +3,7 @@
 // Miscellaneous user routines. 
 //
 
-#include "Interface.h"
+#include "plasma-interface.h"
 #include "Processor.h"
 #include "System.h"
 
@@ -26,6 +26,16 @@ Thread *pSpawn(UserFunc *f,int nbytes,void *a)
   return processor.create(f,nbytes,a);
 }
 
+void pAddReady(Thread *t)
+{
+  processor.add_ready(t);
+}
+
+Thread *pCurThread()
+{
+  return processor.getCur();
+}
+
 void pWait(Thread *t)
 {
   processor.wait(t);
@@ -39,6 +49,16 @@ void pYield()
 void pTerminate()
 {
   processor.terminate();
+}
+
+int pSleep()
+{
+  return processor.sleep();
+}
+
+void pWake(Thread *t,int h)
+{
+  processor.wake(t,h);
 }
 
 // Lock processor.

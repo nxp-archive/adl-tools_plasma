@@ -4,7 +4,7 @@
 #ifndef _THREAD_H_
 #define _THREAD_H_
 
-#include "Interface.h"
+#include "plasma-interface.h"
 #include "ThreadQ.h"
 
 typedef struct qt_t qt_t;

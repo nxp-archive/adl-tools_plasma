@@ -8,27 +8,32 @@ use rdriver;
 use strict;
 
 my @Tests = (
-	  # Basic par block test.
-	  {
-	   cmd     => "par1",
-	   checker => \&check_par1,
-	  },
-	  # Looping par block test.
-	  {
-	   cmd     => "par2",
-	   checker => \&check_par2,
-	  },
-	  # Looping par block test with structure as loop variable.
-	  {
-	   cmd     => "par3",
-	   checker => \&check_par3,
-	  },
-	  # Quicksort with parallel sorting of split elements.
-	  {
-	   cmd     => "qsort",
-	   checker => \&check_qsort,
-	  },
-	 );
+	     # Basic par block test.
+	     {
+	      cmd     => "./par1",
+	      checker => \&check_par1,
+	     },
+	     # Looping par block test.
+	     {
+	      cmd     => "./par2",
+	      checker => \&check_par2,
+	     },
+	     # Looping par block test with structure as loop variable.
+	     {
+	      cmd     => "./par3",
+	      checker => \&check_par3,
+	     },
+	     # Quicksort with parallel sorting of split elements.
+	     {
+	      cmd     => "./qsort",
+	      checker => \&check_qsort,
+	     },
+	     # Channel test directly using C++ interface.
+	     {
+	      cmd     => "./chan1",
+	      checker => \&check_chan1,
+	     },
+	    );
 
 doTest(\@Tests);
 
@@ -128,3 +133,40 @@ sub check_qsort {
     die "Expected to have $elc sorts done, found only $lc.\n";
   }
 }
+
+# Make sure that all expected integers are received.  These should
+# be four sets of ten integers starting at 10, 100, 1000, and 10000.
+sub check_chan1 {
+  my @lines = split /\n/,@_[0];
+  my $max = 10;
+  my @data = ([10,10],[100,10],[1000,10],[10000,10]);
+  my $numFinish = 0;
+  my $expNumFinish = 5;
+  for (@lines) {
+    if ( /Data read from channel (\d+):\s+(\d+)/ ) {
+      my $chan = $1;
+      my $val = $2;
+      dprint "Read $val from channel $chan.\n";
+      if ($val >= $data[$chan]->[0] && $val < ($data[$chan]->[0]+$max)) {
+	--($data[$chan]->[1]);
+      } else {
+	print "Data out of bound for channel $chan:  Got $val, expected value in [",
+	  $data[$chan]->[0],":",($data[$chan]->[0]+$max),").\n";
+	die;
+      }
+    } elsif ( /(Producer|Consumer) done./ ) {
+      ++$numFinish;
+    }
+  }
+  if ($numFinish != $expNumFinish) {
+    print "Expected $expNumFinish threads to finish, found only $numFinish.\n";
+    die;
+  }
+  for my $i (0..$#data) {
+    if ($data[$i]->[1]) {
+      print "Not all data was found for channel $i.\n";
+      die;
+    }
+  }
+}
+

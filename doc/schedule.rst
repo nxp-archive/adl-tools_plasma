@@ -1,6 +1,6 @@
-===================
-Plasma User's Guide
-===================
+===========================
+Plasma Development Schedule
+===========================
 
 This document describes PLASMA's development schedule.  It consists of a series
 of entries, each representing a feature to be added.  A feature is considered
@@ -13,29 +13,6 @@ order may change based upon external factors.
 :revision: $Id$ 
 
 .. contents::
-
-Feature Template
-----------------
-
-Status:
-
-    TBD
-
-Description:
-
-    TBD
-
-Implementation:
-
-    TBD
-
-Dependencies:
-
-    TBD
-
-Regressions:
-
-    TBD
 
 Par Block
 ---------
@@ -126,26 +103,75 @@ Implementation:
 
     A channel will be any type that has the required interface.  This is
     compile-time polymorphism, similar to how templates work.  The required
-    interfacee is:
+    interface is as follows.  For a channel of type T:
 
-    1.  read()
+    1.  ``T read()``:  Returns a value read from the channel.  Blocks if no value is
+        present.  Returns the last value read, until clear_ready() is called.
 
-    2.  write()
+    2.  ``T get()``:  Returns a value from the channel.  Blocks if no value is
+        present.  Always fetches a new value.  After a call to this, read() will
+        return this same value.
 
-    3.  ready()
+    2.  ``void write(T)``:  Writes a value to the channel.  May block, depending
+        upon the channel definition.
 
-    4.  clear_ready()
+    3.  ``bool ready() const``:  Returns true if the channel has a value.
 
-    5.  set_notify()
+    4.  ``void clear_ready()``:  Clears the ready status, forcing the fetch of a new
+        value.
 
-    6.  clear_notify()
+    5.  ``set_notify(Thread *t,int handle)``:  Stores the thread and handle.  When
+        the channel gets a value, it will wake this thread, giving it the handle.
+
+    6.  ``clear_notify()``:  Clears the stored thread so that no notification will
+        take place if a value is written to the channel.
+
+    Some details about channel implementation:
+
+    1.  Call pSleep() to block.  You must have stored a handle to the current
+        thread somewhere else before this call, e.g. storing it in a channel
+        member variable.
+
+    2.  Call pWake() to awaken a thread.  The general protocol is that the waker
+        clears the thread member variable of the channel and it does this
+        *before* the call to pWake.
+
+    3.  Call pAddReady() to add a thread to the ready queue, but not make it
+        active.  No switching occurs (assuming processor is locked to avoid
+        preemption).
+
+    4.  A call to read() or get() should clear any notification.  Thus, with an
+        alt block, only the channels that had set_notify() called need to have
+        clear_notify() called if a ready channel is found.  The actual ready
+        channel should not have clear_notify() called, since there could be a
+        blocked writer waiting to go.
+
+    Code conversion for the alt block will be:
+
+    1.  Shutdown preemption.
+
+    2.  Loop through all channels- if anything is ready, save handle and exit
+        loop.  Else, call set_notify with current thread and handle (integer
+        index of loop).
+
+    3.  If nothing ready, sleep.
+
+    4.  Case statement on return value of sleep, or index value from loop in
+        (2).  Execute relevant code.
+
+    5.  Call clear_notify on all threads.  Do this within a catch(...) block,
+        too.
+
+    6.  Alt blocks consume values, i.e. they call get().
 
 Dependencies:
 
     1.  Need channel definition
 
-    2.  Probably need more thread interfaces- pSleep, which will sleep and
-        return an integer handle when awakened.
+    2.  Add ``int pSleep()``: Puts the thread to sleep.  Returns integer when thread
+        wakes.
+
+    3.  Add ``void pWake(Thread *t,int h)``:  Wakes thread, giving it h.
 
 Regressions:
 
@@ -154,19 +180,163 @@ Regressions:
 Looping Alt Block
 -----------------
 
-TBD
+Status:
+
+    TBD
+
+Description:
+
+    TBD
+
+Implementation:
+
+    TBD
+
+Dependencies:
+
+    TBD
+
+Regressions:
+
+    TBD
+
 
 Garbage Collection
 ------------------
 
-TBD
+Status:
+
+    TBD
+
+Description:
+
+    Plasma is going to have a lot of producer/consumer type code, where the
+    ownership of a particular piece of memory will be hard to track.  Garbage
+    collection will make the code much easier to understand and less error-prone.
+
+Implementation:
+
+    Boehm garbage collector.
+
+Dependencies:
+
+    The main issue is getting it to handle user-threads.  It handles kernel
+    threads and should be able to handle user-threads, but I don't know how to
+    do it yet.
+
+Regressions:
+
+    TBD
+
 
 Spawn Operator
 --------------
 
-TBD
+Status:
+
+    TBD
+
+Description:
+
+    Thread creation w/o synchronization, e.g.::
+
+      spawn foo(1,2,3);
+
+    Evaluates the argument (must resolve to a function or an object's member
+    invocation).  The argument is launched as a thread.  The return value is an
+    object which meets the specifications of a channel.  It will also have
+    additional operators for thread control:
+
+    1. wait():  Wait for thread to finish.
+
+    2. kill():  Kill thread.
+
+    The object will be a special type of channel, so you can use it in an alt
+    block and attempts to fetch the value before the thread is finished will
+    result in a block.  Unlike other channels, it will only ever have a single
+    value, so calls to clear_ready() will be ignored.
+
+Implementation:
+
+    TBD
+
+Dependencies:
+
+    TBD
+
+Regressions:
+
+    TBD
+
+Shared Data Structures
+-----------------------
+
+Status:
+
+    TBD
+
+Description:
+
+    Shared data structures will allow serialized access to data, i.e. mutexes
+    will wrap the actual data access, ensuring safe use between threads.
+
+Implementation:
+
+    TBD
+
+Dependencies:
+
+    TBD
+
+Regressions:
+
+    TBD
 
 Time Model
 ----------
 
-TBD
+Refer to twiki page for now.
+
+Kernel Threads
+--------------
+
+Status:
+
+    TBD
+
+Description:
+
+    Expand underlying RTOS to an M:N model, i.e. M kernel threads, each running
+    N user threads.  Add a placement specifier to par so that threads may be
+    dispatched to different kernel threads.  These kernel threads will be
+    identified using a pCluster object.
+
+Implementation:
+
+    1.  Expand RTOS to handle kernel threads.  Probably use LinuxThreads.  The
+        RTOS code will need mutexes around critical areas.
+
+    2.  Create pCluster object.  Add code to spawn new kernel threads.
+
+    3.  Expand par blocks to add placement specifier, e.g.::
+
+        par {
+          on (cluster1) { ... }
+          on (cluster2) { ... }
+        }
+
+        The ``on (<cluster name>)`` block specifies a target cluster.  The
+        brace-delimited code is launched as the thread.
+
+    4.  Retrofit shared data structures with mutexes.
+
+Dependencies:
+
+    1.  Garbage collector needs to work with the kernel threadss.  This
+        shouldn't be a problem, as the Boehm collector currently supports
+        LinuxThreads.
+
+Regressions:
+
+    TBD
+

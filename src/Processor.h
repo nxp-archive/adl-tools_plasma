@@ -37,6 +37,14 @@ public:
   // Terminate the current thread and switch to the next ready thread.
   void terminate();
 
+  // Current thread sleeps.  When awakened, gets handle value sent by
+  // wake command.  Note:  You *must* have some other storage of this thread,
+  // since it's removed from the ready queue.
+  int sleep();
+
+  // Wake specified thread, switching to it and supplying specified handle.
+  void wake(Thread *t,int h);
+
   // Explicitly switch to the scheduler thread.
   // Caller must lock processor.
   void runscheduler();
@@ -73,6 +81,7 @@ private:
   Thread     _main;                  // Main thread (the scheduler loop itself).
   Thread    *_cur;                   // Current thread.
   bool       _kernel;                // Set if thread is in kernel mode
+  int        _handle;                // Temporary storage of handle passed by pWake.
 
   static sigset_t _empty_mask;    // empty signal mask
   static sigset_t _alarm_mask;    // mask with SIGALRM

@@ -2,8 +2,8 @@
 // This is the main user interface to the threads package.
 //
 
-#ifndef _INTERFACE_H_
-#define _INTERFACE_H_
+#ifndef _PLSMAA_INTERFACE_H_
+#define _PLSMAA_INTERFACE_H_
 
 #include <vector>
 
@@ -36,11 +36,25 @@ Thread *pSpawn(UserFunc *f,void *args);
 // information.
 Thread *pSpawn(UserFunc *f,int nbytes,void *args);
 
+// Add a thread to the ready queue, but do not task switch.
+void pAddReady(Thread *t);
+
+// Return a handle to the current thread.
+Thread *pCurThread();
+
 // Wait on the specified thread.
 void pWait(Thread *);
 
 // Switch to next ready thread.
 void pYield();
+
+// Put the current thread to sleep.  When it wakes, it is returned a handle
+// passed by pWake.
+int pSleep();
+
+// Wake the specified thread, giving it the handle value.  This switches
+// to this thread.
+void pWake(Thread *t,int h);
 
 // Kill the current thread.
 void pTerminate();
