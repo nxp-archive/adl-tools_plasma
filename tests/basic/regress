@@ -67,7 +67,12 @@ my @Tests = (
 	     {
 	      cmd     => "./spawn1",
 	      checker => \&check_spawn1,
-	     }
+	     },
+	     # Spawn test with spawn operator.
+	     {
+	      cmd     => "./spawn2",
+	      checker => \&check_spawn2,
+	     },
 	    );
 
 doTest(\@Tests);
@@ -257,9 +262,9 @@ sub check_channel {
 }
 
 # Makes sure expected results are found.
-sub check_spawn1 {
+sub check_spawn {
   my @lines = split /\n/,@_[0];
-  my @exp = ( 6.05, 103.33, 10103.1 );
+  my @exp = @_;
   for (@lines) {
     if ( /^Result is:/ ) {
       my @res = ( /(\d+.\d+)/g );
@@ -270,4 +275,14 @@ sub check_spawn1 {
       }
     }
   }
+}
+
+sub check_spawn1 {
+  my @exp = ( 6.05, 103.33, 10103.1 );
+  check_spawn(@exp);
+}
+
+sub check_spawn2 {
+  my @exp = ( 6.05, 103.33, 10103.1, 3.14159 );
+  check_spawn(@exp);
 }
