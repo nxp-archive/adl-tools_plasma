@@ -3,7 +3,7 @@
 //
 
 #include "System.h"
-#include "Processor.h"
+#include "Interface.h"
 
 System::System() :
   _size(0x1000), 

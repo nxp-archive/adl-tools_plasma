@@ -4,9 +4,15 @@
 # Tests used in this regression.
 
 @Tests = (
+	  # Basic par block test.
 	  {
 	   cmd     => "par1",
 	   checker => \&check_par1,
+	  },
+	  # Quicksort with parallel sorting of split elements.
+	  {
+	   cmd     => "qsort",
+	   checker => \&check_qsort,
 	  },
 	 );
 
@@ -44,5 +50,18 @@ sub check_par1 {
   }
   if ($r3 != $er3) {
     die "Expected Result3 to be $er3, got $r3 instead.\n";
+  }
+}
+
+# Just make sure that we got the right number of messages.
+# The checking of the sorting is down by the program itself.
+sub check_qsort {
+  my @lines = split /\n/,@_[0];
+  my $elc = 25;
+  for (@lines) {
+    ++$lc if ( /^Sorting with size/);
+  }
+  if ($lc != $elc) {
+    die "Expected to have $elc sorts done, found only $lc.\n";
   }
 }

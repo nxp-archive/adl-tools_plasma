@@ -8,6 +8,14 @@
 
 using namespace std;
 
+struct ArgPair {
+  Ptree *_arg;
+  bool   _ref;
+  ArgPair(Ptree *a,bool r) : _arg(a), _ref(r) {};
+};
+
+typedef vector<ArgPair> ArgVect;
+
 // This walks over an expression.  For each variable declaration, if it's
 // not declared in any scope under the parent scope, it's recorded as a
 // needed argument.
@@ -19,10 +27,10 @@ public:
     _benv(e->GetBottom())
   {}
   virtual Ptree* TranslateVariable(Ptree*);
-  void reset(Ptree *tst,Ptree *tsn) { _tsname = tsn; _tstype = tst; _args = nil; _argnames = nil; };
+  void reset(Ptree *tst,Ptree *tsn) { _tsname = tsn; _tstype = tst; _args = nil; _argnames.clear(); };
 
-  Ptree *args() const { return _args; };
-  Ptree *argnames() const { return _argnames; };
+  Ptree   *args() const { return _args; };
+  const ArgVect &argnames() const { return _argnames; };
 
 private:
   Ptree       *_tsname;  // Name of thread structure.
@@ -31,7 +39,7 @@ private:
   Environment *_penv;    // Parent scope.
   Environment *_benv;    // Bottom (global) scope.
   Ptree       *_args;
-  Ptree       *_argnames;
+  ArgVect      _argnames;
 };
 
 // Look for the variable in all environments from the current up to,
@@ -65,9 +73,17 @@ Ptree *VarWalker::TranslateVariable(Ptree *exp)
     if (found && !b->IsType()) {
       TypeInfo t;
       b->GetType(t,e);
-      _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
-      _argnames = Ptree::Cons(exp,_argnames);
-      return Ptree::qMake("*(((`_tstype`*)`_tsname`)->`exp`)");
+      // You can't have pointers to references, so if it's a reference, we treat it
+      // as is.
+      if (t.IsReferenceType()) {
+        _argnames.push_back(ArgPair(exp,true));
+        _args = Ptree::Cons(t.MakePtree(Ptree::qMake("`exp`")),_args);
+        return Ptree::qMake("((`_tstype`*)`_tsname`)->`exp`");
+      } else {
+        _argnames.push_back(ArgPair(exp,false));
+        _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
+        return Ptree::qMake("*(((`_tstype`*)`_tsname`)->`exp`)");
+      }
     }
   }
   return exp;
@@ -89,15 +105,19 @@ bool Plasma::Initialize()
   return TRUE;
 }
 
-string argList(Ptree *al,const char *pfx)
+// The argument list was created in reverse order, so that's why
+// we iterate through it in reverse.
+string argList(const ArgVect &av)
 {
   string s;
-  for(PtreeIter i = al; !i.Empty(); i++){
+  for(ArgVect::const_reverse_iterator i = av.rbegin(); i != av.rend(); ++i){
     if (!s.empty()) {
       s += ",";
     }
-    s += pfx;
-    s += (*i)->ToString();
+    if (!i->_ref) {
+      s += "&";
+    }
+    s += i->_arg->ToString();
   }
   return s;
 }
@@ -141,8 +161,9 @@ Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
     Ptree *args = vw->args();    
     makeThreadStruct(env,tstype,args);
     Ptree *nfname = Ptree::GenSym();
-    const string &arglist = argList(vw->argnames(),"&");
-    InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,expr)`\n}\n"));
+    const string &arglist = argList(vw->argnames());
+    InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
+    AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,expr)`\n}\n"));
     cur = lappend(cur,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
                                          "Thread *`thname` = pSpawn(`nfname`,&`tsname`);\n"));
   }

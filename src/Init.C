@@ -72,14 +72,18 @@ System      thesystem;
 // Terminate program with return code.
 void pExit(int code)
 {
+  pLock();
   thesystem.shutdown(code); // shutdown system and deliver exit code
+  processor.runscheduler();
 }
 
 // Abort program with error message.
 void pAbort(char *msg)
 {
+  pLock();
   cout << "\nPlasma aborted: " << msg << ".\n";
   thesystem.shutdown(-1);              // shutdown system and deliver exit code -1
+  processor.runscheduler();
 }
 
 // Abort program with error message and immediate exit.

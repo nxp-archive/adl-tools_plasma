@@ -1,5 +1,15 @@
 2004-04-27  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added a parallel quicksort to the regression.
+
+	* Fixed parser bug:  You can't make a pointer to a reference, so
+	if we use a reference within a par block, we don't take a pointer
+	to it- we just keep treating it as a reference.
+
+	* Fixed problem with pAbort() and pExit():  They now immediately
+	switch to the scheduler, which sees that a shutdown is requested
+	and thus exits.
+
 	* Plasma project should now build and pass its regression.
 
 2004-04-23  Brian Kahne  <bkahne@ibmoto.com>

@@ -1,9 +1,11 @@
 
 TESTS = regress
 
-check_PROGRAMS = par1
+check_PROGRAMS = par1 qsort
 
 par1_SOURCES = par1.pa
+
+qsort_SOURCES = qsort.pa
 
 LDADD = -L$(top_srcdir)/src -lplasma -L$(top_srcdir)/qt -lqt
 

@@ -36,6 +36,10 @@ public:
   // Terminate the current thread and switch to the next ready thread.
   void terminate();
 
+  // Explicitly switch to the scheduler thread.
+  // Caller must lock processor.
+  void runscheduler();
+
   void lock();             // lock processor
   void unlock();           // unlock processor
   bool locked() const;     // is processor in kernel mode?

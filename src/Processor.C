@@ -197,6 +197,14 @@ void Processor::terminate()
   QT_ABORT(switch_term, old, 0, ready->thread());
 }
 
+// Explicitly switch to the scheduler thread.
+void Processor::runscheduler()
+{
+  Thread *old = _cur;
+  _cur = &_main;
+  exec_ready(&_main,old);
+}
+
 // This terminates a thread, returning the stack to the
 // processor for use by another thread.
 void *switch_term(qt_t *, void* old, void *)
