@@ -305,10 +305,11 @@
       
       (ssection :title "Description"
 
-       [Thread creation w/o synchronization, e.g.:]
+       (p [Thread creation w/o synchronization, e.g.:])
 
        (cprog [
-          spawn { foo(1,2,3); };
+
+spawn { foo(1,2,3); };
 
        ])
 

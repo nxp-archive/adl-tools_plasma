@@ -20,6 +20,10 @@
    difficult language from which to extract formal properties, we believe that
    the combination of CSP (which does have well-understood semantics) and an
    identified subset of Plasma will make this possible.])
+
+   (p [A PDF version of this document may be found at:])
+   
+   (p (ref :url (string-append *web-url* "index.pdf")))
    
    (section :title "Purpose of This Work"
 
@@ -188,12 +192,12 @@
 	 example, to create two threads one uses the ,(code [par]) block:])
       
 	 (cprog [
-
-          par {
-            a();
-            b();
-          }
-          c();
+ 
+par {
+  a();
+  b();
+}
+c();
 
 ])
       
@@ -206,10 +210,10 @@
 	 [pfor]) block:])
 	 
 	 (cprog [
-
-  pfor (int i = 0; i != Max; ++i) {
-    foo(i);
-  }
+ 
+pfor (int i = 0; i != Max; ++i) {
+  foo(i);
+}
 
 ])
 	 
@@ -222,11 +226,11 @@
       
 	 (cprog [
  
-         Foo x;
+Foo x;
 
-         Result<int> res = spawn(x.calculate(1,2,3));
+Result<int> res = spawn(x.calculate(1,2,3));
 
-         cout << "The result is:  " << res.value() << "\\n";
+cout << "The result is:  " << res.value() << "\\n";
       
 ])
       
@@ -257,26 +261,26 @@
 	    and a consumer:])
 
 	    (cprog [
-
-         typedef Channel<int> IntChan;
-         IntChan c;
-         par {
-           {
-             // Thread 1.
-             c.write(1);
-             c.write(2);
-             c.write(3);
-             c.write(-1);
-           }
-           {
-             // Thread 2.
-             int x;
-             do {
-               x = c.get();
-               mprintf ("Result:  %d\\n",x);
-             } while (x >= 0);
-           }
-         }
+ 
+typedef Channel<int> IntChan;
+IntChan c;
+par {
+  {
+    // Thread 1.
+    c.write(1);
+    c.write(2);
+    c.write(3);
+    c.write(-1);
+  }
+  {
+    // Thread 2.
+    int x;
+    do {
+      x = c.get();
+      mprintf ("Result:  %d\\n",x);
+    } while (x >= 0);
+  }
+}
 
 ])
 	 
@@ -294,21 +298,21 @@
 	    [afor]) constructs:])
 	    
 	    (cprog [
-
-    alt {
-      c0.port (int v) {
-        plasma::mprintf ("Got a value from port c0:  %d\\n",v);
-      }
-      c1.port (int v) {
-        plasma::mprintf ("Got a value from port c1:  %d\\n",v);
-      }
-      c2.port (int v) {
-        plasma::mprintf ("Got a value from port c2:  %d\\n",v);
-      }
-      c3.port (int v) {
-        plasma::mprintf ("Got a value from port c3:  %d\\n",v);
-      }
-    }
+ 
+alt {
+  c0.port (int v) {
+    plasma::mprintf ("Got a value from port c0:  %d\\n",v);
+  }
+  c1.port (int v) {
+    plasma::mprintf ("Got a value from port c1:  %d\\n",v);
+  }
+  c2.port (int v) {
+    plasma::mprintf ("Got a value from port c2:  %d\\n",v);
+  }
+  c3.port (int v) {
+    plasma::mprintf ("Got a value from port c3:  %d\\n",v);
+  }
+}
 
 ])
 
@@ -325,12 +329,12 @@
 	    channel reads:])
 	    
 	    (cprog [
-
-    afor (int i = 0; i != (int)channels.size(); ++i) {
-      channels\[i\].port (int v) {
-        plasma::mprintf ("Got a value from port %d:  %d\\n",i,v);
-      }
-    }
+ 
+afor (int i = 0; i != (int)channels.size(); ++i) {
+  channels\[i\].port (int v) {
+    plasma::mprintf ("From port %d: %d\\n",i,v);
+  }
+}
 
 ])
 	 
@@ -341,19 +345,19 @@
 	    (p [,(code [Alt]) and ,(code [afor]) blocks may be nested:])
 	    
 	    (cprog [
-
-    alt {
-      afor (int i = 0; i != (int)ichannels.size(); ++i) {
-        ichannels\[i\].port (int v) {
-          plasma::mprintf ("Got a value from port %d:  %d\\n",i+ibase,v);
-        }
-      }
-      alt {
-        xc.port (int v) {
-          plasma::mprintf ("Got a value from port xc:  %d\\n",v);
-        }
-      }
+ 
+alt {
+  afor (int i = 0; i != (int)ichannels.size(); ++i) {
+    ichannels\[i\].port (int v) {
+      plasma::mprintf ("From port %d:  %d\\n",i+ibase,v);
     }
+  }
+  alt {
+    xc.port (int v) {
+      plasma::mprintf ("From port xc:  %d\\n",v);
+    }
+  }
+}
 
 ])
 
@@ -389,7 +393,7 @@
 	    (p [For example, consider the following program:])
 	    
 	    (cprog [
-
+ 
 #include <iostream>
 #include "plasma.h"
 
@@ -415,7 +419,8 @@ void consumer(IntChan &c)
     if (d < 0) { 
       done = true; 
     } else {
-      cout << "Got a value at time " << pTime() << ":  " << d << endl;
+      cout << "Got a value at time " << pTime() 
+           << ":  " << d << endl;
     }
   }
   cout << "Consumer done." << endl;
@@ -447,7 +452,7 @@ int pMain(int argc,const char *argv\[\])
 	    clock is 5 time units.  The output of this program is:])
 	    
 	    (cprog [
-
+ 
 Got a value at time 5:  10
 Got a value at time 10:  11
 Got a value at time 15:  12
@@ -481,11 +486,11 @@ Done.
 	 
 	    (cprog [
   
-         pMutex class Foo {
-           ...
-         public:
-           pNoMutex bool foo() const;
-         };
+pMutex class Foo {
+  ...
+public:
+  pNoMutex bool foo() const;
+};
 
 ])
 	 
@@ -532,19 +537,19 @@ Done.
 	 busy, but this does not affect a thread on another processor:])
 	 
 	 (cprog [
+ 
+Processor proc1,proc2;
 
-         Processor proc1,proc2;
-
-         par {
-           on (proc1) {
-             <code>
-             pBusy(100); // Does not affect the other thread.
-             <code>
-           }
-           on (proc2) {
-             <code>
-           }
-         }
+par {
+  on (proc1) {
+    <code>
+    pBusy(100); // Does not affect the other thread.
+    <code>
+  }
+  on (proc2) {
+    <code>
+  }
+}
 
 ])
 	 
@@ -600,12 +605,12 @@ Done.
       
       )
       
-   (include "user-guide.skb")
+      (include "user-guide.skb")
       
-   (include "examples.skb")
-            
-   (include "schedule.skb")   
-   
-   (include "future-work.skb")
+      (include "examples.skb")
+               
+      (include "future-work.skb")
+      
+      (include "schedule.skb")
     
 )

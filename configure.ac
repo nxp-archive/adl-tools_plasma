@@ -39,14 +39,6 @@ else
   DOCDIR=
 fi
 
-AC_PATH_PROG(SKRIBE,skribe)
-if test "x$SKRIBE" = x ; then
-  echo "The skribe program was not found.  Documentation will not be built."
-  echo "To build the documentation, make sure that skribe is installed and in your path."
-  echo "You can find skribe here:  http://www-sop.inria.fr/mimosa/fp/Skribe/"
-  DOCDIR=
-fi
-
 ## Get the full compiler path.
 AC_PATH_PROG(CXXPROG,$CXX)
 echo "Compiler is located at:  $CXXPROG"
@@ -56,6 +48,9 @@ AM_QT
 
 ## Configure OpenC++
 AM_OCC
+
+## Configure Skribe and Latex.
+AM_SKRIBE
 
 ## Do final substitions and generation.
 CXXFLAGS="-g -Wall $CPPSETUP"

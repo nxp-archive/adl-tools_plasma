@@ -1283,42 +1283,47 @@
 <em>1226: </em>  MemClkChan fetch_icache(Clock), icache_decode(Clock),
 <em>1227: </em>    alu_dcache(Clock), regwrite1_dcache(Clock);
 <em>1228: </em>
-<em>1229: </em>  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), regread_muldiv(Clock),
-<em>1230: </em>    alu_regwrite1(Clock), muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
-<em>1231: </em>
-<em>1232: </em>  Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
-<em>1233: </em>  
-<em>1234: </em>  printf(<font color="red">&quot;\n\n\n\nthe pipe: a simple risc pipeline simulator v0.06\ncopyright © motorola 1997-2003\n&quot;</font>);
-<em>1235: </em>  
-<em>1236: </em>  initCode(10000);          <font color="#ffa600"><em>// create some instructions</em></font>
-<em>1237: </em>  <font color="#ffa600"><em>//initCode(10);</em></font>
-<em>1238: </em>  initRegs();                   <font color="#ffa600"><em>// set up registers</em></font>
-<em>1239: </em>  printf(<font color="red">&quot;\nCode and registers initialised.&quot;</font>);
-<em>1240: </em>  par <font color="red"><strong>{</strong></font>
-<em>1241: </em>    <font color="#ffa600"><em>//===logging</em></font>
-<em>1242: </em>    watchdog(20000, icount_watchdog, fetch_watchdog);           <font color="#ffa600"><em>// (100050); for long runs</em></font>
-<em>1243: </em>    <font color="red"><strong>{</strong></font>
-<em>1244: </em>      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache, fetch_watchdog, 0);
-<em>1245: </em>      fetch();
-<em>1246: </em>    <font color="red"><strong>}</strong></font>
-<em>1247: </em>    icache(1, fetch_icache, icache_decode);
-<em>1248: </em>    <font color="red"><strong>{</strong></font>
-<em>1249: </em>      Decoder decoder(2, icache_decode, decode_fetch, decode_regread, icount_watchdog);
-<em>1250: </em>      decoder();
-<em>1251: </em>    <font color="red"><strong>}</strong></font>
-<em>1252: </em>    regRead(3, decode_regread, regread_alu, regread_muldiv);
-<em>1253: </em>    alu(4, regread_alu, alu_regwrite1, alu_dcache, alu_fetch);
-<em>1254: </em>    muldiv(5, regread_muldiv, muldiv_regwrite2);
-<em>1255: </em>    regWrite1(6, alu_regwrite1, regwrite1_dcache);
-<em>1256: </em>    dcache(7, alu_dcache, regwrite1_dcache, dcache_regwrite2);
-<em>1257: </em>    regWrite2(8, muldiv_regwrite2, dcache_regwrite2);
-<em>1258: </em>  <font color="red"><strong>}</strong></font>
-<em>1259: </em>  printf(<font color="red">&quot;\n\n***All stopped.****\n&quot;</font>);
-<em>1260: </em>  printRegs();
-<em>1261: </em>  <strong>return</strong> 0;
-<em>1262: </em><font color="red"><strong>}</strong></font>
-<em>1263: </em>    
-<em>1264: </em>    
+<em>1229: </em>  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), 
+<em>1230: </em>    regread_muldiv(Clock), alu_regwrite1(Clock), 
+<em>1231: </em>    muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+<em>1232: </em>
+<em>1233: </em>  Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
+<em>1234: </em>  
+<em>1235: </em>  printf(<font color="red">&quot;\n\n\n\n&quot;</font>
+<em>1236: </em>         <font color="red">&quot;the pipe: a simple risc pipeline simulator v0.06\n&quot;</font>
+<em>1237: </em>         <font color="red">&quot;copyright © motorola 1997-2003\n&quot;</font>);
+<em>1238: </em>  
+<em>1239: </em>  initCode(10000);          <font color="#ffa600"><em>// create some instructions</em></font>
+<em>1240: </em>  <font color="#ffa600"><em>//initCode(10);</em></font>
+<em>1241: </em>  initRegs();                   <font color="#ffa600"><em>// set up registers</em></font>
+<em>1242: </em>  printf(<font color="red">&quot;\nCode and registers initialised.&quot;</font>);
+<em>1243: </em>  par <font color="red"><strong>{</strong></font>
+<em>1244: </em>    <font color="#ffa600"><em>//===logging</em></font>
+<em>1245: </em>    watchdog(20000, icount_watchdog, fetch_watchdog);
+<em>1246: </em>    <font color="red"><strong>{</strong></font>
+<em>1247: </em>      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache,
+<em>1248: </em>                  fetch_watchdog, 0);
+<em>1249: </em>      fetch();
+<em>1250: </em>    <font color="red"><strong>}</strong></font>
+<em>1251: </em>    icache(1, fetch_icache, icache_decode);
+<em>1252: </em>    <font color="red"><strong>{</strong></font>
+<em>1253: </em>      Decoder decoder(2, icache_decode, decode_fetch, 
+<em>1254: </em>                      decode_regread, icount_watchdog);
+<em>1255: </em>      decoder();
+<em>1256: </em>    <font color="red"><strong>}</strong></font>
+<em>1257: </em>    regRead(3, decode_regread, regread_alu, regread_muldiv);
+<em>1258: </em>    alu(4, regread_alu, alu_regwrite1, alu_dcache, alu_fetch);
+<em>1259: </em>    muldiv(5, regread_muldiv, muldiv_regwrite2);
+<em>1260: </em>    regWrite1(6, alu_regwrite1, regwrite1_dcache);
+<em>1261: </em>    dcache(7, alu_dcache, regwrite1_dcache, dcache_regwrite2);
+<em>1262: </em>    regWrite2(8, muldiv_regwrite2, dcache_regwrite2);
+<em>1263: </em>  <font color="red"><strong>}</strong></font>
+<em>1264: </em>  printf(<font color="red">&quot;\n\n***All stopped.****\n&quot;</font>);
+<em>1265: </em>  printRegs();
+<em>1266: </em>  <strong>return</strong> 0;
+<em>1267: </em><font color="red"><strong>}</strong></font>
+<em>1268: </em>    
+<em>1269: </em>    
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -1330,6 +1335,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Mon Sep 20 15:21:20 2004</em>.</font></p></div>
+Last update <em>Tue Sep 21 15:10:17 2004</em>.</font></p></div>
 </body>
 </html>

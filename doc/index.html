@@ -48,8 +48,8 @@ Peter Wilson</i></font>
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -68,7 +68,7 @@ Peter Wilson</i></font>
    on the result of a function launched as a separate thread.  Although C++ is a
    difficult language from which to extract formal properties, we believe that
    the combination of CSP (which does have well-understood semantics) and an
-   identified subset of Plasma will make this possible.</p><!-- Purpose of This Work -->
+   identified subset of Plasma will make this possible.</p><p>A PDF version of this document may be found at:</p><p><a href="http://www.somerset.sps.mot.com/projects/tools/plasma/index.pdf" class="http">http://www.somerset.sps.mot.com/projects/tools/plasma/index.pdf</a></p><!-- Purpose of This Work -->
 <a name="Purpose-of-This-Work"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">1 Purpose of This Work</font>
 </h3></td></tr></table>
@@ -209,11 +209,12 @@ Peter Wilson</i></font>
 	 <a href="http://computing-dictionary.thefreedictionary.com/MultiLisp" class="http">Multilisp</a>.  For
 	 example, to create two threads one uses the <code>par</code> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">          par <font color="red"><strong>{</strong></font>
-            a();
-            b();
-          <font color="red"><strong>}</strong></font>
-          c();
+<tr><td><pre class="prog"> 
+par <font color="red"><strong>{</strong></font>
+  a();
+  b();
+<font color="red"><strong>}</strong></font>
+c();
 
 </pre>
 </td></tr>
@@ -223,9 +224,10 @@ Peter Wilson</i></font>
 	 statement within a <code>par</code> block is launched as a separate thread and
 	 braces may be used to group multiple statements together.</p><p>A replicated form of <code>par</code> exists in the form of the <code>pfor</code> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  pfor (int i = 0; i != Max; ++i) <font color="red"><strong>{</strong></font>
-    foo(i);
-  <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+pfor (int i = 0; i != Max; ++i) <font color="red"><strong>{</strong></font>
+  foo(i);
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -235,11 +237,11 @@ Peter Wilson</i></font>
 	 operator may be used:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
-         Foo x;
+Foo x;
 
-         Result&lt;int&gt; res = spawn(x.calculate(1,2,3));
+Result&lt;int&gt; res = spawn(x.calculate(1,2,3));
 
-         cout &lt;&lt; <font color="red">&quot;The result is:  &quot;</font> &lt;&lt; res.value() &lt;&lt; &quot;\n&quot;;
+cout &lt;&lt; <font color="red">&quot;The result is:  &quot;</font> &lt;&lt; res.value() &lt;&lt; &quot;\n&quot;;
       
 </pre>
 </td></tr>
@@ -268,25 +270,26 @@ Peter Wilson</i></font>
 	    by a spawn function.</p><p>For example, the following code creates two threads, a producer
 	    and a consumer:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         <strong>typedef</strong> Channel&lt;int&gt; IntChan;
-         IntChan c;
-         par <font color="red"><strong>{</strong></font>
-           <font color="red"><strong>{</strong></font>
-             <font color="#ffa600"><em>// Thread 1.</em></font>
-             c.write(1);
-             c.write(2);
-             c.write(3);
-             c.write(-1);
-           <font color="red"><strong>}</strong></font>
-           <font color="red"><strong>{</strong></font>
-             <font color="#ffa600"><em>// Thread 2.</em></font>
-             int x;
-             <strong>do</strong> <font color="red"><strong>{</strong></font>
-               x = c.get();
-               mprintf (&quot;Result:  %d\n&quot;,x);
-             <font color="red"><strong>}</strong></font> <strong>while</strong> (x &gt;= 0);
-           <font color="red"><strong>}</strong></font>
-         <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+<strong>typedef</strong> Channel&lt;int&gt; IntChan;
+IntChan c;
+par <font color="red"><strong>{</strong></font>
+  <font color="red"><strong>{</strong></font>
+    <font color="#ffa600"><em>// Thread 1.</em></font>
+    c.write(1);
+    c.write(2);
+    c.write(3);
+    c.write(-1);
+  <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>{</strong></font>
+    <font color="#ffa600"><em>// Thread 2.</em></font>
+    int x;
+    <strong>do</strong> <font color="red"><strong>{</strong></font>
+      x = c.get();
+      mprintf (&quot;Result:  %d\n&quot;,x);
+    <font color="red"><strong>}</strong></font> <strong>while</strong> (x &gt;= 0);
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -300,20 +303,21 @@ Peter Wilson</i></font>
 	    exist.  A thread needs to block only if no data exists on any of the
 	    channels.  To support this, Plasma has the <code>alt</code> and <code>afor</code> constructs:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    alt <font color="red"><strong>{</strong></font>
-      c0.port (int v) <font color="red"><strong>{</strong></font>
-        plasma::mprintf (&quot;Got a value from port c0:  %d\n&quot;,v);
-      <font color="red"><strong>}</strong></font>
-      c1.port (int v) <font color="red"><strong>{</strong></font>
-        plasma::mprintf (&quot;Got a value from port c1:  %d\n&quot;,v);
-      <font color="red"><strong>}</strong></font>
-      c2.port (int v) <font color="red"><strong>{</strong></font>
-        plasma::mprintf (&quot;Got a value from port c2:  %d\n&quot;,v);
-      <font color="red"><strong>}</strong></font>
-      c3.port (int v) <font color="red"><strong>{</strong></font>
-        plasma::mprintf (&quot;Got a value from port c3:  %d\n&quot;,v);
-      <font color="red"><strong>}</strong></font>
-    <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+alt <font color="red"><strong>{</strong></font>
+  c0.port (int v) <font color="red"><strong>{</strong></font>
+    plasma::mprintf (&quot;Got a value from port c0:  %d\n&quot;,v);
+  <font color="red"><strong>}</strong></font>
+  c1.port (int v) <font color="red"><strong>{</strong></font>
+    plasma::mprintf (&quot;Got a value from port c1:  %d\n&quot;,v);
+  <font color="red"><strong>}</strong></font>
+  c2.port (int v) <font color="red"><strong>{</strong></font>
+    plasma::mprintf (&quot;Got a value from port c2:  %d\n&quot;,v);
+  <font color="red"><strong>}</strong></font>
+  c3.port (int v) <font color="red"><strong>{</strong></font>
+    plasma::mprintf (&quot;Got a value from port c3:  %d\n&quot;,v);
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -328,11 +332,12 @@ Peter Wilson</i></font>
 	    replicating threads, it also provides <code>afor</code> for replicating
 	    channel reads:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
-      channels[i].port (int v) <font color="red"><strong>{</strong></font>
-        plasma::mprintf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
-      <font color="red"><strong>}</strong></font>
-    <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
+  channels[i].port (int v) <font color="red"><strong>{</strong></font>
+    plasma::mprintf (&quot;From port %d: %d\n&quot;,i,v);
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -341,18 +346,19 @@ Peter Wilson</i></font>
 	    thread if no channels in the <code>channels</code> container are
 	    ready.</p><p><code>Alt</code> and <code>afor</code> blocks may be nested:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    alt <font color="red"><strong>{</strong></font>
-      afor (int i = 0; i != (int)ichannels.size(); ++i) <font color="red"><strong>{</strong></font>
-        ichannels[i].port (int v) <font color="red"><strong>{</strong></font>
-          plasma::mprintf (&quot;Got a value from port %d:  %d\n&quot;,i+ibase,v);
-        <font color="red"><strong>}</strong></font>
-      <font color="red"><strong>}</strong></font>
-      alt <font color="red"><strong>{</strong></font>
-        xc.port (int v) <font color="red"><strong>{</strong></font>
-          plasma::mprintf (&quot;Got a value from port xc:  %d\n&quot;,v);
-        <font color="red"><strong>}</strong></font>
-      <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+alt <font color="red"><strong>{</strong></font>
+  afor (int i = 0; i != (int)ichannels.size(); ++i) <font color="red"><strong>{</strong></font>
+    ichannels[i].port (int v) <font color="red"><strong>{</strong></font>
+      plasma::mprintf (&quot;From port %d:  %d\n&quot;,i+ibase,v);
     <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+  alt <font color="red"><strong>{</strong></font>
+    xc.port (int v) <font color="red"><strong>{</strong></font>
+      plasma::mprintf (&quot;From port xc:  %d\n&quot;,v);
+    <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -379,7 +385,8 @@ Peter Wilson</i></font>
 	    communicate through channels, but the properties of the channels
 	    themselves regulate this data interchange to clock boundaries.</p><p>For example, consider the following program:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"><font color="#1919af"><strong>#include</strong></font> &lt;iostream&gt;
+<tr><td><pre class="prog"> 
+<font color="#1919af"><strong>#include</strong></font> &lt;iostream&gt;
 <font color="#1919af"><strong>#include</strong></font> <font color="red">&quot;plasma.h&quot;</font>
 
 using namespace plasma;
@@ -404,7 +411,8 @@ void consumer(IntChan &amp;c)
     <strong>if</strong> (d &lt; 0) <font color="red"><strong>{</strong></font> 
       done = true; 
     <font color="red"><strong>}</strong></font> <strong>else</strong> <font color="red"><strong>{</strong></font>
-      cout &lt;&lt; <font color="red">&quot;Got a value at time &quot;</font> &lt;&lt; pTime() &lt;&lt; <font color="red">&quot;:  &quot;</font> &lt;&lt; d &lt;&lt; endl;
+      cout &lt;&lt; <font color="red">&quot;Got a value at time &quot;</font> &lt;&lt; pTime() 
+           &lt;&lt; <font color="red">&quot;:  &quot;</font> &lt;&lt; d &lt;&lt; endl;
     <font color="red"><strong>}</strong></font>
   <font color="red"><strong>}</strong></font>
   cout &lt;&lt; <font color="red">&quot;Consumer done.&quot;</font> &lt;&lt; endl;
@@ -436,7 +444,8 @@ int pMain(int argc,const char *argv[])
 	    channel, <code>IntChan</code>, and specifies that the period of the
 	    clock is 5 time units.  The output of this program is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">Got a value at time 5:  10
+<tr><td><pre class="prog"> 
+Got a value at time 5:  10
 Got a value at time 10:  11
 Got a value at time 15:  12
 Got a value at time 20:  13
@@ -468,11 +477,11 @@ Done.
 	    <code>pMutex</code> class modifier:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">  
-         pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
-           ...
-         public:
-           pNoMutex bool foo() const;
-         <font color="red"><strong>}</strong></font>;
+pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
+  ...
+public:
+  pNoMutex bool foo() const;
+<font color="red"><strong>}</strong></font>;
 
 </pre>
 </td></tr>
@@ -510,18 +519,19 @@ Done.
 	 hardware resources in a simulation.  A thread on one processor might be
 	 busy, but this does not affect a thread on another processor:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         Processor proc1,proc2;
+<tr><td><pre class="prog"> 
+Processor proc1,proc2;
 
-         par <font color="red"><strong>{</strong></font>
-           on (proc1) <font color="red"><strong>{</strong></font>
-             &lt;code&gt;
-             pBusy(100); <font color="#ffa600"><em>// Does not affect the other thread.</em></font>
-             &lt;code&gt;
-           <font color="red"><strong>}</strong></font>
-           on (proc2) <font color="red"><strong>{</strong></font>
-             &lt;code&gt;
-           <font color="red"><strong>}</strong></font>
-         <font color="red"><strong>}</strong></font>
+par <font color="red"><strong>{</strong></font>
+  on (proc1) <font color="red"><strong>{</strong></font>
+    &lt;code&gt;
+    pBusy(100); <font color="#ffa600"><em>// Does not affect the other thread.</em></font>
+    &lt;code&gt;
+  <font color="red"><strong>}</strong></font>
+  on (proc2) <font color="red"><strong>{</strong></font>
+    &lt;code&gt;
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
 </pre>
 </td></tr>
@@ -550,7 +560,7 @@ Plasma examples are available <a href="index-2.html#Examples" class="inbound">he
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">6 Implementation Details</font>
 </h3></td></tr></table>
 </div><div class="section">
-Implementation details and scheduling information can be found here <a href="index-3.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
+Implementation details and scheduling information can be found here <a href="index-4.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
 <!-- Additional Documentation -->
 <a name="Additional-Documentation"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">7 Additional Documentation</font>
@@ -563,7 +573,7 @@ A Twiki page, containing additional background information, can be found
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">8 Future Work</font>
 </h3></td></tr></table>
 </div><div class="section">
-A description of proposed future enhancements can be found <a href="index-4.html#Future-Work" class="inbound">here</a>.</div><br>
+A description of proposed future enhancements can be found <a href="index-3.html#Future-Work" class="inbound">here</a>.</div><br>
 </div></td>
 </tr></table><div class="skribe-ending">
 <hr> 
@@ -571,6 +581,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Mon Sep 20 15:58:05 2004</em>.</font></p></div>
+Last update <em>Tue Sep 21 15:10:19 2004</em>.</font></p></div>
 </body>
 </html>

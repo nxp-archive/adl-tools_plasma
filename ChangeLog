@@ -1,3 +1,10 @@
+2004-09-21  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Got skribe to produce a pdf of the main document (not the source
+	code listings).  Modified configure so that it checks to see if
+	pdflatex is available and good (a very recent version of the
+	hyperref package is required).
+
         ======= plasma release 0.6.0 (v0_6_0) on Linux (cde-tx32-ldt189) =======
 
 

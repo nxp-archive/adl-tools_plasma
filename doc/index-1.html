@@ -52,8 +52,8 @@
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -73,28 +73,32 @@ program into C++, then invokes g++ to compile this into either an executable or
 into an object file.  As such, its options are basically those of g++.  General
 usage is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  plasma &lt;options&gt; &lt;input file&gt; 
+<tr><td><pre class="prog"> 
+plasma &lt;options&gt; &lt;input file&gt; 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>An input file has an extension of <code>.pa</code>.</p><p>For example, to create an executable from a single Plasma file:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"> plasma -g -Wall -O3 foo.pa -o foo 
+<tr><td><pre class="prog"> 
+plasma -g -Wall -O3 foo.pa -o foo  
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>To create an object file, use the <strong>-c</strong> option:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"> plasma -g -Wall -O3 -c foo.pa -o foo.o 
+<tr><td><pre class="prog"> 
+plasma -g -Wall -O3 -c foo.pa -o foo.o 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>To link, use <strong>ld</strong> or <strong>g++</strong>.  The script <strong>plasma-config</strong> exists to supply the
 required link line.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         plasma -c -o a.o a.pa
-         plasma -c -o b.o b.pa
-         g++ -o prog a.o b.o `plasma-config --libs`
+<tr><td><pre class="prog"> 
+plasma -c -o a.o a.pa
+plasma -c -o b.o b.pa
+g++ -o prog a.o b.o `plasma-config --libs`
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -118,12 +122,14 @@ communication.</p><!-- Thread Creation -->
 <p>The <strong>par</strong> block executes each statement in parallel, waiting until all
 child threads are finished before proceeding.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">        int x,y,z;
-        par <font color="red"><strong>{</strong></font>
-          x = sub1();
-          y = sub2();
-        <font color="red"><strong>}</strong></font>
-        z = sub3();
+<tr><td><pre class="prog"> 
+int x,y,z;
+par <font color="red"><strong>{</strong></font>
+  x = sub1();
+  y = sub2();
+<font color="red"><strong>}</strong></font>
+z = sub3();
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -132,14 +138,16 @@ child threads are finished before proceeding.  For example:</p><table cellspacin
 statement <code>z = sub3()</code> is executed.  To create a more complex in-line
 operation, simply use a brace-delineated block, e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">        par <font color="red"><strong>{</strong></font>
-          <font color="red"><strong>{</strong></font>
-            &lt;sequence of statements&gt;
-          <font color="red"><strong>}</strong></font>
-          <font color="red"><strong>{</strong></font>
-            &lt;sequence of statements&gt;
-          <font color="red"><strong>}</strong></font>
-        <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+par <font color="red"><strong>{</strong></font>
+  <font color="red"><strong>{</strong></font>
+    &lt;sequence of statements&gt;
+  <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>{</strong></font>
+    &lt;sequence of statements&gt;
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -152,12 +160,13 @@ operation, simply use a brace-delineated block, e.g.:</p><table cellspacing="0" 
 iteration, its body is launched as a separate thread.  All threads must then
 complete before execution continues past the loop.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">        const int Max = 10;
-        int results[Max];
-        pfor (int i = 0; i != Max ++i)  <font color="red"><strong>{</strong></font>
-          results[i] = sub(i);
-        <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+const int Max = 10;
+int results[Max];
+pfor (int i = 0; i != Max ++i)  <font color="red"><strong>{</strong></font>
+  results[i] = sub(i);
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -190,23 +199,25 @@ Calling <code>wait()</code> will wait until the thread is finished and calling <
 will terminate the thread.  In the latter case, the result of the thread will
 be the default constructor value of the return type.</p><p>A simple example is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  double foo(double a,double b)
-  <font color="red"><strong>{</strong></font>
-    int xx = 0;
-    <strong>for</strong> (int i = 0; i != 100000000; ++i) <font color="red"><strong>{</strong></font>
-      xx += 1;
-    <font color="red"><strong>}</strong></font>
-    <strong>return</strong> a*a + b*b;
+<tr><td><pre class="prog"> 
+double foo(double a,double b)
+<font color="red"><strong>{</strong></font>
+  int xx = 0;
+  <strong>for</strong> (int i = 0; i != 100000000; ++i) <font color="red"><strong>{</strong></font>
+    xx += 1;
   <font color="red"><strong>}</strong></font>
+  <strong>return</strong> a*a + b*b;
+<font color="red"><strong>}</strong></font>
 
-  int pMain(int argc,const char *argv[])
-  <font color="red"><strong>{</strong></font> 
-    Result&lt;double&gt; r1 = spawn(foo(1.1,2.2));
-    Result&lt;double&gt; r2 = spawn(foo(2.7,9.8));
-    cout &lt;&lt; <font color="red">&quot;Result is:  &quot;</font> &lt;&lt; r1.value() &lt;&lt; &quot;, &quot; &lt;&lt; r2.value() &lt;&lt; endl;
-    <strong>return</strong> 0;
-  <font color="red"><strong>}</strong></font>
-
+int pMain(int argc,const char *argv[])
+<font color="red"><strong>{</strong></font> 
+  Result&lt;double&gt; r1 = spawn(foo(1.1,2.2));
+  Result&lt;double&gt; r2 = spawn(foo(2.7,9.8));
+  cout &lt;&lt; <font color="red">&quot;Result is:  &quot;</font> &lt;&lt; r1.value() 
+       &lt;&lt; &quot;, &quot; &lt;&lt; r2.value() &lt;&lt; endl;
+  <strong>return</strong> 0;
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -226,33 +237,29 @@ It accepts the expected value as a constructor argument.  A helper function
 <code>make_valuecheck()</code> simplifies the creation of the object.</p><p>For instance:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog"> 
-
-  ValueCheckGen&lt;Foo&gt; results(make_valuecheck(foo));
-
+ValueCheckGen&lt;Foo&gt; results(make_valuecheck(foo));
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>where <strong>Foo</strong> is a type and <strong>foo</strong> is an instance of the type,
 e.g. <code>bool</code> and <code>true</code>.  You then add threads like this:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    
-  results.push_back(spawn(myfunc(1,2,3)));
-  
+<tr><td><pre class="prog">     
+results.push_back(spawn(myfunc(1,2,3)));
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>And check the results like this:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  
-  <strong>if</strong> (!results.check()) <font color="red"><strong>{</strong></font> <strong>return</strong> false; <font color="red"><strong>}</strong></font>;
-
+<tr><td><pre class="prog">   
+<strong>if</strong> (!results.check()) <font color="red"><strong>{</strong></font> <strong>return</strong> false; <font color="red"><strong>}</strong></font>;
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>You can reuse it by calling clear:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  results.clear();
-
+<tr><td><pre class="prog"> 
+results.clear();
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -302,42 +309,41 @@ processor to squeeze in work from other threads.</p></li>
 </ul><p>The user may declare multiple processors by declaring a <strong>Processor</strong> object,
 e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">Processor a;
-
+<tr><td><pre class="prog"> 
+Processor a;
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>To create a vector of Processors, use the <code>Processors</code> data
 structure:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  Processors procs(10);
-
+<tr><td><pre class="prog"> 
+Processors procs(10);
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>New threads will be launched on their parent's processor unless one of the
 following mechanisms is used:</p><ul class="itemize"> <li><p>With a <strong>par</strong> or <strong>pfor</strong> block, using an <strong>on</strong> block:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    par <font color="red"><strong>{</strong></font>
-       on (&lt;proc name&gt;) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
-       ...
-    <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+par <font color="red"><strong>{</strong></font>
+   on (&lt;proc name&gt;) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
+   ...
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table></li>
- <li>With the spawn command:
-
-<table cellspacing="0" class="color" cellpadding="0"><tbody>
+ <li><p>With the spawn command:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    &lt;proc name&gt;.spawn(&lt;command&gt;);
-
+<tr><td><pre class="prog"> 
+&lt;proc name&gt;.spawn(&lt;command&gt;);
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
-</tbody></table>
-</li>
+</tbody></table></li>
 </ul><p>Each <strong>Processor</strong> may be given a name by passing a <code>const char *</code> to the
 constructor or the <strong>setName</strong> method.  This pointer is unmanaged by the
 <strong>Processor</strong> and is simply stored as-is.  This means that you can compare it
@@ -349,10 +355,11 @@ of SMP systems.  To do this, the user either creates a new processor using the
 specifying <em>true</em> for the third argument of the <code>Processors</code>
 constructor:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  Processor a = make_sharedproc(pCurProc());
+<tr><td><pre class="prog"> 
+Processor a = make_sharedproc(pCurProc());
 
-  Processors procs(10,&quot;terminals&quot;,true);
-
+Processors procs(10,&quot;terminals&quot;,true);
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -363,22 +370,24 @@ same processor (element 0 of the <code>procs</code> array), they all finish in 5
 time units.  This is because the other nine processors share the same ready
 queue and are able to schedule these threads.</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  Processors procs(10,&quot;processors&quot;,true);
+<tr><td><pre class="prog"> 
+Processors procs(10,&quot;processors&quot;,true);
 
-  pfor (int i = 0; i != 10; ++i) <font color="red"><strong>{</strong></font>
-    on (procs[0]) <font color="red"><strong>{</strong></font>
-      cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; start:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;
-      pBusy(50);
-      cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; done:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;      
-    <font color="red"><strong>}</strong></font>
+pfor (int i = 0; i != 10; ++i) <font color="red"><strong>{</strong></font>
+  on (procs[0]) <font color="red"><strong>{</strong></font>
+    cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; start:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;
+    pBusy(50);
+    cout &lt;&lt; <font color="red">&quot;Block &quot;</font> &lt;&lt; i &lt;&lt; <font color="red">&quot; done:  &quot;</font> &lt;&lt; pTime() &lt;&lt; endl;      
   <font color="red"><strong>}</strong></font>
-
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>The output from this program fragment is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">Block 0 start:  0
+<tr><td><pre class="prog"> 
+Block 0 start:  0
 Block 1 start:  0
 Block 2 start:  0
 Block 3 start:  0
@@ -398,6 +407,7 @@ Block 2 done:  50
 Block 6 done:  50
 Block 4 done:  50
 Block 3 done:  50
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -422,13 +432,14 @@ another thread or enters an alt block, there is the possibility that a lower
 priority thread may execute.  In other words, given the following code
 fragment:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    par <font color="red"><strong>{</strong></font>
-      on (pCurProc(),0) <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 1 */</strong></font> <font color="red"><strong>}</strong></font>
-      on (pCurProc(),1) <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 2 */</strong></font> <font color="red"><strong>}</strong></font>
-      <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 3 */</strong></font> <font color="red"><strong>}</strong></font>
-      <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 4 */</strong></font> <font color="red"><strong>}</strong></font>
-    <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+par <font color="red"><strong>{</strong></font>
+  on (pCurProc(),0) <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 1 */</strong></font> <font color="red"><strong>}</strong></font>
+  on (pCurProc(),1) <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 2 */</strong></font> <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 3 */</strong></font> <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>{</strong></font> <font color="#ffa600"><strong>/* thread 4 */</strong></font> <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -485,13 +496,14 @@ a given amount of time.  If nothing else has awakened the alt block thread
 before then, this will.  It does not return a useful value, so it is generally
 used with an empty port statement, e.g.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">     Timeout t(20);
-     alt <font color="red"><strong>{</strong></font>
-       c0.port(...) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
-       c1.port(...) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
-       t.port() <font color="red"><strong>{</strong></font> cout &lt;&lt; <font color="red">&quot;Got a timeout!&quot;</font> &lt;&lt; endl; <font color="red"><strong>}</strong></font>
-     <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+Timeout t(20);
+alt <font color="red"><strong>{</strong></font>
+  c0.port(...) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
+  c1.port(...) <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font>
+  t.port() <font color="red"><strong>{</strong></font> cout &lt;&lt; <font color="red">&quot;Got a timeout!&quot;</font> &lt;&lt; endl; <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -515,42 +527,43 @@ channels.</p></li>
 interfaced to an <strong>alt</strong> construct by using this class.  This is a read-only
 channel which will return the result value of the spawned thread.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">     double foo(double a,double b)
-     <font color="red"><strong>{</strong></font>
-       int xx = 0;
-       <strong>for</strong> (int i = 0; i != 100000000; ++i) <font color="red"><strong>{</strong></font>
-         xx += 1;
-       <font color="red"><strong>}</strong></font>
-       <strong>return</strong> a*a + b*b;
-     <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+double foo(double a,double b)
+<font color="red"><strong>{</strong></font>
+  int xx = 0;
+  <strong>for</strong> (int i = 0; i != 100000000; ++i) <font color="red"><strong>{</strong></font>
+    xx += 1;
+  <font color="red"><strong>}</strong></font>
+  <strong>return</strong> a*a + b*b;
+<font color="red"><strong>}</strong></font>
 
-     int bar(int a)
-     <font color="red"><strong>{</strong></font>
-       <strong>return</strong> a * a * a;
-     <font color="red"><strong>}</strong></font>
+int bar(int a)
+<font color="red"><strong>{</strong></font>
+  <strong>return</strong> a * a * a;
+<font color="red"><strong>}</strong></font>
 
-     void check(ResChan&lt;double&gt; &amp;a,ResChan&lt;int&gt; &amp;b)
-     <font color="red"><strong>{</strong></font>
-       <strong>for</strong> (int i = 0; i != 2; ++i) <font color="red"><strong>{</strong></font>
-         alt <font color="red"><strong>{</strong></font>
-           a.port(double x) <font color="red"><strong>{</strong></font>
-             cout &lt;&lt; <font color="red">&quot;x:  &quot;</font> &lt;&lt; x &lt;&lt; endl;
-           <font color="red"><strong>}</strong></font>
-           b.port (int y) <font color="red"><strong>{</strong></font>
-             cout &lt;&lt; <font color="red">&quot;y:  &quot;</font> &lt;&lt; y &lt;&lt; endl;        
-           <font color="red"><strong>}</strong></font>
-         <font color="red"><strong>}</strong></font>
-       <font color="red"><strong>}</strong></font>
-     <font color="red"><strong>}</strong></font>
+void check(ResChan&lt;double&gt; &amp;a,ResChan&lt;int&gt; &amp;b)
+<font color="red"><strong>{</strong></font>
+  <strong>for</strong> (int i = 0; i != 2; ++i) <font color="red"><strong>{</strong></font>
+    alt <font color="red"><strong>{</strong></font>
+      a.port(double x) <font color="red"><strong>{</strong></font>
+        cout &lt;&lt; <font color="red">&quot;x:  &quot;</font> &lt;&lt; x &lt;&lt; endl;
+      <font color="red"><strong>}</strong></font>
+      b.port (int y) <font color="red"><strong>{</strong></font>
+        cout &lt;&lt; <font color="red">&quot;y:  &quot;</font> &lt;&lt; y &lt;&lt; endl;        
+      <font color="red"><strong>}</strong></font>
+    <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
 
-     int pMain(int argc,const char *argv[])
-     <font color="red"><strong>{</strong></font> 
-       ResChan&lt;double&gt; r1 = spawn(foo(1.1,2.2));
-       ResChan&lt;int&gt; r2 = spawn(bar(123));
-       check(r1,r2);
-       <strong>return</strong> 0;
-     <font color="red"><strong>}</strong></font>
-
+int pMain(int argc,const char *argv[])
+<font color="red"><strong>{</strong></font> 
+  ResChan&lt;double&gt; r1 = spawn(foo(1.1,2.2));
+  ResChan&lt;int&gt; r2 = spawn(bar(123));
+  check(r1,r2);
+  <strong>return</strong> 0;
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -563,13 +576,14 @@ channel which will return the result value of the spawned thread.  For example:<
 <p>An <strong>alt</strong> block allows for unordered selection of data from channels.  Its
 syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  alt <font color="red"><strong>{</strong></font>
-    &lt;channel expr&gt; [ . | -&gt; ] port (&lt;value decl&gt;) <font color="red"><strong>{</strong></font> &lt;body&gt; <font color="red"><strong>}</strong></font>
-    [ alt <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font> ]
-    [ afor <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font> ]
-    [ <font color="red"><strong>{</strong></font> &lt;<strong>default</strong> block&gt; <font color="red"><strong>}</strong></font> ]
-  <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+alt <font color="red"><strong>{</strong></font>
+  &lt;channel expr&gt; [ . | -&gt; ] port (&lt;value decl&gt;) <font color="red"><strong>{</strong></font> &lt;body&gt; <font color="red"><strong>}</strong></font>
+  [ alt <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font> ]
+  [ afor <font color="red"><strong>{</strong></font> ... <font color="red"><strong>}</strong></font> ]
+  [ <font color="red"><strong>{</strong></font> &lt;<strong>default</strong> block&gt; <font color="red"><strong>}</strong></font> ]
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -597,11 +611,12 @@ collection of channels plus one or more single channels, etc.</p></div>
 <p>An <strong>afor</strong> block is similar to an <strong>alt</strong> block, except that it allows the user
 to loop over a data structure of channels.  Its syntax is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  afor ( &lt;s1&gt; ; &lt;s2&gt; ; &lt;s3&gt; ) <font color="red"><strong>{</strong></font>
-    &lt;channel expr&gt; [ . | -&gt; ] port (&lt;value decl&gt;) <font color="red"><strong>{</strong></font> &lt;body&gt; <font color="red"><strong>}</strong></font>
-    [ <font color="red"><strong>{</strong></font> &lt;<strong>default</strong> block&gt; <font color="red"><strong>}</strong></font> ]
-  <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+afor ( &lt;s1&gt; ; &lt;s2&gt; ; &lt;s3&gt; ) <font color="red"><strong>{</strong></font>
+  &lt;channel expr&gt; [ . | -&gt; ] port (&lt;value decl&gt;) <font color="red"><strong>{</strong></font> &lt;body&gt; <font color="red"><strong>}</strong></font>
+  [ <font color="red"><strong>{</strong></font> &lt;<strong>default</strong> block&gt; <font color="red"><strong>}</strong></font> ]
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -612,13 +627,14 @@ channel expression and the <strong>port</strong>'s body.</p><p>For example, the 
 <strong>alt</strong> block, the thread will sleep if no channels are ready and there is not a
 default block.:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
-    channels[i].port (int v) <font color="red"><strong>{</strong></font>
-      printf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
-      <strong>if</strong> (v &lt; 0) ++donecount;
-    <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
+  channels[i].port (int v) <font color="red"><strong>{</strong></font>
+    printf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
+    <strong>if</strong> (v &lt; 0) ++donecount;
   <font color="red"><strong>}</strong></font>
-
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -637,20 +653,21 @@ allows you to block on one or more collections and/or to block on a collection
 plus one or more single channels.  For example, the following code will block
 on a collection and an override channel:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  alt <font color="red"><strong>{</strong></font>
-    afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
-      channels[i].port (int v) <font color="red"><strong>{</strong></font>
-        printf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
-        <strong>if</strong> (v &lt; 0) ++donecount;
-      <font color="red"><strong>}</strong></font>
-    <font color="red"><strong>}</strong></font>
-    stopchan.port (bool b) <font color="red"><strong>{</strong></font>
-      <strong>if</strong> (b) <font color="red"><strong>{</strong></font>
-        printf (&quot;Got a stop command!\n&quot;);
-      <font color="red"><strong>}</strong></font>
+<tr><td><pre class="prog"> 
+alt <font color="red"><strong>{</strong></font>
+  afor (int i = 0; i != (int)channels.size(); ++i) <font color="red"><strong>{</strong></font>
+    channels[i].port (int v) <font color="red"><strong>{</strong></font>
+      printf (&quot;Got a value from port %d:  %d\n&quot;,i,v);
+      <strong>if</strong> (v &lt; 0) ++donecount;
     <font color="red"><strong>}</strong></font>
   <font color="red"><strong>}</strong></font>
-
+  stopchan.port (bool b) <font color="red"><strong>{</strong></font>
+    <strong>if</strong> (b) <font color="red"><strong>{</strong></font>
+      printf (&quot;Got a stop command!\n&quot;);
+    <font color="red"><strong>}</strong></font>
+  <font color="red"><strong>}</strong></font>
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -675,20 +692,21 @@ this.  The easiest is to declare a class as being a mutex class:</p><table cells
 its destructor, with serialization code.  To prevent this on a per-method basis,
 use the modifier <em>pNoMutex</em>:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
-  public:
-    <font color="#ffa600"><em>// Not protected.</em></font>
-    Foo();
-    ~Foo();
-    <font color="#ffa600"><em>// Protected.</em></font>
-    int a();
-    <font color="#ffa600"><em>// Not protected.</em></font>
-    pNoMutex int b();
-  private:
-    <font color="#ffa600"><em>// Not protected.</em></font>
-    int c();
-  <font color="red"><strong>}</strong></font>;    
-
+<tr><td><pre class="prog"> 
+pMutex <strong>class</strong> Foo <font color="red"><strong>{</strong></font>
+public:
+  <font color="#ffa600"><em>// Not protected.</em></font>
+  Foo();
+  ~Foo();
+  <font color="#ffa600"><em>// Protected.</em></font>
+  int a();
+  <font color="#ffa600"><em>// Not protected.</em></font>
+  pNoMutex int b();
+private:
+  <font color="#ffa600"><em>// Not protected.</em></font>
+  int c();
+<font color="red"><strong>}</strong></font>;    
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -699,15 +717,16 @@ method which returns a constant which is only initialized at construction time.<
 <code>pLock()</code> and <code>pUnlock()</code> primitives.  This is more error prone than using
 <em>pMutex</em> but might be necessary in some cases, such as for protecting a plain function:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  void msg(const char *fmt, ...) <font color="red"><strong>{</strong></font>
-    pLock();
-    va_list ap;
-    va_start(ap,fmt);
-    vprintf(fmt,ap);
-    va_end(ap);
-    pUnlock();
-  <font color="red"><strong>}</strong></font>
-
+<tr><td><pre class="prog"> 
+void msg(const char *fmt, ...) <font color="red"><strong>{</strong></font>
+  pLock();
+  va_list ap;
+  va_start(ap,fmt);
+  vprintf(fmt,ap);
+  va_end(ap);
+  pUnlock();
+<font color="red"><strong>}</strong></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -727,16 +746,18 @@ where a call to delete is required.</p><p>By default, allocations using <strong>
 managed memory, you may derive an object from <strong>gc</strong> or <strong>gc_cleanup</strong> or
 allocate using the <strong>GC</strong> or <strong>UseGC</strong> placement attribute.</p><p>For example, the following class will be managed when allocated using <strong>new</strong>:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">    <strong>class</strong> A : public gc <font color="red"><strong>{</strong></font> <font color="red"><strong>}</strong></font>;
-
+<tr><td><pre class="prog"> 
+<strong>class</strong> A : public gc <font color="red"><strong>{</strong></font> <font color="red"><strong>}</strong></font>;
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>However, its destructor will not be called.  If you derive from <strong>gc_cleanup</strong>,
 the class's destructor will be called when the object is collected.</p><p>An example of using the <strong>GC</strong> placement attribute is:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">   int *x = new (GC) int[1000];
-
+<tr><td><pre class="prog"> 
+int *x = new (GC) int[1000];
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -791,34 +812,37 @@ It is not reversible.  Its state is stored in 5 32-bit words.</li>
 calling <code>genrand()</code> or generate a double in the range of [0,1] by calling
 <code>gendbl()</code>.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         Random&lt;&gt; Rand;                <font color="#ffa600"><em>// Instantiate w/default generator.</em></font>
+<tr><td><pre class="prog"> 
+Random&lt;&gt; Rand;                <font color="#ffa600"><em>// Instantiate w/default generator.</em></font>
 
-         unsigned x = Rand.genrand();  <font color="#ffa600"><em>// Generate unsigned integer in </em></font>[0,0xffffffff].
-         double y = Rand.gendbl();     <font color="#ffa600"><em>// Generate double in </em></font>[0,1].
-
+unsigned x = Rand.genrand();  <font color="#ffa600"><em>// Generate uint in </em></font>[0,0xffffffff].
+double y = Rand.gendbl();     <font color="#ffa600"><em>// Generate double in </em></font>[0,1].
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>To create 3 independent generators with the Mersenne Twist algorithm:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         Random&lt;MtRand&gt; Rand(3);
+<tr><td><pre class="prog"> 
+Random&lt;MtRand&gt; Rand(3);
 
-         unsigned x = Rand.genrand(0); <font color="#ffa600"><em>// Generate using stream 0.</em></font>
-         unsigned y = Rand.genrand(1); <font color="#ffa600"><em>// Generate using stream 1.</em></font>
-         unsigned z = Rand.genrand(2); <font color="#ffa600"><em>// Generate using stream 2.</em></font>
-
+unsigned x = Rand.genrand(0); <font color="#ffa600"><em>// Generate using stream 0.</em></font>
+unsigned y = Rand.genrand(1); <font color="#ffa600"><em>// Generate using stream 1.</em></font>
+unsigned z = Rand.genrand(2); <font color="#ffa600"><em>// Generate using stream 2.</em></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
 </tbody></table><p>The class can then be saved to a stream, for example to checkpoint the current
 state of a simulation:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">         ostringstream os;
-         Rand.save(os);                <font color="#ffa600"><em>// Save the generators' state.</em></font>
+<tr><td><pre class="prog"> 
+ostringstream os;
+Rand.save(os);                <font color="#ffa600"><em>// Save the generators' state.</em></font>
 
-         istringstream is(os.str());
-         Rand.load(is);                <font color="#ffa600"><em>// Load the generators' state.</em></font>
-
+istringstream is(os.str());
+Rand.load(is);                <font color="#ffa600"><em>// Load the generators' state.</em></font>
+ 
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -845,6 +869,6 @@ Generates a normal distribution with the curve centered around <em>mean</em>.</l
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Mon Sep 20 15:58:05 2004</em>.</font></p></div>
+Last update <em>Tue Sep 21 15:10:19 2004</em>.</font></p></div>
 </body>
 </html>

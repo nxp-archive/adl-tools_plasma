@@ -52,8 +52,8 @@
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -83,12 +83,15 @@
   MemClkChan fetch_icache(Clock), icache_decode(Clock),
     alu_dcache(Clock), regwrite1_dcache(Clock);
 
-  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), regread_muldiv(Clock),
-    alu_regwrite1(Clock), muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), 
+    regread_muldiv(Clock), alu_regwrite1(Clock), 
+    muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
 
   Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
   
-  printf(<font color="red">&quot;\n\n\n\nthe pipe: a simple risc pipeline simulator v0.06\ncopyright © motorola 1997-2003\n&quot;</font>);
+  printf(<font color="red">&quot;\n\n\n\n&quot;</font>
+         <font color="red">&quot;the pipe: a simple risc pipeline simulator v0.06\n&quot;</font>
+         <font color="red">&quot;copyright © motorola 1997-2003\n&quot;</font>);
   
   initCode(10000);          <font color="#ffa600"><em>// create some instructions</em></font>
   <font color="#ffa600"><em>//initCode(10);</em></font>
@@ -96,14 +99,16 @@
   printf(<font color="red">&quot;\nCode and registers initialised.&quot;</font>);
   par <font color="red"><strong>{</strong></font>
     <font color="#ffa600"><em>//===logging</em></font>
-    watchdog(20000, icount_watchdog, fetch_watchdog);           <font color="#ffa600"><em>// (100050); for long runs</em></font>
+    watchdog(20000, icount_watchdog, fetch_watchdog);
     <font color="red"><strong>{</strong></font>
-      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache, fetch_watchdog, 0);
+      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache,
+                  fetch_watchdog, 0);
       fetch();
     <font color="red"><strong>}</strong></font>
     icache(1, fetch_icache, icache_decode);
     <font color="red"><strong>{</strong></font>
-      Decoder decoder(2, icache_decode, decode_fetch, decode_regread, icount_watchdog);
+      Decoder decoder(2, icache_decode, decode_fetch, 
+                      decode_regread, icount_watchdog);
       decoder();
     <font color="red"><strong>}</strong></font>
     regRead(3, decode_regread, regread_alu, regread_muldiv);
@@ -163,7 +168,7 @@
       <font color="red"><strong>}</strong></font>
       on (mainframe) <font color="red"><strong>{</strong></font>
         DiskManager disk_manager;
-        disk_manager(mips, buff_size, disks, tp_to_disks, disks_to_tp);
+        disk_manager(mips,buff_size,disks,tp_to_disks,disks_to_tp);
       <font color="red"><strong>}</strong></font>
       on (mainframe) <font color="red"><strong>{</strong></font>
         Agents agents;
@@ -305,6 +310,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Mon Sep 20 15:58:05 2004</em>.</font></p></div>
+Last update <em>Tue Sep 21 15:10:19 2004</em>.</font></p></div>
 </body>
 </html>

@@ -34,7 +34,14 @@
 
 (define sssection subsubsection)
 
-; Use this to insert left and right brackets.
+;; Change to using the Latex "book" style so that
+;; we can handle chapters.
+(let ((le (find-engine 'latex)))
+   (engine-custom-set! le 'documentclass "\\documentclass{book}")
+   (engine-custom-set! le 'color #f)
+   )
+
+;; Use t]his to insert left and right brackets.
 (define (scn) (char ";"))
 (define (lbr) (char "["))
 (define (rbr) (char "]"))

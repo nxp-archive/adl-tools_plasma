@@ -1226,12 +1226,15 @@ int pMain(int argc,const char *argv[])
   MemClkChan fetch_icache(Clock), icache_decode(Clock),
     alu_dcache(Clock), regwrite1_dcache(Clock);
 
-  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), regread_muldiv(Clock),
-    alu_regwrite1(Clock), muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
+  PipeClkChan decode_regread(Clock/2), regread_alu(Clock), 
+    regread_muldiv(Clock), alu_regwrite1(Clock), 
+    muldiv_regwrite2(Clock), dcache_regwrite2(Clock);
 
   Chan decode_fetch, alu_fetch, icount_watchdog, fetch_watchdog;
   
-  printf("\n\n\n\nthe pipe: a simple risc pipeline simulator v0.06\ncopyright © motorola 1997-2003\n");
+  printf("\n\n\n\n"
+         "the pipe: a simple risc pipeline simulator v0.06\n"
+         "copyright © motorola 1997-2003\n");
   
   initCode(10000);			// create some instructions
   //initCode(10);
@@ -1239,14 +1242,16 @@ int pMain(int argc,const char *argv[])
   printf("\nCode and registers initialised.");
   par {
     //===logging
-    watchdog(20000, icount_watchdog, fetch_watchdog);			// (100050); for long runs
+    watchdog(20000, icount_watchdog, fetch_watchdog);
     {
-      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache, fetch_watchdog, 0);
+      Fetch fetch(0, decode_fetch, alu_fetch, fetch_icache,
+                  fetch_watchdog, 0);
       fetch();
     }
     icache(1, fetch_icache, icache_decode);
     {
-      Decoder decoder(2, icache_decode, decode_fetch, decode_regread, icount_watchdog);
+      Decoder decoder(2, icache_decode, decode_fetch, 
+                      decode_regread, icount_watchdog);
       decoder();
     }
     regRead(3, decode_regread, regread_alu, regread_muldiv);

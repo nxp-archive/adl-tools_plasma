@@ -13,25 +13,36 @@ program into C++, then invokes g++ to compile this into either an executable or
 into an object file.  As such, its options are basically those of g++.  General
 usage is:])
 
-(cprog [  plasma <options> <input file> ])
+(cprog [
+ 
+plasma <options> <input file> 
+])
 
 (p [An input file has an extension of ,(code [.pa]).])
 
 (p [For example, to create an executable from a single Plasma file:])
 
-(cprog [ plasma -g -Wall -O3 foo.pa -o foo ])
+(cprog [
+ 
+plasma -g -Wall -O3 foo.pa -o foo  
+])
 
 (p [To create an object file, use the ,(b [-c]) option:])
 
-(cprog [ plasma -g -Wall -O3 -c foo.pa -o foo.o ])
+(cprog [
+ 
+plasma -g -Wall -O3 -c foo.pa -o foo.o 
+])
 
 (p [To link, use ,(b[ld]) or ,(b [g++]).  The script ,(b[plasma-config]) exists to supply the
 required link line.  For example:])
 
 (cprog [
-         plasma -c -o a.o a.pa
-         plasma -c -o b.o b.pa
-         g++ -o prog a.o b.o `plasma-config --libs`])
+ 
+plasma -c -o a.o a.pa
+plasma -c -o b.o b.pa
+g++ -o prog a.o b.o `plasma-config --libs`
+])
 
 (p [Within a ,(i [makefile]), use ,(code [$(shell plasma-config --libs)]) to generate the link line.])
 
@@ -51,12 +62,14 @@ communication.])
 child threads are finished before proceeding.  For example:])
 
 (cprog [
-        int x,y,z;
-        par {
-          x = sub1();
-          y = sub2();
-        }
-        z = sub3();
+ 
+int x,y,z;
+par {
+  x = sub1();
+  y = sub2();
+}
+z = sub3();
+ 
 ])
 
 (p [In the above example, the statement ,(code [x = sub1()]) and the statement
@@ -65,14 +78,16 @@ statement ,(code [z = sub3()]) is executed.  To create a more complex in-line
 operation, simply use a brace-delineated block, e.g.:])
 
 (cprog [
-        par {
-          {
-            <sequence of statements>
-          }
-          {
-            <sequence of statements>
-          }
-        }
+ 
+par {
+  {
+    <sequence of statements>
+  }
+  {
+    <sequence of statements>
+  }
+}
+ 
 ])
 
 )
@@ -84,12 +99,13 @@ iteration, its body is launched as a separate thread.  All threads must then
 complete before execution continues past the loop.  For example:])
 
 (cprog [
-        const int Max = 10;
-        int results\[Max\];
-        pfor (int i = 0; i != Max ++i)  {
-          results\[i\] = sub(i);
-        }
-
+ 
+const int Max = 10;
+int results\[Max\];
+pfor (int i = 0; i != Max ++i)  {
+  results\[i\] = sub(i);
+}
+ 
 ])
 
 (p [In this example, ten threads will be launched.  Each will return a result which
@@ -142,24 +158,25 @@ be the default constructor value of the return type.])
 (p [A simple example is:])
 
 (cprog [
-
-  double foo(double a,double b)
-  {
-    int xx = 0;
-    for (int i = 0; i != 100000000; ++i) {
-      xx += 1;
-    }
-    return a*a + b*b;
+ 
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
   }
+  return a*a + b*b;
+}
 
-  int pMain(int argc,const char *argv\[\])
-  { 
-    Result<double> r1 = spawn(foo(1.1,2.2));
-    Result<double> r2 = spawn(foo(2.7,9.8));
-    cout << "Result is:  " << r1.value() << ", " << r2.value() << endl;
-    return 0;
-  }
-
+int pMain(int argc,const char *argv\[\])
+{ 
+  Result<double> r1 = spawn(foo(1.1,2.2));
+  Result<double> r2 = spawn(foo(2.7,9.8));
+  cout << "Result is:  " << r1.value() 
+       << ", " << r2.value() << endl;
+  return 0;
+}
+ 
 ])
 
 )
@@ -186,35 +203,31 @@ It accepts the expected value as a constructor argument.  A helper function
 
 (p [For instance:])
 
-(cprog [ 
-
-  ValueCheckGen<Foo> results(make_valuecheck(foo));
-
+(cprog [
+ 
+ValueCheckGen<Foo> results(make_valuecheck(foo));
 ])
 
 (p [where ,(bold [Foo]) is a type and ,(bold [foo]) is an instance of the type,
 e.g. ,(code [bool]) and ,(code [true]).  You then add threads like this:])
 
 (cprog [
-    
-  results.push_back(spawn(myfunc(1,2,3)));
-  
+     
+results.push_back(spawn(myfunc(1,2,3)));
 ])
 
 (p [And check the results like this:])
 
 (cprog [
-  
-  if (!results.check()) { return false; };
-
+   
+if (!results.check()) { return false; };
 ])
 
 (p [You can reuse it by calling clear:])
 
 (cprog [
-
-  results.clear();
-
+ 
+results.clear();
 ])
 
 (p [Since a boolean is frequently used, a typedef is provided, called ,(code
@@ -293,18 +306,16 @@ processor to squeeze in work from other threads.]))
 e.g.:])
 
 (cprog [
-
+ 
 Processor a;
-
 ])
 
 (p [To create a vector of Processors, use the ,(code [Processors]) data
 structure:])
 
 (cprog [
-
-  Processors procs(10);
-
+ 
+Processors procs(10);
 ])
 
 (p [New threads will be launched on their parent's processor unless one of the
@@ -315,24 +326,23 @@ following mechanisms is used:])
 (item (p [With a ,(b [par]) or ,(b [pfor]) block, using an ,(b [on]) block:])
 
 (cprog [
-
-    par {
-       on (<proc name>) { ... }
-       ...
-    }
-
+ 
+par {
+   on (<proc name>) { ... }
+   ...
+}
+ 
 ])
 
 )
 
-(item [With the spawn command:
+(item (p [With the spawn command:])
 
-,(cprog [
-
-    <proc name>.spawn(<command>);
-
-])
-])
+(cprog [
+ 
+<proc name>.spawn(<command>);
+ 
+]))
 
 )
 
@@ -350,11 +360,11 @@ specifying ,(i [true]) for the third argument of the ,(code [Processors])
 constructor:])
 
 (cprog [
+ 
+Processor a = make_sharedproc(pCurProc());
 
-  Processor a = make_sharedproc(pCurProc());
-
-  Processors procs(10,"terminals",true);
-
+Processors procs(10,"terminals",true);
+ 
 ])
 
 (p [In the above code, processor ,(code [a]) shares its ready queue with the
@@ -367,22 +377,23 @@ time units.  This is because the other nine processors share the same ready
 queue and are able to schedule these threads.])
 
 (cprog [
+ 
+Processors procs(10,"processors",true);
 
-  Processors procs(10,"processors",true);
-
-  pfor (int i = 0; i != 10; ++i) {
-    on (procs\[0\]) {
-      cout << "Block " << i << " start:  " << pTime() << endl;
-      pBusy(50);
-      cout << "Block " << i << " done:  " << pTime() << endl;      
-    }
+pfor (int i = 0; i != 10; ++i) {
+  on (procs\[0\]) {
+    cout << "Block " << i << " start:  " << pTime() << endl;
+    pBusy(50);
+    cout << "Block " << i << " done:  " << pTime() << endl;      
   }
-
+}
+ 
 ])
 
 (p [The output from this program fragment is:])
 
 (cprog [
+ 
 Block 0 start:  0
 Block 1 start:  0
 Block 2 start:  0
@@ -403,6 +414,7 @@ Block 2 done:  50
 Block 6 done:  50
 Block 4 done:  50
 Block 3 done:  50
+ 
 ])
 
 )
@@ -440,14 +452,14 @@ priority thread may execute.  In other words, given the following code
 fragment:])
 
 (cprog [
-
-    par {
-      on (pCurProc(),0) { /* thread 1 */ }
-      on (pCurProc(),1) { /* thread 2 */ }
-      { /* thread 3 */ }
-      { /* thread 4 */ }
-    }
-
+ 
+par {
+  on (pCurProc(),0) { /* thread 1 */ }
+  on (pCurProc(),1) { /* thread 2 */ }
+  { /* thread 3 */ }
+  { /* thread 4 */ }
+}
+ 
 ])
 
 (p [Thread 1 will execute first and complete before thread 2, which will also
@@ -525,14 +537,14 @@ before then, this will.  It does not return a useful value, so it is generally
 used with an empty port statement, e.g.:])
 
 (cprog [
-
-     Timeout t(20);
-     alt {
-       c0.port(...) { ... }
-       c1.port(...) { ... }
-       t.port() { cout << "Got a timeout!" << endl; }
-     }
-
+ 
+Timeout t(20);
+alt {
+  c0.port(...) { ... }
+  c1.port(...) { ... }
+  t.port() { cout << "Got a timeout!" << endl; }
+}
+ 
 ])
 
 (p [In the above example, a ,(b [Timeout]) object is created which will awaken an
@@ -562,43 +574,43 @@ interfaced to an ,(b [alt]) construct by using this class.  This is a read-only
 channel which will return the result value of the spawned thread.  For example:])
 
 (cprog [
+ 
+double foo(double a,double b)
+{
+  int xx = 0;
+  for (int i = 0; i != 100000000; ++i) {
+    xx += 1;
+  }
+  return a*a + b*b;
+}
 
-     double foo(double a,double b)
-     {
-       int xx = 0;
-       for (int i = 0; i != 100000000; ++i) {
-         xx += 1;
-       }
-       return a*a + b*b;
-     }
+int bar(int a)
+{
+  return a * a * a;
+}
 
-     int bar(int a)
-     {
-       return a * a * a;
-     }
+void check(ResChan<double> &a,ResChan<int> &b)
+{
+  for (int i = 0; i != 2; ++i) {
+    alt {
+      a.port(double x) {
+        cout << "x:  " << x << endl;
+      }
+      b.port (int y) {
+        cout << "y:  " << y << endl;        
+      }
+    }
+  }
+}
 
-     void check(ResChan<double> &a,ResChan<int> &b)
-     {
-       for (int i = 0; i != 2; ++i) {
-         alt {
-           a.port(double x) {
-             cout << "x:  " << x << endl;
-           }
-           b.port (int y) {
-             cout << "y:  " << y << endl;        
-           }
-         }
-       }
-     }
-
-     int pMain(int argc,const char *argv\[\])
-     { 
-       ResChan<double> r1 = spawn(foo(1.1,2.2));
-       ResChan<int> r2 = spawn(bar(123));
-       check(r1,r2);
-       return 0;
-     }
-
+int pMain(int argc,const char *argv\[\])
+{ 
+  ResChan<double> r1 = spawn(foo(1.1,2.2));
+  ResChan<int> r2 = spawn(bar(123));
+  check(r1,r2);
+  return 0;
+}
+ 
 ]))
 
 )
@@ -611,14 +623,14 @@ channel which will return the result value of the spawned thread.  For example:]
 syntax is:])
 
 (cprog [
-
-  alt {
-    <channel expr> \[ . | -> \] port (<value decl>) { <body> }
-    \[ alt { ... } \]
-    \[ afor { ... } \]
-    \[ { <default block> } \]
-  }
-
+ 
+alt {
+  <channel expr> \[ . | -> \] port (<value decl>) { <body> }
+  \[ alt { ... } \]
+  \[ afor { ... } \]
+  \[ { <default block> } \]
+}
+ 
 ])
 
 (p [Each ,(b [port]) statement specifies a channel to be read (the channel expression) and
@@ -655,12 +667,12 @@ collection of channels plus one or more single channels, etc.])
 to loop over a data structure of channels.  Its syntax is:])
 
 (cprog [
-
-  afor ( <s1> ; <s2> ; <s3> ) {
-    <channel expr> \[ . | -> \] port (<value decl>) { <body> }
-    \[ { <default block> } \]
-  }
-
+ 
+afor ( <s1> ; <s2> ; <s3> ) {
+  <channel expr> \[ . | -> \] port (<value decl>) { <body> }
+  \[ { <default block> } \]
+}
+ 
 ])
 
 (p [Only a single ,(b [port]) statement is allowed.  The ,(b [afor]) block is treated as a
@@ -673,14 +685,14 @@ channel expression and the ,(b [port])'s body.])
 default block.:])
 
 (cprog [
-
-  afor (int i = 0; i != (int)channels.size(); ++i) {
-    channels\[i\].port (int v) {
-      printf ("Got a value from port %d:  %d\\n",i,v);
-      if (v < 0) ++donecount;
-    }
+ 
+afor (int i = 0; i != (int)channels.size(); ++i) {
+  channels\[i\].port (int v) {
+    printf ("Got a value from port %d:  %d\\n",i,v);
+    if (v < 0) ++donecount;
   }
-
+}
+ 
 ])
 
 (p [Plasma allows for non-integer index variables but this requires the creation of
@@ -710,21 +722,21 @@ plus one or more single channels.  For example, the following code will block
 on a collection and an override channel:])
 
 (cprog [
-
-  alt {
-    afor (int i = 0; i != (int)channels.size(); ++i) {
-      channels\[i\].port (int v) {
-        printf ("Got a value from port %d:  %d\\n",i,v);
-        if (v < 0) ++donecount;
-      }
-    }
-    stopchan.port (bool b) {
-      if (b) {
-        printf ("Got a stop command!\\n");
-      }
+ 
+alt {
+  afor (int i = 0; i != (int)channels.size(); ++i) {
+    channels\[i\].port (int v) {
+      printf ("Got a value from port %d:  %d\\n",i,v);
+      if (v < 0) ++donecount;
     }
   }
-
+  stopchan.port (bool b) {
+    if (b) {
+      printf ("Got a stop command!\\n");
+    }
+  }
+}
+ 
 ])
 
 (p [A prioritized version of ,(b [afor]) exists and is called ,(b [priafor]).
@@ -752,21 +764,21 @@ its destructor, with serialization code.  To prevent this on a per-method basis,
 use the modifier ,(i [pNoMutex]):])
 
 (cprog [
-
-  pMutex class Foo {
-  public:
-    // Not protected.
-    Foo();
-    ~Foo();
-    // Protected.
-    int a();
-    // Not protected.
-    pNoMutex int b();
-  private:
-    // Not protected.
-    int c();
-  };    
-
+ 
+pMutex class Foo {
+public:
+  // Not protected.
+  Foo();
+  ~Foo();
+  // Protected.
+  int a();
+  // Not protected.
+  pNoMutex int b();
+private:
+  // Not protected.
+  int c();
+};    
+ 
 ])
 
 (p [Be careful with using ,(i [pNoMutex]):  Since it disables serialization, it is
@@ -779,16 +791,16 @@ method which returns a constant which is only initialized at construction time.]
 ,(i [pMutex]) but might be necessary in some cases, such as for protecting a plain function:])
 
 (cprog [
-
-  void msg(const char *fmt, ...) {
-    pLock();
-    va_list ap;
-    va_start(ap,fmt);
-    vprintf(fmt,ap);
-    va_end(ap);
-    pUnlock();
-  }
-
+ 
+void msg(const char *fmt, ...) {
+  pLock();
+  va_list ap;
+  va_start(ap,fmt);
+  vprintf(fmt,ap);
+  va_end(ap);
+  pUnlock();
+}
+ 
 ])
 
 )
@@ -812,9 +824,9 @@ allocate using the ,(b [GC]) or ,(b [UseGC]) placement attribute.])
 (p [For example, the following class will be managed when allocated using ,(b [new]):])
 
 (cprog [
-
-    class A : public gc { };
-
+ 
+class A : public gc { };
+ 
 ])
 
 (p [However, its destructor will not be called.  If you derive from ,(b [gc_cleanup]),
@@ -823,9 +835,9 @@ the class's destructor will be called when the object is collected.])
 (p [An example of using the ,(b [GC]) placement attribute is:])
 
 (cprog [
-
-   int *x = new (GC) int\[1000\];
-
+ 
+int *x = new (GC) int\[1000\];
+ 
 ])
 
 (p [This will allocate a block of memory that is managed by the collector.])
@@ -913,35 +925,37 @@ calling ,(code [genrand()]) or generate a double in the range of \[0,1\] by call
 ,(code [gendbl()]).  For example:])
 
 (cprog [
+ 
+Random<> Rand;                // Instantiate w/default generator.
 
-         Random<> Rand;                // Instantiate w/default generator.
-
-         unsigned x = Rand.genrand();  // Generate unsigned integer in \[0,0xffffffff\].
-         double y = Rand.gendbl();     // Generate double in \[0,1\].
-
+unsigned x = Rand.genrand();  // Generate uint in \[0,0xffffffff\].
+double y = Rand.gendbl();     // Generate double in \[0,1\].
+ 
 ])
 
 (p [To create 3 independent generators with the Mersenne Twist algorithm:])
 
 (cprog [
-         Random<MtRand> Rand(3);
+ 
+Random<MtRand> Rand(3);
 
-         unsigned x = Rand.genrand(0); // Generate using stream 0.
-         unsigned y = Rand.genrand(1); // Generate using stream 1.
-         unsigned z = Rand.genrand(2); // Generate using stream 2.
-
+unsigned x = Rand.genrand(0); // Generate using stream 0.
+unsigned y = Rand.genrand(1); // Generate using stream 1.
+unsigned z = Rand.genrand(2); // Generate using stream 2.
+ 
 ])
 
 (p [The class can then be saved to a stream, for example to checkpoint the current
 state of a simulation:])
 
 (cprog [
-         ostringstream os;
-         Rand.save(os);                // Save the generators' state.
+ 
+ostringstream os;
+Rand.save(os);                // Save the generators' state.
 
-         istringstream is(os.str());
-         Rand.load(is);                // Load the generators' state.
-
+istringstream is(os.str());
+Rand.load(is);                // Load the generators' state.
+ 
 ])
 
 (p [,(b [Random]) may also generate numbers using several distributions.

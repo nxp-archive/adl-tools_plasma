@@ -800,7 +800,7 @@ int pMain(int argc,const char *argv[])
       }
       on (mainframe) {
         DiskManager disk_manager;
-        disk_manager(mips, buff_size, disks, tp_to_disks, disks_to_tp);
+        disk_manager(mips,buff_size,disks,tp_to_disks,disks_to_tp);
       }
       on (mainframe) {
         Agents agents;

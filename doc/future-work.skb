@@ -57,12 +57,20 @@
 	    collected heap unless the user specifies otherwise.  For example,
 	    the user must currently write:])
 	    
-	    (cprog [ class Foo : public gc])
+	    (cprog [ 
+ 
+class Foo : public gc
+ 
+])
 	    
 	    (p [to indicate that the class should be managed.  Instead, we might
 	    change it so that the inverse is true:])
 	    
-	    (cprog [ class Foo : public NoGC])
+	    (cprog [ 
+ 
+class Foo : public NoGC
+ 
+])
 	    
 	    (p [to indicate that a class should not be managed.  Otherwise, it
 	    will be.])
@@ -86,7 +94,11 @@
 	    e.g. ,(code [vector]), ,(code [list]), etc., would be traced by the
 	    conservative collector.  Currently, one has to write:])
 
-	    (cprog [ vector<int,traceable_allocator<int> > ])
+	    (cprog [ 
+ 
+vector<int,traceable_allocator<int> > 
+ 
+])
 
 	    (p [This will become the default.  Equivalent containers,
 	    e.g. ,(code [gc_vector]), ,(code [gc_list]), will exist which will
@@ -157,16 +169,16 @@
 	    specified by using the attribute ,(code [pOr]).  For example:])
 	    
 	    (cprog [
-
-	    class Foo {
-	    public:
-	      pRecover int func(int,int);
-	      pOr      int func_alt1(int,int);
-	      pOr      int func_alt2(int,int);
-	    private:
-	      ...
-	    };
-
+ 
+class Foo {
+public:
+  pRecover int func(int,int);
+  pOr      int func_alt1(int,int);
+  pOr      int func_alt2(int,int);
+private:
+  ...
+};
+ 
 ])
 	    
 	    (p [Each alternative must have the same signature as the original
@@ -178,37 +190,37 @@
 	    following:])
 	    
 	    (cprog [
-
-	    int Foo::foo(int x,int y)
-	    {
-	      checkpoint();
-	      try {
-	        int rc = func_orig(x,y); // Original implementation of func().
-		complete();
-		return rc;
-	      }
-	      catch (...) {
-	        recover();
-	        try {
-		  int rc = func_alt1(x,y);     // Alternative 1.
-		  complete():
-		  return rc;
-		}
-		catch (...) {
-		  recover();
-		  try {
-		    int rc = return func_alt2(x,y);   // Alternative 2.
-		    complete();
-		    return rc;
-		  }
-		  catch (...) {
-		    recover();
-		    throw;                   // No remaining alternatives.
-		  }
-		}
-	      }
-	    }
-
+ 
+int Foo::foo(int x,int y)
+{
+  checkpoint();
+  try {
+    int rc = func_orig(x,y); // Original func().
+    complete();
+    return rc;
+  }
+  catch (...) {
+    recover();
+    try {
+      int rc = func_alt1(x,y);     // Alternative 1.
+      complete():
+      return rc;
+    }
+    catch (...) {
+      recover();
+      try {
+        int rc = return func_alt2(x,y);   // Alternative 2.
+        complete();
+        return rc;
+      }
+      catch (...) {
+        recover();
+        throw;                   // No remaining alternatives.
+      }
+    }
+  }
+}
+ 
 ])
 	    
 	    (p [The first thing that happens is that the ,(code [checkpoint()])
@@ -244,13 +256,13 @@
       within the specified amount of time:])
 	 
 	 (cprog [
-
-          {
-            deadline d(20);
-            ... <code> ...
-            // Execution must reach this point within 20 time units.
-          }
-
+ 
+{
+  deadline d(20);
+  ... <code> ...
+  // Execution must reach this point within 20 time units.
+}
+ 
 ])
 	 
       (p [Otherwise, an exception will be thrown.  The exception can then be
@@ -275,7 +287,11 @@
 	       good optimizing compiler can remove unneeded initializations.
 	       For example:])
 	       
-	       (cprog [ int i; // Would be initialized to 0. ])
+	       (cprog [ 
+ 
+int i; // Would be initialized to 0. 
+ 
+])
 
                )
 	       
@@ -295,7 +311,11 @@
 	       will be added.  The type would be implied from the type of the
 	       initializing expression.  For example:])
 	 
-	       (cprog [ let i = ValueCheck<int,std::bind2nd(std::equal_to<int>(),10)])
+	       (cprog [ 
+ 
+let i = ValueCheck<int,std::bind2nd(std::equal_to<int>(),10)
+ 
+])
 	       
 	       )
 	       

@@ -1,17 +1,24 @@
 
 EXTRA_DIST = $(skribe_src)
 
+WEBURL=http://www.somerset.sps.mot.com/projects/tools/plasma/
+
 webdir = $(WEBHOME)
 
-web_DATA = index.html
+web_DATA = index.html 
+
+# Only build a pdf if latex is good.
+if LATEXOK
+  web_DATA += index.pdf
+endif
 
 skribe_src = $(shell ls *.skb)
 
 TESTDIR = $(top_srcdir)/tests
 
-SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")"
+SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")"
 
-DOCCLEANFILES = *.sui *.html
+DOCCLEANFILES = *.sui *.html *.pdf *.dvi *.tex *.log *.aux *.out
 
 INFO = info.xml
 
@@ -26,7 +33,7 @@ docclean:
 
 docinstall: all-am
 	$(mkinstalldirs) $(DESTDIR)$(webdir)
-	@list=$$(ls *.html); for p in $$list; do \
+	@list=$$(ls *.html *.pdf); for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f="`echo $$p | sed -e 's|^.*/||'`"; \
 	  echo " $(install_sh_DATA) $$d$$p $(DESTDIR)$(webdir)/$$f"; \
@@ -37,5 +44,13 @@ docinstall: all-am
 
 index.html: $(skribe_src) source-code.html
 
+index.pdf: $(skribe_src)
+
 %.html : %.skb ;
 	$(SKRIBE) $(SKRIBEVARS) $< -o $@
+
+%.tex : %.skb ;
+	$(SKRIBE) $(SKRIBEVARS) $< -o $@
+
+%.pdf : %.tex ;
+	$(PDFLATEX) $<
