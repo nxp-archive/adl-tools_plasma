@@ -24,9 +24,6 @@ public:
   // this function in order to handle templates.
   virtual bool AcceptTemplate() { return false; };
 protected:
-  void makeWrapper(Environment *env,Member& member, Ptree* org_name);
-  Ptree *exprToCallOriginal(Environment *env,Member& member, Ptree* org_name);
-
   // Overload this to change the name used for the original method.
   // The default is to prepend "_orig_".
   virtual Ptree* newMemberName(Ptree* name);
@@ -34,7 +31,13 @@ protected:
   // methods other than constructors and the destructor are wrapped.
   virtual bool wrapMember(Environment *env,Member &member) const;
   // Overload this to define the wrapper function.  Return (nil,nil) on error.
-  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* org_name);
+  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* org_name,Ptree *variadic);
+
+private:
+  void makeWrapper(Environment *env,Member& member, Ptree* org_name,Ptree *variadic);
+  Ptree *exprToCallOriginal(Environment *env,Member& member, Ptree* org_name);
+  Ptree *isVariadic(Environment *env,Member &member);
+  Ptree *variadicArgs(Ptree *args);
 };
 
 #endif

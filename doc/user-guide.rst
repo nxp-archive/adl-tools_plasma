@@ -250,7 +250,8 @@ syntax is::
 
   alt {
     port (<value decl> ; <channel expr> ;) { <body> }
-    ...
+    [ alt { ... } ]
+    [ afor { ... } ]
     [ { <default block> } ]
   }
 
@@ -269,6 +270,10 @@ channel has data.
 If a default block is specified, the **alt** block will never cause the thread
 to sleep.  Instead, if no channels have data, the default block will be
 executed.
+
+**alt** and **afor** (explained below) blocks may be nested within **alt**
+blocks.  This allows the user to block on multiple collections of channels, or a
+collection of channels plus one or more single channels, etc.
 
 Afor Blocks
 -----------
@@ -311,7 +316,27 @@ There are a few restrictions to follow for the **afor** block:
 
 3.  You only have access, within the **port** body, to the first loop iterator
     variable.  Therefore, avoid fancy **afor** loops which declare multiple
-    variables in the first statement or update multiple variables in the third statement.
+    variables in the first statement or update multiple variables in the third
+    statement.
+
+As noted above, an **afor** block may be nested within an **alt** block.  This
+allows you to block on one or more collections and/or to block on a collection
+plus one or more single channels.  For example, thhe following code will block
+on a collection and an override channel:::
+
+  alt {
+    afor (int i = 0; i != (int)channels.size(); ++i) {
+      port (int v; channels[i];) {
+        printf ("Got a value from port %d:  %d\n",i,v);
+        if (v < 0) ++donecount;
+      }
+    }
+    port (bool b; stopchan;) {
+      if (b) {
+        printf ("Got a stop command!\n");
+      }
+    }
+  }
 
 Shared Data Structures
 ----------------------

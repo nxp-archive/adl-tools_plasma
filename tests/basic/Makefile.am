@@ -24,6 +24,7 @@ check_PROGRAMS = \
 	chan8 \
 	chan9 \
 	chan10 \
+	chan11 \
 	spawn1 \
 	spawn2 \
 	spawn3 \
@@ -64,6 +65,8 @@ chan9_SOURCES = chan9.pa
 
 chan10_SOURCES = chan10.pa
 
+chan11_SOURCES = chan11.pa
+
 spawn1_SOURCES = spawn1.C
 
 spawn2_SOURCES = spawn2.pa
@@ -91,6 +94,7 @@ DEP_FILES=\
 	./$(DEPDIR)/chan8.Po \
 	./$(DEPDIR)/chan9.Po \
 	./$(DEPDIR)/chan10.Po \
+	./$(DEPDIR)/chan11.Po \
 	./$(DEPDIR)/spawn1.Po \
 	./$(DEPDIR)/spawn2.Po \
 	./$(DEPDIR)/spawn3.Po \
@@ -110,6 +114,7 @@ include ./$(DEPDIR)/chan7.Po
 include ./$(DEPDIR)/chan8.Po
 include ./$(DEPDIR)/chan9.Po
 include ./$(DEPDIR)/chan10.Po
+include ./$(DEPDIR)/chan11.Po
 include ./$(DEPDIR)/spawn2.Po
 include ./$(DEPDIR)/spawn3.Po
 include ./$(DEPDIR)/spawn4.Po

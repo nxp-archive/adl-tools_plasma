@@ -297,6 +297,13 @@ Implementation:
 
     Straightforward use of OpenC++'s example "WrapperClass".
 
+    Variadic function support is not perfect but can be made to work.  You can't
+    write a true variadic function, e.g. ``foo(const char *fmt,..)``, because
+    you can't pass the variable argument list.  Instead, you must write a
+    va_list function directly, e.g. ``foo(const char *fmt,va_list ap)``.  Plasma
+    will then create a variadic version and a v_list version for you that are
+    wrapped with locking code.
+    
 Regressions:
 
     1. mutex1

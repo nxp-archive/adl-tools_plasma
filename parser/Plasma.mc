@@ -641,7 +641,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
   }
 
   // If we have any loops then we need an update flag.
-  if (haveloops) {
+  if (haveloops && !defaultblock) {
     cur = lappend(cur,Ptree::qMake("bool `uflag` = false;\n"));
   }
 
@@ -697,7 +697,7 @@ Ptree *Plasma::generateAltBlock(Environment *env,const PortVect &pv,Ptree *defau
     // If we have any loops, then toggle the update flag to truee here- when we
     // wake up and jump to the proper case spot, this will tell us to update the
     // loop variable from the second element of the handle.
-    if (haveloops) {
+    if (haveloops && !defaultblock) {
       cur = lappend(cur,Ptree::qMake("`uflag` = true;\n"));
     }
 

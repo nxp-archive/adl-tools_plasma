@@ -1,5 +1,13 @@
 2004-05-25  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Added support for varargs handling with mutex classes.  The
+	support isn't perfect, though:  You can't write a true variadic
+	function, e.g. foo(const char *fmt,..), because you can't pass the
+	variable argument list.  Instead, you must write a va_list
+	function directly, e.g. foo(const char *fmt,va_list ap).  Plasma
+	will then create a variadic version and a v_list version for you
+	that are wrapped with locking code.
+
 	* Re-did alt/afor blocks.  You can now nest alt and afor blocks
 	and we'll block on all of these items.  You can put and alt or an
 	aforr inside of another alt, but only a single port statement may

@@ -1,5 +1,5 @@
 
-pkglib_PROGRAMS = Plasma.so Wrapper.so Mutex.so TMutex.so
+pkglib_PROGRAMS = Plasma.so Wrapper.so Mutex.so TMutex.so 
 
 Plasma_so_SOURCES = \
 	Plasma.mc \
@@ -56,3 +56,4 @@ Mutex.so: $(Mutex_so_OBJECTS)
 
 TMutex.so: $(TMutex_so_OBJECTS)
 	$(CXXLINK) -shared -o $@ $(TMutex_so_OBJECTS) $(TMutex_so_LDFLAGS) $(TMutex_so_LDADD)
+

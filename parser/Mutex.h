@@ -18,7 +18,7 @@ class Mutex : public Wrapper {
 public:
   static bool Initialize();
 protected:
-  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* name);
+  virtual std::pair<Ptree*,Ptree*> makeWrapperBody(Environment *env,Member& member, Ptree* name,Ptree *variadic);
   virtual bool wrapMember(Environment *env,Member &member) const;
 };
 

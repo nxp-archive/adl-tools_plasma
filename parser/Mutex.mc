@@ -36,9 +36,9 @@ bool Mutex::wrapMember(Environment *env,Member &member) const
 // I write std::pair here b/c OpenC++ gets confused if I don't- it doesn't
 // understand that the declaration is the same as the definition b/c of the
 // "using" statement above.
-std::pair<Ptree*,Ptree*> Mutex::makeWrapperBody(Environment *env,Member& member, Ptree* name)
+std::pair<Ptree*,Ptree*> Mutex::makeWrapperBody(Environment *env,Member& member, Ptree* name,Ptree *variadic)
 {
-    pair<Ptree*,Ptree*> body = Wrapper::makeWrapperBody(env, member, name);
+    pair<Ptree*,Ptree*> body = Wrapper::makeWrapperBody(env, member, name, variadic);
     return make_pair(Ptree::qMake("try {\n"
                                   "  plasma::pLock();\n"
                                   "  `body.first`\n"
