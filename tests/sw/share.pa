@@ -81,10 +81,10 @@ struct Resource {
     // channel
     // adds up the current total bandwidth desired
 
-    //printf("\nRT at %ld", t); flush();
+    //printf("\nRT at %d", t); flush();
     bw = 0;
     for (int i = 0; i != num_transfers; ++i) {
-      //printf("\n\tT[%ld]", i); flush();
+      //printf("\n\tT[%d]", i); flush();
       if (transfers[i].valid) {
         // valid transfer; update his block
         //printf(".valid\n"); flush();
@@ -99,16 +99,16 @@ struct Resource {
         } else {
           // incomplete; compute how much has been done
           int n, dt;
-          //printf("..incomplete (%ld left)", transfers[i].items_left); flush();
+          //printf("..incomplete (%d left)", transfers[i].items_left); flush();
           dt = t - transfers[i].start_time;
           n = (int)(transfers[i].current_rate * dt);
           //printf ("(cur rate:  %f, dt %d)",transfers[i].current_rate,dt);
           //printf ("  processed %d items.\n",n);
           transfers[i].items_left = transfers[i].items_left - n;
           if (transfers[i].items_left <= 0) {
-            printf("\n%5lld::Item %ld has %ld left to do",
+            printf("\n%5lld::Item %d has %d left to do",
                    pTime(), i, transfers[i].items_left);
-            printf("\n\tDt = %ld Dn = %ld Finish=%ld",
+            printf("\n\tDt = %d Dn = %d Finish=%d",
                    dt, n, transfers[i].finish_time);
             printf("\n\tBase rate =%f Item rate = %f\n",
                    transfers[i].item_rate, transfers[i].current_rate);
@@ -116,7 +116,7 @@ struct Resource {
           }
           transfers[i].start_time = t;
           bw = bw + transfers[i].item_rate;
-          //printf(".got %ld left, bw is %f\n", transfers[i].items_left,bw); flush();
+          //printf(".got %d left, bw is %f\n", transfers[i].items_left,bw); flush();
         }
       }
     }
@@ -138,7 +138,7 @@ struct Resource {
       bw_frac = 1.0;
     early = MaxPos;
     for (int i = 0; i != num_transfers; ++i) {
-      //printf("\n\tTransfer %ld:", i); flush();
+      //printf("\n\tTransfer %d:", i); flush();
       if (transfers[i].valid) {
         //printf("..valid"); flush();
         //printf("\n\tPrior::Itemrate=%f BWFrac=%f NewRate=%f",
@@ -151,11 +151,11 @@ struct Resource {
           early = f;
         }
         transfers[i].finish_time = f + t;
-        //printf("\n\t%ld items left; Finish at %ld Early = %ld", 
+        //printf("\n\t%d items left; Finish at %d Early = %d", 
         //       transfers[i].items_left, f, early); flush();
       }
     }
-    //printf("\n\t setting earliest to %ld", early); flush();
+    //printf("\n\t setting earliest to %d", early); flush();
     earliest = early;
     //printf("..OK"); flush();
   }
@@ -178,7 +178,7 @@ struct Resource {
       alt {
         req.port(Transfer t) {
           the_request = t;
-          //printf("\nResource got request from %ld at %lld",the_request.id, pTime()); flush();
+          //printf("\nResource got request from %d at %lld",the_request.id, pTime()); flush();
           timed_out = false;
         }
         to.port() {
@@ -228,11 +228,11 @@ void user(TranChan &request, int id, int num_requests)
   for (int i = 0; i != num_requests; ++i) {
     pDelay(Rand.uniform(0, 0, 100));
     my_req.length = Rand.uniform(0, 500, 5000);
-    printf("\nUser %ld requesting at %lld (length %d, speed %f).", id, pTime(),my_req.length,my_req.speed);
+    printf("\nUser %d requesting at %lld (length %d, speed %f).", id, pTime(),my_req.length,my_req.speed);
     flush();
     request.write(my_req);
     my_chan.get();
-    printf("\n\tUser %ld transfer completed at %lld", id, pTime());
+    printf("\n\tUser %d transfer completed at %lld", id, pTime());
     flush();
   }
 }

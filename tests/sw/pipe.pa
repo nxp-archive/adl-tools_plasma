@@ -294,7 +294,7 @@ void setname(int unit, const char *name)
 {
   // write a unit's name into the correct slice of unitNames
   int i, j, len;
-  printf("\nsetting unit '%ld' to have name ", unit);
+  printf("\nsetting unit '%d' to have name ", unit);
   printf("'%s'", name);
   i = unit * msgLength;
   len = strlen(name);
@@ -355,7 +355,7 @@ struct Fetch {
           status = "newPC";
         }
         _tofetch.port(int dummy) {		// must stop - decode wants us to
-          dprintf("\nfetcher received something (%ld) on tofetch!", dummy);
+          dprintf("\nfetcher received something (%d) on tofetch!", dummy);
           if (dummy == Stop) {
             regs[pc] = -1;
             dprintf(".. a request to stop.");
@@ -377,7 +377,7 @@ struct Fetch {
       mR.address = regs[pc];
       
       //===logging
-      sprintf(gMsg, "%s 0x%08lx", status, regs[pc]);
+      sprintf(gMsg, "%s 0x%08x", status, regs[pc]);
       dprintf ("\nFetch (%lld):  %s",pTime(),gMsg);
       //message(_unit,gMsg);
 
@@ -425,10 +425,10 @@ int memread(int op, int address)
   int d, data, addr;
   addr = address >> 2;
   if (addr >= maxAddress) {
-    printf("\nAddress Read error: 0x%08lx too large at %lld", address, pTime());
+    printf("\nAddress Read error: 0x%08x too large at %lld", address, pTime());
     pExit(1);
   } else if (addr < 0) {
-    printf("\nAddress Read error: 0x%08lx too small at %lld", address, pTime());
+    printf("\nAddress Read error: 0x%08x too small at %lld", address, pTime());
     pExit(1);
   }
   data = theMemory[addr];
@@ -456,10 +456,10 @@ void memwrite(int op, int address, int data)
   int v, d, m, addr;
   addr = address >> 2;
   if (addr >= maxAddress) {
-    printf("\nAddress Write error: 0x%08lx too large at %lld", address, pTime());
+    printf("\nAddress Write error: 0x%08x too large at %lld", address, pTime());
     pExit(1);
   } else if (addr < 0) {
-    printf("\nAddress Write error: 0x%08lx too small at %lld", address, pTime());
+    printf("\nAddress Write error: 0x%08x too small at %lld", address, pTime());
     pExit(1);
   }
 		
@@ -510,7 +510,7 @@ void icache(int unit, MemClkChan &in, MemClkChan &out)
       data = memread(Ld32, address);
 				
       //===logging
-      sprintf(gMsg, "lookup 0x%08lx->0x%08lx", address, data); 
+      sprintf(gMsg, "lookup 0x%08x->0x%08x", address, data); 
       dprintf("\nIcache (%lld):  %s",pTime(),gMsg);
       //message(unit,gMsg);
       
@@ -532,7 +532,7 @@ struct Decoder {
       printf ("\nicount stopped.");
       return;
     } else {
-      dprintf("\n** icount asked for instruction count: = %ld", _numInstrucs);
+      dprintf("\n** icount asked for instruction count: = %d", _numInstrucs);
       _report.write(_numInstrucs);
     }
   }
@@ -576,7 +576,7 @@ struct Decoder {
       format = (instruc >> fbase) & maskof(fsize);
       pV.op = (instruc >> opbase) & maskof(opsize);
       pV.rd = (instruc >> rdbase) & maskof(rdsize);
-      //printf("\ndecode: format is %ld", format);
+      //printf("\ndecode: format is %d", format);
       pV.invalidate_dest = false;
       op = pV.op;
       switch (format) {
@@ -587,7 +587,7 @@ struct Decoder {
         pV.rd = pc;
         pV.vr2 = (instruc >> d19base) & maskof(d19size);
         //===logging
-        sprintf(gMsg, "%08lx=br r%ld %ld", instruc, pV.rd, pV.vr2); 
+        sprintf(gMsg, "%08x=br r%d %d", instruc, pV.rd, pV.vr2); 
         break;
       case 1: 
         //reg-reg
@@ -595,7 +595,7 @@ struct Decoder {
         pV.r1 = (instruc >> r1base) & maskof(r1size);
         pV.r2 = (instruc >> r2base) & maskof(r2size);
         //===logging
-        sprintf(gMsg, "%08lx=rr r%ld = r%ld %s r%ld", instruc, pV.rd, pV.r1, opname(op), pV.r2); 
+        sprintf(gMsg, "%08x=rr r%d = r%d %s r%d", instruc, pV.rd, pV.r1, opname(op), pV.r2); 
         if ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) {
           pV.invalidate_dest = true;
         }
@@ -605,10 +605,10 @@ struct Decoder {
         pV.is_const = true;
         pV.r1 = (instruc >> r1base) & maskof(r1size);
         pV.vr2 = (instruc >> l14base) & maskof(l14size);
-        //printf("\nreg-lit: const = 0x%08lx, %ld", pV.vr2, pV.vr2);
+        //printf("\nreg-lit: const = 0x%08x, %d", pV.vr2, pV.vr2);
 						
         //===logging
-        sprintf(gMsg, "%08lx=rc r%ld = r%ld %s %ld", instruc, pV.rd, pV.r1, opname(op), pV.vr2);
+        sprintf(gMsg, "%08x=rc r%d = r%d %s %d", instruc, pV.rd, pV.r1, opname(op), pV.vr2);
         pV.invalidate_dest = false; 
         // make sure we don't try to use the short-circuit in the alu
         if ((op == Ld8) || (op == Ld16) || (op == Ld32) || (op == Mul) || (op == Div) || (op == Rem)) {
@@ -619,11 +619,11 @@ struct Decoder {
       default: 
         pV.op = Stop;
         //===logging
-        sprintf(gMsg, "%08lx=**illegal**", instruc); 
+        sprintf(gMsg, "%08x=**illegal**", instruc); 
         break;
       }
       
-      //      printf("\nDecode: lastrd = r%ld; 0x%08lx:: r%ld = r%ld %s r%ld; ", 
+      //      printf("\nDecode: lastrd = r%d; 0x%08x:: r%d = r%d %s r%d; ", 
       //             last_rd, instruc, pV.rd, pV.r1, opname(op), pV.r2);
       
       // if prev instruction writes a register without invalidating it and that register is a source for
@@ -744,15 +744,15 @@ void regRead(int unit, PipeClkChan &in, PipeClkChan &out, PipeClkChan &tomul)
       // read the registers at the front of the clock cycle
       if (validbits[r1] && validbits[r2] && validbits[rd]) {
         //===logging
-        sprintf(gMsg, "r%ld[%ld],r%ld[%ld]", r1, regs[r1], r2, regs[r2]);
+        sprintf(gMsg, "r%d[%d],r%d[%d]", r1, regs[r1], r2, regs[r2]);
         //message(unit, gMsg);
         waiting = false;
       } else {
         //===logging
         sprintf(gMsg, "valWait: ");
-        if (validbits[r1] == 0) {sprintf(msg, "r%ld ", r1); strcat(gMsg, msg); }
-        if (validbits[r2] == 0) {sprintf(msg, "r%ld ", r2); strcat(gMsg, msg); }
-        if (validbits[rd] == 0) {sprintf(msg, "r%ld", rd); strcat(gMsg, msg); }
+        if (validbits[r1] == 0) {sprintf(msg, "r%d ", r1); strcat(gMsg, msg); }
+        if (validbits[r2] == 0) {sprintf(msg, "r%d ", r2); strcat(gMsg, msg); }
+        if (validbits[rd] == 0) {sprintf(msg, "r%d", rd); strcat(gMsg, msg); }
         //message(unit, gMsg);
       }
       
@@ -805,8 +805,8 @@ void muldiv(int unit, PipeClkChan &in, PipeClkChan &out)
     vr1 = pV.vr1;
     vr2 = pV.vr2;
     //===logging
-    sprintf(r1s, "r%ld", pV.r1);
-    sprintf(r2s, "r%ld", pV.r2);
+    sprintf(r1s, "r%d", pV.r1);
+    sprintf(r2s, "r%d", pV.r2);
     switch (pV.op) {
     case Mul:	
       result = vr1 * vr2; 
@@ -829,7 +829,7 @@ void muldiv(int unit, PipeClkChan &in, PipeClkChan &out)
     }
     //===logging
     sprintf(gMsg,"%s %s %s", r1s, op, r2s);
-    sprintf(msg, "->%ld", result); 
+    sprintf(msg, "->%d", result); 
     strcat(gMsg, msg);
     dprintf ("\nMulDiv (%lld):  %s",pTime(),gMsg);
     //message(unit, gMsg);
@@ -935,7 +935,7 @@ void alu(int unit, PipeClkChan &in, PipeClkChan &outreg, MemClkChan &outmem, Cha
     }
     //===logging
     sprintf(gMsg,"%s[%s,%s]", op, r1s, r2s);
-    sprintf(msg, "->%ld", result); 
+    sprintf(msg, "->%d", result); 
     strcat(gMsg, msg);
     dprintf ("\nALU (%lld):  %s",pTime(),gMsg);
     //message(unit,gMsg);
@@ -994,7 +994,7 @@ void regWrite1(int unit, PipeClkChan &in, MemClkChan &out)
       mR.address = pV.vrd;
       mR.data = regs[pV.rd];
       //===logging
-      sprintf(gMsg,"%ld -> m[0x%08lx]", mR.data, mR.address);
+      sprintf(gMsg,"%d -> m[0x%08x]", mR.data, mR.address);
       dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);
       //message(unit, gMsg);
       out.write(mR);	// give to dcache
@@ -1002,7 +1002,7 @@ void regWrite1(int unit, PipeClkChan &in, MemClkChan &out)
     else {
       // write rd
       //===logging
-      sprintf(gMsg,"r%ld <- %ld at %lld", pV.rd, pV.vrd, pTime());
+      sprintf(gMsg,"r%d <- %d at %lld", pV.rd, pV.vrd, pTime());
       dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);      
       //message(unit, gMsg);
       regs[pV.rd] = pV.vrd;
@@ -1030,11 +1030,11 @@ void regWrite2(int unit, PipeClkChan &in_reg, PipeClkChan &in_mem)
         if (pV.op == Stop) { running = false; continue;}
         regs[pV.rd] = pV.vrd;			// write the value
         if (pV.rd == 0) {
-          dprintf("\nrw1 wrote 0x%08lx to r0 [muldiv]", pV.vrd);
+          dprintf("\nrw1 wrote 0x%08x to r0 [muldiv]", pV.vrd);
         }
         validbits[pV.rd] = true;		// make it valid
         //===logging
-        sprintf(gMsg,"r%ld<-%ld [md]", pV.rd, pV.vrd);
+        sprintf(gMsg,"r%d<-%d [md]", pV.rd, pV.vrd);
         dprintf ("\nRegWrite2  (%lld):  %s",pTime(),gMsg);
         //message(unit, gMsg);
       }
@@ -1043,10 +1043,10 @@ void regWrite2(int unit, PipeClkChan &in_reg, PipeClkChan &in_mem)
         regs[pV.rd] = pV.vrd;			// write the value
         validbits[pV.rd] = true;		// make it valid
         if (pV.rd == 0) {
-          dprintf("\nrw1 wrote 0x%08lx to r0 [mem]", pV.vrd);
+          dprintf("\nrw1 wrote 0x%08x to r0 [mem]", pV.vrd);
         }
         //===logging
-        sprintf(gMsg,"r%ld<-%ld [dc]", pV.rd, pV.vrd);
+        sprintf(gMsg,"r%d<-%d [dc]", pV.rd, pV.vrd);
         dprintf ("\nRegWrite1 (%lld):  %s",pTime(),gMsg);
         //message(unit, gMsg);
       }
@@ -1068,14 +1068,14 @@ void dcache(int unit, MemClkChan &in_load, MemClkChan &in_store, PipeClkChan &ou
         if (mR.op == Stop) { running = false; continue; }
         memwrite(mR.op, mR.address, mR.data);
         //===logging
-        sprintf(gMsg, "store %ld->0x%08lx", mR.data, mR.address);
+        sprintf(gMsg, "store %d->0x%08x", mR.data, mR.address);
         dprintf ("\nDcache (%lld):  %s",pTime(),gMsg);
         //message(unit, gMsg);
       }
       in_load.port(memReq mR) {			// read the load on rising edge
         //===logging
         if (mR.op == Stop) { running = false; continue; }
-        sprintf(gMsg, "r%ld<-0x%08lx", mR.regtag, mR.address);
+        sprintf(gMsg, "r%d<-0x%08x", mR.regtag, mR.address);
         dprintf ("\nDcache (%lld):  %s",pTime(),gMsg);
         //message(unit, gMsg);
         mR.data = memread(mR.op, mR.address);
@@ -1097,7 +1097,7 @@ void initCode(int n)
   // uses r0 as a safe base register for loads and stores
   int rv, disp, max_disp;
   const int L12 = (2 << 12);
-  printf("\nCreate %ld instructions from 0x0...", n);
+  printf("\nCreate %d instructions from 0x0...", n);
 	
   // first initialise the available space...
   max_disp = 250;
@@ -1134,7 +1134,7 @@ void initCode(int n)
   i = i + 1;
   theMemory[i] = setInstrucRC(Add, 0, 0, disp);		// r0 = r0 + disp
   while (i < (n - 2)) {
-    //printf("\n0x%08lx::", i);
+    //printf("\n0x%08x::", i);
     rv = Rand.uniform(0,0,100);
     i = i + 1;
     int instruc;
@@ -1157,12 +1157,12 @@ void initCode(int n)
     }
     // can't assign to r0 nor use
     theMemory[i] = instruc;
-    //printf("...=> 0x%08lx", instruc);
+    //printf("...=> 0x%08x", instruc);
   }
 # endif
 
   theMemory[i] = setInstrucRR(Stop,0,0,0);
-  printf("\nCreated %ld instructions", i);
+  printf("\nCreated %d instructions", i);
 }
 
 //---------------------------- watchdog -------------------------
@@ -1178,7 +1178,7 @@ void watchdog(unsigned n, Chan &ask, Chan &shutdown)
 {
   double dT, kips;
   int t0 = mstime();
-  printf("\nStarting time is %ld, timeout is %ld cycles\n\n", t0, n);
+  printf("\nStarting time is %d, timeout is %d cycles\n\n", t0, n);
   while (true) {
     pDelay(Clock * 10);
     if (shutdown.ready()) {
@@ -1193,10 +1193,10 @@ void watchdog(unsigned n, Chan &ask, Chan &shutdown)
       ask.write(0);
       int instrucs = ask.get();
       int t2 = mstime();
-      printf("\n\treal time =%ld start time %ld",t2, t0);
+      printf("\n\treal time =%d start time %d",t2, t0);
       dT = (t2 - t0);      
       kips = instrucs / dT;
-      printf("\nDecode saw %ld instructions in ", instrucs);
+      printf("\nDecode saw %d instructions in ", instrucs);
       printf("%0.2f milliseconds = %0.2f kips", dT, kips);
       pExit(1);
     }

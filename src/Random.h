@@ -32,6 +32,7 @@
 #include <vector>
 #include <stdexcept>
 #include <assert.h>
+#include <cmath>
 
 #include "LcgRand.h"
 #include "KissRand.h"

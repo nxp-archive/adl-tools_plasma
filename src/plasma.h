@@ -104,12 +104,13 @@ namespace plasma {
   // block will work.
   template <class Data>
   pTMutex class ResChan : private Result<Data> {
+    typedef Result<Data> Base;
   public:
     ResChan(const Result<Data> &r) : Result<Data>(r), _rt(0), _read(false) {};
     
-    bool ready() const { return done() && !_read; };
-    Data read() { return value(); };
-    Data get() { _read = true; return value(); };
+    bool ready() const { return Base::done() && !_read; };
+    Data read() { return Base::value(); };
+    Data get() { _read = true; return Base::value(); };
     void clear_ready() { _read = false; };
 
     pNoMutex void set_notify(THandle t,HandleType h);
@@ -268,15 +269,15 @@ namespace plasma {
   { 
     assert(!_rt); 
     _rt = t; 
-    pAddWaiter(thread(),_rt); 
-    pSetHandle(thread(),h); 
+    pAddWaiter(Base::thread(),_rt); 
+    pSetHandle(Base::thread(),h); 
   };
 
   template <class Data>
   THandle ResChan<Data>::clear_notify() 
   { 
     THandle t = _rt; 
-    pClearWaiter(thread(),_rt); 
+    pClearWaiter(Base::thread(),_rt); 
     _rt = 0; 
     return t; 
   };

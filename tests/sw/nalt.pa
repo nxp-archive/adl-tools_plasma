@@ -43,9 +43,9 @@ struct Main {
     while(1) {
       afor (unsigned i = 0;i != in.size(); ++i) {
         in[i].port(Msg data) {
-          printf("Comm 0:  Chan Num=%ld  ", i);
+          printf("Comm 0:  Chan Num=%d  ", i);
           cnt2 = cnt2 + 1;
-          printf(" Rcvd msg num=%ld\n", cnt2);
+          printf(" Rcvd msg num=%d\n", cnt2);
           if (cnt2 >= (count * num_terms)) {
             printf ("Done.\n");
             pExit(0);

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <sys/time.h>
 #include <unistd.h>
-
 #include "Random.h"
 
 using namespace std;
