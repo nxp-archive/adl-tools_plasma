@@ -1,3 +1,9 @@
+2005-01-25  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed a minor issue with alt code generation- we don't create a
+	top loop label if we have a default block because we don't loop:
+	If no channel is ready, we execute the default block and continue.
+
 2005-01-20  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed bug w/clearing 0-sized clocked channels:  We used to not
