@@ -10,7 +10,7 @@ order may change based upon external factors.
 
 :Author: Brian Kahne 
 :Contact: bkahne@freescale.com 
-:revision: $Id$ 
+:revision: ``$Id$``
 
 .. contents::
 
