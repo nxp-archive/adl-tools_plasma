@@ -157,7 +157,7 @@ namespace plasma {
 
     bool have_reader() const { return _readt; };
     void set_notify(THandle t,HandleType h);
-    void clear_notify() { cancel_waker(); };
+    void clear_notify();
     void delayed_wakeup(bool current_data);
     void delayed_reader_wakeup(bool have_data);
     void start_waker();

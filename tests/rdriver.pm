@@ -21,25 +21,32 @@ List the tests in this regression.
 =item B<--tests=range, --t=range>
 
 Specify what tests to run.  Should be a number or a range, where the numbers
-refer to indices of the test array (1 is the first test).
+refer to indices of the test array (1 is the first test).  Multiple instances of
+this parameter may be used.
 
 =item B<--exclude=range, --x=range>
 
 Exclude tests.  Should be a number or a range.  Range format is the same as for
-the "tests" parameter.
+the "tests" parameter.  Multiple instances of this option may be specified.
 
 =item B<--string=str, --s=str>
 
 Run any tests which contain string I<str>.  This is a simple substring search,
-not a regular expression search.
+not a regular expression search. Multiple instances of this option may be
+specified and are used as a conjunction.
 
 =item B<--regex=re, --r=re>
 
-Run any tests which match regular expression I<re>.
+Run any tests which match regular expression I<re>. Multiple instances of this
+option may be specified and are used as a conjunction.
 
 =item B<--keepoutput, --ko>
 
 Do not delete temporary files. 
+
+=item B<--showcmd, --sc>
+
+Print the command to be executed.
 
 =item B<--debug, --d>
 
@@ -172,6 +179,7 @@ $diff = "diff -bi";
 $tmpfile = "cmp.out";
 
 $debug = 0;
+$showcmd = 0;
 
 # These are global because Perl's closures are *broken*!!!!.
 $seed = 0;
@@ -193,7 +201,7 @@ sub error {
 use strict;
 use Data::Dumper;
 
-use vars qw(@Tests $diff $tmpfile $cmd $seed $fails $testindex @failedtests $keepoutput $debug $DontCare);
+use vars qw(@Tests $diff $tmpfile $cmd $seed $showcmd $fails $testindex @failedtests $keepoutput $debug $DontCare);
 
 # Main test code:  For each test, execute it, then scan the output for
 # the tags we look for.  After that, check everything.
@@ -216,6 +224,7 @@ sub doTest($) {
     } else {
       $cmd .= " 2>/dev/null";
     }
+	print "  Cmd: $cmd\n" if ($showcmd);
     my $output = `$cmd`;
 
     my $failokay = ($t->{fail});
@@ -356,6 +365,7 @@ sub get_run_list {
        "r|regex=s",    => \@rlist,
        "ko|keepoutput" => \$keepoutput,
        "seed=i"        => \$seed,
+	   "sc|showcmd"    => \$showcmd,
       )) {
     printhelp(1,1);
   }
@@ -419,31 +429,29 @@ sub get_run_list {
 
   # Now create a new test list with only the included indices.
   # If substrings were specified, include each item only if
-  # the command contains a listed substring.
+  # the command contains all substrings.
   my %newtests;
-  for my $i (0..$size-1) {
+  L1: for my $i (0..$size-1) {
     if ($includes{$i}) {
       my $test = $$tests[$i];
       if (@slist) {
-	# Have substrings, so do search.
-	for my $s (@slist) {
-	  if ( index($test->{cmd},$s) >= 0) {
-	    $newtests{$i+1} = $test;
-	    last;
-	  }
-	}
-      } elsif (@rlist) {
-	# Have regular expressions, so do search.
-	for my $s (@rlist) {
-	  if ( $test->{cmd} =~ /$s/ ) {
-	    $newtests{$i+1} = $test;
-	    last;
-	  }
-	}
-      } else {
-	# No substrings, so include item.
-	$newtests{$i+1} = $test;
+		# Have substrings, so do search.
+		for my $s (@slist) {
+		  if ( index($test->{cmd},$s) < 0) {
+			next L1;
+		  }
+		}
       }
+	  if (@rlist) {
+		# Have regular expressions, so do search.
+		for my $s (@rlist) {
+		  if ( $test->{cmd} !~ /$s/ ) {
+			next L1;
+		  }
+		}
+      }
+	  # Passed all tests, so include.
+	  $newtests{$i+1} = $test;
     }
   }
 

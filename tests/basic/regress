@@ -369,6 +369,11 @@ my @Tests = (
 			  cmd     => "./clock8",
 			  checker => \&check_clock8,
 			 },
+			 # Test of clocked channels w/non-clocked channels and alt.
+			 {
+			  cmd     => "./clock9",
+			  checker => \&check_clock9,
+			 },
 			 # Simple test of the quantity class.
 			 {
 			  cmd     => "./quantity1",
@@ -1296,6 +1301,22 @@ sub check_clock8 {
 	      );
   check_time_seq("(\\d+):\\s+Port \\d+, Time (\\d+)",$_[0],\%seq);
 }
+
+sub check_clock9 {
+  str_rdiff(@_[0],<<'EOD');
+0:  Sending update 1,10
+10:  Sending update 2,50
+20:  Sending update 3,60
+30:  Sending update 4,1000
+EOD
+
+  str_rdiff(@_[0],<<'EOD');
+10: Response to 2:  0
+20: Response to 2:  50
+40: Response to 4:  1000
+EOD
+}
+
 
 sub check_quantity1 {
   str_rdiff(@_[0],<<'EOD');

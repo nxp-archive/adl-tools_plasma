@@ -116,6 +116,12 @@ namespace plasma {
     }
   }
 
+  void SingleConsumerClockChannel::clear_notify() 
+  { 
+    _readt = 0;
+    cancel_waker(); 
+  };
+
   void sc_delayed_waker(void *a)
   {
     SingleConsumerClockChannel *cc = (SingleConsumerClockChannel *)a;

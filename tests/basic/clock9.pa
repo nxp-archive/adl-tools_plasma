@@ -1,0 +1,92 @@
+//
+// Tests to make sure that clocked channels and non-clocked channels can
+// co-exist in an alt statement.
+//
+
+#include <iostream>
+#include <ext/hash_map>
+
+#include "plasma.h"
+
+using namespace std;
+using namespace plasma;
+
+typedef __gnu_cxx::hash_map<int,int> IntHash;
+typedef pair<int,int> Data;
+typedef ClockChan<Data > ClkDataChan;
+typedef Channel<int> IntChan;
+
+const int Clock = 10;
+
+// The responder stores data sent to it on the input and then
+// replies to requests by sending to the request channel.
+void responder(ClkDataChan &in,IntChan &request,IntChan &reply)
+{
+  IntHash h;
+
+  while (true) {
+    alt {
+      in.port(Data p) {
+        //        cout << pTime() << ": Got update:  " << p.first << ":  " << p.second << endl;
+        h[p.first] = p.second;
+      }
+      request.port(int r) {
+        IntHash::const_iterator i = h.find(r);
+        if (i != h.end()) {
+          reply.write(i->second);
+        } else {
+          reply.write(0);
+        }
+      }
+    }
+  }
+}
+
+void updater(ClkDataChan &update)
+{
+  cout << pTime() << ":  Sending update 1,10" << endl;
+  update.write(Data(1,10));
+  pDelay(Clock);
+  cout << pTime() << ":  Sending update 2,50" << endl;
+  update.write(Data(2,50));
+  pDelay(Clock);
+  cout << pTime() << ":  Sending update 3,60" << endl;
+  update.write(Data(3,60));
+  pDelay(Clock);
+  cout << pTime() << ":  Sending update 4,1000" << endl;
+  update.write(Data(4,1000));
+  pDelay(Clock);
+}
+
+void queryer(IntChan &request,IntChan &reply)
+{
+  pDelay(Clock);
+  request.write(2);
+  cout << pTime() << ": Response to 2:  " << reply.get() << endl;
+  pDelay(Clock);
+  request.write(2);
+  cout << pTime() << ": Response to 2:  " << reply.get() << endl;
+  pDelay(Clock*2);
+  request.write(4);
+  cout << pTime() << ": Response to 4:  " << reply.get() << endl;
+}
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  IntChan     request;
+  IntChan     reply;
+  ClkDataChan update(Clock);
+
+  par {
+    responder(update,request,reply);
+    updater(update);
+    queryer(request,reply);
+  }
+  return 0;
+}
+
