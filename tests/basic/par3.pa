@@ -1,0 +1,33 @@
+//
+// Test of looping par with a large number of threads
+// and a structure as a loop variable.
+//
+
+#include <stdio.h>
+
+struct Foo {
+  int i;
+  double d;  
+};
+
+int pMain(int argc,const char *argv[])
+{
+  const int Max = 2000;
+  double *results = new double[Max];
+  pfor (Foo i = {0,101}; i.i != Max; ++i.i, i.d += 2) {
+    for (int j = 0; j != 10; ++j) {
+      int k = 0;
+      for (int l = 0; l != 100000; ++l) {
+        k += 1;
+      }
+    }
+    printf ("Done with block %d.\n",i);
+    results[i.i] = i.d;
+  }
+  printf ("Done with pfor.\n");
+  for (int i = 0; i != Max; ++i) {
+    printf ("Result[%d]:  %f, ",i,results[i]);
+  }
+  printf("\n");
+  return 0;
+}

@@ -17,6 +17,11 @@ public:
 
   // Allocate a stack for this thread.  The thread will execute f(arg).
   void realize(UserFunc *f,void *arg);
+ 
+  // Same as above, except nbytes allocated at front of stack.  The
+  // pointer to f will be a pointer to this space.  Returns the pointer
+  // to the data section.
+  void *realize(UserFunc *f,int nbytes);
 
   // Destroy real thread i.e. deallocate its stack
   void destroy(void);
@@ -31,7 +36,6 @@ public:
   Thread *get_waiter();
 
   bool done() const { return _done; };
-  void *stack() { return _stack; };
 
   // Access to queue pointer.
   Thread *getnext() const;

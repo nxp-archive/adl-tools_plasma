@@ -150,14 +150,14 @@ Ptree *VarWalker::recordVariable(Ptree *exp,Environment *e,Bind *b,bool found_in
         _args = Ptree::Cons(t.MakePtree(Ptree::qMake("`exp`")),_args);
       }
     }
-    return Ptree::qMake("((`_tstype`*)`_tsname`)->`exp`");
+    return Ptree::qMake("(((`_tstype`*)`_tsname`)->`exp`)");
   } else {
     if (!_vhash.count(name)) {
       _vhash.insert(name);
       _argnames.push_back(ArgPair(exp,false));
       _args = Ptree::Cons(t.MakePtree(Ptree::qMake("*`exp`")),_args);
     }
-    return Ptree::qMake("*(((`_tstype`*)`_tsname`)->`exp`)");
+    return Ptree::qMake("(*(((`_tstype`*)`_tsname`)->`exp`))");
   }
 }
 
@@ -313,13 +313,21 @@ Ptree* Plasma::TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest)
 
 // This converts an expression into a thread invocation of a function containing that
 // expression.
+// elist:     Expression list to append to.  Must not be null.
+// thnames:   List of thread names.
+// expr:      Expression to make into a thread.
+// vw:        VarWalker class which stores parameter usage information.
+// env:       Current environment.
+// onthread:  Copy thread structure to space allocated at beginning of thread.
 void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker *vw,
-                             Environment *env,bool heapalloc)
+                             Environment *env,bool onthread)
 {
   Ptree *tstype = Ptree::GenSym();       // Symbol for thread argument structure type.
   Ptree *tsname = Ptree::GenSym();       // Symbol for thread argument structure instance name.
   Ptree *nfname = Ptree::GenSym();
   Ptree *thname = Ptree::GenSym();       // Symbol for thread handle name.
+
+  assert(elist);
 
   vw->setnames(tstype,tsname);              
   Ptree *nexpr = vw->Translate(expr);    // Translate expression, scanning for variables.
@@ -336,10 +344,9 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     // because we want to handle the case where the thread calls the current function recursively.
     InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
-    if (heapalloc) {
+    if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "`tstype` *p_`tsname` = new `tstype`(`tsname`);\n"
-                                         "Thread *`thname` = pSpawn(`nfname`,p_`tsname`);\n"));
+                                         "Thread *`thname` = pSpawn(`nfname`,sizeof(`tstype`),&`tsname`);\n"));
     } else {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
                                          "Thread *`thname` = pSpawn(`nfname`,&`tsname`);\n"));

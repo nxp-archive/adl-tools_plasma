@@ -1,5 +1,10 @@
 2004-04-29  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Modified the implementation of pfor:  Instead of allocating
+	space for the argument structure on the heap, I added a new
+	version of pSpawn which allocates space on the stack structure,
+	then copies data to this space.
+
 	* Added support for the "pfor" construct.  Originally, this was to
 	be called "par" too, but OpenC++ does not allow the same keyword
 	to be used for multiple constructs.

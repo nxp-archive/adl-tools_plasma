@@ -1,11 +1,13 @@
 
 TESTS = regress
 
-check_PROGRAMS = par1 par2 qsort
+check_PROGRAMS = par1 par2 par3 qsort
 
 par1_SOURCES = par1.pa
 
 par2_SOURCES = par2.pa
+
+par3_SOURCES = par3.pa
 
 qsort_SOURCES = qsort.pa
 

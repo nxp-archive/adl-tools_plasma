@@ -27,6 +27,20 @@ void Thread::realize(UserFunc *f,void *arg)
   _thread = QT_ARGS(_thread,arg,this,(qt_userf_t*)f,shell);
 }
 
+void *Thread::realize(UserFunc *f,int nbytes)
+{
+  _stack = thesystem.newstack();
+  // Stack size is adjusted by the number of bytes allocated.
+  int sz = thesystem.stacksize() - nbytes;
+  // Both the data and the start of stack are aligned
+  // to the stack alignment requirements of the system.
+  void *dto = STP_STKALIGN (_stack, QT_STKALIGN);
+  void *sto = STP_STKALIGN ((char*)_stack+nbytes, QT_STKALIGN);
+  _thread = QT_SP(sto,sz-QT_STKALIGN);
+  _thread = QT_ARGS(_thread,dto,this,(qt_userf_t*)f,shell);
+  return dto;
+}
+
 // Destroy real thread i.e. deallocate its stack
 void Thread::destroy()
 {

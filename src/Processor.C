@@ -155,6 +155,18 @@ Thread *Processor::create(UserFunc *f,void  *arg)
   return t;
 }
 
+// Create a thread and add to ready queue.
+Thread *Processor::create(UserFunc *f,int nbytes,void  *args)
+{
+  lock();
+  Thread *t = new Thread;
+  void *d = t->realize(f,nbytes);
+  memcpy(d,args,nbytes);
+  thesystem.add_ready(t);
+  unlock();
+  return t;
+}
+
 // Causes the current thread to wait on the specified thread.
 void Processor::wait(Thread *t)
 {

@@ -20,6 +20,12 @@ Thread *pSpawn(UserFunc *f,void *a)
   return processor.create(f,a);
 }
 
+// Create a new thread and make it ready.
+Thread *pSpawn(UserFunc *f,int nbytes,void *a)
+{
+  return processor.create(f,nbytes,a);
+}
+
 void pWait(Thread *t)
 {
   processor.wait(t);

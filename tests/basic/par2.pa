@@ -1,3 +1,6 @@
+//
+// Simple test of pfor with two loop variable.
+//
 
 #include <stdio.h>
 

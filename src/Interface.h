@@ -31,6 +31,11 @@ typedef void (UserFunc)(void *);
 // Returns a handle to the new thread.
 Thread *pSpawn(UserFunc *f,void *args);
 
+// Same as above, except that the data pointed to be args is copied to the
+// thread stack (nbytes worth).  The thread will receive a pointer to this
+// information.
+Thread *pSpawn(UserFunc *f,int nbytes,void *args);
+
 // Wait on the specified thread.
 void pWait(Thread *);
 

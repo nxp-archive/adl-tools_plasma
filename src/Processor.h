@@ -22,6 +22,7 @@ public:
 
   // Create a thread and add to the ready queue.
   Thread *create(UserFunc *f,void *arg);
+  Thread *create(UserFunc *f,int nbytes,void *args);
 
   // Add an already created thread to the ready queue.  This must
   // have already been realized.
