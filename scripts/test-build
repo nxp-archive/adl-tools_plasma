@@ -22,7 +22,7 @@ prefix=`pwd`
     make dist )
  
 # Place installation checks here.
-if [ ! -f include/gc_cpp.h ] ; then
+if [ ! -f include/gc/gc_cpp.h ] ; then
     echo "!!!"
     echo "!!! Error:  GC C++ headers not installed."
     echo "!!! "
