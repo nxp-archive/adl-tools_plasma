@@ -18,7 +18,7 @@ typedef std::vector<Node *> Nodes;
 // and there is no destructor b/c allocation is garbage collected.
 class CParser {
 public:
-  CParser();
+  CParser(bool debug = false);
   CParser(const CParser &cp) : _parser(cp._parser) {}
 
   void parse(int t,Tokens tk);

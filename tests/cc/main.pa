@@ -9,13 +9,52 @@
 using namespace plasma;
 using namespace std;
 
-void tokenize(int argc,const char *argv[],TokChan &tc);
+void tokenize(TokChan &tc);
 void parse(TokChan &tc);
+
+// Options singleton structure.
+struct Options {
+  bool                 _debug; // Show parser debug info.
+  bool                 _ast;   // Generate AST.
+  vector<const char *> _files; // Files to parse.       
+
+  Options() :
+    _debug(false),
+    _ast(false)
+  {};
+};
+
+Options options;
+
+bool parseOptions(int argc,const char *argv[])
+{
+  if (argc < 2) {
+    return false;
+  }
+  for (int i = 1; i < argc; ++i) {
+    if (!strcmp(argv[i],"-ast")) {
+      options._ast = true;
+    }
+    else if (!strcmp(argv[i],"-d")) {
+      options._debug = true;
+    }
+    else {
+      int len = strlen(argv[i]);
+      if (len > 2 && !strcmp(&argv[i][len-2],".c")) {
+        options._files.push_back(argv[i]);
+      }
+    }
+  }
+  if (options._files.empty()) {
+    cerr << "Error:  No input files were specified.\n\n";
+    return false;
+  }
+  return true;
+}
 
 int pMain(int argc,const char *argv[])
 {
-
-  if (argc < 2) {
+  if (!parseOptions(argc,argv)) {
     cerr << "Usage:  " << argv[0] << " <filename>" << endl;
     return 1;
   }
@@ -23,18 +62,18 @@ int pMain(int argc,const char *argv[])
   TokChan tc;
 
   par {
-    tokenize(argc,argv,tc);
+    tokenize(tc);
     parse(tc);
   }
   return 0;
 }
 
-void tokenize(int argc,const char *argv[],TokChan &tc)
+void tokenize(TokChan &tc)
 {
   CLexer cl(tc);
   // Tokenize all files.
-  for (int i = 1; i != argc; ++i) {
-    cl.reset(argv[i]);
+  for (unsigned i = 0; i != options._files.size(); ++i) {
+    cl.reset(options._files[i]);
     cl.yylex();
   }
   cl.send_alldone();
@@ -42,7 +81,7 @@ void tokenize(int argc,const char *argv[],TokChan &tc)
 
 void parse(TokChan &tc)
 {
-  CParser cp;
+  CParser cp(options._debug);
   while(!cp.error()) {
     Tokens tk = tc.get();
     if (tk._tok < 0) break;
@@ -55,5 +94,7 @@ void parse(TokChan &tc)
     // If we have a parsing error, exit.
     pExit(1);
   }
-  cp.print_ast_list(cout);
+  if (options._ast) {
+    cp.print_ast_list(cout);
+  }
 }

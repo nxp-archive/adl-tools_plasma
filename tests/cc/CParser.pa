@@ -16,11 +16,13 @@ void ParseFree(void *,void (*freeProc)(void*));
 void Parse(void *,int,Tokens,CParser *);
 void ParseTrace(FILE *, char *);
 
-CParser::CParser() : 
+CParser::CParser(bool debug) : 
   _parser(ParseAlloc(GC_malloc)),
   _error(false)
 {
-  //  ParseTrace(stdout,"lemon:  ");
+  if (debug) {
+    ParseTrace(stdout,"lemon:  ");
+  }
 }
 
 void CParser::parse(int t,Tokens tk) 

@@ -11,19 +11,19 @@ use Data::Dumper;
 my @Tests = (
 			 # Basic check of multiple .c files.
 			 {
-			  cmd     => "./minicc tests/in1.c tests/in2.c",
+			  cmd     => "./minicc -ast tests/in1.c tests/in2.c",
 			  diff    => "tests/test1.out",
 			 },
 			 # Checks that a parsing error will be reported.
 			 {
-			  cmd     => "./minicc tests/in3.c",
+			  cmd     => "./minicc -ast tests/in3.c",
 			  diff    => "tests/test2.out",
 			  stderr  => 1,
 			  fail    => 1,
 			 },
 			 # Large test of all supported features.
 			 {
-			  cmd     => "./minicc tests/in4.c",
+			  cmd     => "./minicc -ast tests/in4.c",
 			  diff    => "tests/test3.out",
 			 },
 	    );
@@ -33,7 +33,6 @@ doTest(\@Tests);
 ##
 ## <TESTS>
 ##
-
 
 ##
 ## </TESTS>
