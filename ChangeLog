@@ -1,3 +1,10 @@
+2004-08-27  Brian Kahne  <bkahne@ibmoto.com>
+
+	* minicc:  Changed the architecture somewhat:  All code generation
+	data now resides within CodeGen:  Shared data is in an object
+	called SharedData and per-thread data is in ThreadData.  A new
+	CodeGen object is spawned for each function encountered.
+
 2004-08-26  Brian Kahne  <bkahne@ibmoto.com>
 
 	* minicc: Finished code generation.  Added regressions, including

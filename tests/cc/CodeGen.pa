@@ -10,13 +10,17 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <list>
 
 #include "Types.h"
 #include "Node.h"
 #include "SymTab.h"
 #include "CodeGen.h"
+#include "AsmStore.h"
 #include "StackMachine.h"
 #include "cparse.h"
+
+using namespace std;
 
 #define ASM(code,a,c) { \
   ostringstream s1,s2; \
@@ -36,17 +40,6 @@
   s1 << cmt; \
   code.c(s1.str()); \
 }
-
-
-using namespace std;
-
-#define O(x,y) { \
-  ostringstream ss; \
-  ss << y; \
-  x.o(ss.str()); \
-}
-
-typedef list<string> StringList;
 
 // This class stores compile location information.
 struct CompileLoc : public gc {
@@ -75,58 +68,67 @@ ostream &operator<< (ostream &o,const CompileLoc *cl)
   return o;
 }
 
-// Data used by a single thread for code generation goes here.
-struct CodeGenArg {
-  AsmStore     *_code;
+typedef list<string> StringList;
+
+// Shared code generation resources go here.
+pMutex class SharedData : public gc {
+public:
+  SharedData(bool print_comments) : 
+    _label(0), 
+    _strlabel(0), 
+    _print_comments(print_comments),
+    _globals(print_comments), 
+    _strings(print_comments) 
+  {};
+
+  pNoMutex bool print_comments() const { return _print_comments; };
+
+  string new_label();
+  string new_str_label(String s);
+
+  void global_o(const string &str,const char *comment = 0) { _globals.o(str,comment); };
+
+  void write(ostream &os);
+private:
+  int _label;
+  int _strlabel;
+  bool _print_comments;
+
+  // Global assembly data.
+  AsmStore _globals;
+  // Storage of string literals.
+  AsmStore _strings;
+};
+
+// Per-thread resources go here.
+struct ThreadData : public gc {
+  AsmStore      _code;
   StackMachine  _stack;
   string        _end_label;
   StringList    _break_labels;
   StringList    _continue_labels;
 
-  CodeGenArg(int bfp) : _code(new AsmStore), _stack(*_code,bfp) {};
-  AsmStore &code() { return *_code; };
-  StackMachine &stack() { return _stack; };
-  const string &break_label() const { return _break_labels.back(); };
-  const string &continue_label() const { return _continue_labels.back(); };
+  ThreadData (bool pc,int base_fp,const string &el) : 
+    _code(pc), 
+    _stack(_code,base_fp),
+    _end_label(el)
+  {};
 };
 
-// Push new break and continue labels.
-void push_loop_labels(CodeGenArg *cga,const string &break_label,const string &continue_label)
+void SharedData::write(ostream &out)
 {
-  cga->_break_labels.push_back(break_label);
-  cga->_continue_labels.push_back(continue_label);
+  _globals.write(out);
+  _strings.write(out);
 }
 
-// Restore old break and continue labels.
-void pop_loop_labels(CodeGenArg *cga)
-{
-  cga->_break_labels.pop_back();
-  cga->_continue_labels.pop_back();
-}
-
-// Shared code generation resources go here.
-pMutex class CData : public gc {
-public:
-  CData() : _label(0), _strlabel(0) {};
-  string new_label();
-  string new_str_label(String s);
-
-  void write(ostream &os) { _strings.write(os); };
-private:
-  int _label;
-  int _strlabel;
-  // Storage of string literals.
-  AsmStore _strings;
-};
-
-string CData::new_label()
+string SharedData::new_label()
 {
   ostringstream ss;
   ss << ".L" << _label++;
   return ss.str();
 }
 
-string CData::new_str_label(String s)
+string SharedData::new_str_label(String s)
 {
   ostringstream ss;
   ss << "LC" << _strlabel++;
@@ -136,15 +138,55 @@ string CData::new_str_label(String s)
 }
 
 CodeGen::CodeGen(bool print_comments) :
-  _globals(print_comments),
-  _cdata(new CData)
+  _sdata(new SharedData(print_comments)),
+  _tdata(0)
 {
+}
+
+CodeGen::CodeGen(const CodeGen &cg) :
+  _sdata(cg._sdata),
+  _tdata(0)
+{
+}
+
+inline AsmStore &CodeGen::code()
+{
+  return _tdata->_code;
+}
+
+inline StackMachine &CodeGen::stack()
+{
+  return _tdata->_stack;
+}
+
+inline const string &CodeGen::break_label() const 
+{ 
+  return _tdata->_break_labels.back(); 
+}
+
+inline const string &CodeGen::continue_label() const 
+{ 
+  return _tdata->_continue_labels.back(); 
+}
+
+// Push new break and continue labels.
+void CodeGen::push_loop_labels(const string &break_label,const string &continue_label)
+{
+  _tdata->_break_labels.push_back(break_label);
+  _tdata->_continue_labels.push_back(continue_label);
+}
+
+// Restore old break and continue labels.
+void CodeGen::pop_loop_labels()
+{
+  _tdata->_break_labels.pop_back();
+  _tdata->_continue_labels.pop_back();
 }
 
 // Writes global data information to the _globals code store.
 void CodeGen::handleGlobals(Node *unit)
 {
-  _globals.o(".global_vars:");
+  _sdata->global_o(".global_vars:");
   
   SymTab *symtab = unit->symtab();
   
@@ -155,7 +197,9 @@ void CodeGen::handleGlobals(Node *unit)
       sym->set_compile_loc(new CompileLoc(sym));
       // Add to global data section if it is a variable in this translation unit.
       if (!sym->type()->is_function() && !sym->is_extern()) {
-        O(_globals,"  .comm " << sym->compile_loc() << "," << asm_var_size(sym->type()));
+        ostringstream ss;
+        ss << "  .comm " << sym->compile_loc() << "," << asm_var_size(sym->type());
+        _sdata->global_o(ss.str(),0);
       }
     }
   }
@@ -175,8 +219,7 @@ void CodeGen::write(const string &fn,Node *unit) const
 
   unit->writecode(out);
 
-  _globals.write(out);
-  _cdata->write(out);
+  _sdata->write(out);
 }
 
 // Variable size used by the assembler- includes weird multipler.
@@ -319,12 +362,12 @@ const char *CodeGen::binop(int op) const
 
 string CodeGen::new_label()
 {
-  return _cdata->new_label();
+  return _sdata->new_label();
 }
 
 string CodeGen::new_str_label(String s)
 {
-  return _cdata->new_str_label(s);
+  return _sdata->new_str_label(s);
 }
 
 // Pops the top value from the stack machine's stack and
@@ -332,53 +375,51 @@ string CodeGen::new_str_label(String s)
 // value (for instance, the line 'a = b + 1;') and its
 // return value has been pushed onto the stack but there's
 // nothing to pop it off.
-void CodeGen::empty_stack(Node *n,CodeGenArg *cga)
+void CodeGen::empty_stack(Node *n)
 {
-  StackMachine &stack = cga->_stack;
-  if (!stack.empty()) {
-    stack.pop(n->type());
-    stack.done();
-    if (!stack.empty()) {
-      throw runtime_error("Registe rstack isn't empty after pop in empty_stack().");
+  if (!stack().empty()) {
+    stack().pop(n->type());
+    stack().done();
+    if (!stack().empty()) {
+      throw runtime_error("Register stack isn't empty after pop in empty_stack().");
     }
   }
 }
 
 // Visit the node and then empty the stack machine of the
 // node's return value, if one exists.
-void CodeGen::accept_and_empty_stack(Node *n,CodeGenArg *cga)
+void CodeGen::accept_and_empty_stack(Node *n)
 {
-  n->codegen(this,cga);
-  empty_stack(n,cga);
+  n->codegen(this);
+  empty_stack(n);
 }
 
 // Handle an arbitrary list of objects.
-void CodeGen::genList(NodeList *nl,CodeGenArg *cga)
+void CodeGen::genList(NodeList *nl)
 {
   for (NodeList::iterator i = nl->begin(); i != nl->end(); ++i) {
-    (*i)->codegen(this,cga);
+    (*i)->codegen(this);
   }
 }
 
 // Handle a statement list.
-void CodeGen::genStatementList(StatementList *sl,CodeGenArg *cga)
+void CodeGen::genStatementList(StatementList *sl)
 {
   for (NodeList::iterator i = sl->begin(); i != sl->end(); ++i) {
-    accept_and_empty_stack(*i,cga);
+    accept_and_empty_stack(*i);
   }
 }
 
 // Handle a function definition.
-void CodeGen::genFunctionDefn(FunctionDefn *fd,CodeGenArg *)
+void CodeGen::genFunctionDefn(FunctionDefn *fd)
 {
   int stack_frame_size = calc_function_var_addrs(fd,0);
 
   // This creates the stack pointer and the code repository.
-  CodeGenArg cga(stack_frame_size);
-  cga._end_label = new_label() + "_function_end";
-    
-  AsmStore &code = *(cga._code);
-  StackMachine &stack = cga._stack;
+  _tdata = new ThreadData(_sdata->print_comments(),
+                          stack_frame_size,
+                          new_label() + "_function_end");
+
   AsmStore preamble;
 
   CMT(preamble,"---- BEGIN FUNCTION:  " << fd->name() << " ----");
@@ -391,205 +432,196 @@ void CodeGen::genFunctionDefn(FunctionDefn *fd,CodeGenArg *)
   ASM(preamble,"  pushl %ebp","Save old frame pointer.");
   ASM(preamble,"  movl %esp, %ebp","Set new frame pointer.");
 
-  fd->body()->codegen(this,&cga);
+  fd->body()->codegen(this);
 
   // Figure out the final size of the stack frame, taking into
   // account the stack machine's temporary variables, and
   // insert the code at the beginning of the function.
-  if (stack.get_max_fp()) {
-    ASM(preamble,"  subl $" << -stack.get_max_fp() << ", %esp",
+  if (stack().get_max_fp()) {
+    ASM(preamble,"  subl $" << -stack().get_max_fp() << ", %esp",
         "Allocate space for local+temp variables.");
   }
 
   // Save any callee-save registers that may have been used.
-  stack.save_callee_saves(preamble);
+  stack().save_callee_saves(preamble);
 
   // Add previously generated code.
-  code.splice_front(preamble);
+  code().splice_front(preamble);
 
-  code.o(cga._end_label + ":");
+  code().o(_tdata->_end_label + ":");
 
   // Restore any callee-save registers that may have been used.
-  stack.load_callee_saves();
-  ASM(code,"  movl %ebp, %esp","Deallocate stack frame.");
-  ASM(code,"  popl %ebp","Restore old stack frame.");
-  ASM1(code,"  ret");
+  stack().load_callee_saves();
+  ASM(code(),"  movl %ebp, %esp","Deallocate stack frame.");
+  ASM(code(),"  popl %ebp","Restore old stack frame.");
+  ASM1(code(),"  ret");
 
-  CMT(code,"---- END FUNCTION:  " << fd->name() << " ----");
+  CMT(code(),"---- END FUNCTION:  " << fd->name() << " ----");
 
-  fd->setcode(cga._code);
+  fd->setcode(&code());
+}
+
+void CodeGen::genCompoundStatement(CompoundStatement *cs)
+{
+  cs->statement_list()->codegen(this);
 }
 
 // Generate code for a conditional.
-void CodeGen::genConditional(IfStatement *ifs,CodeGenArg *cga)
+void CodeGen::genConditional(IfStatement *ifs)
 {
   string done_label = new_label() + "_done";
   string else_label = (ifs->else_blk()) ?
     new_label() + "_else"
     : done_label;
 
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  code().c("IF statement - begin");
+  ifs->expr()->codegen(this);
+  Operand comparer = stack().pop();
+  stack().done();
+  ASM(code(),"  testl " << comparer << ", " << comparer,"Test the result.");
+  ASM(code(),"  jz " << else_label,"If result is zero, jump to else clause.");
 
-  code.c("IF statement - begin");
-  ifs->expr()->codegen(this,cga);
-  Operand comparer = stack.pop();
-  stack.done();
-  ASM(code,"  testl " << comparer << ", " << comparer,"Test the result.");
-  ASM(code,"  jz " << else_label,"If result is zero, jump to else clause.");
+  CMT(code(),"IF statement - THEN clause - begin");
+  accept_and_empty_stack(ifs->then_blk());
 
-  CMT(code,"IF statement - THEN clause - begin");
-  accept_and_empty_stack(ifs->then_blk(),cga);
-
-  CMT(code,"IF statement - THEN clause - end");
-  ASM1(code,"  jmp " << done_label);
+  CMT(code(),"IF statement - THEN clause - end");
+  ASM1(code(),"  jmp " << done_label);
   if (Node *else_blk = ifs->else_blk()) {
-    CMT(code,"IF statement - ELSE clause - begin");
-    ASM1(code,else_label << ":");
-    accept_and_empty_stack(else_blk,cga);
-    CMT(code,"IF statement - ELSE clause - end");
+    CMT(code(),"IF statement - ELSE clause - begin");
+    ASM1(code(),else_label << ":");
+    accept_and_empty_stack(else_blk);
+    CMT(code(),"IF statement - ELSE clause - end");
   }
-  ASM1(code,done_label << ":");
-  code.c("IF statement - end");
+  ASM1(code(),done_label << ":");
+  code().c("IF statement - end");
 }
 
 // Generate code for a while loop.
-void CodeGen::genWhileLoop(WhileLoop *wl,CodeGenArg *cga)
+void CodeGen::genWhileLoop(WhileLoop *wl)
 {
   string test_label = new_label() + "_test";
   string done_label = new_label() + "_done";
 
-  push_loop_labels(cga,done_label,test_label);
+  push_loop_labels(done_label,test_label);
 
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  CMT(code(),"WHILE loop - begin");
 
-  CMT(code,"WHILE loop - begin");
+  ASM1(code(),test_label << ":");
+  wl->expr()->codegen(this);
 
-  ASM1(code,test_label << ":");
-  wl->expr()->codegen(this,cga);
+  Operand comparer = stack().pop();
+  stack().done();
 
-  Operand comparer = stack.pop();
-  stack.done();
-
-  ASM(code,"  testl " << comparer << ", " << comparer,"Test the result.");
-  ASM(code,"  jz " << done_label,"If result is zero, leave while loop.");
-  accept_and_empty_stack(wl->stmt(),cga);
-  ASM(code,"  jmp " << test_label,"Jump to start of while loop.");
-  ASM1(code,done_label << ":");
+  ASM(code(),"  testl " << comparer << ", " << comparer,"Test the result.");
+  ASM(code(),"  jz " << done_label,"If result is zero, leave while loop.");
+  accept_and_empty_stack(wl->stmt());
+  ASM(code(),"  jmp " << test_label,"Jump to start of while loop.");
+  ASM1(code(),done_label << ":");
   
-  CMT(code,"WHILE loop - end");
-  pop_loop_labels(cga);
+  CMT(code(),"WHILE loop - end");
+  pop_loop_labels();
 }
 
 // Generate code for a for loop.
-void CodeGen::genForLoop(ForLoop *fl,CodeGenArg *cga)
+void CodeGen::genForLoop(ForLoop *fl)
 {
   string test_label = new_label() + "_test";
   string done_label = new_label() + "_done";
 
-  push_loop_labels(cga,done_label,test_label);
+  push_loop_labels(done_label,test_label);
 
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  CMT(code(),"FOR loop - begin");
 
-  CMT(code,"FOR loop - begin");
-
-  accept_and_empty_stack(fl->begin(),cga);
+  accept_and_empty_stack(fl->begin());
   
-  ASM1(code,test_label << ":");
-  fl->expr()->codegen(this,cga);
+  ASM1(code(),test_label << ":");
+  fl->expr()->codegen(this);
 
-  Operand comparer = stack.pop();
-  stack.done();
+  Operand comparer = stack().pop();
+  stack().done();
 
-  ASM(code,"  testl " << comparer << ", " << comparer,"Test the result.");
-  ASM(code,"  jz " << done_label,"If result is zero, leave for loop.");
-  accept_and_empty_stack(fl->stmt(),cga);
-  accept_and_empty_stack(fl->end(),cga);
+  ASM(code(),"  testl " << comparer << ", " << comparer,"Test the result.");
+  ASM(code(),"  jz " << done_label,"If result is zero, leave for loop.");
+  accept_and_empty_stack(fl->stmt());
+  accept_and_empty_stack(fl->end());
 
-  ASM(code,"  jmp " << test_label,"Jump to start of for loop.");
-  ASM1(code,done_label << ":");
+  ASM(code(),"  jmp " << test_label,"Jump to start of for loop.");
+  ASM1(code(),done_label << ":");
   
-  CMT(code,"FOR loop - end");
-  pop_loop_labels(cga);
+  CMT(code(),"FOR loop - end");
+  pop_loop_labels();
 }
 
 // Generate code for a break statement.
-void CodeGen::genBreak(BreakStatement *,CodeGenArg *cga)
+void CodeGen::genBreak(BreakStatement *)
 {
-  ASM(cga->code(),"  jmp " << cga->break_label(),
+  ASM(code(),"  jmp " << break_label(),
       "Loop:  break statement.");
 }
 
 // Generate code for a continue statement.
-void CodeGen::genContinue(ContinueStatement *,CodeGenArg *cga)
+void CodeGen::genContinue(ContinueStatement *)
 {
-  ASM(cga->code(),"  jmp " << cga->continue_label(),
+  ASM(code(),"  jmp " << continue_label(),
       "Loop:  continue statement.");
 }
 
 // Generate code for a string literal.
-void CodeGen::genStringLiteral(StringLiteral *sl,CodeGenArg *cga)
+void CodeGen::genStringLiteral(StringLiteral *sl)
 {
   string label_str = new_str_label(sl->get());
   
-  ASM(cga->code(),"  movl $" << label_str 
-      << ", " << cga->stack().push(sl->type()),
+  ASM(code(),"  movl $" << label_str 
+      << ", " << stack().push(sl->type()),
       "Get addr of string literal.");
 }
 
 // Generate code for a numeric constant.
-void CodeGen::genConst(Const *c,CodeGenArg *cga)
+void CodeGen::genConst(Const *c)
 {
-  ASM(cga->code(),"  movl $" << c->value() 
-      << ", " << cga->stack().push(c->type()),
+  ASM(code(),"  movl $" << c->value() 
+      << ", " << stack().push(c->type()),
       "Load numeric constant " << c->value());
 }
 
 // Generate code for a variable.
-void CodeGen::genId(Id *id,CodeGenArg *cga)
+void CodeGen::genId(Id *id)
 {
   // If we're only supposed to push our address on the
   // stack, not our actual value, do that and exit.
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
   Node *symbol = id->symbol();
   if (id->output_addr()) {
-    ASM(code,"  leal " << symbol->compile_loc() << ", "
-        << stack.push(),
+    ASM(code(),"  leal " << symbol->compile_loc() << ", "
+        << stack().push(),
         "Get address of " << symbol->name());
     return;
   }
   const char *inst = (id->type()->size() == CharSize) ? "movzbl" : "movl";
-  ASM(code,"  " << inst << " " << symbol->compile_loc() << ", " 
-      << stack.push(id->type()),"Get value of " << symbol->name());  
+  ASM(code(),"  " << inst << " " << symbol->compile_loc() << ", " 
+      << stack().push(id->type()),"Get value of " << symbol->name());  
 }
 
 // Generate code for an array expression.
-void CodeGen::genArrayExpression(ArrayExpression *ae,CodeGenArg *cga)
+void CodeGen::genArrayExpression(ArrayExpression *ae)
 {
-  ae->expr()->codegen(this,cga);
-  ae->index()->codegen(this,cga);
+  ae->expr()->codegen(this);
+  ae->index()->codegen(this);
 
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
-
-  Operand reg_index = stack.pop(ae->index()->type());
-  Operand reg_expr  = stack.pop(ae->expr()->type());
-  Operand reg_to = stack.push(ae->type());
+  Operand reg_index = stack().pop(ae->index()->type());
+  Operand reg_expr  = stack().pop(ae->expr()->type());
+  Operand reg_to = stack().push(ae->type());
   int size = ae->type()->size();
 
   ostringstream addr_str;
   addr_str << "(" << reg_expr << "," << reg_index << "," << size << ")";
-  stack.done();
+  stack().done();
 
   if (ae->output_addr()) {
-    ASM(code,"  leal " << addr_str.str() << ", " << reg_to,
+    ASM(code(),"  leal " << addr_str.str() << ", " << reg_to,
         "Load address of pointer array index.");
   } else {
     const char *inst = (ae->type()->size() == CharSize) ? "movzbl" : "movl";
-    ASM(code,"  " << inst << " " << addr_str.str() << ", " << reg_to,
+    ASM(code(),"  " << inst << " " << addr_str.str() << ", " << reg_to,
         "Pointer array index dereference.");
   }
 }
@@ -601,45 +633,42 @@ void CodeGen::genArrayExpression(ArrayExpression *ae,CodeGenArg *cga)
 // Also, if the node is determined to be a numeric constant,
 // the literal value of the constant (e.g., '$15') is returned,
 // for purposes of optimization.
-Operand CodeGen::accept_and_pop(Node *n,CodeGenArg *cga)
+Operand CodeGen::accept_and_pop(Node *n)
 {
   if (n->is_const()) {
     return Operand(n->value(),Operand::Immed);
   } else {
-    n->codegen(this,cga);
-    return cga->stack().pop(n->coerce_to_type());
+    n->codegen(this);
+    return stack().pop(n->coerce_to_type());
   }
 }
 
 // Generate code for a function call.
-void CodeGen::genFunctionExpression(FunctionExpression *fe,CodeGenArg *cga)
+void CodeGen::genFunctionExpression(FunctionExpression *fe)
 {
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
-
   Node *symbol = fe->function()->symbol();
-  CMT(code,"FUNCTION CALL to " << symbol->name() << "() - begin");
+  CMT(code(),"FUNCTION CALL to " << symbol->name() << "() - begin");
 
   // If we're using any caller-save registers, free them up.
-  stack.save_caller_saves();
+  stack().save_caller_saves();
 
   // Push args on in reverse order.
   NodeList &args = ncastr<NodeList>(fe->arglist());
   int argnum = args.size();
   for (NodeList::reverse_iterator i = args.rbegin(); i != args.rend(); ++i) {
-    Operand arg_reg = accept_and_pop(*i,cga);
-    ASM(code,"  pushl " << arg_reg,"Push arg " << argnum);
-    stack.done();
+    Operand arg_reg = accept_and_pop(*i);
+    ASM(code(),"  pushl " << arg_reg,"Push arg " << argnum);
+    stack().done();
     --argnum;
   }
 
-  ASM(code,"  call " << symbol->compile_loc(),
+  ASM(code(),"  call " << symbol->compile_loc(),
       "Call " << symbol->name() << "()");
 
   // The function will place its return value in register %eax.
   // So, we'll push a register from the stack and ask it to give
   // us %eax.
-  Operand result = stack.push(symbol->type()->get_return_type(),Operand::eax);
+  Operand result = stack().push(symbol->type()->get_return_type(),Operand::eax);
   
   // If we got eax, don't do anything, because our return
   // value is already in there.  Otherwise, move it.
@@ -647,30 +676,27 @@ void CodeGen::genFunctionExpression(FunctionExpression *fe,CodeGenArg *cga)
   // (Note that with current implementationm, we should always
   // get %eax).
   if (result != Operand(Operand::eax)) {
-    ASM(code,"  movl %eax, " << result,"Copy return value.");
+    ASM(code(),"  movl %eax, " << result,"Copy return value.");
   }
   int arg_stack_size = args.size() * WordSize;
 
   if (arg_stack_size > 0) {
-    ASM(code,"  addl $" << arg_stack_size << ", %esp",
+    ASM(code(),"  addl $" << arg_stack_size << ", %esp",
         "Deallocate argument stack.");
   }
 
-  CMT(code,"FUNCTION CALL to " << symbol->name() << "() - end");
+  CMT(code(),"FUNCTION CALL to " << symbol->name() << "() - end");
 }
 
 // Generate code for a return statement.
-void CodeGen::genReturn(ReturnStatement *rs,CodeGenArg *cga)
+void CodeGen::genReturn(ReturnStatement *rs)
 {
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  Operand return_reg = accept_and_pop(rs->expr());
 
-  Operand return_reg = accept_and_pop(rs->expr(),cga);
+  ASM(code(),"  movl " << return_reg << ", %eax","Set return value.");
+  ASM(code(),"  jmp " << _tdata->_end_label,"Exit function.");
 
-  ASM(code,"  movl " << return_reg << ", %eax","Set return value.");
-  ASM(code,"  jmp " << cga->_end_label,"Exit function.");
-
-  stack.done();
+  stack().done();
 }
 
 // Returns a type suffix based upon a supplied type size.
@@ -681,14 +707,11 @@ const char *type_suffix(int size)
 
 // Performs an assignment operation (=, +=, etc) on the given
 // Binop node.
-void CodeGen::binop_assign(Binop *bo,CodeGenArg *cga)
+void CodeGen::binop_assign(Binop *bo)
 {
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
-
-  bo->left()->codegen(this,cga);
-  Operand right_reg = accept_and_pop(bo->right(),cga);
-  Operand left_reg = stack.pop();
+  bo->left()->codegen(this);
+  Operand right_reg = accept_and_pop(bo->right());
+  Operand left_reg = stack().pop();
 
   string instr = string(binop(bo->op())) + type_suffix(bo->type()->size());
 
@@ -698,26 +721,23 @@ void CodeGen::binop_assign(Binop *bo,CodeGenArg *cga)
     right_reg.setlo();
   }
 
-  ASM(code,"  " << instr << " " << right_reg << ", (" << left_reg << ")",
+  ASM(code(),"  " << instr << " " << right_reg << ", (" << left_reg << ")",
       "Perform assignment '" << bo->op_str() << "'");
 
   // Note:  Very inefficient code, especially if result isn't used afterwards.
   const char *inst = (is_char) ? "movzbl" : "movl";
-  ASM(code,"  " << inst << " (" << left_reg << "), " << stack.push(bo->type()),
+  ASM(code(),"  " << inst << " (" << left_reg << "), " << stack().push(bo->type()),
       "Copy assignment result to register.");
-  stack.done();
+  stack().done();
 }
 
 // Performs an arithmetic operation (+, -, etc) on the given
 // Binop node.
-void CodeGen::binop_arith(Binop *bo,CodeGenArg *cga)
+void CodeGen::binop_arith(Binop *bo)
 {
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
-
-  bo->left()->codegen(this,cga);
-  Operand right_reg = accept_and_pop(bo->right(),cga);
-  Operand left_reg = stack.pop(bo->left()->coerce_to_type());
+  bo->left()->codegen(this);
+  Operand right_reg = accept_and_pop(bo->right());
+  Operand left_reg = stack().pop(bo->left()->coerce_to_type());
 
   string instr = string(binop(bo->op())) + type_suffix(bo->type()->size());  
 
@@ -728,14 +748,14 @@ void CodeGen::binop_arith(Binop *bo,CodeGenArg *cga)
     left_reg.setlo();
   }
 
-  ASM(code,"  " << instr << " " << right_reg << ", " << left_reg,
+  ASM(code(),"  " << instr << " " << right_reg << ", " << left_reg,
       "Perform '" << bo->op_str() << "'");
-  stack.done();
+  stack().done();
 
   // Here we are relying on the fact that left_reg is now free
   // from the last pop(), so we should be able to push it
   // back onto the stack machine.
-  Operand new_reg = stack.push(bo->type(),left_reg.value());
+  Operand new_reg = stack().push(bo->type(),left_reg.value());
   if (new_reg != left_reg) {
     throw runtime_error("Binop push() isn't the same as last pop()!");
   }
@@ -743,17 +763,14 @@ void CodeGen::binop_arith(Binop *bo,CodeGenArg *cga)
 
 // Performs a comparison operation (>, ==, etc) on the given
 // Binop node.
-void CodeGen::binop_compare(Binop *bo,CodeGenArg *cga)
+void CodeGen::binop_compare(Binop *bo)
 {
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  bo->left()->codegen(this);
+  Operand right_reg = accept_and_pop(bo->right());
+  Operand left_reg = stack().pop(bo->left()->coerce_to_type());
+  stack().done();
 
-  bo->left()->codegen(this,cga);
-  Operand right_reg = accept_and_pop(bo->right(),cga);
-  Operand left_reg = stack.pop(bo->left()->coerce_to_type());
-  stack.done();
-
-  ASM(code,"  cmpl " << right_reg << ", " << left_reg,
+  ASM(code(),"  cmpl " << right_reg << ", " << left_reg,
       "Compare " << left_reg << " to " << right_reg);
 
   // TODO: this could cause errors, if push() generates
@@ -761,66 +778,60 @@ void CodeGen::binop_compare(Binop *bo,CodeGenArg *cga)
   // change the flags though, they probably shouldn't
   // since they're not arithmetic operations.
   BaseType bt_char(BaseType::Char);
-  Operand reg = stack.push(&bt_char);
+  Operand reg = stack().push(&bt_char);
   Operand byte_reg = reg;
   byte_reg.setlo();
-  ASM(code,"  " << binop(bo->op()) << " " << byte_reg,
+  ASM(code(),"  " << binop(bo->op()) << " " << byte_reg,
       "Perform '" << bo->op_str() << "'");
-  ASM(code,"  movzbl " << byte_reg << ", " << reg,
+  ASM(code(),"  movzbl " << byte_reg << ", " << reg,
       "Zero-extend the boolean result.");
 }
 
 // Generate code for a binary operation.
-void CodeGen::genBinop(Binop *bo,CodeGenArg *cga)
+void CodeGen::genBinop(Binop *bo)
 {
   if (bo->is_assign_op()) {
-    binop_assign(bo,cga);
+    binop_assign(bo);
   } else if (bo->is_compare_op()) {
-    binop_compare(bo,cga);
+    binop_compare(bo);
   } else {
-    binop_arith(bo,cga);
+    binop_arith(bo);
   }
 }
 
 // Generate code for a negative object.
-void CodeGen::genNegative(Negative *n,CodeGenArg *cga)
+void CodeGen::genNegative(Negative *n)
 {
-  n->expr()->codegen(this,cga);
-  ASM(cga->code(),"  negl " << cga->stack().peek(),
+  n->expr()->codegen(this);
+  ASM(code(),"  negl " << stack().peek(),
       "Perform unary negation.");
 }
 
 // Generate code for a pointer operation.
-void CodeGen::genPointer(Pointer *p,CodeGenArg *cga)
+void CodeGen::genPointer(Pointer *p)
 {
-  p->expr()->codegen(this,cga);
-
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
+  p->expr()->codegen(this);
 
   if (p->output_addr()) {
-    ASM(code," ","(Getting pointer target address via '*' here.)");
+    ASM(code()," ","(Getting pointer target address via '*' here.)");
     return;
   }
-  Operand reg_from = stack.pop(p->expr()->type());
-  Operand reg_to = stack.push(p->type());
+  Operand reg_from = stack().pop(p->expr()->type());
+  Operand reg_to = stack().push(p->type());
   
   bool is_char = (p->type()->size() == CharSize);
   const char *inst = (is_char) ? "movzbl" : "movl";
 
-  ASM(code,"  " << inst << " (" << reg_from << "), " << reg_to,
+  ASM(code(),"  " << inst << " (" << reg_from << "), " << reg_to,
       "Pointer dereference.");
-  stack.done();
+  stack().done();
 }
 
 // Generate code for an address-of operation.
-void CodeGen::genAddrOf(AddrOf *ao,CodeGenArg *cga)
+void CodeGen::genAddrOf(AddrOf *ao)
 {
-  ao->expr()->codegen(this,cga);
+  ao->expr()->codegen(this);
 
-  AsmStore &code = cga->code();
-  StackMachine &stack = cga->stack();
-
-  ASM(code," ","(Address-of operator '&' used here.)");
-  stack.force_type_change(ao->type());
+  ASM(code()," ","(Address-of operator '&' used here.)");
+  stack().force_type_change(ao->type());
 }

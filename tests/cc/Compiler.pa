@@ -49,17 +49,18 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
     return true;
   }
 
-  CodeGen codegen(true);
+  // Main global generator- creates shared data.
+  CodeGen maingen(true);
 
   try {
     // Next, generate global variables.
     // This is done serially.
-    codegen.handleGlobals(tu);
+    maingen.handleGlobals(tu);
 
     // Generate main code.  This is done in parallel.
     results.clear();
     for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
-      results.push_back(spawn(gencode(&codegen,*i)));
+      results.push_back(spawn(gencode(maingen,*i)));
     }
     // If any of the results are false, we've got an error.
     for (Results::iterator i = results.begin(); i != results.end(); ++i) {
@@ -84,7 +85,7 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
     cout << "\n" << filename << " -> " << outname << "\n";
     
     // Write out all assembly data.
-    codegen.write(outname,&turef);
+    maingen.write(outname,&turef);
   }
   catch (exception &err) {
     cerr << err.what() << endl;
@@ -93,10 +94,12 @@ bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool chec
   return true;
 }
 
-bool Compiler::gencode(CodeGen *cg,Node *n)
+// This creates a copy of the main generator, to be used
+// by each thread.
+bool Compiler::gencode(CodeGen codegen,Node *n)
 {
   try {
-    n->codegen(cg,0);
+    n->codegen(&codegen);
   }
   catch (exception &err) {
     cerr << err.what() << endl;

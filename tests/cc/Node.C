@@ -14,6 +14,7 @@
 #include "Node.h"
 #include "SymTab.h"
 #include "CodeGen.h"
+#include "AsmStore.h"
 #include "cparse.h"
 
 using namespace std;
@@ -220,7 +221,7 @@ void Node::flowcontrol()
   flowcontrol(0,false);
 }
 
-void Node::codegen(CodeGen *,CodeGenArg *)
+void Node::codegen(CodeGen *)
 {
 }
 
@@ -269,9 +270,9 @@ void ArrayExpression::typecheck(Node *curr_func)
   }
 }
 
-void ArrayExpression::codegen(CodeGen *cg,CodeGenArg *cga)
+void ArrayExpression::codegen(CodeGen *cg)
 {
-  cg->genArrayExpression(this,cga);
+  cg->genArrayExpression(this);
 }
 
 StringLiteral::StringLiteral(String s) : 
@@ -290,9 +291,9 @@ void StringLiteral::printdata(ostream &o) const
   o << indent << "Data:  \"" << _s << "\"";
 }
 
-void StringLiteral::codegen(CodeGen *cg,CodeGenArg *cga)
+void StringLiteral::codegen(CodeGen *cg)
 {
-  cg->genStringLiteral(this,cga);
+  cg->genStringLiteral(this);
 }
 
 void Id::printdata(ostream &o) const
@@ -317,9 +318,9 @@ void Id::typecheck(Node *curr_func)
   _type = _symbol->type();
 }
 
-void Id::codegen(CodeGen *cg,CodeGenArg *cga)
+void Id::codegen(CodeGen *cg)
 {
-  cg->genId(this,cga);
+  cg->genId(this);
 }
 
 void Const::printdata(ostream &o) const
@@ -327,9 +328,9 @@ void Const::printdata(ostream &o) const
   o << indent << "Value:  " << _value;
 }
 
-void Const::codegen(CodeGen *cg,CodeGenArg *cga)
+void Const::codegen(CodeGen *cg)
 {
-  cg->genConst(this,cga);
+  cg->genConst(this);
 }
 
 Node::Calc Const::calculate() const
@@ -378,9 +379,9 @@ void Negative::typecheck(Node *curr_func)
   _type = _expr->type();
 }
 
-void Negative::codegen(CodeGen *cg,CodeGenArg *cga)
+void Negative::codegen(CodeGen *cg)
 {
-  cg->genNegative(this,cga);
+  cg->genNegative(this);
 }
 
 void AddrOf::typecheck(Node *curr_func)
@@ -394,9 +395,9 @@ void AddrOf::typecheck(Node *curr_func)
   }
 }
 
-void AddrOf::codegen(CodeGen *cg,CodeGenArg *cga)
+void AddrOf::codegen(CodeGen *cg)
 {
-  cg->genAddrOf(this,cga);
+  cg->genAddrOf(this);
 }
 
 void Pointer::typecheck(Node *curr_func)
@@ -410,9 +411,9 @@ void Pointer::typecheck(Node *curr_func)
   }
 }
 
-void Pointer::codegen(CodeGen *cg,CodeGenArg *cga)
+void Pointer::codegen(CodeGen *cg)
 {
-  cg->genPointer(this,cga);
+  cg->genPointer(this);
 }
 
 Node::Calc Binop::calculate() const
@@ -587,9 +588,9 @@ void Binop::typecheck(Node *curr_func)
   }
 }
 
-void Binop::codegen(CodeGen *cg,CodeGenArg *cga)
+void Binop::codegen(CodeGen *cg)
 {
-  cg->genBinop(this,cga);
+  cg->genBinop(this);
 }
 
 void IfStatement::printdata(ostream &o) const
@@ -633,9 +634,9 @@ void IfStatement::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void IfStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+void IfStatement::codegen(CodeGen *cg)
 {
-  cg->genConditional(this,cga);
+  cg->genConditional(this);
 }
 
 void BreakStatement::flowcontrol(Node *,bool in_loop)
@@ -645,9 +646,9 @@ void BreakStatement::flowcontrol(Node *,bool in_loop)
   }
 }
 
-void BreakStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+void BreakStatement::codegen(CodeGen *cg)
 {
-  cg->genBreak(this,cga);
+  cg->genBreak(this);
 }
 
 void ContinueStatement::flowcontrol(Node *,bool in_loop)
@@ -657,9 +658,9 @@ void ContinueStatement::flowcontrol(Node *,bool in_loop)
   }
 }
 
-void ContinueStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+void ContinueStatement::codegen(CodeGen *cg)
 {
-  cg->genContinue(this,cga);
+  cg->genContinue(this);
 }
 
 void ForLoop::printdata(ostream &o) const
@@ -693,9 +694,9 @@ void ForLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
-void ForLoop::codegen(CodeGen *cg,CodeGenArg *cga)
+void ForLoop::codegen(CodeGen *cg)
 {
-  cg->genForLoop(this,cga);
+  cg->genForLoop(this);
 }
 
 void WhileLoop::printdata(ostream &o) const
@@ -723,9 +724,9 @@ void WhileLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
-void WhileLoop::codegen(CodeGen *cg,CodeGenArg *cga)
+void WhileLoop::codegen(CodeGen *cg)
 {
-  cg->genWhileLoop(this,cga);
+  cg->genWhileLoop(this);
 }
 
 void NodeList::printdata(ostream &o) const
@@ -749,9 +750,9 @@ void NodeList::typecheck(Node *curr_func)
   }  
 }
 
-void NodeList::codegen(CodeGen *cg,CodeGenArg *cga)
+void NodeList::codegen(CodeGen *cg)
 {
-  cg->genList(this,cga);
+  cg->genList(this);
 }
 
 void NodeList::writecode(std::ostream &out) const
@@ -824,9 +825,9 @@ void FunctionExpression::typecheck(Node *curr_func)
   }
 }
 
-void FunctionExpression::codegen(CodeGen *cg,CodeGenArg *cga)
+void FunctionExpression::codegen(CodeGen *cg)
 {
-  cg->genFunctionExpression(this,cga);
+  cg->genFunctionExpression(this);
 }
 
 void SymNode::printsyms(ostream &o) const
@@ -861,9 +862,9 @@ void CompoundStatement::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_statement_list->has_return_stmt());
 }
 
-void CompoundStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+void CompoundStatement::codegen(CodeGen *cg)
 {
-  _statement_list->codegen(cg,cga);
+  cg->genCompoundStatement(this);
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -906,9 +907,9 @@ void FunctionDefn::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void FunctionDefn::codegen(CodeGen *cg,CodeGenArg *cga)
+void FunctionDefn::codegen(CodeGen *cg)
 {
-  cg->genFunctionDefn(this,cga);
+  cg->genFunctionDefn(this);
 }
 
 void FunctionDefn::writecode(ostream &out) const
@@ -942,9 +943,9 @@ void ReturnStatement::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(true);
 }
 
-void ReturnStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+void ReturnStatement::codegen(CodeGen *cg)
 {
-  cg->genReturn(this,cga);
+  cg->genReturn(this);
 }
 
 Declaration::Declaration (String n,Type *t) :
@@ -995,9 +996,9 @@ void StatementList::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
-void StatementList::codegen(CodeGen *cg,CodeGenArg *cga)
+void StatementList::codegen(CodeGen *cg)
 {
-  cg->genStatementList(this,cga);
+  cg->genStatementList(this);
 }
 
 void TranslationUnit::printdata(std::ostream &o) const

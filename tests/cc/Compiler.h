@@ -32,7 +32,7 @@ public:
   // Used internally.
   bool dochecks(Node *,bool);
 
-  bool gencode(CodeGen *cg,Node *n);
+  bool gencode(CodeGen cg,Node *n);
 };
 
 #endif
