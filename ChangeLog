@@ -1,3 +1,8 @@
+2004-08-05  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed ecu- problem was with cylinders() having a lower priority
+	than baseload(), so that it never got a chance to start up the
+	cylinder managers.  Added regression to test operation.
 
 2004-08-05  Brian Kahne  <bkahne@ibmoto.com>
 

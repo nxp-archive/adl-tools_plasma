@@ -247,10 +247,10 @@ static void cylinders(int32 n, Chan &started, FuelChans &inject, Chans &spark, C
 {
   printf("\nCreate cylinder manager 0..%d", n-1);
   // now we have to wait one revolution for the engine to start
-  started.get();
-		
   pSetPriority(1);
-		
+  started.get();
+  printf("\nGot starter message.");
+				
   printf("\nECU: starter motor has got engine moving; start cylinder management");
   pfor (int i = 0; i != n; ++i) {
     cylinder_process(i, n, inject[i], spark[i], ask[i], wakeups[i]);

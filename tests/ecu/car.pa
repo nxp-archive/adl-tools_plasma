@@ -56,6 +56,8 @@ void starter(Chan &to_starter, Chan &started)
 {
   printf("\nStarter motor starting...");
   to_starter.get();
+  printf ("\nSending starter-started message.");
   started.write(true);
+  printf ("\nDone sending starter-started message.");
 }
 

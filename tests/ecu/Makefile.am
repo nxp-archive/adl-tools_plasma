@@ -33,3 +33,5 @@ include ./$(DEPDIR)/utilities.Po
 include ./$(DEPDIR)/angle.Po
 
 include $(top_srcdir)/tests/Makefile.rules
+
+CLEANFILES+=LogFile

@@ -1,0 +1,60 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+# Tests used in this regression.
+
+use lib "..";
+use rdriver;
+use strict;
+use Data::Dumper;
+
+my @Tests = (
+	     # Basic eav run.
+	     {
+	      cmd     => "./ecu",
+	      checker => \&check_ecu,
+	     },
+	    );
+
+doTest(\@Tests);
+
+##
+## <TESTS>
+##
+
+# We search for some keywords to make sure that the simulation ran.
+sub check_ecu {
+  
+  str_rdiff(@_[0],[
+				   "CylinderManager Process starting for cylinder\\[7\\]",
+				  ]);
+
+  str_rdiff(@_[0],[
+				   "Cylinder 7 starting\\.\\.\\.",
+		   ]);
+
+  str_rdiff(@_[0],[
+				   "ECU: starter motor has got engine moving; start cylinder management",
+		   ]);
+
+  str_rdiff(@_[0],[
+				   "Deadline statistics for injection and firing:",
+				  ]);
+  
+  # We want to see a umber of FIRED and INJECTED messages.  The exact count isn't
+  # necessary.
+  my ($exp_fi,$fi) = (4000,0);
+  my @lines = split /\n/,@_[0];
+  for (@lines) {
+    ++$fi if (/FIRED|INJECTED/);
+  }
+  if ($fi < $exp_fi) {
+	print "Did not find enough FIRED or INJECTED messages.\n";
+	die;
+  }
+
+}
+
+##
+## </TESTS>
+##
