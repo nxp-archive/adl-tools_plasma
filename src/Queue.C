@@ -4,8 +4,7 @@
 
 #include <iostream>
 
-#include "Thread.h"
-#include "ThreadQ.h"
+#include "Queue.h"
 
 using namespace std;
 

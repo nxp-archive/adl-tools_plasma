@@ -12,7 +12,7 @@ typedef struct qt_t qt_t;
 
 namespace plasma {
 
-  class Thread 
+  class Thread : public QBase
   {
   public:
     // Create a thread w/o a stack.  Only used to create the main thread.
@@ -38,10 +38,6 @@ namespace plasma {
 
     bool done() const { return _done; };
 
-    // Access to queue pointer.
-    Thread *getnext() const;
-    void setnext(Thread *);
-
     HandleType handle() const { return _handle; };
     void setHandle(HandleType h) { _handle = h; };
 
@@ -58,7 +54,6 @@ namespace plasma {
     ThreadQ     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
-    Thread     *_next;             // Next thread in queue.
     HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
@@ -68,19 +63,8 @@ namespace plasma {
     _done(false),
     _thread(0),
     _stack(0),
-    _next(0),
     _priority(0)
   {
-  }
-
-  inline Thread *Thread::getnext() const
-  {
-    return _next;
-  }
-
-  inline void Thread::setnext(Thread *t)
-  {
-    _next = t;
   }
 
   inline void Thread::save(qt_t *sptr)

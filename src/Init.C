@@ -8,6 +8,7 @@
 
 #include "Machine.h"
 #include "System.h"
+#include "Cluster.h"
 #include "Processor.h"
 
 using namespace std;
@@ -67,15 +68,15 @@ namespace plasma {
     longjmp(caller, 1);                    // non-local jump to saved state
   }
 
-  Processor   processor;
-  System      thesystem;
+  Cluster thecluster;
+  System  thesystem;
 
   // Terminate program with return code.
   void pExit(int code)
   {
     pLock();
     thesystem.shutdown(code); // shutdown system and deliver exit code
-    processor.runscheduler();
+    thecluster.runscheduler();
   }
 
   // Abort program with error message.
@@ -84,7 +85,7 @@ namespace plasma {
     pLock();
     cout << "\nPlasma aborted: " << msg << ".\n";
     thesystem.shutdown(-1);              // shutdown system and deliver exit code -1
-    processor.runscheduler();
+    thecluster.runscheduler();
   }
 
   // Abort program with error message and immediate exit.
@@ -147,7 +148,14 @@ int main(int argc,const char *argv[])
 
     // Initialize process system.
     thesystem.init(configParms);
-    processor.init(configParms);
+    thecluster.init(configParms);
+
+    // This is the default processor object- it's initialized after
+    // the cluster so that we get the number of priorities.
+    Processor processor;
+
+    // Add default processor to the cluster.
+    thecluster.add_proc(&processor);
 
     sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
     sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill
@@ -157,8 +165,8 @@ int main(int argc,const char *argv[])
     sig_hup  = (void*)signal(SIGHUP, SA_HANDLER(shutdown));  // termination triggered
 
     StartThread *st = new StartThread(argc,argv);
-    processor.add_ready(st);
-    processor.scheduler();             // execute thread scheduler 
+    thecluster.add_ready(st);
+    thecluster.scheduler();             // execute thread scheduler 
     delete st;
     return (thesystem.retcode());
   }

@@ -10,7 +10,7 @@ using namespace plasma;
 
 void pSetup(ConfigParms &cp)
 {
-  cp._priority_count = 3;
+  cp._numpriorities = 3;
 } 
 
 void delay(double x,int d = 10,int w = 10000000)

@@ -4,7 +4,7 @@
 
 #include "Machine.h"
 #include "Thread.h"
-#include "Processor.h"
+#include "Cluster.h"
 #include "System.h"
 
 namespace plasma {
@@ -18,7 +18,7 @@ namespace plasma {
     // Execute user function with argument.
     (*(UserFunc *)f)(u);
     // We're done, so go on to next thread.
-    processor.terminate();
+    thecluster.terminate();
   }
 
   void Thread::realize(UserFunc *f,void *arg)

@@ -38,11 +38,12 @@ order may change based upon external factors.</p>
 <li><a class="reference" href="#spawn-operator" id="id5" name="id5">Spawn Operator</a></li>
 <li><a class="reference" href="#shared-data-structures" id="id6" name="id6">Shared Data Structures</a></li>
 <li><a class="reference" href="#thread-priorities" id="id7" name="id7">Thread Priorities</a></li>
-<li><a class="reference" href="#time-model" id="id8" name="id8">Time Model</a></li>
-<li><a class="reference" href="#timeouts" id="id9" name="id9">Timeouts</a></li>
-<li><a class="reference" href="#clocked-channels" id="id10" name="id10">Clocked Channels</a></li>
-<li><a class="reference" href="#garbage-collection" id="id11" name="id11">Garbage Collection</a></li>
-<li><a class="reference" href="#kernel-threads" id="id12" name="id12">Kernel Threads</a></li>
+<li><a class="reference" href="#support-for-multiple-processors" id="id8" name="id8">Support For Multiple Processors</a></li>
+<li><a class="reference" href="#time-model" id="id9" name="id9">Time Model</a></li>
+<li><a class="reference" href="#timeouts" id="id10" name="id10">Timeouts</a></li>
+<li><a class="reference" href="#clocked-channels" id="id11" name="id11">Clocked Channels</a></li>
+<li><a class="reference" href="#garbage-collection" id="id12" name="id12">Garbage Collection</a></li>
+<li><a class="reference" href="#kernel-threads" id="id13" name="id13">Kernel Threads</a></li>
 </ul>
 </div>
 <div class="section" id="par-block">
@@ -363,7 +364,7 @@ wrapped with locking code.</p>
 <h1><a class="toc-backref" href="#id7" name="thread-priorities">Thread Priorities</a></h1>
 <p>Status:</p>
 <blockquote>
-TBD</blockquote>
+Scheduled for 6/4/2004.</blockquote>
 <p>Decription:</p>
 <blockquote>
 <p>A thread will be able to change its priority using a function
@@ -374,36 +375,77 @@ before any others.</p>
 <ol class="arabic simple">
 <li><tt class="literal"><span class="pre">pSetPriority(int)</span></tt>:  Set current thread's priority.  Spawned threads will
 run at their parents priority.</li>
-<li><tt class="literal"><span class="pre">pNumPriorities()</span></tt>:  Return number of allowed priorities n, where
-priorities are (0..n-1).</li>
-<li>New config parameter in pSetup to set number of priorities.  Default is
+<li><tt class="literal"><span class="pre">pGetPriorities()</span></tt>:  Return current thread's priority.</li>
+<li><tt class="literal"><span class="pre">pLowestPriority()</span></tt>:  Lowest priority (timeslice queue).</li>
+<li>New config parameter, <tt class="literal"><span class="pre">_priority_count</span></tt> in pSetup to set number of priorities.  Default is
 32.</li>
 </ol>
 </blockquote>
 <p>Implementation:</p>
 <blockquote>
-Array of thread queeues.  Scheduler will run high priority threads first.
-Timeslicing will only be turned on when running the lowest-priority threads.</blockquote>
-<p>Dependencies:</p>
+<p>Array of thread queeues.  Scheduler will run high priority threads first.
+Timeslicing will only be turned on when running the lowest-priority threads.</p>
+<p>To the user, 0 is the highest priority, but internally 0 represents the
+lowest value and thus what we timeslice on.</p>
+<p>The scheduler calls <tt class="literal"><span class="pre">get_ready()</span></tt>, which returns the next thread to run,
+respecting priorities.</p>
+<p>The <tt class="literal"><span class="pre">preempt()</span></tt> function calls <tt class="literal"><span class="pre">Processor::ts_okay()</span></tt>, which returns
+false if we're in the kernel or we're in a non-timesliceable thread.</p>
+</blockquote>
+<p>Regressions:</p>
 <blockquote>
-Add support for multiple processors first.  Do time model at same time.</blockquote>
+pri1, pri2.</blockquote>
+</div>
+<div class="section" id="support-for-multiple-processors">
+<h1><a class="toc-backref" href="#id8" name="support-for-multiple-processors">Support For Multiple Processors</a></h1>
+<p>Status:</p>
+<blockquote>
+Scheduled for 6/4/2004.</blockquote>
+<p>Description:</p>
+<blockquote>
+<p>Users will be able to instantiate a <strong>Processor</strong> object.  A spawn
+pseudo-method will allow them to launch a thread on that processor.  Using
+an on-block, e.g.:</p>
+<pre class="literal-block">
+par {
+  on(&lt;processor&gt; [,&lt;priority&gt;]) { ... }
+}
+</pre>
+<p>will allow for a similar feature using <strong>par</strong> blocks.  Support for <strong>pfor</strong>
+will also be included.</p>
+</blockquote>
+<p>Implementation:</p>
+<blockquote>
+<ul class="simple">
+<li>Rename <strong>Processor</strong> to <strong>Cluster</strong>.</li>
+<li>A <strong>Processor</strong> object will be a handle around <strong>Cluster</strong>.</li>
+<li>A global variable will contain a pointer to the current <strong>Cluster</strong>.  Most of
+the interface functions will use that value, except for some that take a
+cluster.  A new interface function will return a <strong>Cluster</strong> object
+pointing to the current cluster.</li>
+<li>The <strong>System</strong> object will have a queue of clusters.  Each cluster will
+make one pass through its threads, then pass to the next cluster.</li>
+<li>Add spawn pseudo method and add support for optional second parameter
+setting priority.</li>
+</ul>
+</blockquote>
 </div>
 <div class="section" id="time-model">
-<h1><a class="toc-backref" href="#id8" name="time-model">Time Model</a></h1>
+<h1><a class="toc-backref" href="#id9" name="time-model">Time Model</a></h1>
 <p>Refer to twiki page for now.</p>
 </div>
 <div class="section" id="timeouts">
-<h1><a class="toc-backref" href="#id9" name="timeouts">Timeouts</a></h1>
+<h1><a class="toc-backref" href="#id10" name="timeouts">Timeouts</a></h1>
 <p>Create a channel that has a backing thread which wakes up and writes to the
 channel after a specified amount of time.  Use in alt blocks.</p>
 </div>
 <div class="section" id="clocked-channels">
-<h1><a class="toc-backref" href="#id10" name="clocked-channels">Clocked Channels</a></h1>
+<h1><a class="toc-backref" href="#id11" name="clocked-channels">Clocked Channels</a></h1>
 <p>Investigate further.  Most likely this will be a channel whose writes are
 guarded by delay statements.  The delay will come from a clock object.</p>
 </div>
 <div class="section" id="garbage-collection">
-<h1><a class="toc-backref" href="#id11" name="garbage-collection">Garbage Collection</a></h1>
+<h1><a class="toc-backref" href="#id12" name="garbage-collection">Garbage Collection</a></h1>
 <p>Status:</p>
 <blockquote>
 TBD</blockquote>
@@ -425,7 +467,7 @@ do it yet.</blockquote>
 TBD</blockquote>
 </div>
 <div class="section" id="kernel-threads">
-<h1><a class="toc-backref" href="#id12" name="kernel-threads">Kernel Threads</a></h1>
+<h1><a class="toc-backref" href="#id13" name="kernel-threads">Kernel Threads</a></h1>
 <p>Status:</p>
 <blockquote>
 TBD</blockquote>
@@ -479,7 +521,7 @@ TBD</blockquote>
 <hr class="footer"/>
 <div class="footer">
 <a class="reference" href="schedule.rst">View document source</a>.
-Generated on: 2004/05/26 14:58:13 CDT.
+Generated on: 2004/05/27 13:40:43 CDT.
 Generated by trip.prl release 1.2.2 from <a class="reference" href="http://docutils.sourceforge.net/rst.html">reStructuredText</a> source.
 </div>
 </body>

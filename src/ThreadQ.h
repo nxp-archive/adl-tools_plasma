@@ -1,42 +1,38 @@
 //
-// Simple thread queue class.
+// Queue implementation for Thread objects.
 //
 
 #ifndef _THREADQ_H_
 #define _THREADQ_H_
 
-#include <iosfwd>
 #include <vector>
+
+#include "Queue.h"
 
 namespace plasma {
 
   class Thread;
 
-  // Very simple queue class of thread objects.
-  class ThreadQ {
+  class ThreadQ : private Queue
+  {
   public:
-    ThreadQ() : _head(0), _tail(0) {};
-
-    void add(Thread *t);
+    void add(Thread *t) { Queue::add(reinterpret_cast<QBase*>(t)); };
 
     // Get from head- removes item from queue.
-    Thread *get();
+    Thread *get() { return reinterpret_cast<Thread*>(Queue::get()); };
     // Get if it exists in queue.  Removes it.
     // Returns 0 if not in queue.
-    Thread *get(Thread *t);
-
-    bool empty() const { return !_head; };
-
-    // O(n) operation for size()!
-    unsigned size() const;
+    Thread *get(Thread *t) { return reinterpret_cast<Thread*>(Queue::get(reinterpret_cast<QBase*>(t))); };
 
     friend std::ostream &operator<<(std::ostream &,const ThreadQ &);
-  private:
-    Thread *_head; // Head of the queue.
-    Thread *_tail; // Tail of the queue.
   };
 
   typedef std::vector<ThreadQ> QVect;
+
+  inline std::ostream &operator<<(std::ostream &o,const ThreadQ &tq)
+  {
+    return operator<<(o,reinterpret_cast<const Queue&>(tq));
+  }
 
 }
 

@@ -50,7 +50,7 @@ namespace plasma {
     return _wantshutdown;
   }
 
-  // Main processor object (only one per system).
+  // Main system object (only one per system).
   extern System thesystem;
 
 }

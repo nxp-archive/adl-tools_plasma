@@ -1,3 +1,19 @@
+2004-05-27  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Pretty big re-org of the backend:  I renamed Processor to
+	Cluster and created a new Processor class which stores the
+	priority-ordered ready queues.  The Cluster object contains the
+	scheduler and the queue of processors.  The scheduler picks a
+	processor and then runs the next available thread from it.  The
+	idea is that the Processor class will be exposed to users, whereas
+	the Cluster will be kept hidden and will eventually map to each
+	kernel thread (if we ever implement that).
+
+	* The ThreadQ class was made into a generic Queue class which uses
+	QBase as a container element.  Thread and Processor now derives
+	from it and ThreadQ and ProcQ privately inherit from Queue, adding
+	wrappers which do the appropriate pointer casting.
+
 2004-05-26  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added priorities to Plasma.  You can change the current thread's

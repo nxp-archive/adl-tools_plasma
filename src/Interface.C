@@ -4,7 +4,7 @@
 //
 
 #include "Interface.h"
-#include "Processor.h"
+#include "Cluster.h"
 #include "System.h"
 
 using namespace std;
@@ -16,24 +16,24 @@ namespace plasma {
     _verbose(false),
     _preempt(true),
     _timeslice(50000),
-    _priority_count(32)
+    _numpriorities(32)
   {}
 
   // Create a new thread and make it ready.
   Thread *pSpawn(UserFunc *f,void *a)
   {
-    return processor.create(f,a);
+    return thecluster.create(f,a);
   }
 
   // Create a new thread and make it ready.
   pair<Thread *,void *> pSpawn(UserFunc *f,int nbytes,void *a)
   {
-    return processor.create(f,nbytes,a);
+    return thecluster.create(f,nbytes,a);
   }
 
   void pAddReady(Thread *t)
   {
-    processor.add_ready(t);
+    thecluster.add_ready(t);
   }
 
   void pAddWaiter(THandle t,THandle waiter)
@@ -48,12 +48,12 @@ namespace plasma {
 
   Thread *pCurThread()
   {
-    return processor.getCur();
+    return thecluster.getCur();
   }
 
   void pWait(Thread *t)
   {
-    processor.wait(t);
+    thecluster.wait(t);
   }
 
   bool pDone(const THandle t)
@@ -63,27 +63,27 @@ namespace plasma {
 
   void pYield()
   {
-    processor.yield();
+    thecluster.yield();
   }
 
   void pTerminate()
   {
-    processor.terminate();
+    thecluster.terminate();
   }
 
   void pTerminate(THandle t)
   {
-    processor.terminate(t);
+    thecluster.terminate(t);
   }
 
   HandleType pSleep()
   {
-    return processor.sleep();
+    return thecluster.sleep();
   }
 
   void pWake(THandle t,HandleType h)
   {
-    processor.wake(t,h);
+    thecluster.wake(t,h);
   }
 
   HandleType pHandle(THandle t)
@@ -98,34 +98,34 @@ namespace plasma {
 
   void pSetPriority(unsigned p)
   {
-    processor.set_priority(p);
+    thecluster.set_priority(p);
   }
 
   unsigned pGetPriority()
   {
-    return processor.get_priority();
+    return thecluster.get_priority();
   }
 
   unsigned pLowestPriority()
   {
-    return processor.lowest_priority();
+    return thecluster.lowest_priority();
   }
 
-  // Lock processor.
+  // Lock thecluster.
   void pLock(void)
   {
-    processor.lock();
+    thecluster.lock();
   }
 
-  // Unlock processor.
+  // Unlock thecluster.
   void pUnlock(void)
   {
-    processor.unlock();
+    thecluster.unlock();
   }
 
   bool pIsLocked()
   {
-    return processor.locked();
+    return thecluster.locked();
   }
 
 }

@@ -28,7 +28,7 @@ namespace plasma {
     bool     _verbose;        // verbosity flag
     bool     _preempt;        // preemption allowed.
     unsigned _timeslice;      // Time slice length in usec.
-    int      _priority_count; // Number of supported priorities.
+    int      _numpriorities;  // Number of supported priorities.
 
     ConfigParms();
   };
