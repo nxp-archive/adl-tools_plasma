@@ -14,7 +14,7 @@ int pMain(int argc,const char *argv[])
   pfor (int i = 0,xx = 2000; i != Max; ++i,--xx) {
     for (int j = 0; j != 10; ++j) {
       int k = 0;
-      for (int l = 0; l != 10000000; ++l) {
+      for (int l = 0; l != 100000000; ++l) {
         k += 1;
       }
       plasma::mprintf ("In block %d.\n",i);
