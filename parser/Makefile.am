@@ -38,7 +38,7 @@ include ./$(DEPDIR)/Mutex.Po
 include ./$(DEPDIR)/TMutex.Po
 
 .mc.o:
-	if $(OCC) -m$@ $(OCCFLAGS) $< -c -d"-MT $@" -d-MD -d-MP -d"-MF$(DEPDIR)/$*.Tpo" -- -Wall -g ;\
+	if $(OCC) -m$@ $(OCCFLAGS) $< -c -d"-MT $@" -d-MD -d-MP -d"-MF$(DEPDIR)/$*.Tpo" -- $(CXXFLAGS) ;\
 	then mv "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po" ; \
 	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
 	fi	
