@@ -18,7 +18,7 @@ int LdLeaf::Write(ostream &out, int indent)
   int len = data.leaf.length;
   out << '\n';
   out.write(ptr,len);
-  return 1;
+  return 2;
 }
 
 // Given an environment and a ptree item, returns a filename and line number.

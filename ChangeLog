@@ -1,5 +1,9 @@
 2004-07-29  Brian Kahne  <bkahne@ibmoto.com>
 
+	* Fixed line directive line-numbering- each line directive should
+	count as 2 lines so that the line directives for the .ii file are
+	correct.
+
 	* Added pipe.pa, a simple RISC processor model.
 
 2004-07-22  Brian Kahne  <bkahne@ibmoto.com>
