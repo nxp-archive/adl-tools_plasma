@@ -27,6 +27,9 @@ AC_DEFUN([AM_PLASMA],
 
   PLASMAPATH=`$PlasmaConfig --prefix`
 
+  AC_MSG_CHECKING([for plasma's version])
+  AC_MSG_RESULT($($PlasmaConfig --version))
+
   AC_MSG_CHECKING([that we can compile a plasma program.])
   ac_ext=pa
   ac_compile='$PLASMA -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
