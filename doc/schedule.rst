@@ -334,9 +334,13 @@ Decription:
     4. New config parameter, ``_priority_count`` in pSetup to set number of priorities.  Default is
        32.
 
+    5. Optional second argument to spawn of a priority, e.g. ``spawn(foo(),0);``
+
+    6. Optional second argument to on block of a priority, e.g. ``on(p1,0) { ... }``
+
 Implementation:
     
-    Array of thread queeues.  Scheduler will run high priority threads first.
+    Array of thread queues.  Scheduler will run high priority threads first.
     Timeslicing will only be turned on when running the lowest-priority threads.
 
     To the user, 0 is the highest priority, but internally 0 represents the

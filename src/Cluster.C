@@ -253,28 +253,18 @@ namespace plasma {
   void Cluster::set_priority(unsigned p)
   {
     lock();
-    if (p >= Proc::numPriorities()) {
-      pAbort("Bad priority value");
-    }
-    _cur->setPriority( convert_priority(p) );
+    _cur->setPriority( p );
     yield();
   }
 
   unsigned Cluster::get_priority() const
   {
-    return convert_priority(_cur->priority());
+    return _cur->priority();
   }
 
   unsigned Cluster::lowest_priority() const
   {
     return Proc::numPriorities()-1;
-  }
-
-  inline unsigned Cluster::convert_priority(unsigned priority) const
-  {
-    int p = priority;
-    int s = Proc::numPriorities();
-    return (abs((p - (s - 1)) % s));
   }
 
   // Get next thread to execute.  Returns 0 if none available.

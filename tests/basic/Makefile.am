@@ -32,6 +32,8 @@ check_PROGRAMS = \
 	mutex1 \
 	pri1 \
 	pri2 \
+	pri3 \
+	pri4 \
 	proc1 \
 	proc2 \
 	proc3 \
@@ -108,6 +110,12 @@ pri1_DEPENDENCIES = $(DEPENDENCIES)
 pri2_SOURCES = pri2.pa
 pri2_DEPENDENCIES = $(DEPENDENCIES)
 
+pri3_SOURCES = pri3.pa
+pri3_DEPENDENCIES = $(DEPENDENCIES)
+
+pri4_SOURCES = pri4.pa
+pri4_DEPENDENCIES = $(DEPENDENCIES)
+
 proc1_SOURCES = proc1.C
 proc1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -154,6 +162,8 @@ DEP_FILES=\
 	./$(DEPDIR)/mutex1.Po \
 	./$(DEPDIR)/pri1.Po \
 	./$(DEPDIR)/pri2.Po \
+	./$(DEPDIR)/pri3.Po \
+	./$(DEPDIR)/pri4.Po \
 	./$(DEPDIR)/proc1.Po \
 	./$(DEPDIR)/proc2.Po \
 	./$(DEPDIR)/proc3.Po \
@@ -182,6 +192,8 @@ include ./$(DEPDIR)/spawn4.Po
 include ./$(DEPDIR)/mutex1.Po
 include ./$(DEPDIR)/pri1.Po
 include ./$(DEPDIR)/pri2.Po
+include ./$(DEPDIR)/pri3.Po
+include ./$(DEPDIR)/pri4.Po
 include ./$(DEPDIR)/proc2.Po
 include ./$(DEPDIR)/proc3.Po
 include ./$(DEPDIR)/time1.Po

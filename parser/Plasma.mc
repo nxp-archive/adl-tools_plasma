@@ -181,10 +181,21 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
   // Do we have a placement statement?  If so, proc will store the expression
   // which specifies the processor.  If not, this will be nil, so the evaluation
   // will produce an empty string.
-   Ptree *proc = nil,*tproc,*tbody;
-  if (Ptree::Match(nexpr,"[ on ( %? ) %? ]",&tproc,&tbody)) {
+  Ptree *proc = nil,*pri = nil,*tproc = nil,*tpri = nil,*tbody = nil,*onarg = nil;
+  if (Ptree::Match(nexpr,"[ on ( %? ) %? ]",&onarg,&tbody)) {
+    // Check to see if we have two arguments.  If so, first is the
+    // processor, second is the priority.  Otherwise, priority defaults
+    // to -1, which means priority of current thread.
+    if (Ptree::Match(onarg,"[ %? , %? ]",&tproc,&tpri)) {
+      pri = tpri;
+    } else {
+      tproc = onarg;
+    }
     nexpr = tbody;
     proc = Ptree::qMake("(`tproc`)(),");
+  }
+  if (!pri) {
+    pri = Ptree::Make("-1");
   }
 
   if (args) {
@@ -198,16 +209,16 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`).first;\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`,`pri`).first;\n"));
     } else {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
-                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,&`tsname`);\n"));
+                                         "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,&`tsname`,`pri`);\n"));
     }
   } else {
     // No arguments, so no need to create the structure.
     InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *);\n"));
     AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
-    elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0);\n"));
+    elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0,`pri`);\n"));
   }
 }
 
@@ -261,20 +272,36 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
 
   Ptree *args = TranslateArguments(env,preargs)->Cadr();
 
-  if (args->Length() > 1) {
-    ErrorMessage(env,"The spawn operator accepts only one argument.",nil,spawnobj);
+  // Default priority is the same priority as the calling thread.
+  Ptree *priority = Ptree::Make("-1");
+
+  // Extract arguments.
+  switch (args->Length()) {
+  case 1:
+    // No action taken- we will use the current prioriity.
+    args = args->First();
+    break;
+  case 3:
+    // Extract priority from second argument (which is 3rd element in
+    // list due to the comma).
+    priority = args->Third();
+    args = args->First();
+    break;
+  default: {
+    ErrorMessage(env,"The spawn operator requires one or two argument.",nil,spawnobj);
     return nil;
+  }
   }
 
   // User function and its arguments.
   Ptree *ufunc,*uargs;
 
   // Try to extract a function call.
-  if (!Ptree::Match(args,"[[ %? ( %? ) ]]",&ufunc,&uargs)) {
+  if (!Ptree::Match(args,"[ %? ( %? ) ]",&ufunc,&uargs)) {
     Ptree *uop,*uptr;
     // For some reason, member pointers parse differently than member calls.
     // So we convert it here to the same form:  obj <op> member.
-    if (Ptree::Match(args,"[[ %? %? [ %? ( %? ) ] ]]",&ufunc,&uop,&uptr,&uargs)) {
+    if (Ptree::Match(args,"[ %? %? [ %? ( %? ) ] ]",&ufunc,&uop,&uptr,&uargs)) {
       ufunc = Ptree::List(ufunc,uop,uptr);
     } else {
       ErrorMessage(env,"Invalid spawn call- argument must be a function call.",nil,args);
@@ -341,28 +368,26 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
 
   // If we have a specified processor, pass as argument.
   if (proc) {
-    cur = lappend(cur,proc);
-    if (objptr || uargs || fptr) {
-      cur = lappend(cur,Ptree::Make(","));
-    }
+    cur = lappend(cur,Ptree::qMake("`proc`,"));
   }
 
   // If we have an explicit object, pass as argument.
   if (objptr) {
-    cur = lappend(cur,objptr);
-    if (uargs || fptr) {
-      cur = lappend(cur,Ptree::Make(","));
-    }
+    cur = lappend(cur,Ptree::qMake("`objptr`,"));
   }
 
   // If we have a pointer to a member or function, pass as argument.
   if (fptr) {
-    cur = lappend(cur,ufunc);
-    if (uargs) {
-      cur = lappend(cur,Ptree::Make(","));
-    }
+    cur = lappend(cur,Ptree::qMake("`ufunc`,"));
   }
 
+  // Pass the priority.
+  cur = lappend(cur,priority);
+  if (uargs) {
+    cur = lappend(cur,Ptree::Make(","));
+  }
+
+  // Finally, pass function arguments.
   cur = lappend(cur,Ptree::qMake("`uargs`)"));
   return start;
 }
@@ -448,6 +473,11 @@ Ptree *procName()
 Ptree *className()
 {
   return Ptree::Make("_class");
+}
+
+Ptree *priName()
+{
+  return Ptree::Make("priority");
 }
 
 Ptree *ptrName()
@@ -571,26 +601,23 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
 
   // If we have a processor, we need it as an argument.
   if (proc) {
-    cur = lappend(cur,Ptree::qMake("plasma::Proc *`procName()`"));
-    if (objclass || numargs || fptr) {
-      cur = lappend(cur,Ptree::qMake(","));
-    }
+    cur = lappend(cur,Ptree::qMake("plasma::Proc *`procName()`,"));
   }
 
   // If we have an explicit object, we need it as an argument.
   if (objclass) {
-    cur = lappend(cur,Ptree::qMake("`objclass->Name()` *`className()`"));
-    if (numargs || fptr) {
-      cur = lappend(cur,Ptree::qMake(","));
-    }
+    cur = lappend(cur,Ptree::qMake("`objclass->Name()` *`className()`,"));
   }
 
   // If we have a pointer to the function or method, it is an argument.
   if (fptr) {
-    cur = lappend(cur,Ptree::qMake("`origt.MakePtree(ptrName())`"));
-    if (numargs) {
-      cur = lappend(cur,Ptree::qMake(","));
-    }
+    cur = lappend(cur,Ptree::qMake("`origt.MakePtree(ptrName())`,"));
+  }
+
+  // The priority of the thread.
+  cur = lappend(cur,Ptree::qMake("int `priName()`"));
+  if (numargs) {
+    cur = lappend(cur,Ptree::qMake(","));
   }
 
   // The arguments to the function to be invoked.
@@ -623,7 +650,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   if (proc) {
     cur = lappend(cur,Ptree::qMake("`procName()`,"));
   }
-  cur = lappend(cur,Ptree::qMake("`lfunc`,sizeof(`targs`),&args));\n}\n"));
+  cur = lappend(cur,Ptree::qMake("`lfunc`,sizeof(`targs`),&args,`priName()`));\n}\n"));
   
   InsertBeforeToplevel(env,start);
 

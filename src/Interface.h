@@ -62,15 +62,17 @@ namespace plasma {
   typedef void (UserFunc)(void *);
 
   // Create a new thread and add it to the ready queue.
-  // Returns a handle to the new thread.
-  THandle pSpawn(UserFunc *f,void *args);
-  THandle pSpawn(Proc *p,UserFunc *f,void *args);
+  // Returns a handle to the new thread.  If the priority is -1, it means
+  // to use the current thread's priority.
+  THandle pSpawn(UserFunc *f,void *args,int priority);
+  THandle pSpawn(Proc *p,UserFunc *f,void *args,int priority);
 
   // Same as above, except that the data pointed to be args is copied to the
   // thread stack (nbytes worth).  The thread will receive a pointer to this
-  // information.
-  std::pair<THandle,void *> pSpawn(UserFunc *f,int nbytes,void *args);
-  std::pair<THandle,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *args);
+  // information.  If the priority is -1, it means to use the current thread's
+  // priority.
+  std::pair<THandle,void *> pSpawn(UserFunc *f,int nbytes,void *args,int priority);
+  std::pair<THandle,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *args,int priority);
 
   // Add a thread to the ready queue, but do not task switch.
   void pAddReady(THandle);

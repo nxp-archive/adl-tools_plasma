@@ -26,8 +26,8 @@ namespace plasma {
     static void init(const ConfigParms &cp);
 
     // Create a thread and add to the ready queue.
-    THandle create(UserFunc *f,void *arg);
-    std::pair<THandle ,void *> create(UserFunc *f,int nbytes,void *args);
+    THandle create(UserFunc *f,void *arg,int pr = -1);
+    std::pair<THandle ,void *> create(UserFunc *f,int nbytes,void *args,int pr = -1);
 
     // Add an already created thread to the ready queue.  This must
     // have already been realized.

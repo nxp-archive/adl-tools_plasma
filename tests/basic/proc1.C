@@ -27,11 +27,11 @@ int pMain(int argc,const char *argv[])
   PArg parg4(4,20);
   PArg parg5(5,10);
 
-  Thread *t1 = pSpawn(func,&parg1);
-  Thread *t2 = pSpawn(p1(),func,&parg2);
-  Thread *t3 = pSpawn(p1(),func,&parg3);
-  Thread *t4 = pSpawn(p2(),func,&parg4);
-  Thread *t5 = pSpawn(p2(),func,&parg5);
+  Thread *t1 = pSpawn(func,&parg1,-1);
+  Thread *t2 = pSpawn(p1(),func,&parg2,-1);
+  Thread *t3 = pSpawn(p1(),func,&parg3,-1);
+  Thread *t4 = pSpawn(p2(),func,&parg4,-1);
+  Thread *t5 = pSpawn(p2(),func,&parg5,-1);
   pWait(t1);
   pWait(t2);
   pWait(t3);

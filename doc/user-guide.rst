@@ -150,6 +150,100 @@ The following functions provide control over threads.  These are declared in
 7.  ``pPanic(char *)``:  Abort program immediately with error message and return
     exit code -1.
 
+The Time Model
+==============
+
+Plasma implements a time model so that users may experiment with mapping an
+algorithm to a possible hardware configuration.  The model works along the lines
+of a discrete event simulator:  A thread may delay itself, in which case it
+stays idle until a specified amount of time has passed, or it may explicitly
+consume time.  In other words, actual work done by the thread takes zero time
+but to model algorithmic complexity, explicit calls may be made to simulate a
+piece of hardware doing real work.
+
+Time in plasma consists of discrete time ticks, but no unit is associated with
+the time.  The main time type is a 64-bit integer.
+
+There are three main functions for the time mode:
+
+1.  ``pDelay(x)``:  Delay for **x** time units.  The thread will be idle for
+    this period of time.
+
+2.  ``pBusy(x)``: Consume **x** time units.  This means that the processor is
+    "busy" for this long.  In order to use ``pBusy()``, you must set
+    ``ConfigParms::_busyokay`` to true.  If not, a runtime error will occur when
+    the function is called.  If you are in the busy-mode then preemption is
+    disabled; the only thread switches will be during alt, wait, delay, or busy
+    commands.
+
+    Lowest priority threads are timesliced.  The time slice value is set by
+    setting ``ConfigParms::_simtimeslice`` in ``pSetup()``.  What this means is
+    that a busy command will be divided up until these timeslices, allowing the
+    same processor to squeeze in work from other threads.
+
+3.  ``pTime()``:  Returns the current system time.
+
+The user may declare multiple processors by declaring a **Processor** object,
+e.g.::
+
+    Processor a;
+
+A thread may be started on another processor using two different methods:
+
+1.  With a **par** or **pfor** block, using an **on** block::
+
+    par {
+       on (<proc name>) { ... }
+       ...
+    }
+
+2.  With the spawn command::
+
+    <proc name>.spawn(<command>);
+
+
+Priorities
+==========
+
+Threads in Plasma have priorities.  By default, a thread's priority is the same
+as its parent's priority, with ``pMain()`` starting at the lowest priority.
+Priorities are specified as an integer, where 0 is the highest.  The number of
+priorities may be set by the configuration parameter
+``ConfigParms::_numpriorities``.  The default value is 32.
+
+Priorities may be specified using a functional API or as optional arguments to
+``spawn`` or ``on``:
+
+1. ``pSetPriority(int)``: Set current thread's priority.
+
+2. ``pGetPriorities()``:  Return current thread's priority.
+
+3. ``pLowestPriority()``:  Return the lowest priority (timeslice queue).
+
+5. Optional second argument to spawn of a priority, e.g. ``spawn(foo(),0);``
+
+6. Optional second argument to on block of a priority, e.g. ``on(p1,0) { ... }``
+
+For any given processor, threads execute in priority order, with timeslicing
+only for the lowest priority thread.  Of course, if a higher priority waits on
+another thread or enters an alt block, there is the possibility that a lower
+priority thread may execute.  In other words, given the following code
+fragment::
+
+    par {
+      on (pCurProc(),0) { /* thread 1 */ }
+      on (pCurProc(),1) { /* thread 2 */ }
+      { /* thread 3 */ }
+      { /* thread 4 */ }
+    }
+
+Thread 1 will execute first and complete before thread 2, which will also
+execute to completion before threads 3 and 4.  Threads 3 and 4 will execute in a
+time-sliced fashion.  Note the use of ``pCurProc()``:  The only way to set a
+priority with the ``on`` block is to use two arguments.  If you want the thread
+to execute on the current processor, you must call ``pCurProc()`` to return the
+current processor.
+
 Thread Communication
 ====================
 
@@ -382,58 +476,6 @@ The other method for creating a shared data structure is to directly use the
     va_end(ap);
     pUnlock();
   }
-
---------------
-The Time Model
---------------
-
-Plasma implements a time model so that users may experiment with mapping an
-algorithm to a possible hardware configuration.  The model works along the lines
-of a discrete event simulator:  A thread may delay itself, in which case it
-stays idle until a specified amount of time has passed, or it may explicitly
-consume time.  In other words, actual work done by the thread takes zero time
-but to model algorithmic complexity, explicit calls may be made to simulate a
-piece of hardware doing real work.
-
-Time in plasma consists of discrete time ticks, but no unit is associated with
-the time.  The main time type is a 64-bit integer.
-
-There are three main functions for the time mode:
-
-1.  ``pDelay(x)``:  Delay for **x** time units.  The thread will be idle for
-    this period of time.
-
-2.  ``pBusy(x)``: Consume **x** time units.  This means that the processor is
-    "busy" for this long.  In order to use ``pBusy()``, you must set
-    ``ConfigParms::_busyokay`` to true.  If not, a runtime error will occur when
-    the function is called.  If you are in the busy-mode then preemption is
-    disabled; the only thread switches will be during alt, wait, delay, or busy
-    commands.
-
-    Lowest priority threads are timesliced.  The time slice value is set by
-    setting ``ConfigParms::_simtimeslice`` in ``pSetup()``.  What this means is
-    that a busy command will be divided up until these timeslices, allowing the
-    same processor to squeeze in work from other threads.
-
-3.  ``pTime()``:  Returns the current system time.
-
-The user may declare multiple processors by declaring a **Processor** object,
-e.g.::
-
-    Processor a;
-
-A thread may be started on another processor using two different methods:
-
-1.  With a **par** or **pfor** block, using an **on** block::
-
-    par {
-       on (<proc name>) { ... }
-       ...
-    }
-
-2.  With the spawn command::
-
-    <proc name>.spawn(<command>);
 
 ------------------
 Garbage Collection

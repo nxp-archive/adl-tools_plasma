@@ -22,28 +22,38 @@ namespace plasma {
     _simtimeslice(10)
   {}
 
-  // Create a new thread and make it ready.
-  Thread *pSpawn(UserFunc *f,void *a)
+  inline unsigned convert_priority(unsigned priority)
   {
-    return thecluster.curProc()->create(f,a);
-  }
-
-  Thread *pSpawn(Proc *p,UserFunc *f,void *a)
-  {
-    thecluster.add_proc(p);
-    return p->create(f,a);
+    if (priority >= Proc::numPriorities()) {
+      pAbort("Bad priority value");
+    }
+    int p = priority;
+    int s = Proc::numPriorities();
+    return (abs((p - (s - 1)) % s));
   }
 
   // Create a new thread and make it ready.
-  pair<Thread *,void *> pSpawn(UserFunc *f,int nbytes,void *a)
+  Thread *pSpawn(UserFunc *f,void *a,int pr)
   {
-    return thecluster.curProc()->create(f,nbytes,a);
+    return thecluster.curProc()->create(f,a,(pr < 0) ? pr : convert_priority(pr));
   }
 
-  pair<Thread *,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *a)
+  Thread *pSpawn(Proc *p,UserFunc *f,void *a,int pr)
   {
     thecluster.add_proc(p);
-    return p->create(f,nbytes,a);
+    return p->create(f,a,(pr < 0) ? pr : convert_priority(pr));
+  }
+
+  // Create a new thread and make it ready.
+  pair<Thread *,void *> pSpawn(UserFunc *f,int nbytes,void *a,int pr)
+  {
+    return thecluster.curProc()->create(f,nbytes,a,(pr < 0) ? pr : convert_priority(pr));
+  }
+
+  pair<Thread *,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *a,int pr)
+  {
+    thecluster.add_proc(p);
+    return p->create(f,nbytes,a,(pr < 0) ? pr : convert_priority(pr));
   }
 
   void pAddReady(Thread *t)
@@ -118,17 +128,17 @@ namespace plasma {
 
   void pSetPriority(unsigned p)
   {
-    thecluster.set_priority(p);
+    thecluster.set_priority(convert_priority(p));
   }
 
   unsigned pGetPriority()
   {
-    return thecluster.get_priority();
+    return convert_priority(thecluster.get_priority());
   }
 
   unsigned pLowestPriority()
   {
-    return thecluster.lowest_priority();
+    return convert_priority(thecluster.lowest_priority());
   }
 
   void pDelay(ptime_t t)

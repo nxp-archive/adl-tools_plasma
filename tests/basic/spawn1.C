@@ -30,7 +30,7 @@ void tmp(void *args)
 Result<double> spawn(double a1,double a2)
 {
   TmpArgs ta = {double(),a1,a2};
-  return Result<double>(pSpawn(tmp,sizeof(TmpArgs),&ta));
+  return Result<double>(pSpawn(tmp,sizeof(TmpArgs),&ta,-1));
 }
 
 int pMain(int argc,const char *argv[])

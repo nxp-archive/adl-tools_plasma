@@ -1,0 +1,63 @@
+//
+// Test of the "on" block for specifying a target processor.
+// 
+#include <iostream>
+#include <stdarg.h>
+
+using namespace std;
+using namespace plasma;
+
+void delay(double x,int d = 10,int w = 10000000);
+
+pMutex class M {
+public:
+  static void msg(const char *fmt, va_list ap)
+    __attribute__((format(printf, 1, 2)))
+  {
+    pLock();
+    vprintf(fmt,ap);
+    pUnlock();
+  };
+};
+
+int pMain(int argc,const char *argv[])
+{ 
+  Processor p1;
+
+  par {
+    on(pCurProc(),0) {
+      int b = 1;
+      delay(b,10);
+      M::msg ("Done with block %d.\n",b);
+    }
+    on(p1,0) {
+      int b = 2;
+      delay(b,10);
+      M::msg ("Done with block %d.\n",b);
+    }
+    on (pCurProc(),1) {
+      int b = 3;
+      delay(b,10);
+      M::msg ("Done with block %d.\n",b);
+    }
+    on (p1,1) {
+      int b = 4;
+      delay(b,10);
+      M::msg ("Done with block %d.\n",b);
+    }
+  }
+
+  printf ("Done.\n");
+  return 0;
+}
+
+void delay(double x,int d,int w)
+{
+  for (int i = 0; i != d; ++i) {
+    int j = 0;
+    for (int i = 0; i != w; ++i) {
+      j += 1;
+    }
+    M::msg ("In block %.1f.\n",x);
+  }
+}

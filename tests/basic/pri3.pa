@@ -1,0 +1,67 @@
+//
+// Test of spawn with explicit priorities.
+//
+#include <iterator>
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+pMutex class V {
+public:
+  void add(int i) { _d.push_back(i); };
+  void print() const;
+private:
+  vector<int> _d;
+};
+
+void V::print() const
+{
+  cout << "Result is:  ";
+  ostream_iterator<int> o(cout,", ");
+  copy(_d.begin(),_d.end(),o);
+  cout << endl;
+}
+
+V v;
+
+double foo(double a,double b,int ix)
+{
+  int xx = 0;
+  for (int j = 0; j != 10; ++j) {
+    for (int i = 0; i != 10000000; ++i) {
+      xx += 1;
+    }
+    printf ("  Running at priority %d.\n",pGetPriority());
+  }
+  v.add(ix);
+  return a*a + b*b;
+}
+
+int infloop(int p)
+{
+  int yy = 0;
+  while (1) {
+    yy += 1;
+  }
+  return p;
+}
+
+double pi()
+{
+  v.add(20);
+  return 3.14159;
+}
+
+int pMain(int argc,const char *argv[])
+{ 
+  Result<double> r1 = spawn(foo(1.1,2.2,1),2);
+  Result<double> r2 = spawn(foo(2.7,9.8,2),1);
+  Result<double> r3 = spawn(foo(100.45,3.59,3),0);
+  Result<double> r4 = spawn(foo(2.7,9.8,4));
+  Result<double> r5 = spawn(pi(),1);
+  cout << "Result is:  " << r1.value() << ", " << r2.value() << ", " << r3.value() 
+       << ", " << r4.value() << ", " << r5.value() << endl;
+  v.print();
+  return 0;
+}

@@ -93,11 +93,11 @@ int pMain(int argc,const char *argv[])
   PArg parg3(1000,channels[2]);
   PArg parg4(10000,channels[3]);
 
-  Thread *p1 = pSpawn(producer,&parg1);
-  Thread *p2 = pSpawn(producer,&parg2);
-  Thread *p3 = pSpawn(producer,&parg3);
-  Thread *p4 = pSpawn(producer,&parg4);
-  Thread *c  = pSpawn(consumer,channels);
+  Thread *p1 = pSpawn(producer,&parg1,-1);
+  Thread *p2 = pSpawn(producer,&parg2,-1);
+  Thread *p3 = pSpawn(producer,&parg3,-1);
+  Thread *p4 = pSpawn(producer,&parg4,-1);
+  Thread *c  = pSpawn(consumer,channels,-1);
   pWait(p1);
   pWait(p2);
   pWait(p3);

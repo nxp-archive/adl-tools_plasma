@@ -46,9 +46,8 @@ namespace plasma {
 
     // Set the priority of the current thread.  Does not do any scheduling.
     // Note:  0 is highest priority from the point of view of the interface,
-    // but internally, 0 is considered the highest priority.  Thus, use these
-    // interface functions to get/set priorities rather than querying the thread
-    // directly.
+    // but internally, 0 is considered the highest priority.  We do all conversions
+    // in Interface.C so that everything else has 0 as being lowest.
     void set_priority(unsigned p);
     unsigned get_priority() const;
     unsigned lowest_priority() const;
@@ -91,8 +90,6 @@ namespace plasma {
     friend void *switch_block(qt_t *sptr, void*, void *old);
 
     bool in_scheduler() const;
-
-    unsigned convert_priority(unsigned p) const;
 
     static bool init();
 

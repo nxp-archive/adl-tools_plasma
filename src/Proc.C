@@ -34,12 +34,12 @@ namespace plasma {
   }
 
   // Create a thread and add to ready queue.
-  Thread *Proc::create(UserFunc *f,void  *arg)
+  Thread *Proc::create(UserFunc *f,void  *arg,int pr)
   {
     thecluster.lock();
     Thread *t = new Thread;
     t->realize(f,arg);
-    t->setPriority(thecluster.curThread()->priority());
+    t->setPriority((pr < 0) ? thecluster.curThread()->priority() : pr);
     t->setProc(this);
     add_ready(t);
     thecluster.unlock();
@@ -50,7 +50,7 @@ namespace plasma {
   // end of the thread object for use by the caller.  Nbytes of data pointed
   // to by args is copied over to this free space and the thread will receive a
   // pointer to this extra space.
-  pair<Thread *,void *> Proc::create(UserFunc *f,int nbytes,void  *args)
+  pair<Thread *,void *> Proc::create(UserFunc *f,int nbytes,void  *args,int pr)
   {
     thecluster.lock();
     // Allocate thread object + nbytes.
@@ -60,7 +60,7 @@ namespace plasma {
     // Argument to thread is pointer to free space.
     void *d = t->endspace();
     t->realize(f,d);
-    t->setPriority(thecluster.curThread()->priority());
+    t->setPriority((pr < 0) ? thecluster.curThread()->priority() : pr);
     t->setProc(this);
     // Copy over data to free space.
     memcpy(d,args,nbytes);

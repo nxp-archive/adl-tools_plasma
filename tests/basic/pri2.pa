@@ -51,7 +51,7 @@ int pMain(int argc,const char *argv[])
     {
       // This should have no effect.
       pSetPriority(pLowestPriority());
-      delay(pGetPriority()+1);
+      delay(pGetPriority()+3);
       printf ("Done with block 3.\n");
     }
     {
