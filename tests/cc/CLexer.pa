@@ -1,0 +1,267 @@
+//
+// Support routines for the tokenizer.
+//
+
+#include <sys/stat.h>
+#include <sys/mman.h>
+#include <fcntl.h>
+#include <sstream>
+#include <stdexcept>
+
+#include "Channels.h"
+#include "CLexer.h"
+
+using namespace plasma;
+using namespace std;
+
+#define ERROR(x) { ostringstream ss; ss << x; throw runtime_error(ss.str()); }
+
+CLexer::CLexer(TokChan &c) :
+  _linenumber(0),
+  _chan(c),
+  _fd(-1),
+  _base(0),
+  _prevpos(0),
+  _srcbase(0),
+  _bufbase(0),
+  _size(0)
+{
+}
+
+CLexer::CLexer(TokChan &c,const string &filename) :
+  yyFlexLexer(),
+  _chan(c),
+  _fd(-1)
+{
+  reset(filename);
+}
+
+CLexer::~CLexer()
+{
+  closefile();
+}
+
+void CLexer::closefile()
+{
+  if (_fd >= 0) {
+    munmap((void*)_base,_size);
+    close(_fd);
+  }
+}
+
+void CLexer::reset(const string &filename)
+{
+  struct stat statbuf;
+
+  _filename = filename;
+  _linenumber = 1;
+
+  closefile();
+
+  if ( (_fd = open(filename.c_str(),O_RDONLY)) < 0) {
+    ERROR("Can't open " << filename << " for reading.");
+  }
+  if (fstat(_fd,&statbuf) < 0) {
+    ERROR("Can't open " << filename << " for reading.");
+  }
+  _size = statbuf.st_size;
+  if ( (_base = (const char *)mmap(0,_size,PROT_READ,MAP_SHARED,_fd,0)) == (caddr_t)-1) {
+    ERROR("mmap error for input.");
+  }
+
+  _prevpos = _base;
+  _srcbase = _base;
+
+}
+
+// This defines a new input routine which copies from an mmap'd
+// file to a buffer.  The copy is necessary b/c flex modifies its buffer.
+int CLexer::LexerInput(char* buf, int max_size )
+{
+  int result;
+  if (_prevpos >= (_base+_size)) { 
+    result = 0;
+  } else { 
+    result = ( (_prevpos + max_size) < (_base + _size)) ?  
+      max_size : 
+      (_base - _prevpos + _size); 
+    memcpy(buf,_prevpos,result); 
+    _srcbase = _prevpos;
+    _prevpos +=  result;
+    _bufbase = buf; 
+  }
+  return result;
+}
+
+// This retrieves text from the mmap'd file.  Use this instead of
+// YYText() for anything that will persist, such as strings.
+const char *CLexer::yystr()
+{
+  return _srcbase+(YYText()-_bufbase);
+}
+
+void CLexer::tksetup(Tokens &tk,int t)
+{
+  memset(&tk,0,sizeof(Tokens));
+  tk._tok = t;
+  tk._ln = _linenumber;
+}
+
+// Sends just a token.
+void CLexer::send(int t)
+{
+  Tokens tk;
+  tksetup(tk,t);
+  _chan.write(tk);
+}
+
+// Sends an identifier.
+void CLexer::send_ident()
+{
+  Tokens tk;
+  tksetup(tk,IDENTIFIER);
+  tk._str.p = yystr();
+  tk._str.l = YYLeng();
+  _chan.write(tk);
+}
+
+// Sends an integer constant.
+void CLexer::send_int()
+{
+  Tokens tk;
+  tksetup(tk,INTCONST);
+  tk._int = atoi(YYText());
+  _chan.write(tk);
+}
+
+// Sends a floating-point constant.
+void CLexer::send_float()
+{
+  Tokens tk;
+  tksetup(tk,FPCONST);
+  tk._fp = strtod(YYText(),0);
+  _chan.write(tk);
+}
+
+// Sends a string literal.  We scan the string for needed translation.
+// If we find escape sequences, we copy the string, do the translation,
+// and pass around a pointer to that string.  The string is garbage collected
+// so it's treated no differently from the mmap'd data.
+void CLexer::send_string()
+{
+  pair<const char *,int> p = convert_string(yystr()+1,YYLeng()-2);
+  Tokens tk;
+  tksetup(tk,STRING_LITERAL);
+  tk._str.p = p.first;
+  tk._str.l = p.second;
+  _chan.write(tk);
+}
+
+// Sends all-done signal to the channel.
+void CLexer::send_alldone()
+{
+  Tokens tk;
+  tksetup(tk,ALL_DONE);
+  _chan.write(tk);
+}
+
+inline bool isodigit(char x) 
+{ 
+  return ((x) >= '0' && (x) <= '7'); 
+}
+
+inline int hextoint(char x) 
+{
+  return (isdigit((x)) ? (x) - '0' : ((x) - 'A') + 10);
+}
+
+
+// It should be the case that a string with escape sequences
+// produces a shorter string.  Thus, we should be able to do only a single
+// allocation.
+pair<const char *,int> CLexer::convert_string(const char *str,int len)
+{
+  const char *p = str;
+  char *t = 0;
+  int tlen = 0;
+  while(p != &str[len]) {
+    if (*p == '\\') {
+      // Found an escape- copy string and do translation.
+      if (!t) {
+        // GC malloc'd memory should already be clear.
+        t = (char*)GC_malloc(len+1);
+        memcpy(t,str,tlen);
+      }
+      ++p;
+      if (*p == 'x') {
+        // Hex digits- code terminates at first non-hex digit.
+        ++p;
+        int tmp = 0,foo;
+        bool dump = false;
+        while (isxdigit(*p)) {
+          tmp <<= 4;
+          foo = toupper(*p++);
+          tmp += hextoint(foo);
+          if (dump) {
+            t[tlen++] = (char)tmp;
+            dump = false;
+          } else {
+            dump = true;
+          }
+        }
+        if (dump) {
+          t[tlen++] = (char)tmp;
+        }
+        continue;
+      } else if (isodigit(*p)) {
+        // Octal digits- code terminates at first non-octal digit.
+        int tmp = 0;
+        while (isodigit(*p)) {
+          tmp <<= 3;
+          tmp += (*p++ - '0');
+        }
+        t[tlen++] = tmp;
+        continue;
+      } else {
+        char tmp;
+        switch (*p) {
+        case 'b':
+          tmp = '\b';
+          break;
+        case 't':
+          tmp = '\t';
+          break;
+        case 'n':
+          tmp = '\n';
+          break;
+        case 'v':
+          tmp = '\v';
+          break;
+        case 'f':
+          tmp = '\f';
+          break;
+        case 'r':
+          tmp = '\r';
+          break;
+        default:
+          tmp = *p;
+        }
+        t[tlen++] = (char)tmp;
+      }
+    } else if (t) {
+      // In translation mode, but we don't have a nescape sequence, so just copy data.
+      t[tlen++] = *p;
+    } else {
+      // Not in translation mode- bump active pointer and character count.
+      ++tlen;
+    }
+    ++p;
+  }
+
+  if (t) {
+    t[tlen] = 0;
+    return make_pair(t,tlen);
+  } else {
+    return make_pair(str,len);
+  }
+}
