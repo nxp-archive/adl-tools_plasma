@@ -4,7 +4,6 @@ dist_MACROS = plasma.m4
 
 MACROS= \
 	cpp-setup.m4 \
-	occ.m4 \
 	qt.m4 \
 	$(dist_MACROS)
 
