@@ -62,6 +62,12 @@ namespace plasma {
   private:
     Proc *_proc;
   };
+
+  // Call this function to create a processor which shares its ready-queue
+  // with another processor.  This can be used to model a cluster of processors
+  // all able to get work from a single issue queue.
+  Processor make_sharedproc(Processor p);
+  Processor make_sharedproc(const char *name,Processor p);
   
   // Vector of processors.  The idea is that you use
   // this, rather than just a standard container, so that
@@ -70,7 +76,7 @@ namespace plasma {
   struct Processors : public std::vector<Processor,traceable_allocator<Processor> >
   {
     Processors() {};
-    Processors(unsigned n,const char *name = 0);
+    Processors(unsigned n,const char *name = 0,bool shared = false);
   };
 
   // The following threads relate to the "current" processor, unless

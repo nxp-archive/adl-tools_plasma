@@ -370,12 +370,31 @@ namespace plasma {
     _proc->setName(name);
   }
 
-  Processors::Processors(unsigned n,const char *name)
+  Processors::Processors(unsigned n,const char *name,bool shared)
   {
     Proc *p = 0;
     for (unsigned i = 0; i != n; ++i) {
-      push_back(Processor(name));
+      if (!i || !shared) {
+        push_back(Processor(name));
+        p = back()();
+      } else {
+        push_back(make_sharedproc(p));
+      }
     }
+  }
+
+ Processor make_sharedproc(Processor p)
+  {
+    Proc *np = new Proc(p());
+    thecluster.add_proc(np);
+    return Processor(np);
+  }
+
+  Processor make_sharedproc(const char *name,Processor p)
+  {
+    Proc *np = new Proc(p(),name);
+    thecluster.add_proc(np);
+    return Processor(np);
   }
 
 }

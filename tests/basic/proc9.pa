@@ -1,0 +1,45 @@
+//
+// Test of shared ready queues with processors.
+// This has only busy statements.
+//
+
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  pSetPriority(0);
+
+  // We create two shared processors, for a total
+  // of three processors.
+  Processor p1 = make_sharedproc(pCurProc());
+  Processor p2 = make_sharedproc(pCurProc());
+
+  // No need to use "on" here b/c the processors all share
+  // the same issue queue.
+  par {
+    {
+      cout << "Block 1 start:  " << pTime() << endl;
+      pBusy(50);
+      cout << "Block 1 done:  " << pTime() << endl;      
+    }
+    {
+      cout << "Block 2 start:  " << pTime() << endl;
+      pBusy(100);
+      cout << "Block 2 done:  " << pTime() << endl;      
+    }
+    {
+      cout << "Block 3 start:  " << pTime() << endl;
+      pBusy(50);
+      cout << "Block 3 done:  " << pTime() << endl;
+    }
+  }
+  return 0;
+}

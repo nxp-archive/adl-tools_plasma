@@ -76,9 +76,9 @@ namespace plasma {
     //    printf ("push_other_roots called:  %d threads.\n",System::num_active_threads());
     Thread *n = _active_list;
     while (n) {
-      if (n->stack()) {
-        //printf ("  %p:  %p:%p.\n",n,(ptr_t)n->stack(),(ptr_t)n->stackend()+1);
-        GC_push_all_stack((ptr_t)n->stack(),(ptr_t)n->stackend()+1);
+      if (n->thread() && n->stackend()) {
+        //printf ("push_other_roots  %p:  %p:%p.\n",n,(ptr_t)n->thread(),(ptr_t)n->stackend()+1);
+        GC_push_all_stack((ptr_t)n->thread(),(ptr_t)n->stackend()+1);
       }
       n = n->nt();
     }
@@ -126,7 +126,7 @@ namespace plasma {
     th->setStartTime(_time);
     Proc *p = th->proc();
     p->setState(Proc::Busy);
-    p->setBusyThread(th);
+    p->add_busy(th);
     _busy.push(p);
   }
 

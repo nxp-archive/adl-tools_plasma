@@ -245,6 +245,21 @@ my @Tests = (
 	      cmd     => "./proc7",
 	      checker => \&check_proc7,
 	     },
+	     # Busy/delay w/multiple procs w/shared issue queue.
+	     {
+	      cmd     => "./proc8",
+	      checker => \&check_proc8,
+	     },
+	     # Busy w/multiple procs w/shared issue queue.
+	     {
+	      cmd     => "./proc9",
+	      checker => \&check_proc9,
+	     },
+	     # Busy w/shared Processors data structure.
+	     {
+	      cmd     => "./proc10",
+	      checker => \&check_proc10,
+	     },
 	     # Time w/invalid busy.
 	     {
 	      cmd     => "./time1",
@@ -913,6 +928,36 @@ sub check_proc7 {
   check_times($_[0],\%diff);
 }
 
+# Busy/delay w/multiple procs w/shared issue queue.
+sub check_proc8 {
+  my %diff = (
+ 	      1  => [0,50],
+ 	      2  => [0,100],
+ 	      3  => [0,50],
+ 	     );
+  check_times($_[0],\%diff);
+}
+
+# Busy w/multiple procs w/shared issue queue.
+sub check_proc9 {
+  my %diff = (
+ 	      1  => [0,50],
+ 	      2  => [0,100],
+ 	      3  => [0,50],
+ 	     );
+  check_times($_[0],\%diff);
+}
+
+# Busy w/shared Processors data structure.
+sub check_proc10 {
+  my %diff;
+  for my $i (0..49) {
+    $diff{$i} = [ (int ($i / 10)*10),250 ];
+  }
+  #print Dumper(%diff);
+  check_times($_[0],\%diff);
+}
+
 # Time model w/delay.
 sub check_time2 {
   my %seq = (
@@ -937,7 +982,7 @@ sub check_time3 {
 
   my %diff = (
  	      3 => 50,
-	      4 => 70,
+	      4 => 60,
  	     );
   check_times($_[0],\%diff);
 }

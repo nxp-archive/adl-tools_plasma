@@ -22,16 +22,22 @@ namespace plasma {
   // Processors declared globally in a user program occurring before
   // setup time.
   Proc::Proc(const char *n) :
-    _ready(numPriorities())
+    _ready(new QVect(numPriorities()))
+  {
+    init_internal(n);
+  }
+
+  // Create a processor with a shared ready queue.
+  Proc::Proc(Proc *parent,const char *n) :
+    _ready(parent->_ready)
   {
     init_internal(n);
   }
 
   inline void Proc::init_internal(const char *n)
   {
-    _name = n;
     _busythread = 0;
-    _numthreads = 0;
+    _name = n;
     _state = Waiting;
   }
 
@@ -82,25 +88,39 @@ namespace plasma {
   // Add thread to relevant ready queue, based upon its
   // priority.  Thread is not added if done or ready (since
   // it's already been added).
-  void Proc::add_ready(Thread *t)
+  void Proc::add_ready(THandle t)
   {
-    if (t->state() == Thread::Run) {
+    if (t->state() == Thread::Run || t->state() == Thread::Busy) {
       t->setState(Thread::Ready);
       int p = t->priority();
-      _ready[p].add(t);
-      ++_numthreads;
+      (*_ready)[p].add(t);
+      ++_ready->_count;
     }
   }
 
-  // Get next thread to execute.  Returns 0 if none available.
-  // Starts at highest priority and works downwards.
+  // Add a busy thread.
+  void Proc::add_busy(THandle t)
+  {
+    if (t->state() == Thread::Run) {
+      t->setState(Thread::Busy);
+      _busythread = t;
+    }
+  }
+
+  inline THandle Proc::return_thread(THandle t)
+  {
+    --_ready->_count;
+    t->setState(Thread::Run);
+    return t;
+  }
+
+  // Get next thread to execute.  Returns 0 if none available.  Starts with next
+  // item in the busy queue, then goes to highest priority and works downwards.
   Thread *Proc::get_ready()
   {
-    for (int i = _ready.size()-1; i >= 0; --i) {
-      if (Thread *next = _ready[i].get()) {
-        --_numthreads;
-        next->setState(Thread::Run);
-        return next;
+    for (int i = (*_ready).size()-1; i >= 0; --i) {
+      if (Thread *next = (*_ready)[i].get()) {
+        return return_thread(next);
       }
     }
     return 0;
@@ -108,35 +128,42 @@ namespace plasma {
 
   Thread *Proc::next_ready() const
   {
-    for (int i = _ready.size()-1; i >= 0; --i) {
-      if (Thread *next = _ready[i].front()) {
+    for (int i = (*_ready).size()-1; i >= 0; --i) {
+      if (Thread *next = (*_ready)[i].front()) {
         return next;
       }
     }
     return 0;
   }
-
+  
   // Searches for the specified thread and removes it from the
   // ready queue.  Returns 0 if not found, otherwise the pointer
   // to the thread.
   Thread *Proc::get_ready(Thread *t)
   {
     int p = t->priority();
-    Thread *next = _ready[p].get(t);
-    if (next) {
-      --_numthreads;
-      next->setState(Thread::Run);
+    if (Thread *next = (*_ready)[p].get(t)) {
+      return return_thread(next);
     }
-    return next;
+    return 0;
   }
 
+  // Don't bother checking the busy queue b/c this should only
+  // be used for moving the scheduler thread.
   void Proc::remove_ready(THandle t)
   {
     assert(t->proc() == this);
     int p = t->priority();
-    _ready[p].remove(t);
-    t->setState(Thread::Run);
-    --_numthreads;
+    (*_ready)[p].remove(t);
+    return_thread(t);
+  }
+
+  void Proc::clearBusyThread()
+  {
+    if (_busythread) {
+      add_ready(_busythread);
+      _busythread = 0;
+    }
   }
 
   // We return the busy time of the highest priority thread in the system.
@@ -144,21 +171,22 @@ namespace plasma {
   // the one that was just added back to the system.
   ptime_t Proc::endtime() const
   {
-    return (_busythread) ? _busythread->endtime() : 0;
+    return (_busythread ) ? _busythread->endtime() : 0;
   }
 
   void Proc::print_ready(ostream &o) const
   {
     o << "Ready queue:  ";
-    for (unsigned i = 0; i != _ready.size(); ++i) {
-      o << "  Priority " << i << ":  " << _ready[i] << endl;
+    for (unsigned i = 0; i != (*_ready).size(); ++i) {
+      o << "  Priority " << i << ":  " << (*_ready)[i] << endl;
     }
     o << endl;
   }
 
+  // Useful for workin with gdb.  Prints to cerr so that it's unbuffered.
   void Proc::print_ready() const
   {
-    print_ready(cout);
+    print_ready(cerr);
   }
 
   unsigned Proc::numPriorities()

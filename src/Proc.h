@@ -23,6 +23,7 @@ namespace plasma {
 
     // Creates a standalone processor.
     Proc(const char *name = 0);
+    Proc(Proc *parent,const char *name = 0);
 
     static void init(const ConfigParms &cp);
 
@@ -36,6 +37,8 @@ namespace plasma {
     // Add an already created thread to the ready queue.  This must
     // have already been realized.
     void add_ready(THandle t);
+    // Add a thread to the busy queue.
+    void add_busy(THandle t);
     // Get next available thread, respecting priorities.
     THandle get_ready();    
     // Try to remove thread from ready queue (if it exists).
@@ -53,13 +56,12 @@ namespace plasma {
 
     // Access busy thread.
     Thread *busythread() const { return _busythread; };
-    void setBusyThread(Thread *bt) { _busythread = bt; };
-    void clearBusyThread() { _busythread = 0; };
+    void clearBusyThread();
 
     // Number of threads in object.
-    unsigned size() const { return _numthreads; };
+    unsigned size() const { return _ready->thread_size(); };
     // Returns true if queue is empty.
-    bool empty() const { return !_numthreads; };
+    bool empty() const { return _ready->thread_empty(); };
 
     // Amount of busy time left (if applicable).
     // This is starttime + time.
@@ -73,14 +75,14 @@ namespace plasma {
     static unsigned numPriorities();
 
   private:
+    THandle return_thread(THandle t);
     void init_internal(const char *n);
 
     static unsigned _numpriorities; // Number of allowed priorities.
 
     const char *_name;           // Optional name- memory not managed.
-    QVect       _ready;          // Ready threads, in priority order.
-    Thread     *_busythread;     // Current busy thread, if any.
-    int         _numthreads;     // Count of threads in this object.
+    QVect      *_ready;          // Ready threads, in priority order.
+    THandle     _busythread;     // Current busy thread, if any.
     State       _state;          // Current processor state.
   };
 

@@ -28,6 +28,23 @@ namespace plasma {
     _tail = next;            // this is the last thread in queue
   }
 
+  void Queue::push(QBase *next)
+  {
+    // Assertion:  Item must not already be in a queue.
+    // This doesn't catch the case where there's only a single item,
+    // though.
+    assert(!next->getnext() && !next->getprev());
+    next->setprev(0);        // first thread in queue.
+    if (_head) {             // there was a previous thread in queue
+      _head->setprev(next);  // previous head points back to new item
+      next->setnext(_head);
+    } else {                 // no previous thread in queue
+      _tail = next;          // this is the first thread in queue
+      next->setnext(0);
+    }
+    _head = next;            // this is the first thread in queue
+  }
+
   QBase *Queue::get()
   {
     if (!_head) return(0);       // cheap test first

@@ -37,7 +37,10 @@ namespace plasma {
   public:
     Queue() : _head(0), _tail(0) {};
 
+    // Add to back.
     void add(QBase *t);
+    // Add to front- for using this structure as a stack.
+    void push(QBase *t);
 
     // Get from head- removes item from queue.
     QBase *get();

@@ -115,6 +115,11 @@
  <li><p>Null-pointer checking.  This can be implemented without
 	       adding extra runtime overhead:  A null-pointer access will cause
 	       a protection fault, which can then generate a C++ exception.</p></li>
+ <li><p>A proper module system.  C++'s use of header files for
+	       conveying declaration information make for extremely inefficient
+	       compilation.  This is compounded by the fact that templates need
+	       to be in header files.  A proper module system could dramatically
+	       speed up development time.</p></li>
  <li><p>Garbage collector aware containers.  The standard containers,
 	       e.g. <code>vector</code>, <code>list</code>, etc., would be traced by
 	       the conservative collector.  Currently, one has to write:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -167,6 +172,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Sep 14 17:58:29 2004</em>.</font></p></div>
+Last update <em>Tue Sep 14 18:42:10 2004</em>.</font></p></div>
 </body>
 </html>

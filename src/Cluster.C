@@ -98,7 +98,6 @@ namespace plasma {
   {
     static bool dummy = init();
 
-    // Explicitly add main thread to active list, since it's never "realized".
     System::add_active_thread(&_main);
 
     setalarm();                              // set alarm timer
@@ -127,6 +126,7 @@ namespace plasma {
 
   void Cluster::reset(Proc *p)
   {
+    //    _main.setStack(GC_stackbottom);
     _curproc = p;
     p->setState(Proc::Running);
 
@@ -261,11 +261,17 @@ namespace plasma {
     // Processor is not locked b/c preemption is deactivated in busy-okay mode.
     //cout << "\nThread " << _cur << ":  busy for " << total_time << endl;
     while (total_time) {
-      // Add to busy queue.
+      // Add to system busy queue.
       // If we're dealing with a time-slice process, only add for the timeslice amount.
       ptime_t requested_time = (_cur->priority() || total_time < _busyts) ? total_time : _busyts;
-      // Add process back to processor.
-      _cur->proc()->add_ready(_cur);
+      // If we already have a busy thread, it's b/c we're a higher priority thread
+      // preempting the other.  Add the other back to the schedule queue so that it'll
+      // be run later.
+      _curproc->clearBusyThread();
+      // In case of processors sharing an issue queue, make sure that thread has
+      // correct processor.
+      _cur->setProc(_curproc);
+      // Add thread to system busy queue.  This also adds it back to the processor's busy queue.
       thesystem.add_busy(requested_time,_cur);
       // Update- we know something is available b/c we just added something.
       // This updates the time.
@@ -364,10 +370,15 @@ namespace plasma {
   inline bool Cluster::update_proc()
   {
     assert(_curproc);
-    if (_curproc->empty()) {
+    // The loop is only used in the case of shared schedules- it's possible
+    // that we might have a processor in the queue that suddenly doesn't have
+    // any more threads, so we have to advance time.
+    while (_curproc->empty()) {
       // Update state.
       _curproc->setState(Proc::Waiting);
-      return get_new_proc();
+      if (!get_new_proc()) {
+        return false;
+      }
     }
     return true;
   }
@@ -516,6 +527,7 @@ namespace plasma {
   {
     Thread *ready = get_ready();
     Thread *old = _cur;
+    ready->setProc(_curproc);
     exec_ready(ready,old);    
   }
 
@@ -553,7 +565,7 @@ namespace plasma {
     Thread *newthread = get_ready();
     Thread *old = _cur;
     _cur = newthread;
-    void *dummy=0;
+    newthread->setProc(_curproc);
     old->setStackEnd();
     QT_BLOCK(switch_block, 0, old, newthread->thread());
   }
@@ -569,6 +581,17 @@ namespace plasma {
       thecluster.unlock();
     }
     return(0);                                    // satisfy type checker
+  }
+
+  void Cluster::print_procs(ostream &o) const
+  {
+    o << "Current proc:  " << _curproc << "\n"
+      << "Proc queue:  " << _procs << endl;
+  }
+
+  void Cluster::print_procs() const  
+  {
+    print_procs(cerr);
   }
 
 }

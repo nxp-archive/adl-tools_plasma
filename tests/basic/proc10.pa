@@ -1,0 +1,30 @@
+//
+// Test of shared ready queues with processors in
+// a Processors data structure.  This also makes sure
+// that shared queues work w/busy at the lowest
+// priority, where it's timesliced.
+//
+
+#include <iostream>
+
+using namespace std;
+using namespace plasma;
+
+void pSetup(ConfigParms &cp)
+{
+  cp._busyokay = true;
+}
+
+int pMain(int argc,const char *argv[])
+{
+  Processors procs(10,"processors",true);
+
+  pfor (int i = 0; i != 50; ++i) {
+    on (procs[0]) {
+      cout << "Block " << i << " start:  " << pTime() << endl;
+      pBusy(50);
+      cout << "Block " << i << " done:  " << pTime() << endl;      
+    }
+  }
+  return 0;
+}

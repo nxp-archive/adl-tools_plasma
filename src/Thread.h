@@ -26,7 +26,6 @@ namespace plasma {
 
     // Saves stack pointer.
     void save(qt_t *sptr);
-    void saveStackEnd(void *);
 
     qt_t *thread() { return _thread; };
 
@@ -46,7 +45,7 @@ namespace plasma {
     // Ready:  A thread is in ready queue.
     // Run:    Thread is not in the ready queue (may be executing or blocked).
     // Done:   Thread is finished.
-    enum State { Done, Ready, Run };
+    enum State { Done, Ready, Busy, Run };
     State state() const { return _state; };
     void setState(State s) { _state = s; };
     bool done() const { return _state == Done; };
@@ -117,7 +116,7 @@ namespace plasma {
   inline void Thread::setStackEnd()
   {
     volatile void *dummy;
-    _stackend = &dummy;
+    _stackend = &dummy; 
   }
 
   inline void Thread::add_waiter(THandle t)

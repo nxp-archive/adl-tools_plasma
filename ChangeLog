@@ -1,3 +1,43 @@
+
+2004-09-14  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added support for shared issue queues.  This works as follows:
+	The user can create a new Processor with a shared queue by calling
+	either:
+
+	make_sharedproc(Processor);
+
+	or by creating a Processors data structure with a third argument
+	of true:
+
+	Processors procs(10,"procs",true);
+
+	Shared processors all feed from the same queue, so if one is busy,
+	others are able to work on the available threads.  This allows one
+	to model SMP-type systems.
+
+	Internal changes were:
+
+	1.  The thread queue is now dynamically allocated.  If it's
+	shared, we just do a pointer copy from the source.
+
+	2.  The busy thread is queried for end-times and when we clear the
+	busy thread, it gets added back to the queue.  If we preempt a
+	busy process, it also gets added back to the ready queue.  This is
+	in contrast to how we used to do it, where the busy thread was
+	added back to the ready queue and we would find it by looking at
+	the next ready-to-run thread.
+
+	3.  An extra loop was added to update_proc():  This guards against
+	finding a processor in the queue that now has no ready threads b/c
+	another processor with the same queue executed them.  In this way,
+	we discard processors that are empty, assuming that they're busied
+	by a thread, or have nothing to do.
+
+	4.  Various context-swapping functions (busy, exec_block,
+	exec_ready) update the Proc pointer of the Thread, since a thread
+	can now migrate between processors.
+
 2004-09-14  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Removed Makefile.in files from gc b/c they were affecting our

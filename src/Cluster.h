@@ -119,6 +119,9 @@ namespace plasma {
 
     friend void resetalarm();
 
+    void print_procs(std::ostream &) const;
+    void print_procs() const;
+
     static bool     _preemptOkay;      // Is preemption allowed?
     static unsigned _timeslice;        // Time slice period in usec.
     static ptime_t  _busyts;           // Busy timeslice in time units.

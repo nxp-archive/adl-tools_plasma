@@ -57,6 +57,9 @@ check_PROGRAMS = \
 	proc5 \
 	proc6 \
 	proc7 \
+	proc8 \
+	proc9 \
+	proc10 \
 	time1 \
 	time2 \
 	time3 \
@@ -66,7 +69,8 @@ check_PROGRAMS = \
 	rand2 \
 	clock1 \
 	clock2 \
-	clock3
+	clock3 \
+	gc1
 
 par1_SOURCES = par1.pa
 par1_DEPENDENCIES = $(DEPENDENCIES)
@@ -212,6 +216,15 @@ proc6_DEPENDENCIES = $(DEPENDENCIES)
 proc7_SOURCES = proc7.pa
 proc7_DEPENDENCIES = $(DEPENDENCIES)
 
+proc8_SOURCES = proc8.pa
+proc8_DEPENDENCIES = $(DEPENDENCIES)
+
+proc9_SOURCES = proc9.pa
+proc9_DEPENDENCIES = $(DEPENDENCIES)
+
+proc10_SOURCES = proc10.pa
+proc10_DEPENDENCIES = $(DEPENDENCIES)
+
 time1_SOURCES = time1.pa
 time1_DEPENDENCIES = $(DEPENDENCIES)
 
@@ -243,6 +256,9 @@ clock2_DEPENDENCIES = $(DEPENDENCIES)
 
 clock3_SOURCES = clock3.pa
 clock3_DEPENDENCIES = $(DEPENDENCIES)
+
+gc1_SOURCES = gc1.pa
+gc1_DEPENDENCIES = $(DEPENDENCIES)
 
 AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc/include
 
@@ -294,6 +310,9 @@ DEP_FILES=\
 	./$(DEPDIR)/proc5.Po \
 	./$(DEPDIR)/proc6.Po \
 	./$(DEPDIR)/proc7.Po \
+	./$(DEPDIR)/proc8.Po \
+	./$(DEPDIR)/proc9.Po \
+	./$(DEPDIR)/proc10.Po \
 	./$(DEPDIR)/time1.Po \
 	./$(DEPDIR)/time2.Po \
 	./$(DEPDIR)/time3.Po \
@@ -303,7 +322,8 @@ DEP_FILES=\
 	./$(DEPDIR)/rand2.Po \
 	./$(DEPDIR)/clock1.Po \
 	./$(DEPDIR)/clock2.Po \
-	./$(DEPDIR)/clock3.Po
+	./$(DEPDIR)/clock3.Po \
+	./$(DEPDIR)/gc1.Po
 
 include ./$(DEPDIR)/par1.Po
 include ./$(DEPDIR)/par2.Po
@@ -349,6 +369,9 @@ include ./$(DEPDIR)/proc4.Po
 include ./$(DEPDIR)/proc5.Po
 include ./$(DEPDIR)/proc6.Po
 include ./$(DEPDIR)/proc7.Po
+include ./$(DEPDIR)/proc8.Po
+include ./$(DEPDIR)/proc9.Po
+include ./$(DEPDIR)/proc10.Po
 include ./$(DEPDIR)/time1.Po
 include ./$(DEPDIR)/time2.Po
 include ./$(DEPDIR)/time3.Po
@@ -357,5 +380,6 @@ include ./$(DEPDIR)/time5.Po
 include ./$(DEPDIR)/clock1.Po
 include ./$(DEPDIR)/clock2.Po
 include ./$(DEPDIR)/clock3.Po
+include ./$(DEPDIR)/gc1.Po
 
 include $(top_srcdir)/tests/Makefile.rules

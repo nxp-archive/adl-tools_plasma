@@ -73,6 +73,16 @@
 	       
 	    (item
 	       
+	       (p [A proper module system.  C++'s use of header files for
+	       conveying declaration information make for extremely inefficient
+	       compilation.  This is compounded by the fact that templates need
+	       to be in header files.  A proper module system could dramatically
+	       speed up development time.])
+	       
+	       )
+	       
+	    (item
+	       
 	       (p [Garbage collector aware containers.  The standard containers,
 	       e.g. ,(code [vector]), ,(code [list]), etc., would be traced by
 	       the conservative collector.  Currently, one has to write:])
