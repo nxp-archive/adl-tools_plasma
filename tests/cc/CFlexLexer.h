@@ -60,7 +60,7 @@ protected:
 private:
   void tksetup(Tokens &tk,int t);
 
-  std::pair<const char *,int> convert_string(const char *str,int len);
+  int convert_char(const char *str,int len);
   void closefile();
 
   const char *_filename;

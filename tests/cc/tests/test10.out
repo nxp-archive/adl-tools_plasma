@@ -271,8 +271,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "fib(%d) is %d.
-"
+                            Data:  "fib(%d) is %d.\n"
                           + 2Id
                             Name:  i
                           + 18FunctionExpression
@@ -392,8 +391,7 @@ Translation Unit
                     Expr:  
                       + 13StringLiteral
                         Type-string:  pointer(char)
-                        Data:  "blah
-"
+                        Data:  "blah\n"
             Symbols:
               Level 2
               Level 1
@@ -478,8 +476,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "My executable name is %s.
-"
+                            Data:  "My executable name is %s.\n"
                           + 7Pointer
                             Expr:  
                               + 2Id
@@ -528,8 +525,7 @@ Translation Unit
                                   + 12ArgumentList
                                       + 13StringLiteral
                                         Type-string:  pointer(char)
-                                        Data:  "  argv[%d] is: %s    argv[%d][0] is: %c
-"
+                                        Data:  "  argv[%d] is: %s    argv[%d][0] is: %c\n"
                                       + 2Id
                                         Name:  i
                                       + 15ArrayExpression
@@ -675,8 +671,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "fib_count is %d.
-"
+                            Data:  "fib_count is %d.\n"
                           + 2Id
                             Name:  fib_count
                   + 18FunctionExpression
@@ -687,8 +682,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "stuff_count is %d.
-"
+                            Data:  "stuff_count is %d.\n"
                           + 2Id
                             Name:  stuff_count
                   + 18FunctionExpression
@@ -699,8 +693,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "before set_a(&c), c == '%c'
-"
+                            Data:  "before set_a(&c), c == '%c'\n"
                           + 2Id
                             Name:  c
                   + 18FunctionExpression
@@ -742,11 +735,9 @@ Translation Unit
                                 Name:  a
                             Op  :  =
                             Right:  
-                              + 8Negative
-                                Expr:  
-                                  + 5Const
-                                    Type-string:  int
-                                    Value:  1
+                              + 5Const
+                                Type-string:  int
+                                Value:  -1
                           + 5Binop
                             Left:  
                               + 2Id
@@ -771,8 +762,7 @@ Translation Unit
                               + 12ArgumentList
                                   + 13StringLiteral
                                     Type-string:  pointer(char)
-                                    Data:  "  a = %d
-"
+                                    Data:  "  a = %d\n"
                                   + 2Id
                                     Name:  a
                           + 18FunctionExpression
@@ -783,8 +773,7 @@ Translation Unit
                               + 12ArgumentList
                                   + 13StringLiteral
                                     Type-string:  pointer(char)
-                                    Data:  "  b = %d
-"
+                                    Data:  "  b = %d\n"
                                   + 2Id
                                     Name:  b
                           + 18FunctionExpression
@@ -795,8 +784,7 @@ Translation Unit
                               + 12ArgumentList
                                   + 13StringLiteral
                                     Type-string:  pointer(char)
-                                    Data:  "  c = %d
-"
+                                    Data:  "  c = %d\n"
                                   + 2Id
                                     Name:  c
                     Symbols:
@@ -830,8 +818,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "after set_a(&c), c == '%c'
-"
+                            Data:  "after set_a(&c), c == '%c'\n"
                           + 2Id
                             Name:  c
                   + 18FunctionExpression
@@ -842,8 +829,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "get_literal() = %s
-"
+                            Data:  "get_literal() = %s\n"
                           + 18FunctionExpression
                             Name:
                               + 2Id
@@ -858,8 +844,7 @@ Translation Unit
                       + 12ArgumentList
                           + 13StringLiteral
                             Type-string:  pointer(char)
-                            Data:  "get_literal()[3] = %c
-"
+                            Data:  "get_literal()[3] = %c\n"
                           + 15ArrayExpression
                             Expr : 
                               + 18FunctionExpression
@@ -951,8 +936,7 @@ Translation Unit
                               + 12ArgumentList
                                   + 13StringLiteral
                                     Type-string:  pointer(char)
-                                    Data:  "array-built string is: %s
-"
+                                    Data:  "array-built string is: %s\n"
                                   + 2Id
                                     Name:  c
                           + 18FunctionExpression

@@ -70,7 +70,13 @@ bool parseOptions(int argc,const char *argv[])
 int pMain(int argc,const char *argv[])
 {
   if (!parseOptions(argc,argv)) {
-    cerr << "Usage:  " << argv[0] << " <filename | options>... " << endl;
+    cerr << "Usage:  " << argv[0] << " <filename(s) | options>...\n\n"
+         << "Options:\n"
+         << "  -ast     :  Print the AST to standard-out and exit.\n"
+         << "  -syms    :  Print the AST w/symbol information and exit.\n"
+         << "  -check   :  Perform checking steps, then exit.  Do not write any code.\n"
+         << "  -d       :  Enable debug parsing information.\n"
+         << "\n";
     return 1;
   }
 
@@ -107,7 +113,7 @@ void parse(TokChan &tc)
     if (!tk._tok) {
       // End of file reached- spawn off a compile job for this translation
       // unit and reset the parser for the next file.
-      results.push_back(spawn(compiler.compileUnit(parser.lastUnit(),options._ast,options._check)));
+      results.push_back(spawn(compiler.compileUnit(parser.lastUnit(),parser.filename(),options._ast,options._check)));
       parser.reset();
     }
   }

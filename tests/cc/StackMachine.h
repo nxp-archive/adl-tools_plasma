@@ -9,20 +9,15 @@
 #include <vector>
 #include <string>
 
+#include "Types.h"
+
 class Type;
-class CodeGen;
+class AsmStore;
 
-#define ASM(a,c) { \
-  ostringstream s1,s2; \
-  s1 << a; \
-  s2 << c; \
-  o(s1.str(),s2.str().c_str()); \
-}
-
-typedef std::vector<int> IntVect;
-
-class StackMachine {
-public:
+// Simple class for storing a register or immediate value
+// operand.
+struct Operand {
+  enum Flag { Reg = 1, Byte = 2, Mem = 4, Immed = 8 };
   enum Regs {
     None = -1,
     FirstReg = 0,
@@ -35,33 +30,46 @@ public:
     LastReg,
   };
 
-  enum SType { Reg, Mem };
-  struct Item {
-    int    _value;
-    SType  _stype;
-    Type  *_type;
-    
-    Item() : _value(None), _stype(Reg), _type(0) {};
+  enum ByteRegs { al, bl, cl, dl };
 
-    bool isreg() const { return _stype == Reg; };
-    bool ismem() const { return _stype == Mem; };
-  };
+  Operand() : _flags(0), _value(0) {};
+  Operand(int value,Flag type = Reg) : 
+    _flags(type),
+    _value(value) {};
+  bool is_reg() const { return _flags & Reg; };
+  bool is_mem() const { return _flags & Mem; };
+  bool is_immed() const { return _flags & Immed; };
+  bool is_bytereg() const { return _flags & Byte; };
+  int value() const { return _value; };
+  // Convert register to requivalent byte-access register.
+  void setlo();
 
-  StackMachine(CodeGen *parent,int base_fp);
+  bool operator==(Operand x) const { return (_flags == x._flags && _value == x._value); };
+  bool operator!=(Operand x) const { return !operator==(x); };
 
-  // Assembler name for a memory location, relative to stack frame.
-  std::string memname(int mem) const;
-  // Return a string name for a given register.
-  const char *regname(int reg) const;
-  // Assembler name for either a memory location or a register.
-  std::string itemname(const Item &item) const;
+  friend std::ostream &operator<<(std::ostream &,Operand);
+private:
+
+  int  _flags;
+  int  _value;
+};
+
+void printRegs(const IntVect &);
+
+class StackMachine {
+public:
+  StackMachine(AsmStore &code,int base_fp);
 
   // Output an assembly string to the parent
   // code generator.
   void o(const std::string &str,const char *comment = 0);
+  // Saves the caller-save registers, which should be done
+  // before the current function makes a function call, so that
+  // the registers don't get corrupted by the called function.
+  void save_caller_saves();
   // Emits code that pushes the callee-save registers
   // used by the stack machine onto the process' stack.
-  void save_callee_saves();
+  void save_callee_saves(AsmStore &);
   // Emits code that pops the callee-save registers used by
   // the stack machine off the process' stack.  
   void load_callee_saves();
@@ -75,20 +83,20 @@ public:
   //
   // If preferred_reg is passed, this function will try its
   // best to return preferred_reg, if it's available.
-  int push(Type *type = 0,int preferred_reg = None,const IntVect *valid_regs = 0);
+  Operand push(Type *type = 0,int preferred_reg = Operand::None,const IntVect *valid_regs = 0);
   // Pops the top element off the stack machine's stack, coerces
   // it to the given type if necessary, and returns a register in
   // which the element's value now resides.
   //
   // If no type is specified, pop() returns the value of the
   // element as-is.
-  int pop(Type *type = 0,const IntVect *valid_regs = 0);
+  Operand pop(Type *type = 0,const IntVect *valid_regs = 0);
   // Returns the top element of the stack, but doesn't pop
   // it.  Note that this is not guaranteed to be a register; it
   // could be a memory location!
-  Item &StackMachine::peek();
+  Operand StackMachine::peek();
   // Returns true if the stack machine is empty.
-  bool is_empty() const { return _stack.empty(); };
+  bool empty() const { return _stack.empty(); };
   // Frees all registers that are marked as being in
   // intermediate use (i.e., have been pop()'d).
   void done();
@@ -101,19 +109,29 @@ public:
   // or %edx), then an exception is raised.
   //
   // Example: stack.lo('%eax') == '%al'.
-  const char *lo(int reg);
+  const char *lo(Operand);
   // Forces a type change of the top element of the stack.
   void force_type_change(Type *type);
 
   static bool staticInits();
 private:
-  int get_free_reg(const IntVect &valid_regs,int preferred_reg = None);
+  struct Item {
+    Operand  _op;
+    Type    *_type;
+    
+    Item() : _type(0) {};
+
+    bool is_reg() const { return _op.is_reg(); };
+    bool is_mem() const { return _op.is_mem(); };
+    int value() const { return _op.value(); };
+  };
+  typedef std::vector<Item> Stack;
+
+  int get_free_reg(const IntVect &valid_regs,int preferred_reg = Operand::None);
   const IntVect &get_type_valid_regs(Type *t) const;
   int copy_reg_to_temp(const IntVect &valid_regs,const char *comment_str = 0);
-  int coerce_type(int curr_reg,Type *from,Type *to);
-  int pop_internal(const IntVect &valid_regs);
-
-  typedef std::vector<Item> Stack;
+  Operand coerce_type(Operand curr_reg,Type *from,Type *to);
+  Operand pop_internal(const IntVect &valid_regs);
 
   // All registers in the system, in a vector so that
   // we can easily make copies.
@@ -140,8 +158,8 @@ private:
   // used for temporary variables, relative to the current
   // function's frame pointer.
   int _next_temp;
-  // Parent code generator.
-  CodeGen *_parent;
+  // Code output storage.
+  AsmStore &_code;
   // A list of the callee-save registers that have been used
   // so far by this function.  Once processing is finished,
   // these registers will be pushed onto the process' stack

@@ -9,6 +9,8 @@
 #include <list>
 #include <stdarg.h>
 
+#include "gc_cpp.h"
+
 using namespace std;
 using namespace plasma;
 
@@ -21,8 +23,9 @@ public:
   };
 };
 
-
-pMutex class Queue {
+// This inherits from gc to make sure that we can do this-
+// that operator new and delete are not wrapped.
+pMutex class Queue : public gc {
 public:
   Queue() : _rt(0) {};
 

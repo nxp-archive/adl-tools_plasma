@@ -1,3 +1,9 @@
+2004-08-26  Brian Kahne  <bkahne@ibmoto.com>
+
+	* minicc: Finished code generation.  Added regressions, including
+	one which runs a program compiled by minicc.  This is enabled only
+	if we are building on an x86 machine.
+
 2004-08-20  Brian Kahne  <bkahne@ibmoto.com>
 
 	* minicc: Modified main parser/compiler routine so that we spawn

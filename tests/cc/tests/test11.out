@@ -1,0 +1,23 @@
+My executable name is ./foo.
+  argv[0] is: ./foo    argv[0][0] is: .
+  argv[1] is: 1    argv[1][0] is: 1
+  argv[2] is: 2    argv[2][0] is: 2
+  argv[3] is: hello    argv[3][0] is: h
+  argv[4] is: 3    argv[4][0] is: 3
+fib(0) is 0.
+fib(1) is 1.
+fib(2) is 1.
+fib(3) is 2.
+fib(4) is 3.
+fib(5) is 5.
+fib_count is 34.
+stuff_count is 10.
+before set_a(&c), c == 'h'
+  a = -1
+  b = 255
+  c = 255
+after set_a(&c), c == 'a'
+get_literal() = blah
+
+get_literal()[3] = h
+array-built string is: hi

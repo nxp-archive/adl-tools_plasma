@@ -1,16 +1,24 @@
 
 TESTS = regress
 
-check_PROGRAMS = minicc
+if CompileOk
+PROG = foo
+else
+PROG = 
+endif
+
+check_PROGRAMS = minicc $(PROG)
 
 minicc_SOURCES = \
 	String.C \
 	Node.C \
 	SymTab.C \
 	StackMachine.C \
+	AsmStore.C \
 	main.pa \
 	CParser.pa \
 	Compiler.pa \
+	CodeGen.pa \
 	cparse.yy \
 	CLexer.pa \
 	clex.ll
@@ -23,6 +31,8 @@ DEP_FILES=\
 	./$(DEPDIR)/CLexer.Po \
 	./$(DEPDIR)/CParser.Po \
 	./$(DEPDIR)/Compiler.Po \
+	./$(DEPDIR)/CodeGen.Po \
+	./$(DEPDIR)/AsmStore.Po \
 	./$(DEPDIR)/cparse.Po \
 	./$(DEPDIR)/clex.Po \
 	./$(DEPDIR)/Node.Po \
@@ -33,6 +43,7 @@ include ./$(DEPDIR)/main.Po
 include ./$(DEPDIR)/CLexer.Po
 include ./$(DEPDIR)/CParser.Po
 include ./$(DEPDIR)/Compiler.Po
+include ./$(DEPDIR)/CodeGen.Po
 
 BUILT_SOURCES = clex.cc
 
@@ -45,6 +56,10 @@ minicc_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 minicc_LDADD =  -lgc -ldl
 
 clex_lflag = -Cfe
+
+foo: tests/foo.c tests/foo_lib.c minicc
+	./minicc $(filter %.c,$^)
+	$(CXX) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
 %.cc : %.ll ;
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $(@:.cc=.ll)
@@ -64,4 +79,5 @@ include $(top_srcdir)/tests/Makefile.rules
 # I have to fool it here.
 CXXLINK = $(PLASMA) -o $@
 
-CLEANFILES += clex.cc cparse.cc cparse.h
+CLEANFILES += clex.cc cparse.cc cparse.h *.s
+

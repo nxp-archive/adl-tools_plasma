@@ -1,0 +1,11 @@
+
+package compile_check;
+
+require Exporter;
+
+our @ISA = ("Exporter");
+our @EXPORT = qw( CompileOk );
+
+$CompileOk = @COMPILE_OK@;
+
+1;

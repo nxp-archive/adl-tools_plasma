@@ -17,6 +17,10 @@
 
 class String;
 class SymTab;
+class CodeGen;
+class CodeGenArg;
+class AsmStore;
+class CompileLoc;
 
 #define Error(n,x) { \
   ostringstream ss; \
@@ -31,7 +35,7 @@ class SymTab;
 }
 
 #define Warn(n,x) { \
-  cerr << n->filename() << ":" << n->linenumber() << ":  Warning:  " << x; \
+  cerr << n->filename() << ":" << n->linenumber() << ":  Warning:  " << x << "\n"; \
 }
 
 struct Type;
@@ -59,15 +63,25 @@ struct Node : public gc {
   // Returns true if we're a constant e.g. 5, "hello", etc.
   virtual bool is_const() const { return false; };
   // Returns true if node has an address, i.e. is a valid lvalue.
-  virtual bool has_address() const { return _has_addr; };
+  bool has_address() const { return _has_addr; };
   // Specifies that we have an address.
-  virtual void set_has_address() { _has_addr = true; };
+  void set_has_address() { _has_addr = true; };
   // Getter/setter for has-return-stmt.
   bool has_return_stmt() const { return _has_return_stmt; };
   void set_has_return_stmt(bool h) { _has_return_stmt = h; };
+  // Get the symbol table for this node.
+  virtual SymTab *symtab() const { return 0; };
+  // Get a symbol associated with this node, if applicable.
+  virtual Node *symbol() const { return 0; };
   // Getter/setter for output_addr.
   int output_addr() const { return _output_addr; };
   void set_output_addr(int oa) { _output_addr = oa; };
+  // Getter/setter for compile location.
+  CompileLoc *compile_loc() const { return _compile_loc; };
+  void set_compile_loc(CompileLoc *cl) { _compile_loc = cl; };
+  // True if object is externally defined.
+  virtual bool is_extern() const { return false; };
+  virtual bool is_static() const { return false; };
   // Getter/setter for whether a variable is used.  Overload
   // to provide functionality.
   virtual bool is_used() const { return false; };
@@ -77,6 +91,8 @@ struct Node : public gc {
   void set_coerce_to_type(Type *t) { _coerce_to_type = t; };
   // Item's name, if applicable.
   virtual String name() const { return String(); };
+  // Its constant value, if appropriate.
+  virtual int value() const { return 0; };
   // Returns the node's type.
   Type *type() const { return _type; };
   // Change the node's type.
@@ -108,17 +124,20 @@ struct Node : public gc {
   void gensymtab();
   // Perform type checking.  Throws a runtime_error if errors
   // are encountered.
-  virtual void typecheck();  
+  void typecheck();  
   // Perform flow-control checking:  Makes sure that all
   // branches of a function return a value, check break/continue
   // statements, etc.
-  virtual void flowcontrol();
+  void flowcontrol();
+  // Generate code.  In general, these should just call the
+  // appropriate routine in CodeGen, which will do the actual work.
+  virtual void codegen(CodeGen *,CodeGenArg *);
+  // Write code to specified stream.
+  virtual void writecode(std::ostream &) const;
 
   // Used internally- don't call directly.
   virtual void gensymtab(SymTab *);
-  // Used internally- don't call directly.
   virtual void typecheck(Node *);
-  // Used internally- don't call directly.
   virtual void flowcontrol(Node *,bool);
 protected:
   // This prints class-specific information.
@@ -127,6 +146,7 @@ protected:
   bool        _has_return_stmt;
   bool        _has_addr;
   int         _output_addr;
+  CompileLoc *_compile_loc;
   Type       *_type;
   Type       *_coerce_to_type;
   const char *_filename;
@@ -145,8 +165,12 @@ struct NullNode : public Node {
 struct ArrayExpression : public Node {
   ArrayExpression(Node *expr, Node *index) :
     _expr(expr), _index(index) {}
-  void gensymtab(SymTab *);
-  void typecheck(Node *);
+  virtual void gensymtab(SymTab *);
+  virtual void typecheck(Node *);
+  virtual void codegen(CodeGen *,CodeGenArg *);
+
+  Node *expr() const { return _expr; };
+  Node *index() const { return _index; };
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -159,6 +183,8 @@ struct StringLiteral : public Node {
   StringLiteral(String s);
   void append(String s);
   String get() const { return _s; };
+
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -170,11 +196,12 @@ private:
 struct Id : public Node {
   Id(String id) : _id(id), _symbol(0) {};
 
-  String id() const { return _id; };
-  Node *symbol() const { return _symbol; };
+  virtual String name() const { return _id; };
+  virtual Node *symbol() const { return _symbol; };
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -186,7 +213,12 @@ private:
 // Numeric constants.
 struct Const : public Node {
   Const(int value,Type *type) : Node(type), _value(value) {};
-  int value() const { return _value; };
+  Calc calculate() const;
+
+  virtual bool is_const() const { return true; };
+  virtual int value() const { return _value; };
+
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 
@@ -217,18 +249,21 @@ struct Negative : public Unaryop {
   Negative(Node *expr) : Unaryop(expr) {};
   Calc calculate() const;
   virtual void typecheck(Node *curr_func);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // A pointer dereference, e.g. *a.
 struct Pointer : public Unaryop {
   Pointer(Node *expr) : Unaryop(expr) {};
   virtual void typecheck(Node *curr_func);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // An address-of operator, e.g. &a.
 struct AddrOf : public Unaryop {
   AddrOf(Node *expr) : Unaryop(expr) {};
   virtual void typecheck(Node *curr_func);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // Any binary operator, such as that for arithmetic
@@ -238,10 +273,19 @@ struct Binop : public Node {
   Binop(Node *l,int op,Node *r) : _left(l), _right(r), _op(op) {};
   Calc calculate() const;
 
+  Node *left() const { return _left; };
+  Node *right() const { return _right; };
+  int op() const { return _op; };
+
+  const char *op_str() const;
+
+  bool is_assign_op() const;
+  bool is_compare_op() const;
+
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
-  bool is_assign_op() const;
   virtual void printdata(std::ostream &) const;
 private:
   Node *_left;
@@ -257,6 +301,11 @@ struct IfStatement : public Node {
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
+
+  Node *expr() const { return _expr; };
+  Node *then_blk() const { return _then; };
+  Node *else_blk() const { return _else; };
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -268,20 +317,25 @@ private:
 // A break statement.
 struct BreakStatement : public Node {
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // A continue statement.
 struct ContinueStatement : public Node {
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // A return statement.
 struct ReturnStatement : public Node {
   ReturnStatement(Node *expr = 0) : _expr(expr) {};
 
+  Node *expr() const { return _expr; };
+
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -293,9 +347,15 @@ struct ForLoop : public Node {
   ForLoop(Node *b,Node *expr,Node *e,Node *s) :
     _begin(b), _expr(expr), _end(e), _stmt(s) {};
 
+  Node *begin() const { return _begin; };
+  Node *expr() const { return _expr; };
+  Node *end() const { return _end; };
+  Node *stmt() const { return _stmt; };
+
   virtual void gensymtab(SymTab *);
   void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -310,9 +370,13 @@ struct WhileLoop : public Node {
   WhileLoop(Node *expr,Node *stmt) :
     _expr(expr), _stmt(stmt) {};
 
+  Node *expr() const { return _expr; };
+  Node *stmt() const { return _stmt; };
+
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -328,6 +392,8 @@ struct NodeList : public Node, public std::vector<Node *,traceable_allocator<Nod
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
+  virtual void codegen(CodeGen *,CodeGenArg *);
+  virtual void writecode(std::ostream &) const;
 protected:
   virtual void printdata(std::ostream &) const;
 };
@@ -357,12 +423,13 @@ struct StatementList : public NodeList {
   StatementList(Node *n) : NodeList(n) {};
 
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 };
 
 // Inherit from this if you have a symbol table.
 struct SymNode {
   SymNode() : _symtab(0) {};
-  SymTab *symtab() const { return _symtab; };
+  SymTab *getsymtab() const { return _symtab; };
   void printsyms(std::ostream &o) const;
 protected:
   SymTab *_symtab;
@@ -372,6 +439,8 @@ protected:
 struct TranslationUnit : public NodeList, public SymNode {
   TranslationUnit() {};
   TranslationUnit(Node *n) : NodeList(n) {};
+
+  virtual SymTab *symtab() const { return getsymtab(); };
 
   virtual void gensymtab(SymTab *);
 protected:
@@ -390,8 +459,12 @@ struct FunctionExpression : public Node {
   FunctionExpression(Node *f,Node *a) :
     _function(f), _arglist(a) {};
 
+  Node *function() const { return _function; };
+  Node *arglist() const { return _arglist; };
+
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -404,9 +477,12 @@ struct CompoundStatement : public Node, public SymNode {
   CompoundStatement(Node *d,Node *s) :
     _declaration_list(d), _statement_list(s) {};
 
+  virtual SymTab *symtab() const { return getsymtab(); };
+
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
 protected:
   virtual void printdata(std::ostream &) const;
 private:
@@ -420,20 +496,26 @@ struct FunctionDefn : public Node, public SymNode {
 
   virtual String name() const { return _name; };
   Node *body() const { return _body; };
+  void setcode(AsmStore *c) { _code = c; };
 
-  bool is_extern() const { return _extern; };
-  bool is_static() const { return _static; };
+  virtual SymTab *symtab() const { return getsymtab(); };
+
+  virtual bool is_extern() const { return _extern; };
+  virtual bool is_static() const { return _static; };
 
   virtual void gensymtab(SymTab *);
   virtual void typecheck(Node *);
   virtual void flowcontrol(Node *,bool);
+  virtual void codegen(CodeGen *,CodeGenArg *);
+  virtual void writecode(std::ostream &) const;
 protected:
   virtual void printdata(std::ostream &) const;
 private:
-  String _name;
-  Node *_body;
-  bool  _extern;
-  bool  _static;
+  String    _name;
+  Node     *_body;
+  AsmStore *_code;
+  bool      _extern;
+  bool      _static;
 };
 
 // A node representing a declaration of a function or
@@ -449,8 +531,8 @@ struct Declaration : public Node {
   void set_base_type(Type *t);
   void add_type(Type *t);
 
-  bool is_extern() const { return _extern; };
-  bool is_static() const { return _static; };
+  virtual bool is_extern() const { return _extern; };
+  virtual bool is_static() const { return _static; };
 
   void set_extern() { _extern = true; };
   void set_static() { _static = true; };
@@ -473,16 +555,21 @@ private:
 // type of 5+a, where a is an int, will be a Type node
 // storing int.
 // Types may be nested (chained together).
-struct Type {
+struct Type : public gc {
   Type();
   Type(Type *t) : _child(t) {};
   Type *child() const { return _child; };
+
   // Set the base (innermost) type ofa type.  For instance,
   // calling this with a pointer(int) type on a pointer() type
   // will give you a pointer(pointer(int)).
   void set_base_type(Type *t);
+  // Returns the return type, if applicable (i.e. it's a function).
+  virtual Type *get_return_type() const { return 0; };
   // Returns true if this represents a function.
   virtual bool is_function() const { return false; };
+  // Returns size of type in bytes.
+  virtual unsigned size() const;
   // Prints a string representation.
   virtual std::ostream &print(std::ostream &o) const = 0;
   // Prints only the outer most type.
@@ -503,21 +590,22 @@ std::ostream &operator<<(std::ostream &o,const Type *);
 // Note:  The None type doesn't represent a type but is used to
 // note that something is not a base type.
 struct BaseType : public Type {
-  enum Type { None, Int, Char, Double };
-  BaseType(Type t) : _type(t) {};
-  Type type() const { return _type; };
+  enum BT { None, Int, Char, Double };
+  BaseType(BT t) : _type(t) {};
+  BT type() const { return _type; };
+  virtual unsigned size() const;
   virtual std::ostream &print(std::ostream &o) const;
   virtual std::ostream &print_outer(std::ostream &o) const;
 private:
-  Type _type;
+  BT _type;
 };
 
 // A type representing a function (for prototypes and calls).
 struct FunctionType : public Type {
   FunctionType(Node *p,Type *c = 0) : Type(c), _params(p) {};
-  Type *get_return_type() const { return _child; };
   Node *get_params() const { return _params; };
   bool is_function() const { return true; };
+  Type *get_return_type() const { return _child; };
 
   virtual std::ostream &print(std::ostream &o) const;
   virtual std::ostream &print_outer(std::ostream &o) const;
@@ -530,6 +618,7 @@ private:
 struct PointerType : public Type {
   PointerType() {};
   PointerType(Type *t) : Type(t) {};
+  virtual unsigned size() const;
 
   virtual std::ostream &print(std::ostream &o) const;
   virtual std::ostream &print_outer(std::ostream &o) const;
@@ -561,7 +650,7 @@ T &tcastr(Type *t)
 
 // Functions for querying types.
 
-BaseType::Type intType(Type *t);
+BaseType::BT intType(Type *t);
 bool isIntType(Type *t);
 bool isIntType(Node *n);
 bool isPtrType(Type *t);

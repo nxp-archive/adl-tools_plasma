@@ -46,7 +46,7 @@ std::pair<Ptree*,Ptree*> Mutex::makeWrapperBody(Environment *env,Member& member,
                      Ptree::qMake("`body.second`\n"
                                   "}\n"
                                   "catch (...) {\n"
-                                  "  pUnlock();\n"
+                                  "  plasma::pUnlock();\n"
                                   "  throw;\n"
                                   "}\n"));
 }

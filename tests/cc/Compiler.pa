@@ -8,6 +8,7 @@
 #include "Compiler.h"
 #include "SymTab.h"
 #include "Node.h"
+#include "CodeGen.h"
 
 using namespace std;
 using namespace plasma;
@@ -17,7 +18,7 @@ Compiler::Compiler( )
 }
 
 // Compile a translation unit.
-bool Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
+bool Compiler::compileUnit(Node *tu,const char *filename,bool sym_only,bool check_only)
 {
   // First, we generate the symbol table.  This has to be done serially b/c of
   // the sequential nature of C, i.e. symbols are visible in the order in which
@@ -32,11 +33,11 @@ bool Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
   if (sym_only) {
     return true;
   }
-  // Now we spawn off threads to do the rest of the work.
+  // Now we spawn off threads to do the checking phases.
   TranslationUnit &turef = ncastr<TranslationUnit>(tu);
   Results results;
   for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
-    results.push_back(spawn(compile( *i, check_only )));
+    results.push_back(spawn(dochecks( *i, check_only )));
   }
   // If any of the results are false, we've got an error.
   for (Results::iterator i = results.begin(); i != results.end(); ++i) {
@@ -44,19 +45,73 @@ bool Compiler::compileUnit(Node *tu,bool sym_only,bool check_only)
       return false;
     }
   }
+  if (check_only) {
+    return true;
+  }
+
+  CodeGen codegen(true);
+
+  try {
+    // Next, generate global variables.
+    // This is done serially.
+    codegen.handleGlobals(tu);
+
+    // Generate main code.  This is done in parallel.
+    results.clear();
+    for (NodeList::iterator i = turef.begin(); i != turef.end(); ++i) {
+      results.push_back(spawn(gencode(&codegen,*i)));
+    }
+    // If any of the results are false, we've got an error.
+    for (Results::iterator i = results.begin(); i != results.end(); ++i) {
+      if ( !i->value() ) {
+        return false;
+      }
+    }
+    
+    // Create output name from input name.
+    string outname = filename;
+    size_t pos = outname.rfind(".c");
+    if (pos != string::npos) {
+      outname = outname.substr(0,pos) + ".s";
+    } else {
+      outname = outname + ".s";
+    }
+    pos = outname.rfind("/");
+    if (pos != string::npos) {
+      outname = outname.substr(pos+1);
+    }
+
+    cout << "\n" << filename << " -> " << outname << "\n";
+    
+    // Write out all assembly data.
+    codegen.write(outname,&turef);
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    return false;
+  }
   return true;
 }
 
-bool Compiler::compile(Node *n,bool check_only)
+bool Compiler::gencode(CodeGen *cg,Node *n)
+{
+  try {
+    n->codegen(cg,0);
+  }
+  catch (exception &err) {
+    cerr << err.what() << endl;
+    return false;
+  }
+  return true;
+}
+
+bool Compiler::dochecks(Node *n,bool check_only)
 {
   try {
     // Perform type checking.
     n->typecheck();
     // Perform basic flow-control analysis.
     n->flowcontrol();
-    if (!check_only) {
-      // Perform rest of compilation phase.
-    }
   }
   catch (exception &err) {
     cerr << err.what() << endl;

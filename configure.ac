@@ -17,6 +17,7 @@ PACKAGE=plasma
 AM_INIT_AUTOMAKE($PACKAGE, $VERSION)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
+AC_CANONICAL_BUILD
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
@@ -88,6 +89,16 @@ AC_SUBST(TRIP)
 export enable_cplusplus=yes
 AC_CONFIG_SUBDIRS(gc)
 
+# If compiling on x86, we can compile test programs generated
+# by the sample compiler in the regression suite.
+if [[ $build_cpu = i686 ]]; then
+  COMPILE_OK=1
+else
+  COMPILE_OK=0
+fi
+AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
+AC_SUBST(COMPILE_OK)
+
 AC_CONFIG_FILES([\
    Makefile \
    macros/Makefile \
@@ -107,7 +118,8 @@ AC_CONFIG_FILES([\
 
 AC_CONFIG_FILES([\
 	scripts/plasma \
-	scripts/plasma-config
-],[chmod +x,-w scripts/plasma scripts/plasma-config])
+	scripts/plasma-config \
+	tests/cc/compile_check.pm
+],[chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm ])
 
 AC_OUTPUT

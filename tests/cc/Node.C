@@ -10,8 +10,10 @@
 #include <assert.h>
 #include <iostream>
 
+#include "Types.h"
 #include "Node.h"
 #include "SymTab.h"
+#include "CodeGen.h"
 #include "cparse.h"
 
 using namespace std;
@@ -117,8 +119,8 @@ int compare_types(Node *name,Type *from,Type *to,bool raise = true)
 {
   const int Warning = 1, Error = 2;
   int conflict = 0;
-  BaseType::Type from_t = intType(from);
-  BaseType::Type to_t = intType(to);
+  BaseType::BT from_t = intType(from);
+  BaseType::BT to_t = intType(to);
   if (from_t != to_t) {
     if (from_t == BaseType::Char) {
       if (to_t == BaseType::Int) {
@@ -151,6 +153,7 @@ Node::Node(Type *t) :
   _has_return_stmt(false),
   _has_addr(false), 
   _output_addr(0), 
+  _compile_loc(0),
   _type(t), 
   _coerce_to_type(0), 
   _filename(0), 
@@ -217,6 +220,14 @@ void Node::flowcontrol()
   flowcontrol(0,false);
 }
 
+void Node::codegen(CodeGen *,CodeGenArg *)
+{
+}
+
+void Node::writecode(ostream &) const
+{
+}
+
 void Node::gensymtab(SymTab *)
 {
 }
@@ -258,6 +269,11 @@ void ArrayExpression::typecheck(Node *curr_func)
   }
 }
 
+void ArrayExpression::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genArrayExpression(this,cga);
+}
+
 StringLiteral::StringLiteral(String s) : 
   Node(new PointerType(new BaseType(BaseType::Char))),
   _s(s)
@@ -272,6 +288,11 @@ void StringLiteral::append(String s)
 void StringLiteral::printdata(ostream &o) const
 {
   o << indent << "Data:  \"" << _s << "\"";
+}
+
+void StringLiteral::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genStringLiteral(this,cga);
 }
 
 void Id::printdata(ostream &o) const
@@ -296,9 +317,24 @@ void Id::typecheck(Node *curr_func)
   _type = _symbol->type();
 }
 
+void Id::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genId(this,cga);
+}
+
 void Const::printdata(ostream &o) const
 {
   o << indent << "Value:  " << _value;
+}
+
+void Const::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genConst(this,cga);
+}
+
+Node::Calc Const::calculate() const
+{
+  return make_pair(_value,true);
 }
 
 Node *get_calculated(Node *node)
@@ -321,6 +357,11 @@ void Unaryop::gensymtab(SymTab *p)
   _expr->gensymtab(p);
 }
 
+void Unaryop::typecheck(Node *curr_func)
+{
+  _expr->typecheck(curr_func);
+}
+
 Node::Calc Negative::calculate() const
 {
   Calc cr = _expr->calculate();
@@ -331,15 +372,15 @@ Node::Calc Negative::calculate() const
   }
 }
 
-void Unaryop::typecheck(Node *curr_func)
-{
-  _expr->typecheck(curr_func);
-}
-
 void Negative::typecheck(Node *curr_func)
 {
   Unaryop::typecheck(curr_func);
   _type = _expr->type();
+}
+
+void Negative::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genNegative(this,cga);
 }
 
 void AddrOf::typecheck(Node *curr_func)
@@ -353,6 +394,11 @@ void AddrOf::typecheck(Node *curr_func)
   }
 }
 
+void AddrOf::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genAddrOf(this,cga);
+}
+
 void Pointer::typecheck(Node *curr_func)
 {
   Unaryop::typecheck(curr_func);
@@ -362,6 +408,11 @@ void Pointer::typecheck(Node *curr_func)
   } else {
     Error(this,"Pointer dereference (*) target is not a pointer.");
   }
+}
+
+void Pointer::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genPointer(this,cga);
 }
 
 Node::Calc Binop::calculate() const
@@ -425,60 +476,50 @@ Node::Calc Binop::calculate() const
   return Calc(res,true);
 }
 
-void Binop::printdata(ostream &o) const
+const char *Binop::op_str() const
 {
-  o << indent << "Left:  " << _left
-    << indent << "Op  :  ";
   switch (_op) {
   case PLUS:
-    o << "+";
-    break;
+    return "+";
   case MINUS:
-    o << "-";
-    break;
+    return "-";
   case ASTERISK:
-    o << "*";
-    break;
+    return "*";
   case DIV:
-    o << "/";
-    break;
+    return "/";
   case MODULO:
-    o << "%";
-    break;
+    return "%";
   case ASSIGN:
-    o << "=";
-    break;
+    return "=";
   case ADD_ASSIGN:
-    o << "+=";
-    break;
+    return "+=";
   case SUB_ASSIGN:
-    o << "-=";
-    break;
+    return "-=";
   case EQ:
-    o << "==";
-    break;
+    return "==";
   case NOT_EQ:
-    o << "!=";
-    break;
+    return "!=";
   case LESS:
-    o << "<";
-    break;
+    return "<";
   case GREATER:
-    o << ">";
-    break;
+    return ">";
   case LESS_EQ:
-    o << "<=";
-    break;
+    return "<=";
   case GREATER_EQ:
-    o << ">=";
-    break;
+    return ">=";
   default: {
     ostringstream ss;
     ss << "Unknown binary operator " << _op;
     throw runtime_error(ss.str());
   }
   }
-  o << indent << "Right:  " << _right;
+}
+
+void Binop::printdata(ostream &o) const
+{
+  o << indent << "Left:  " << _left
+    << indent << "Op  :  " << op_str()
+    << indent << "Right:  " << _right;
 }
 
 void Binop::gensymtab(SymTab *p)
@@ -493,6 +534,21 @@ bool Binop::is_assign_op() const
   case ASSIGN:
   case ADD_ASSIGN:
   case SUB_ASSIGN:
+    return true;
+  default:
+    return false;
+  }
+}
+
+bool Binop::is_compare_op() const
+{
+  switch (_op) {
+  case EQ:
+  case NOT_EQ:
+  case LESS:
+  case GREATER:
+  case LESS_EQ:
+  case GREATER_EQ:
     return true;
   default:
     return false;
@@ -529,6 +585,11 @@ void Binop::typecheck(Node *curr_func)
     to->set_coerce_to_type(to->type());
     _type = to->type();
   }
+}
+
+void Binop::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genBinop(this,cga);
 }
 
 void IfStatement::printdata(ostream &o) const
@@ -572,6 +633,11 @@ void IfStatement::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
+void IfStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genConditional(this,cga);
+}
+
 void BreakStatement::flowcontrol(Node *,bool in_loop)
 {
   if (!in_loop) {
@@ -579,11 +645,21 @@ void BreakStatement::flowcontrol(Node *,bool in_loop)
   }
 }
 
+void BreakStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genBreak(this,cga);
+}
+
 void ContinueStatement::flowcontrol(Node *,bool in_loop)
 {
   if (!in_loop) {
     Error(this,"Continue statement outside of any loop.");
   }
+}
+
+void ContinueStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genContinue(this,cga);
 }
 
 void ForLoop::printdata(ostream &o) const
@@ -617,6 +693,11 @@ void ForLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
+void ForLoop::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genForLoop(this,cga);
+}
+
 void WhileLoop::printdata(ostream &o) const
 {
   o << indent << "Expr:" << _expr
@@ -642,6 +723,11 @@ void WhileLoop::flowcontrol(Node *curr_func,bool in_loop)
   set_has_return_stmt(_stmt->has_return_stmt());
 }
 
+void WhileLoop::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genWhileLoop(this,cga);
+}
+
 void NodeList::printdata(ostream &o) const
 {
   for (const_iterator i = begin(); i != end(); ++i) {
@@ -663,6 +749,18 @@ void NodeList::typecheck(Node *curr_func)
   }  
 }
 
+void NodeList::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genList(this,cga);
+}
+
+void NodeList::writecode(std::ostream &out) const
+{
+  for (const_iterator i = begin(); i != end(); ++i) {
+    (*i)->writecode(out);
+  }
+}
+
 void FunctionExpression::printdata(ostream &o) const
 {
   o << indent << "Name:" << _function
@@ -673,14 +771,6 @@ void FunctionExpression::gensymtab(SymTab *p)
 {
   _function->gensymtab(p);
   _arglist->gensymtab(p);
-}
-
-// This must be called with a node that has a
-// function type.
-Type *get_return_type(Node *n)
-{
-  FunctionType &ft = tcastr<FunctionType>(n->type());
-  return ft.get_return_type();
 }
 
 ParamList *get_params(Node *n)
@@ -708,7 +798,7 @@ void FunctionExpression::typecheck(Node *curr_func)
     Error(_function,"Target of function expression is not a function!");
   }
   Node *symbol = getsymbol(_function);
-  _type = get_return_type(symbol);
+  _type = symbol->type()->get_return_type();
   _arglist->typecheck(curr_func);
   ParamList *params = get_params(symbol);
   int num_args = nlsize(_arglist);
@@ -732,6 +822,11 @@ void FunctionExpression::typecheck(Node *curr_func)
       (*arg)->set_coerce_to_type((*arg)->type());
     }
   }
+}
+
+void FunctionExpression::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genFunctionExpression(this,cga);
 }
 
 void SymNode::printsyms(ostream &o) const
@@ -764,6 +859,11 @@ void CompoundStatement::flowcontrol(Node *curr_func,bool in_loop)
 {
   _statement_list->flowcontrol(curr_func,in_loop);
   set_has_return_stmt(_statement_list->has_return_stmt());
+}
+
+void CompoundStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  _statement_list->codegen(cg,cga);
 }
 
 FunctionDefn::FunctionDefn(Node *decl,Node *body) :
@@ -806,6 +906,18 @@ void FunctionDefn::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
+void FunctionDefn::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genFunctionDefn(this,cga);
+}
+
+void FunctionDefn::writecode(ostream &out) const
+{
+  if (_code) {
+    _code->write(out);
+  }
+}
+
 void ReturnStatement::printdata(ostream &o) const
 {
   o << indent << "Expr:  " << _expr;
@@ -819,7 +931,7 @@ void ReturnStatement::gensymtab(SymTab *p)
 void ReturnStatement::typecheck(Node *curr_func)
 {
   _expr->typecheck(curr_func);
-  Type *return_type = get_return_type(curr_func);
+  Type *return_type = curr_func->type()->get_return_type();
   coerce_const(_expr,return_type);
   compare_types(this,_expr->type(),return_type);
   _expr->set_coerce_to_type(return_type);
@@ -828,6 +940,11 @@ void ReturnStatement::typecheck(Node *curr_func)
 void ReturnStatement::flowcontrol(Node *curr_func,bool in_loop)
 {
   set_has_return_stmt(true);
+}
+
+void ReturnStatement::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genReturn(this,cga);
 }
 
 Declaration::Declaration (String n,Type *t) :
@@ -878,6 +995,11 @@ void StatementList::flowcontrol(Node *curr_func,bool in_loop)
   }
 }
 
+void StatementList::codegen(CodeGen *cg,CodeGenArg *cga)
+{
+  cg->genStatementList(this,cga);
+}
+
 void TranslationUnit::printdata(std::ostream &o) const
 {
   NodeList::printdata(o);
@@ -917,6 +1039,25 @@ void Type::set_base_type(Type *t)
 
 void Type::gensymtab(SymTab *parent)
 {
+}
+
+unsigned Type::size() const
+{
+  throw runtime_error("Cannot calculate size for type.");
+}
+
+unsigned BaseType::size() const
+{
+  switch (_type) {
+  case Int:
+    return IntSize;
+  case Char:
+    return CharSize;
+  case Double:
+    return DoubleSize;
+  default:
+    return Type::size();
+  }
 }
 
 ostream &BaseType::print(ostream &o) const
@@ -969,6 +1110,11 @@ ostream &FunctionType::print_outer(ostream &o) const
   return o;
 }
 
+unsigned PointerType::size() const
+{
+  return 4;
+}
+
 ostream &PointerType::print(std::ostream &o) const
 {
   o << "pointer(";
@@ -983,7 +1129,7 @@ ostream &PointerType::print_outer(std::ostream &o) const
   return o;
 }
 
-BaseType::Type intType(Type *t)
+BaseType::BT intType(Type *t)
 {
   if (BaseType *bt = tcast<BaseType>(t)) {
     return bt->type();

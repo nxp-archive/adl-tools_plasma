@@ -50,30 +50,24 @@
 //     done() method simply moves the registers in the 'almost free' list
 //     over to the 'free' list.
 
+#include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 #include "StackMachine.h"
 #include "Node.h"
+#include "Types.h"
+#include "AsmStore.h"
+
+#define ASM(a,c) { \
+  ostringstream s1,s2; \
+  s1 << a; \
+  s2 << c; \
+  o(s1.str(),s2.str().c_str()); \
+}
 
 using namespace std;
-
-// Size of the 'int' type.
-const int IntSize = 4;
-
-// Size of the 'char' type.
-const int CharSize = 1;
-
-// The machine's word size.  Note that making this different
-// from INT_SIZE may cause serious problems.
-const int WordSize = 4;
-
-// This is a strange multiplier that needs to be used in the allocation
-// of global variables for the GNU Assembler.  Not sure exactly what it
-// represents.
-const int WirdMultiplier = 4;
-
-static bool stackMachineInit = StackMachine::staticInits();
 
 IntVect StackMachine::_all_regs;
 IntVect StackMachine::_caller_save_regs;
@@ -81,96 +75,71 @@ IntVect StackMachine::_callee_save_regs;
 IntVect StackMachine::_byte_compat_regs;
 Type *StackMachine::_default_type = 0;
 
-bool StackMachine::staticInits()
+// Converts the register to the equivalent byte-access version.  If the
+// register isn't byte-compatible (i.e., isn't %eax, %ebx, %ecx,
+// or %edx), then an exception is raised.
+void Operand::setlo()
 {
-  for (int i = FirstReg; i != LastReg; ++i) {
-    _all_regs.push_back((Regs)i);
-  }
-
-  _caller_save_regs.push_back(eax);
-  _caller_save_regs.push_back(ecx);
-  _caller_save_regs.push_back(edx);
-
-  _callee_save_regs.push_back(ebx);
-  _callee_save_regs.push_back(esi);
-  _callee_save_regs.push_back(edi);
-
-  _byte_compat_regs.push_back(eax);
-  _byte_compat_regs.push_back(ebx);
-  _byte_compat_regs.push_back(ecx);
-  _byte_compat_regs.push_back(edx);
-
-  _default_type = new BaseType(BaseType::Int);
-
-  return true;
-}
-
-StackMachine::StackMachine(CodeGen *parent,int base_fp) :
-  _regs_free(_all_regs),
-  _next_temp(base_fp - WordSize),
-  _parent(parent)
-{
-}
-
-const char *StackMachine::regname(int r) const
-{
-  switch (r) {
-  case eax:
-    return "%eax";
-  case ebx:
-    return "%ebx";
-  case ecx:
-    return "%ecx";
-  case edx:
-    return "%edx";
-  case esi:
-    return "%esi";
-  case edi:
-    return "%edi";
-  default:
-    Error1("Unknown register " << r);
+  // Ignore if not a register.
+  if (is_reg()) {
+    if (_value >= eax && _value <= edx) {
+      _flags |= Byte;
+    } else {
+      Error1("Register " << _value << " is not byte-compatible.");
+    }
   }
 }
 
-string StackMachine::memname(int mem) const
+ostream &operator<<(ostream &o,Operand op)
 {
-  ostringstream ss;
-  ss << mem << "(%ebp)";
-  return ss.str();
-}
-
-string StackMachine::itemname(const Item &item) const
-{
-  if (item.isreg()) {
-    return regname(item._value);
+  if (op.is_reg()) {
+    if (op.is_bytereg()) {
+      switch (op.value()) {
+      case Operand::al:
+        o << "%al";
+        break;
+      case Operand::bl:
+        o << "%bl";
+        break;
+      case Operand::cl:
+        o << "%cl";
+        break;
+      case Operand::dl:
+        o << "%dl";
+        break;
+      default:
+        assert(0);
+      }
+    } else {
+      switch (op.value()) {
+      case Operand::eax:
+        o << "%eax";
+        break;
+      case Operand::ebx:
+        o << "%ebx";
+        break;
+      case Operand::ecx:
+        o << "%ecx";
+        break;
+      case Operand::edx:
+        o << "%edx";
+        break;
+      case Operand::esi:
+        o << "%esi";
+        break;
+      case Operand::edi:
+        o << "%edi";
+        break;
+      default:
+        assert(0);
+      }
+    }
+  } else if (op.is_mem()) {
+    o << op.value() << "(%ebp)";
   } else {
-    return memname(item._value);
+    o << "$" << op.value();
   }
-}
-
-void StackMachine::o(const string &a,const char *c)
-{
-  //  _parent->o(a,c);
-}
-
-// Emits code that pushes the callee-save registers
-// used by the stack machine onto the process' stack.
-void StackMachine::save_callee_saves()
-{
-  for (IntVect::iterator i = _callee_save_regs_used.begin();
-       i != _callee_save_regs_used.end(); ++i) {
-    ASM("  pushl " << regname(*i),"Save callee-save registers.");
-  }
-}
-
-// Emits code that pops the callee-save registers used by
-// the stack machine off the process' stack.  
-void StackMachine::load_callee_saves()
-{
-  for (IntVect::iterator i = _callee_save_regs_used.begin();
-       i != _callee_save_regs_used.end(); ++i) {
-    ASM("  popl " << regname(*i),"Restore callee-save registers.");
-  }  
+  return o;
 }
 
 template<class T,typename C>
@@ -184,6 +153,97 @@ void remove_item(T &t,C c)
 {
   typename T::iterator e = remove(t.begin(),t.end(),c);
   t.erase(e,t.end());
+}
+
+void printRegs(const IntVect &iv)
+{
+  ostream_iterator<int> i(cerr," ");
+  copy(iv.begin(),iv.end(),i);
+}
+
+bool StackMachine::staticInits()
+{
+  _all_regs.push_back(Operand::ebx);
+  _all_regs.push_back(Operand::esi);
+  _all_regs.push_back(Operand::edi);
+  _all_regs.push_back(Operand::eax);
+  _all_regs.push_back(Operand::ecx);
+  _all_regs.push_back(Operand::edx);
+
+  _caller_save_regs.push_back(Operand::eax);
+  _caller_save_regs.push_back(Operand::ecx);
+  _caller_save_regs.push_back(Operand::edx);
+
+  _callee_save_regs.push_back(Operand::ebx);
+  _callee_save_regs.push_back(Operand::esi);
+  _callee_save_regs.push_back(Operand::edi);
+
+  _byte_compat_regs.push_back(Operand::eax);
+  _byte_compat_regs.push_back(Operand::ebx);
+  _byte_compat_regs.push_back(Operand::ecx);
+  _byte_compat_regs.push_back(Operand::edx);
+
+  _default_type = new BaseType(BaseType::Int);
+
+  return true;
+}
+
+StackMachine::StackMachine(AsmStore &code,int base_fp) :
+  _next_temp(base_fp - WordSize),
+  _code(code)
+{
+  static bool dummy = staticInits();
+  _regs_free = _all_regs;
+}
+
+void StackMachine::o(const string &a,const char *c)
+{
+  _code.o(a,c);
+}
+
+// Saves the caller-save registers, which should be done
+// before the current function makes a function call, so that
+// the registers don't get corrupted by the called function.
+//
+// Normally, this is done by pushing the caller-save registers
+// onto the stack just before the function call is made and
+// popping them off afterwards; however, due to the workings of
+// this particular stack machine it's much easier to just move
+// the contents of the caller-save registers, if they are
+// currently being used, into temporary variables.
+void StackMachine::save_caller_saves()
+{
+  IntVect tmp(1);
+  for (IntVect::const_iterator i = _caller_save_regs.begin();
+       i != _caller_save_regs.end(); ++i) {
+    if (!contains(_regs_free,*i)) {
+      tmp[0] = *i;
+      copy_reg_to_temp(tmp,"Save caller-save register to temp.");
+      _regs_free.push_back(*i);
+    }
+  }
+}
+
+// Emits code that pushes the callee-save registers
+// used by the stack machine onto the process' stack.
+void StackMachine::save_callee_saves(AsmStore &code)
+{
+  for (IntVect::iterator i = _callee_save_regs_used.begin();
+       i != _callee_save_regs_used.end(); ++i) {
+    ostringstream ss;
+    ss << "  pushl " << Operand(*i);
+    code.o(ss.str(),"Save callee-save registers.");
+  }
+}
+
+// Emits code that pops the callee-save registers used by
+// the stack machine off the process' stack.  
+void StackMachine::load_callee_saves()
+{
+  for (IntVect::iterator i = _callee_save_regs_used.begin();
+       i != _callee_save_regs_used.end(); ++i) {
+    ASM("  popl " << Operand(*i),"Restore callee-save registers.");
+  }  
 }
 
 // Copy the least recently used register on the stack into a
@@ -202,16 +262,16 @@ int StackMachine::copy_reg_to_temp(const IntVect &valid_regs,const char *comment
   _mem_free.pop_back();
 
   // Find the least recently used register on the stack.
-  int reg = None;
+  int reg = Operand::None;
   int index = 0;
   for (Stack::iterator i = _stack.begin(); i != _stack.end(); ++i) {
-    if (i->isreg() && contains(valid_regs,i->_value)) {
-      reg = i->_value;
+    if (i->is_reg() && contains(valid_regs,i->value())) {
+      reg = i->value();
       break;
     }
     ++index;
   }
-  if (reg == None) {
+  if (reg == Operand::None) {
     throw runtime_error("No free registers inside OR outside of stack.");
   }
 
@@ -219,10 +279,9 @@ int StackMachine::copy_reg_to_temp(const IntVect &valid_regs,const char *comment
   if (!comment_str) {
     comment_str = "Stack machine:  copy register to temp.";
   }
-  ASM("  movl " << regname(reg) << ", " << memname(mem),comment_str);
+  ASM("  movl " << Operand(reg) << ", " << Operand(mem,Operand::Mem),comment_str);
   // Modify element's stack machine position to reference its new location.
-  _stack[index]._value = mem;
-  _stack[index]._stype = Mem;
+  _stack[index]._op = Operand(mem,Operand::Mem);
   return reg;
 }
 
@@ -233,18 +292,20 @@ int StackMachine::copy_reg_to_temp(const IntVect &valid_regs,const char *comment
 int StackMachine::get_free_reg(const IntVect &valid_regs,int preferred_reg)
 {
   if (!_regs_free.empty()) {
-    int reg = None;
-    if (preferred_reg != None && contains(_regs_free,preferred_reg)) {
+    int reg = Operand::None;
+    if (preferred_reg != Operand::None && contains(_regs_free,preferred_reg)) {
       reg = preferred_reg;
     } else {
-      for (IntVect::iterator i = _regs_free.begin(); i != _regs_free.end(); ++i) {
+      // We iterate from the back, since free registers are added to the back.  This lets
+      // us re-use the preferred set (caller-save).
+      for (IntVect::reverse_iterator i = _regs_free.rbegin(); i != _regs_free.rend(); ++i) {
         if (contains(valid_regs,*i)) {
           reg = *i;
           break;
         }
       }
     }
-    if (reg != None) {
+    if (reg != Operand::None) {
       remove_item(_regs_free,reg);
       // If this register is a callee-save register that
       // we haven't used before, add it to our list of
@@ -266,7 +327,7 @@ int StackMachine::get_free_reg(const IntVect &valid_regs,int preferred_reg)
 // (%al/%bl/%cl/%dl).
 const IntVect &StackMachine::get_type_valid_regs(Type *type) const
 {
-  BaseType::Type t = intType(type);
+  BaseType::BT t = intType(type);
   if (t == BaseType::Char) {
     return _byte_compat_regs;
   } else if (t == BaseType::Int || isPtrType(type)) {
@@ -286,7 +347,7 @@ const IntVect &StackMachine::get_type_valid_regs(Type *type) const
 //
 // If preferred_reg is passed, this function will try its
 // best to return preferred_reg, if it's available.
-int StackMachine::push(Type *type,int preferred_reg,const IntVect *valid_regs)
+Operand StackMachine::push(Type *type,int preferred_reg,const IntVect *valid_regs)
 {
   if (!type) {
     type = _default_type;
@@ -296,27 +357,29 @@ int StackMachine::push(Type *type,int preferred_reg,const IntVect *valid_regs)
   if (!valid_regs) {
     valid_regs = &get_type_valid_regs(type);
   }
-  int reg = get_free_reg(*valid_regs,preferred_reg);
-  _stack.back()._value = reg;
+  Operand reg = get_free_reg(*valid_regs,preferred_reg);
+  _stack.back()._op = reg;
   return reg;
 }
 
 // Attempts to coerce the element in the current register
 // from the given type to the given type.
-int StackMachine::coerce_type(int curr_reg,Type *from,Type *to)
+Operand StackMachine::coerce_type(Operand curr_reg,Type *from,Type *to)
 {
   if (typeid(from) == typeid(to)) {
     return curr_reg;
   }
-  BaseType::Type from_t = intType(from);
-  BaseType::Type to_t = intType(to);
+  BaseType::BT from_t = intType(from);
+  BaseType::BT to_t = intType(to);
   if (from_t == BaseType::Char) {
     if (to_t == BaseType::Int) {
       return curr_reg;
     }
   } else if (from_t == BaseType::Int) {
     if (to_t == BaseType::Char) {
-      ASM("  movzbl " << lo(curr_reg) << ", " << curr_reg,
+      Operand cr_lo(curr_reg);
+      cr_lo.setlo();
+      ASM("  movzbl " << cr_lo << ", " << curr_reg,
           "Implicit cast: " << from << " -> " << to);
       return curr_reg;
     }
@@ -330,15 +393,14 @@ int StackMachine::coerce_type(int curr_reg,Type *from,Type *to)
 //
 // If no type is specified, pop() returns the value of the
 // element as-is.
-int StackMachine::pop(Type *type,const IntVect *valid_regs)
+Operand StackMachine::pop(Type *type,const IntVect *valid_regs)
 {
   Type *prev_type = _stack.back()._type;
-  if (!type) {
+  if (type) {
     if (!valid_regs) {
       valid_regs = &get_type_valid_regs(type);
     }
-    int reg = pop_internal(*valid_regs);
-    return coerce_type(reg,prev_type,type);
+    return coerce_type(pop_internal(*valid_regs),prev_type,type);
   } else {
     return pop_internal(_all_regs);
   }
@@ -348,41 +410,45 @@ int StackMachine::pop(Type *type,const IntVect *valid_regs)
 // that is also in valid_regs and returns the register name.  If
 // no registers are free, the least recently used one is first
 // copied into a temporary variable and then used.
-int StackMachine::pop_internal(const IntVect &valid_regs)
+Operand StackMachine::pop_internal(const IntVect &valid_regs)
 {
-  Item last = _stack.back();
+  Operand last = _stack.back()._op;
   _stack.pop_back();
 
   // If the top of the stack is a register, just return
   // the name of the register and add the register to our
   // free register list.
-  if (last.isreg() && contains(valid_regs,last._value)) {
-    _regs_almost_free.push_back(last._value);
-    return last._value;
+  if (last.is_reg() && contains(valid_regs,last.value())) {
+    _regs_almost_free.push_back(last.value());
+    return last;
   }
 
   // Otherwise, copy the temp variable at the top of stack
   // into a free register, possibly requiring us to spill the
   // current contents of the memory register into another temp
   // register.
-  int reg = get_free_reg(valid_regs);
-  ASM("  movl " << itemname(last) << ", " << regname(reg),
+  Operand reg(get_free_reg(valid_regs));
+  ASM("  movl " << last << ", " << reg,
       "Stack machine:  copy temp to register.");
 
   // If our location was a register but not in valid_regs,
   // make the register free for use.
-  if (last.isreg()) {
-    _regs_free.push_back(last._value);
+  if (last.is_reg()) {
+    _regs_free.push_back(last.value());
   }
+
+  _regs_almost_free.push_back(reg.value());
+
   return reg;
 }
 
 // Returns the top element of the stack, but doesn't pop
 // it.  Note that this is not guaranteed to be a register; it
 // could be a memory location!
-StackMachine::Item &StackMachine::peek()
+Operand StackMachine::peek()
 {
-  return _stack.back();
+  assert(!empty());
+  return _stack.back()._op;
 }
 
 // Frees all registers that are marked as being in
@@ -401,30 +467,9 @@ int StackMachine::get_max_fp() const
   return _next_temp + WordSize;
 }
 
-// Returns the low-order byte of the given register.  If the
-// register isn't byte-compatible (i.e., isn't %eax, %ebx, %ecx,
-// or %edx), then an exception is raised.
-//
-// Example: stack.lo('%eax') == '%al'.
-const char *StackMachine::lo(int reg)
-{
-  switch (reg) {
-  case eax:
-    return "%al";
-  case ebx:
-    return "%bl";
-  case ecx:
-    return "%cl";
-  case edx:
-    return "%dl";
-  default:
-    Error1("Register " << reg << " is not byte-compatible.");
-  } 
-}
-
 // Forces a type change of the top element of the stack.
 void StackMachine::force_type_change(Type *type)
 {
-  assert(!is_empty());
+  assert(!empty());
   _stack.back()._type = type;
 }

@@ -42,8 +42,24 @@ private:
 // This represents a single scope of a symbol table.  A parent (constructor
 // argument) represents a parent scope.  Note that we store a pointer to the
 // parent scope, but it's not used for finding a symbol (as described above).
+// Also, each table has a list of its children so that it's possible to traverse
+// the complete tree from a root pointer.
 class SymTab : public gc {
 public:
+  struct Symbol {
+    int     _level; // Level at which it was added.
+    Node   *_n;     // The item that the symbol represents.
+    Symbol *_next;  // Next element in chain.
+
+    Symbol(int l,Node *n) : _level(l), _n(n), _next(0) {};
+    Symbol(int l,Node *n,Symbol *next) : _level(l), _n(n), _next(next) {};
+  };
+  typedef vector<Symbol *,traceable_allocator<Symbol *> > Symbols;
+  typedef vector<SymTab *,traceable_allocator<SymTab *> > Children;
+
+  typedef Symbols::const_iterator const_iterator;
+  typedef Children::const_iterator const_children_iterator;
+
   // Create a root-level symbol table.  This creates a new symbol hash.
   SymTab();
   // Create a symbol table, inheriting symbols and hash from an outer scope.
@@ -54,32 +70,33 @@ public:
   // This throws an exception if the name is not an identifier.
   bool add(String name,Node *value,bool raise = true);
 
+  // Returns true if the symbol occurs at the same scope
+  // as this symbol table.
+  bool is_local(Symbol *s) const { assert(s); return _level == s->_level; };
+
   // Returns a pointer to the node, or 0 if not found.
   Node *find(String s) const;
 
   // Get parent scope.
   SymTab *parent() const { return _parent; };
 
+  const_iterator begin() const { return _symbols.begin(); };
+  const_iterator end() const { return _symbols.end(); };
+
+  const_children_iterator childbegin() const { return _children.begin(); };
+  const_children_iterator childend() const { return _children.end(); };
+
   void print(std::ostream &o) const;
 private:
-  struct Symbol {
-    int     _level; // Level at which it was added.
-    Node   *_n;     // The item that the symbol represents.
-    Symbol *_next;  // Next element in chain.
-
-    Symbol(int l,Node *n) : _level(l), _n(n), _next(0) {};
-    Symbol(int l,Node *n,Symbol *next) : _level(l), _n(n), _next(next) {};
-  };
-
-  typedef vector<Symbol *,traceable_allocator<Symbol *> > Symbols;
-
+  void add_child(SymTab *);
   void adjust_size(unsigned);
   friend std::ostream &operator<<(std::ostream &,const SymTab *);
 
-  Symbols  _symbols; // Symbols, indexed by values stored in symhash.
-  int      _level;   // Current level of this table (0 is root).
-  SymTab  *_parent;  // Parent scope.
-  SymHash *_hash;    // Symbol hash.
+  Symbols  _symbols;  // Symbols, indexed by values stored in symhash.
+  int      _level;    // Current level of this table (0 is root).
+  SymTab  *_parent;   // Parent scope.
+  Children _children; // Pointers to child scopes.
+  SymHash *_hash;     // Symbol hash.
 };
 
 #endif

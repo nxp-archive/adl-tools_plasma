@@ -48,6 +48,7 @@ SymTab::SymTab(SymTab *parent) :
   _parent(parent),
   _hash(parent->_hash)
 {
+  parent->add_child(this);
 }
 
 // Resize symbol table array if necessary.
@@ -86,6 +87,11 @@ bool SymTab::add(String name,Node *value,bool raise)
     _symbols[index] = new Symbol(_level,value);
   }
   return true;
+}
+
+void SymTab::add_child(SymTab *s)
+{
+  _children.push_back(s);
 }
 
 // Try to find a symbol.  Basic process is:  If the symbol

@@ -238,7 +238,7 @@ my @Tests = (
 	     # Time w/invalid busy.
 	     {
 	      cmd     => "./time1",
-	      fail    => 1,
+	      fail    => 255,
 	     },
 	     # Time w/delay.
 	     {

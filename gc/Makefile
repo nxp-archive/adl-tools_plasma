@@ -38,7 +38,7 @@ pkgincludedir = $(includedir)/gc
 top_builddir = .
 
 am__cd = CDPATH="$${ZSH_VERSION+.}$(PATH_SEPARATOR)" && cd
-INSTALL = /_TOOLS_/plat/local-ppc-/basic-latest/bin/install -c
+INSTALL = /_TOOLS_/plat/local-/ppc-/basic-latest/bin/install -c
 install_sh_DATA = $(install_sh) -c -m 644
 install_sh_PROGRAM = $(install_sh) -c
 install_sh_SCRIPT = $(install_sh) -c

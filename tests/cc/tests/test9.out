@@ -1,2 +1,3 @@
 tests/in10.c:13:  Warning:  Function foo does not return through all branches.
+
 Compile succeeded.

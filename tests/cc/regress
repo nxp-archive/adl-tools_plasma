@@ -4,6 +4,8 @@
 # Tests used in this regression.
 
 use lib "..";
+use lib ".";
+use compile_check;
 use rdriver;
 use strict;
 use Data::Dumper;
@@ -74,13 +76,45 @@ my @Tests = (
 			 {
 			  cmd     => "./minicc -check tests/in4.c tests/in4.c tests/in4.c tests/in4.c ",
 			 },
+			 # 12. Compilation of a large-ish program.
+			 {
+			  cmd     => "./minicc tests/foo.c tests/foo_lib.c",
+			  checker => \&check_12,
+			 },
 	    );
+
+# Do these only if we can compile on this platform.
+if ($compile_check::CompileOk) {
+  push @Tests,{
+			   cmd    => "./foo 1 2 hello 3",
+			   diff    => "tests/test11.out",
+			  };
+}
 
 doTest(\@Tests);
 
 ##
 ## <TESTS>
 ##
+
+sub check_12 {
+  compare_asm_file("foo_lib.s","tests/foo_lib.good");
+  compare_asm_file("foo.s","tests/foo.good");
+};
+
+sub compare_asm_file {
+  my $fn = shift;
+  my $cmp = shift;
+
+  my @input;
+  open my $in,$fn or die "Could not open $fn";
+  @input = (<$in>);
+  my $str = join "",@input;
+  if (!doDiff($str,$cmp,0,"#")) {
+	die "Failed diff.";
+  }
+  close $in;
+}
 
 ##
 ## </TESTS>

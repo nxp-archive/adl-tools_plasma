@@ -86,7 +86,8 @@ command-line parameter, or the current result of time().
 
 =item B<nocmts>
 
-Remove comments from diff.  Default is 0 (preserve).
+Remove comments from diff.  Default is 0 (preserve).  Set this to the comment
+character or string that you want to remove, e.g. "#".
 
 =item B<stderr>
 
@@ -160,7 +161,7 @@ package rdriver;
 require Exporter;
 
 our @ISA = ("Exporter");
-our @EXPORT = qw( doTest file_rdiff str_rdiff dprint dprintf );
+our @EXPORT = qw( doTest doDiff file_rdiff str_rdiff dprint dprintf );
 
 $diff = "diff -bi";
 $tmpfile = "cmp.out";
@@ -282,12 +283,21 @@ sub doDiff {
       }
     }
   } elsif ($nocmts) {
+	my $cmt = $nocmts;
     # We do not want to preserve comments, so strip all blank lines and
     # comment lines.
     my @lines = split '\n',$output;
     for my $l (@lines) {
-      next if ($l =~ /^#/ || $l =~ /^\s*$/);
-      print OUT $l,"\n";
+      next if ($l =~ /^$cmt/ || $l =~ /^\s*$/);
+	  if ( $l =~ /^([^#]+)$cmt/ ) {
+		my $noncmt = $1;
+		next if ( length($noncmt) == 0 || $noncmt =~ /^\s*$/);
+		# Comment in line- print only non-comment portion.
+		print OUT "$noncmt\n";
+	  } else {
+		# No comment.
+		print OUT $l,"\n";
+	  }
     }
   } else {
     # No prefix specified, so just print output to the file.

@@ -82,9 +82,16 @@ Ptree *Wrapper::variadicArgs(Ptree *args)
   }
 }
 
+bool isOperator(Member &member)
+{
+  return !member.Name()->IsLeaf();
+}
+
+// For now, we don't wrap any operators due to naming issues.
 bool Wrapper::wrapMember(Environment *env,Member &member) const
 {
-  return (member.IsPublic() && !member.IsConstructor() && !member.IsDestructor());
+  return (member.IsPublic() && !member.IsConstructor() && !member.IsDestructor() 
+          && !isOperator(member));
 }
 
 void Wrapper::TranslateMemberFunction(Environment* env, Member& member)
