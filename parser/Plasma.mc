@@ -209,15 +209,20 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
 
   thnames = Ptree::Cons(thname,thnames); // Add on to list of thread names.
 
+  // We need to insert anything in the bottom-most environment to ensure
+  // that it gets added.  This is a problem if we come across Plasma code in
+  // a class declaration.
+  Environment *benv = env->GetBottom();
+
   if (args) {
     // Arguments exist- we have to create a structure in which
     // to pass them.
-    makeThreadStruct(env,tstype,args);     // Create the argument structure.
+    makeThreadStruct(benv,tstype,args);     // Create the argument structure.
     const string &arglist = argList(vw->argnames());
     // We insert a prototype before, and the actual function after, the current location
     // because we want to handle the case where the thread calls the current function recursively.
-    InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
-    AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
+    InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *`tsname`);\n"));
+    AppendAfterToplevel(benv,Ptree::qMake("void `nfname`(void *`tsname`) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     if (onthread) {
       elist = lappend(elist,Ptree::qMake("`tstype` `tsname` = {`arglist.c_str()`};\n"
                                          "plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,sizeof(`tstype`),&`tsname`,`pri`).first;\n"));
@@ -227,8 +232,8 @@ void Plasma::convertToThread(Ptree* &elist,Ptree* &thnames,Ptree *expr,VarWalker
     }
   } else {
     // No arguments, so no need to create the structure.
-    InsertBeforeToplevel(env,Ptree::qMake("void `nfname`(void *);\n"));
-    AppendAfterToplevel(env,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
+    InsertBeforeToplevel(benv,Ptree::qMake("void `nfname`(void *);\n"));
+    AppendAfterToplevel(benv,Ptree::qMake("void `nfname`(void *) {\n`TranslateExpression(env,nexpr)`\n}\n"));
     elist = lappend(elist,Ptree::qMake("plasma::THandle `thname` = plasma::pSpawn(`proc` `nfname`,0,`pri`);\n"));
   }
 }
@@ -359,15 +364,17 @@ Ptree* Plasma::TranslateFunctionCall(Environment* env,Ptree* spawnobj, Ptree* pr
   Ptree *sfunc  = Ptree::GenSym();
   Ptree *lfunc  = Ptree::GenSym();
 
+  Environment *benv = env->GetBottom();
+
   // Create temporary argument storage structure.
-  if (!makeSpawnStruct(env,objclass,t,targs,ufunc)) {
+  if (!makeSpawnStruct(benv,objclass,t,targs,ufunc)) {
     return nil;
   }
 
   // Create spawn function- this will take the function and its arguments
   // and launch a thread, returning a result structure w/a pointer to the
   // result data.
-  if (!makeSpawnFunc(env,objclass,t,targs,ufunc,lfunc,sfunc,(proc != nil))) {
+  if (!makeSpawnFunc(benv,objclass,t,targs,ufunc,lfunc,sfunc,(proc != nil))) {
     return nil;
   }
 
@@ -552,7 +559,7 @@ bool Plasma::makeSpawnStruct(Environment *env,Class *objclass,TypeInfo t,Ptree *
   }
   
   cur = lappend(cur,Ptree::Make("};\n"));
-  InsertBeforeToplevel(env,start);
+  AppendAfterToplevel(env,start);
   return true;
 }
 
@@ -599,7 +606,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   };
   
   cur = lappend(cur,Ptree::Make(");\n}\n"));
-  InsertBeforeToplevel(env,start);
+  AppendAfterToplevel(env,start);
 
   TypeInfo rt;
   t.Dereference(rt);
@@ -607,7 +614,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   // Create the spawn function which launches the thread and returns
   // the result template.
   Ptree *rtemplate = Ptree::qMake("plasma::Result<`rt.MakePtree(0)`>");
-  start = Ptree::qMake("inline `rtemplate` `sfunc`(");
+  start = Ptree::qMake("`rtemplate` `sfunc`(");
   cur = start;
 
   // If we have a processor, we need it as an argument.
@@ -641,9 +648,23 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
     cur = lappend(cur,Ptree::qMake("`at.MakePtree(argName(i))`"));
   }
 
+  cur = lappend(cur,Ptree::Make(")"));
+
+  // Add forward declaration of object, if necessary.
+  if (objclass) {
+    InsertBeforeToplevel(env,Ptree::qMake("class `objclass->Name()`;\n"));
+  }
+
+  // Add forward declaration- copy list so that we only get the decl.
+  Ptree *fwddecl = start;
+  InsertBeforeToplevel(env,Ptree::qMake("`fwddecl`;\n"));
+
+  start = Ptree::qMake("inline `Ptree::CopyList(fwddecl)` ");
+  cur = start;
+
   // Initialization of the argument passing structure.
   Ptree *emptyarg = Ptree::Make("()");
-  cur = lappend(cur,Ptree::qMake(")\n{\n"
+  cur = lappend(cur,Ptree::qMake("\n{\n"
                                  "`targs` args = {`rt.MakePtree(emptyarg)`"));
   for (int i = 0; i != numargs; ++i) {
     cur = lappend(cur,Ptree::qMake(",`argName(i)`"));
@@ -663,7 +684,7 @@ bool Plasma::makeSpawnFunc(Environment *env,Class *objclass,TypeInfo t,Ptree *ta
   }
   cur = lappend(cur,Ptree::qMake("`lfunc`,sizeof(`targs`),&args,`priName()`));\n}\n"));
   
-  InsertBeforeToplevel(env,start);
+  AppendAfterToplevel(env,start);
 
   return true;
 }

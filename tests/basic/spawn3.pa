@@ -39,17 +39,17 @@ struct TrySpawn {
     return 3.14159;
   }
 
-  void start();
+  void start()
+  { 
+    Result<double> result1 = spawn(foo(1.1,2.2));
+    Result<double> result2 = spawn(foo(2.7,9.8));
+    Result<double> result3 = spawn(foo(100.45,3.59));
+    Result<double> result4 = spawn(pi());
+    mprintf("Result is:  %f, %f, %f, %f\n",result1.value(),result2.value(),result3.value(),result4.value());
+  }
+
 };
 
-void TrySpawn::start()
-{ 
-  Result<double> result1 = spawn(foo(1.1,2.2));
-  Result<double> result2 = spawn(foo(2.7,9.8));
-  Result<double> result3 = spawn(foo(100.45,3.59));
-  Result<double> result4 = spawn(pi());
-  mprintf("Result is:  %f, %f, %f, %f\n",result1.value(),result2.value(),result3.value(),result4.value());
-}
 
 typedef double (TrySpawn::* MPtr2)(double,double);
 typedef double (TrySpawn::* MPtr0)();

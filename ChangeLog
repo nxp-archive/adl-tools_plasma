@@ -1,3 +1,7 @@
+2004-06-23  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Fixed problems w/having plasma statements in inlined-methods.
+
 2004-06-22  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Fixed bugs:

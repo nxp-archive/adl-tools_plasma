@@ -24,6 +24,11 @@ my @Tests = (
 	      cmd     => "./par3",
 	      checker => \&check_par3,
 	     },
+	     # Check of code generation w/classes.
+	     {
+	      cmd     => "./par4",
+	      checker => \&check_par1,
+	     },
 	     # Quicksort with parallel sorting of split elements.
 	     {
 	      cmd     => "./qsort",
