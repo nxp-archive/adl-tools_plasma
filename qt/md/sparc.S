@@ -18,10 +18,15 @@
 	.text
 	.align 4
 	.global _qt_blocki
+	.global qt_blocki
 	.global _qt_block
+	.global qt_block	
 	.global _qt_abort
+	.global qt_abort
 	.global _qt_start
+	.global qt_start
 	.global _qt_vstart
+	.global qt_vstart	
 
 /* Register assignment:
 // %o0:	incoming `helper' function to call after cswap
@@ -66,10 +71,13 @@
 // return from the helper function and return from qt_block{,i}.
 */
 
+qt_block:		
 _qt_block:
+qt_blocki:	
 _qt_blocki:
 	sub %sp, 8, %sp		/* Allocate save area for return pc. */
 	st %o7, [%sp+64]	/* Save return pc. */
+qt_abort:	
 _qt_abort:
 	ta 0x03			/* Save locals and ins. */
 	mov %sp, %o5		/* Remember old sp w/o chng ins/locals. */
@@ -105,6 +113,7 @@ _qt_abort:
 // Parameter values were stored in callee-save regs and are moved to
 // the parameter registers.
 */
+qt_start:	
 _qt_start:
 	mov %i1, %o0		/* `pu': Set up args to `only'. */
 	mov %i2, %o1		/* `pt'. */
@@ -112,13 +121,14 @@ _qt_start:
 	call %i5, 0		/* Call client function. */
 	sub %sp, 32, %sp	/* Allocate 6-word callee space. */
 
-	call _qt_error, 0	/* `only' erroniously returned. */
+	call qt_error, 0	/* `only' erroniously returned. */
 	nop
 
 
 /* Same comments as `_qt_start' about allocating rounded-up 7-word
 // save areas. */
 
+qt_vstart:	
 _qt_vstart:
 	sub %sp, 32, %sp	/* Allocate 7-word callee space. */
 	call %i5, 0		/* call `startup'. */
@@ -138,5 +148,5 @@ _qt_vstart:
 	call %i3, 0		/* .. when call `cleanup. */
 	mov %i2, %o0		/* .. along with argument `pt'. */
 
-	call _qt_error, 0	/* `cleanup' erroniously returned. */
+	call qt_error, 0	/* `cleanup' erroniously returned. */
 	nop

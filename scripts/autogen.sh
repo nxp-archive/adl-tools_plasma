@@ -13,7 +13,12 @@ if test -z "$*"; then
   echo "Arguments may be passed on the \`$0\` command line."
 fi
 
-autoreconf --install --symlink --include=./macros || exit 1
+if [ x$NORECONF = x ]; then
+  echo "Running autoreconf.  To skip this step, prefix script with NORECONF=1"
+  autoreconf --install --symlink --include=./macros || exit 1
+else
+  echo "Skipping autoreconf process."
+fi
 
 echo "Done with automake processing."
 
@@ -22,7 +27,7 @@ echo "Done with automake processing."
 conf_flags="--enable-maintainer-mode --disable-opt"
 
 # Run configure unless NOCONFIGURE is set.
-if test x$NOCONFIGURE = x; then
+if [ x$NOCONFIGURE = x ]; then
   echo Running $srcdir/configure $conf_flags "$@" ...
   echo "To not run configure, run this script prefixed with NOCONFIGURE=1"
   $srcdir/configure $conf_flags "$@" \

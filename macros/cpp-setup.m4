@@ -30,10 +30,13 @@ AC_SUBST(RFLAG)
 
 AC_ARG_ENABLE(opt,
 [  --enable-opt    Enable optimization flag (-O3), disables debug],
- if [[ x${enableval} != no ]] ; then
+ if [[ x${enableval} != xno ]] ; then
    OPT="-O3"
+   AC_MSG_RESULT([Optimizing with -O3])	
+ else
+   AC_MSG_RESULT([Optimization disabled.])	
  fi
- AC_MSG_RESULT([Optimizing with -O3]),
+ ,
  OPT="-O3"
  AC_MSG_RESULT([Optimizing with -O3 by default.]),
 )

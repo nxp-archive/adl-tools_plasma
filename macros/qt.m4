@@ -19,6 +19,9 @@ if [[ x$ac_qt_host = x ]] ; then
     i686) 
 	ac_qt_host="iX86"
 	;;
+    sparc)
+	ac_qt_host="sparc"
+	;;
     powerpc)
 	ac_qt_host="ppc"
 	CCASFLAGS="${CCASFLAGS} -mregnames -maltivec"
