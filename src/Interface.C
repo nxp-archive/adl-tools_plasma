@@ -28,6 +28,7 @@ namespace plasma {
 
   Thread *pSpawn(Proc *p,UserFunc *f,void *a)
   {
+    thecluster.add_proc(p);
     return p->create(f,a);
   }
 
@@ -39,12 +40,13 @@ namespace plasma {
 
   pair<Thread *,void *> pSpawn(Proc *p,UserFunc *f,int nbytes,void *a)
   {
+    thecluster.add_proc(p);
     return p->create(f,nbytes,a);
   }
 
   void pAddReady(Thread *t)
   {
-    thecluster.add_ready(t);
+    thecluster.curProc()->add_ready(t);
   }
 
   void pAddWaiter(THandle t,THandle waiter)

@@ -38,6 +38,9 @@ namespace plasma {
 
     bool done() const { return _done; };
 
+    Proc *proc() const { return _proc; };
+    void setProc(Proc *p) { _proc = p; };
+
     HandleType handle() const { return _handle; };
     void setHandle(HandleType h) { _handle = h; };
 
@@ -54,6 +57,7 @@ namespace plasma {
     ThreadQ     _waiters;          // Threads waiting on this thread.
     qt_t       *_thread;           // Thread handle.
     void       *_stack;            // Stack pointer.
+    Proc       *_proc;             // Parent processor.
     HandleType  _handle;           // Miscellaneous handle value.
     unsigned    _priority;         // Current thread priority.
     char        _extraspace[];     // Allows for extra space to be allocated at end.
@@ -63,6 +67,7 @@ namespace plasma {
     _done(false),
     _thread(0),
     _stack(0),
+    _proc(0),
     _priority(0)
   {
   }

@@ -12,10 +12,18 @@
 
 namespace plasma {
 
+  // Note:  This class does not do any implicit queue management wrt. Clusters.
+  // Therefore, it's up to the user to make sure that a Proc doesn't go out of
+  // scope while it's in a Cluster's ready queue.  Normally, end users only deal
+  // with Procs through the Processor class, which doesn't delete the object, so
+  // garbage collection should only get rid of it when it's completely done.
   class Proc : public QBase {
   public:
+    enum State {  Waiting, Running };
+
     Proc();
-    ~Proc();
+
+    static void init(const ConfigParms &cp);
 
     // Create a thread and add to the ready queue.
     THandle create(UserFunc *f,void *arg);
@@ -29,6 +37,10 @@ namespace plasma {
     // Try to remove thread from ready queue (if it exists).
     THandle get_ready(THandle t);
 
+    // Processor state.
+    State state() const { return _state; };
+    void setState(State s) { _state = s; };
+
     // Number of threads in object.
     unsigned size() const { return _numthreads; };
     // Returns true if queue is empty.
@@ -38,12 +50,13 @@ namespace plasma {
     void print_ready(std::ostream &o) const;
 
     static unsigned numPriorities();
-    static void setNumPriorities(unsigned np);
+
   private:
     static unsigned _numpriorities; // Number of allowed priorities.
 
     QVect _ready;          // Ready threads, in priority order.
     int   _numthreads;     // Count of threads in this object.
+    State _state;          // Current processor state.
   };
 
 }

@@ -18,14 +18,10 @@ namespace plasma {
   {
   public:
     Cluster();
-    void init(const ConfigParms &);
+    void init(const ConfigParms &,Proc *p);
 
     // Main entry point.  This runs until there are no more user threads.
     void scheduler();
-
-    // Add an already created thread to the ready queue of the current
-    // processor.  This must have already been realized.
-    void add_ready(THandle t);
 
     // Causes the current thread to wait on the specified thread.
     void wait(THandle t);
@@ -58,8 +54,8 @@ namespace plasma {
     unsigned lowest_priority() const;
 
     // Add and remove processor objects.
+    // Sets state to Running.
     void add_proc(Proc *);
-    Proc *get_proc(Proc *);
 
     // Explicitly switch to the scheduler thread.
     // Caller must lock cluster.
@@ -91,8 +87,9 @@ namespace plasma {
 
     static bool init();
 
-    Proc *get_proc();
-
+    // Updates the current processor to one which has work to do.
+    // Returns false if none available.
+    bool update_proc();
     // Get next available thread, respecting priorities, from the
     // current processor.
     Thread *get_ready();    

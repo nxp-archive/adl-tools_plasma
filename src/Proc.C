@@ -5,6 +5,7 @@
 //
 
 #include <iostream>
+#include <stdexcept>
 
 #include "Proc.h"
 #include "Cluster.h"
@@ -17,19 +18,19 @@ namespace plasma {
 
   Proc::Proc() : 
     _ready(_numpriorities),
-    _numthreads(0)
+    _numthreads(0),
+    _state(Waiting)
   {
     // Make sure that we've initialized this to a valid value.
     assert(_numpriorities);
-
-    // Add ourselves to the cluster's proc queue.
-    thecluster.add_proc(this);
   }
 
-  Proc::~Proc()
+  void Proc::init(const ConfigParms &cp)
   {
-    // Remove ourselves from the proc queue.
-    thecluster.get_proc(this);
+    if (cp._numpriorities < 1) {
+      throw runtime_error("Number of priorities must be greater than 0.");
+    }
+    _numpriorities = cp._numpriorities;
   }
 
   // Create a thread and add to ready queue.
@@ -39,6 +40,7 @@ namespace plasma {
     Thread *t = new Thread;
     t->realize(f,arg);
     t->setPriority(thecluster.curThread()->priority());
+    t->setProc(this);
     add_ready(t);
     thecluster.unlock();
     return t;
@@ -59,6 +61,7 @@ namespace plasma {
     void *d = t->endspace();
     t->realize(f,d);
     t->setPriority(thecluster.curThread()->priority());
+    t->setProc(this);
     // Copy over data to free space.
     memcpy(d,args,nbytes);
     add_ready(t);
@@ -114,11 +117,6 @@ namespace plasma {
   unsigned Proc::numPriorities()
   {
     return _numpriorities;
-  }
-
-  void Proc::setNumPriorities(unsigned np)
-  {
-    _numpriorities = np;
   }
 
 }

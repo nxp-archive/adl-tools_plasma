@@ -627,7 +627,7 @@ sub check_pri2 {
 
 # C++-only processor test.
 sub check_proc1 {
-  my $seq = "(1 |3 |4 |5 )+";
+  my $seq = "(1 )+(2 |3 )+(4 |5 )+";
   my %count = (
 	       1.0 => 10, 
 	       2.0 => 10,
@@ -640,7 +640,7 @@ sub check_proc1 {
 
 # Processor test w/on-blocks.
 sub check_proc2 {
-  my $seq = "(1 |3 |4 |5 )+";
+  my $seq = "(1 )+(2 |3 )+(4 |5 )+";
   my %count = (
 	       1.0 => 10, 
 	       2.0 => 10,

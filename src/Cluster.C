@@ -86,7 +86,7 @@ namespace plasma {
   // that first thread is the special main routine written by
   // the user.
   Cluster::Cluster() :
-    _curproc(0),
+    _curproc(),
     _main(),
     _cur(0),
     _kernel(true)
@@ -105,16 +105,16 @@ namespace plasma {
     return true;
   }
 
-  void Cluster::init(const ConfigParms &cp)
+  void Cluster::init(const ConfigParms &cp,Proc *p)
   {
     if (!cp._preempt) {
       nopreempt();
     }
     _timeslice = cp._timeslice;
-    if (cp._numpriorities < 1) {
-      throw runtime_error("Number of priorities must be greater than 0.");
-    }
-    Proc::setNumPriorities(cp._numpriorities);
+
+    _curproc = p;
+    p->setState(Proc::Running);
+
     resetalarm();
   }
 
@@ -135,18 +135,20 @@ namespace plasma {
       if (thesystem.wantShutdown()) {
         return;
       }
-      // Get a new processor to work with.  If none available, return.
-      // Note:  We add to the queue, then take from the queue, so that if
-      // only one processor exists, things should still work.
-      add_proc(_curproc);
-      if (! (_curproc = get_proc()) ) {
+      // Setup current processor.  If no processors exist that have work to do, exit.
+      // We only do this in the scheduler because we do not timeslice between processors-
+      // each processor executes until finished.
+      if (!update_proc()) {
         return;
       }
       // Try to get a ready thread from the current processor.
-      //    print_ready();
       if (Thread *ready = get_ready()) {
         // Switch to thread from main thread.  We always save into
-        // _main, so that we can clobber current.
+        // _main, so that we can clobber current.  We update main's
+        // processor to the current processor, since the scheduler hops
+        // around so that the current processor always has at least one thread
+        // to which it can yield.
+        _main.setProc(_curproc);
         exec_ready(ready,&_main);
       } else {       
         // No thread available:  Exit.
@@ -228,16 +230,11 @@ namespace plasma {
     return (abs((p - (s - 1)) % s));
   }
 
-  // Add thread to relevant ready queue, based upon its
-  // priority.  Thread is not added if marked as done.
-  void Cluster::add_ready(Thread *t)
-  {
-    _curproc->add_ready(t);
-  }
-
   // Get next thread to execute.  Returns 0 if none available.
-  // Starts at highest priority and works downwards.
-  Thread *Cluster::get_ready()
+  // Starts at highest priority and works downwards.  This also
+  // updates the current processor, switching to one which has work
+  // to do.
+  inline Thread *Cluster::get_ready()
   {
     return _curproc->get_ready();
   }
@@ -250,30 +247,32 @@ namespace plasma {
     return _curproc->get_ready(t);
   }
 
-  // If item is non-null, then add to queue, unless no current
-  // processor exists, in which case we store it as the current processor.
+  // We only add to the queue if the processor is not already running.  This
+  // avoids duplicate entries, since many threads share a single processor.
   void Cluster::add_proc(Proc *p)
   {
-    if (p) {
-      if (!_curproc) {
-        _curproc = p;
-      } else {
-        _procs.add(p);
-      }
+    if (p && !(p->state() == Proc::Running)) {
+      p->setState(Proc::Running);
+      _procs.add(p);
     }
   }
 
-  // Gets next processor with threads to run.
-  // We return 0 if we don't find anything with any
-  // active threads.
-  inline Proc *Cluster::get_proc()
+  // Updates current processor to a new processor with threads, or else
+  // returns false if none available.
+  inline bool Cluster::update_proc()
   {
-    return _procs.get_nonempty();
-  }
-
-  Proc *Cluster::get_proc(Proc *p)
-  {
-    return _procs.get(p);
+    assert(_curproc);
+    if (_curproc->empty()) {
+      // Update state.
+      _curproc->setState(Proc::Waiting);
+      // No threads- get next processor.  We assume that this processor
+      // is stored in some waiting thread, so we can clobber this pointer.
+      if (! (_curproc = _procs.get())) {
+        // No processors in ready queue- exit.
+        return false;
+      }
+    }
+    return true;
   }
 
   // Switch to next running thread from current thread.
@@ -338,10 +337,12 @@ namespace plasma {
   {
     Thread *oldthread = (Thread*)old;         // get current thread
     oldthread->destroy();                     // free stack
-    // For every waiting thread, add it back to the ready queue.
+    // For every waiting thread, add it back to the ready queue of its parent processor.
+    // Then make sure that the processor is running.
     while (Thread *next = oldthread->get_waiter()) {
       next->setHandle(oldthread->handle());
-      thecluster.add_ready(next);
+      next->proc()->add_ready(next);
+      thecluster.add_proc(next->proc());
     }
     if (!thecluster.in_scheduler()) {
       // If we're not in (switching to) the scheduler, make sure that preemption
@@ -372,7 +373,8 @@ namespace plasma {
   {
     Thread *oldthread = (Thread*)old;
     oldthread->save(sptr);                        // save stack pointer
-    thecluster.add_ready(oldthread);               // place in ready queue
+    oldthread->proc()->add_ready(oldthread);      // place in ready queue
+    thecluster.add_proc(oldthread->proc());       // make sure parent proc is running.
     if (!thecluster.in_scheduler()) {
       // If we're not in (switching to) the scheduler, make sure that preemption
       // is on.  Otherwise, the scheduler will run and unlock the cluster once

@@ -18,9 +18,6 @@ namespace plasma {
 
     // Get next item from head.
     Proc *get() { return reinterpret_cast<Proc*>(Queue::get()); };
-    // Get next non-empty item.  Returns 0 if queue is empty or
-    // no items have any threads.
-    Proc *get_nonempty();
     // Get if it exists in queue.  Removes it.
     // Returns 0 if not in queue.
     Proc *get(Proc *t) { return reinterpret_cast<Proc*>(Queue::get(reinterpret_cast<QBase*>(t))); };

@@ -1,3 +1,35 @@
+2004-06-02  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Updated the scheduler to work in the way described by Pete
+	Wilson: 
+
+	A procesor works until all of its threads are finished,
+	then a new processor is selected.  If none are available, we
+	exit.  The scheduling thread hops to whatever the current
+	processor is, so we know that there's always a thread to yield to.
+
+	This means that we do *not* timeslice between processors, only
+	between threads in the current processor.  As before, we respect
+	priorities.
+
+	To implement this, each Proc class has a state variable.  When we
+	add a processor (Cluster::add_proc) we set its state to Running
+	and add it to the Cluster's processor ready queue.  The scheduler
+	calls update_proc before it gets the next thread to run- this
+	checks to see if the current processor has any threads.  If not,
+	we set its state to Waiting and we get another processor, exiting
+	if no more exist.
+
+	Each Thread now has a pointer to its parent processor, which we
+	use to ensure that when a thread is awoken, its processor is on
+	the run queue.  We can always call Cluster::add_proc b/c if the
+	processor is already running, it's not added again.
+
+	The scheduler thread, since it hops between processors, has its
+	parent thread updated to the current processor by the scheduler,
+	so that when we yield to it, it always takes us to the current
+	processor.
+	
 2004-06-01  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added the "on" block, which allows users to specify a target

@@ -106,10 +106,11 @@ extern int pMain(int,const char *[]);
 // routine with argc and argv.
 class StartThread : public Thread {
 public:
-  StartThread(int argc,const char **argv) :
+  StartThread(int argc,const char **argv,Proc *p) :
     _argc(argc), _argv(argv) 
   {
     realize(user,this);
+    setProc(p);
   };
 private:
   static void user(void *a) {
@@ -147,13 +148,14 @@ int main(int argc,const char *argv[])
     pSetup(configParms);
 
     // Initialize process system.
-    thesystem.init(configParms);
-    thecluster.init(configParms);
+    Proc::init(configParms);
 
-    // This is the default processor object- it's initialized after
-    // the cluster so that we get the number of priorities.
-    // The act of creating the object adds it to the cluster's processor queue.
+    // Default processor.  Created after call to init so that we
+    // have the correct number of priorities set.
     Proc processor;
+
+    thesystem.init(configParms);
+    thecluster.init(configParms,&processor);
 
     sig_int  = (void*)signal(SIGINT, SA_HANDLER(shutdown));  // ctrl c
     sig_term = (void*)signal(SIGTERM, SA_HANDLER(shutdown)); // kill
@@ -162,8 +164,8 @@ int main(int argc,const char *argv[])
     sig_chld = (void*)signal(SIGCHLD, SA_HANDLER(shutdown)); // death of child
     sig_hup  = (void*)signal(SIGHUP, SA_HANDLER(shutdown));  // termination triggered
 
-    StartThread *st = new StartThread(argc,argv);
-    thecluster.add_ready(st);
+    StartThread *st = new StartThread(argc,argv,&processor);
+    processor.add_ready(st);
     thecluster.scheduler();             // execute thread scheduler 
     delete st;
     return (thesystem.retcode());

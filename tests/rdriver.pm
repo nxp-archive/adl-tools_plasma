@@ -65,7 +65,8 @@ doTest(@tests_list);
     checker:  If present, this should be a function reference.  The function is called
               with the test output as its argument and should die if an error occurs.
     fail   :  If this is 1 then the cmd run is expected to have a non-zero return value. The
-              test will fail if 0 is returned.
+              test will fail if 0 is returned.  The checking commands will still be executed
+              if they are present.
     temps   : Specify temporary files.  These will be unlinked after the test is complete,
               unless the --keepoutput option is set on the command-line.
 
@@ -111,8 +112,8 @@ sub error {
   print shift;
   print "  Executed command:  '$cmd'\n";
   ++$fails;
-}
-;
+  die;
+};
 
 use strict;
 
@@ -141,12 +142,13 @@ sub doTest($) {
 
     my $failokay = ($t->{fail});
     #print "Output:\n\n$output\n\n";
-    if (($? >> 8) && !($failokay)) {
-      error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
-    }
-    if ( (($? >> 8) == 0) && $failokay) {
-      error (" Test did not fail but was expected to.  Return code was $?. Output is:\n\n$output\n");
-    } else {
+    eval {
+      if (($? >> 8) && !($failokay)) {
+	error (" Test failed and was not expected to.  Return code was $?. Output is:\n\n$output\n");
+      }
+      if ( (($? >> 8) == 0) && $failokay) {
+	error (" Test did not fail but was expected to.  Return code was $?. Output is:\n\n$output\n");
+      }
       if ( $t->{diff} ) {
 	error() if (!doDiff($output,$t->{diff},$t->{dpfx},$t->{cmts}));
       }
@@ -160,7 +162,7 @@ sub doTest($) {
 	}
 	print "  ...checker test passed.\n";
       }
-    }
+    };
     # Remove listed temporary files unless overridden by the user.
     if (!$keepoutput) {
       for (@{ $t->{temps} }) {
@@ -240,7 +242,7 @@ sub get_run_list {
   my $tests = shift;
   my $size = scalar( @$tests );
   my (%includes, %excludes);
-  my (@ilist,@xlist,@slist);
+  my (@ilist,@xlist,@slist,@rlist);
   my ($help,$man,$list);
 
   # Process the command-line options, generating up a 
@@ -254,6 +256,7 @@ sub get_run_list {
        "t|tests=s"     => \@ilist,
        "x|excludes=s"  => \@xlist,
        "s|string=s"    => \@slist,
+       "r|regex=s",    => \@rlist,
        "ko|keepoutput" => \$keepoutput,
       )) {
     printhelp(1,1);
@@ -323,6 +326,14 @@ sub get_run_list {
 	# Have substrings, so do search.
 	for my $s (@slist) {
 	  if ( index($test->{cmd},$s) >= 0) {
+	    $newtests{$i+1} = $test;
+	    last;
+	  }
+	}
+      } elsif (@rlist) {
+	# Have regular expressions, so do search.
+	for my $s (@rlist) {
+	  if ( $test->{cmd} =~ /$s/ ) {
 	    $newtests{$i+1} = $test;
 	    last;
 	  }
