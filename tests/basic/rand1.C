@@ -163,3 +163,8 @@ void testRand(const char *msg,RandBase &r1,RandBase &r2,bool testrev)
 
   cout << msg << ":  All tests pass." << endl;
 }
+
+int pMain(int argc,const char *[])
+{
+  return 0;
+}

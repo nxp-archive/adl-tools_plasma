@@ -1,10 +1,24 @@
 
 CLEANFILES= *.ii
 
+PLASMA = $(top_srcdir)/parser/plasma
+
+AM_LDFLAGS = -L$(top_srcdir)/src/.libs -Wl,-R$(top_srcdir)/src/.libs \
+	-L$(top_srcdir)/qt/.libs -Wl,-R$(top_srcdir)/qt/.libs \
+	-L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
+LDADD =  -lplasma -lqt -lgc -ldl
+
+CXXLD = $(CXX)
+LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+
+# Use this for libtool linking- I didn't want the wrapper scripts, so I just do it manually.
+#LDADD = $(top_srcdir)/src/libplasma.la $(top_srcdir)/qt/libqt.la $(top_srcdir)/gc/libgc.la -ldl
+#LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
+
 .pa.o:
 	if LD_LIBRARY_PATH=$(top_srcdir)/parser \
-	$(OCC) -u.pa -c -SPlasma -SWrapper -SMutex -STMutex \
-	-d-include$(top_srcdir)/src/plasma-interface.h -I$(top_srcdir)/src -I$(top_srcdir)/gc/include $(INCLUDES) \
+	$(PLASMA) -u.pa -c -d-include$(top_srcdir)/src/plasma-interface.h -I$(top_srcdir)/src -I$(top_srcdir)/gc/include $(INCLUDES) \
 	-d"-MT $@" -d-MD -d-MP -d"-MF$(DEPDIR)/$*.Tpo" -- $(CXXFLAGS) -o $@ $< ; \
 	then mv "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po" ; \
 	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \

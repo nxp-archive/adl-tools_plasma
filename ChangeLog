@@ -1,3 +1,10 @@
+2004-07-15  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Converted over to using libtool.  The main parser/compiler is
+	now statically linked.  Installation seems to work.  I also fixed
+	up the root makefile so that remaking after a change to
+	configure.ac will work properly.
+
 2004-07-14  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Added line directives to plasma output so that debugging and

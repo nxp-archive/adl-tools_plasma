@@ -19,10 +19,4 @@ DEP_FILES=\
 
 include ./$(DEPDIR)/eav.Po
 
-AM_LDFLAGS = -L$(top_srcdir)/src -L$(top_srcdir)/qt -L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
-LDADD =  -lplasma -lqt  -lgc -ldl
-
-CXXLD = $(CXX)
-LINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-
 include $(top_srcdir)/tests/Makefile.rules

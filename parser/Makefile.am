@@ -1,18 +1,17 @@
 
-pkglib_PROGRAMS = Plasma.so Wrapper.so Mutex.so TMutex.so 
+bin_PROGRAMS = plasma
 
-Plasma_so_SOURCES = \
+plasma_SOURCES = \
 	Plasma.mc \
-	VarWalker.mc
-
-Wrapper_so_SOURCES = \
-	Wrapper.mc
-
-Mutex_so_SOURCES = \
-	Mutex.mc
-
-TMutex_so_SOURCES = \
+	VarWalker.mc \
+	Wrapper.mc \
+	Mutex.mc \
 	TMutex.mc
+
+plasma_LDADD = \
+	$(OCCLIBS)
+
+plasma_LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
 
 noinst_HEADERS = \
 	Plasma.h \
@@ -22,8 +21,6 @@ noinst_HEADERS = \
 	LdLeaf.h
 
 CLEANFILES= *.ii *-init.cc *.so
-
-CXXLINK = $(CXX) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS)
 
 am__depfiles_maybe = depfiles
 
@@ -45,16 +42,3 @@ include ./$(DEPDIR)/TMutex.Po
 	then mv "$(DEPDIR)/$*.Tpo" "$(DEPDIR)/$*.Po" ; \
 	else rm -f "$(DEPDIR)/$*.Tpo"; exit 1; \
 	fi	
-
-Plasma.so: $(Plasma_so_OBJECTS)
-	$(CXXLINK) -shared -o $@ $(Plasma_so_OBJECTS) $(Plasma_so_LDFLAGS) $(Plasma_so_LDADD)
-
-Wrapper.so: $(Wrapper_so_OBJECTS)
-	$(CXXLINK) -shared -o $@ $(Wrapper_so_OBJECTS) $(Wrapper_so_LDFLAGS) $(Wrapper_so_LDADD)
-
-Mutex.so: $(Mutex_so_OBJECTS)
-	$(CXXLINK) -shared -o $@ $(Mutex_so_OBJECTS) $(Mutex_so_LDFLAGS) $(Mutex_so_LDADD)
-
-TMutex.so: $(TMutex_so_OBJECTS)
-	$(CXXLINK) -shared -o $@ $(TMutex_so_OBJECTS) $(TMutex_so_LDFLAGS) $(TMutex_so_LDADD)
-

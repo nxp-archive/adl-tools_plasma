@@ -10,15 +10,19 @@
 
 #include "opencxx/ptree.h"
 
+namespace Opencxx {
+  class Environment;
+}
+
 // This derived class exists so that the double-dispatch mechanism will
 // end up calling TranslateVariable.  By default, you generally just get
 // a character string, which won't work when there are nested par blocks.
-class LdLeaf : public DupLeaf {
+class LdLeaf : public Opencxx::DupLeaf {
 public:
   LdLeaf(char *s,int l) : DupLeaf(s,l) {};
   int Write(std::ostream&, int);
 };
 
-Ptree *lineDirective(Environment *env,Ptree *expr);
+Opencxx::Ptree *lineDirective(Opencxx::Environment *env,Opencxx::Ptree *expr);
 
 #endif

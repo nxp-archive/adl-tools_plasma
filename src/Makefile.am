@@ -1,8 +1,8 @@
-pkglib_LIBRARIES = libplasma.a
+pkglib_LTLIBRARIES = libplasma.la
 
-libplasma_a_CPPFLAGS= -I../qt -I../gc/include
+libplasma_la_CPPFLAGS= -I../qt -I../gc/include
 
-libplasma_a_SOURCES = \
+libplasma_la_SOURCES = \
 	Interface.C \
 	Init.C \
 	Cluster.C \

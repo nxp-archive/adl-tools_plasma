@@ -33,7 +33,7 @@ SHELL = /bin/sh
 srcdir = .
 top_srcdir = .
 
-prefix = /usr/local
+prefix = /proj/ppctools/tlv/u/bkahne/p
 exec_prefix = ${prefix}
 
 bindir = ${exec_prefix}/bin

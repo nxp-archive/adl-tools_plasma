@@ -251,3 +251,8 @@ void printDbl(unsigned seed)
     x += bin;
   }
 }
+
+int pMain(int argc,const char *[])
+{
+  return 0;
+}
