@@ -1,6 +1,6 @@
 #! /bin/sh -x
 
-rm -f Makefile.md README.md qtmd.h qtmdb.s qtmdc.c qtmds.s configuration
+rm -f Makefile.md README.md qtmd.h qtmdb.S qtmdc.c qtmds.S configuration
 
 case $1 in
 	axp*)
@@ -22,8 +22,8 @@ case $1 in
 
 		ln -s md/axp.h qtmd.h
 		ln -s md/axp.c qtmdc.c
-		ln -s md/axp.s qtmds.s
-		ln -s md/axp_b.s qtmdb.s
+		ln -s md/axp.S qtmds.S
+		ln -s md/axp_b.S qtmdb.S
 		ln -s md/axp.README README.md
 		iter_init=1000000000
 		iter_runone=10000000
@@ -58,8 +58,8 @@ case $1 in
 
 		ln -s md/hppa.h qtmd.h
 		ln -s md/null.c qtmdc.c
-		ln -s md/hppa.s qtmds.s
-		ln -s md/hppa_b.s qtmdb.s
+		ln -s md/hppa.S qtmds.S
+		ln -s md/hppa_b.S qtmdb.S
 		iter_init=10000000
 		iter_runone=1000000
 		iter_blockint=1000000
@@ -82,13 +82,13 @@ case $1 in
 		case $1 in
 			iX86-ss*)
 				: "Assemlber comments '//'"
-				sed 's/\/\*/\/\//' < md/i386.s > qtmds.s
-				sed 's/\/\*/\/\//' < md/i386_b.s > qtmdb.s
+				sed 's/\/\*/\/\//' < md/i386.S > qtmds.S
+				sed 's/\/\*/\/\//' < md/i386_b.S > qtmdb.S
 				;;
 				
 			*)
-				ln -s md/i386.s qtmds.s
-				ln -s md/i386_b.s qtmdb.s
+				ln -s md/i386.S qtmds.S
+				ln -s md/i386_b.S qtmdb.S
 				;;
 		esac
 		: "Intel 80386 and compatibles (not '286...)"
@@ -119,8 +119,8 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/m68k.h qtmd.h
 		ln -s md/null.c qtmdc.c
-		ln -s md/m68k.s qtmds.s
-		ln -s md/m68k_b.s qtmdb.s
+		ln -s md/m68k.S qtmds.S
+		ln -s md/m68k_b.S qtmdb.S
 		ln -s md/null.README README.md
 		;;
 
@@ -129,8 +129,34 @@ case $1 in
 		ln -s md/m88k.Makefile Makefile.md
 		ln -s md/m88k.h qtmd.h
 		ln -s md/m88k.c qtmdc.c
-		ln -s md/m88k.s qtmds.s
-		ln -s md/m88k_b.s qtmdb.s
+		ln -s md/m88k.S qtmds.S
+		ln -s md/m88k_b.S qtmdb.S
+		ln -s md/null.README README.md
+		iter_init=1000000
+		iter_runone=100000
+		iter_blockint=100000
+		iter_blockfloat=100000
+		iter_vainit0=100000
+		iter_vainit2=100000
+		iter_vainit4=100000
+		iter_vainit8=100000
+		iter_vastart0=100000
+		iter_vastart2=100000
+		iter_vastart4=100000
+		iter_vastart8=100000
+		iter_bench_call_reg=100000000
+		iter_bench_call_imm=100000000
+		iter_bench_add=1000000000
+		iter_bench_load=100000000
+		;;
+
+	ppc)
+		: "PowerPC"
+		ln -s md/ppc.Makefile Makefile.md
+		ln -s md/ppc.h qtmd.h
+		ln -s md/ppc.S qtmds.S
+		ln -s md/ppc_b.S qtmdb.S
+		ln -s md/null.c qtmdc.c
 		ln -s md/null.README README.md
 		iter_init=1000000
 		iter_runone=100000
@@ -157,17 +183,17 @@ case $1 in
 			mips-irix5*)
 				: "Silicon Graphics Irix with dynamic linking"
 				: "Use mips for irix4."
-				ln -s md/mips-irix5.s qtmds.s
+				ln -s md/mips-irix5.S qtmds.S
 				;;
 			*)
-				ln -s md/mips.s qtmds.s
+				ln -s md/mips.S qtmds.S
 				;;
 		esac
 
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/mips.h qtmd.h
 		ln -s md/null.c qtmdc.c
-		ln -s md/mips_b.s qtmdb.s
+		ln -s md/mips_b.S qtmdb.S
 		ln -s md/null.README README.md
 		iter_init=10000000
 		iter_runone=10000000
@@ -191,13 +217,13 @@ case $1 in
 		: "SPARC processors"
 		case $1 in
 			sparc-os2*)
-				sed 's/_qt_/qt_/' md/sparc.s > qtmds.s
-				sed 's/_b_/b_/' md/sparc_b.s > qtmdb.s
+				sed 's/_qt_/qt_/' md/sparc.S > qtmds.S
+				sed 's/_b_/b_/' md/sparc_b.S > qtmdb.S
 				ln -s md/solaris.README README.md
 				;;
 			*)
-				ln -s md/sparc.s qtmds.s
-				ln -s md/sparc_b.s qtmdb.s
+				ln -s md/sparc.S qtmds.S
+				ln -s md/sparc_b.S qtmdb.S
 				ln -s md/null.README README.md
 				;;
 		esac
@@ -228,8 +254,8 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/vax.h qtmd.h
 		ln -s md/null.c qtmdc.c
-		ln -s md/vax.s qtmds.s
-		ln -s md/vax_b.s qtmdb.s
+		ln -s md/vax.S qtmds.S
+		ln -s md/vax_b.S qtmdb.S
 		ln -s md/null.README README.md
 		iter_init=1000000
 		iter_runone=100000
@@ -255,8 +281,8 @@ case $1 in
 		ln -s md/ksr1.Makefile Makefile.md
 		ln -s md/ksr1.h qtmd.h
 		ln -s md/null.c qtmdc.c
-		ln -s md/ksr1.s qtmds.s
-		ln -s md/ksr1_b.s qtmdb.s
+		ln -s md/ksr1.S qtmds.S
+		ln -s md/ksr1_b.S qtmdb.S
 		ln -s md/null.README README.md
 		iter_init=1000000
 		iter_runone=100000
@@ -282,7 +308,7 @@ case $1 in
 		;;
 
 	*)
-		echo "Unknown configuration"
+		echo "Unknown configuration:  $1"
 		exit 1
 		;;
 esac

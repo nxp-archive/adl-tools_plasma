@@ -3,7 +3,7 @@ lib_LTLIBRARIES = libqt.la
 libqt_la_SOURCES = \
 	qt.c \
 	qtmdc.c \
-	qtmds.s
+	qtmds.S
 
 noinst_HEADERS = \
 	qt.h \

@@ -1,3 +1,10 @@
+2004-10-07  Brian Kahne  <bkahne@ibmoto.com>
+
+	* Added QuickThreads PowerPC port to the qt directory.  This
+	doesn't support varargs, but that should be okay, since we never
+	use it.  Note:  This has only been tested a little bit, and not
+	with these files here- that's the next step!
+
 2004-10-05  Brian Kahne  <bkahne@ibmoto.com>
 
 	* Moved the energy API out of Interface and Proc and into a

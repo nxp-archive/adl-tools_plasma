@@ -19,6 +19,10 @@ if [[ x$ac_qt_host = x ]] ; then
     i686) 
 	ac_qt_host="iX86"
 	;;
+    powepc)
+	ac_qt_host="ppc"
+	CFLAGS="${CFLAGS} -mregnames"
+	;;
     *)  
 	echo ""
 	echo "Could not deduce the proper host type for Quickthreads configuration."
