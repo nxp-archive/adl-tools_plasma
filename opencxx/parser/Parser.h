@@ -152,7 +152,7 @@ public:
     bool rThrowExpr(Ptree*&);
     bool rSizeofExpr(Ptree*&);
     bool rTypeidExpr(Ptree*&);
-    bool optTypeofExpr(Ptree*&);
+    bool optTypeofExpr(Ptree*&,Encoding &);
     bool isAllocateExpr(int);
     bool rAllocateExpr(Ptree*&);
     bool rUserdefKeyword(Ptree*&);

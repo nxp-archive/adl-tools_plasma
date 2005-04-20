@@ -1106,11 +1106,59 @@ namespace Opencxx
 
 class Token;
 
+class LeafUserKeyword : public LeafReserved {
+public:
+    LeafUserKeyword(Token& t) : LeafReserved(t) {}
+    LeafUserKeyword(char* str, int len) : LeafReserved(str, len) {}
+    int What() { return UserKeyword; }
+};
+
+}
+
+
+
+namespace Opencxx
+{
+
+class Token;
+
 class LeafUserKeyword2 : public LeafReserved {
 public:
     LeafUserKeyword2(Token& t) : LeafReserved(t) {}
     LeafUserKeyword2(char* str, int len) : LeafReserved(str, len) {}
     int What() { return UserKeyword2; }
+};
+
+}
+
+
+
+namespace Opencxx
+{
+
+class Token;
+
+class LeafUserKeyword3 : public LeafReserved {
+public:
+    LeafUserKeyword3(Token& t) : LeafReserved(t) {}
+    LeafUserKeyword3(char* str, int len) : LeafReserved(str, len) {}
+    int What() { return UserKeyword3; }
+};
+
+}
+
+
+
+namespace Opencxx
+{
+
+class Token;
+
+class LeafUserKeyword6 : public LeafReserved {
+public:
+    LeafUserKeyword6(Token& t) : LeafReserved(t) {}
+    LeafUserKeyword6(char* str, int len) : LeafReserved(str, len) {}
+    int What() { return UserKeyword6; }
 };
 
 }

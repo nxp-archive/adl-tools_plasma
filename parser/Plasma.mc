@@ -63,6 +63,7 @@ bool Plasma::Initialize()
   RegisterNewForStatement("afor");
   RegisterNewForStatement("priafor");
   RegisterNewClosureStatement("port");
+  RegisterNewClosureStatement("let");
   RegisterMetaclass("pSpawner","Plasma");
   return true;
 }
@@ -97,7 +98,10 @@ Ptree* Plasma::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* rest)
 {
   using namespace PtreeUtil;
 
-  if (Eq(keyword,"par")) {
+  if (Eq(keyword,"let")) {
+    return TranslateLet(env,keyword,rest);
+  }
+  else if (Eq(keyword,"par")) {
     return TranslatePar(env,keyword,rest);
   }
   else if (Eq(keyword,"pfor")) {
@@ -135,6 +139,63 @@ void dumpEnv(Environment *env)
   cerr << "-------------" << endl;
 }
 
+// This translates a let block.  We use gcc's typeof operator to derive the
+// type of the rhs for the new variable.
+Ptree* Plasma::TranslateLet(Environment* env,Ptree* keyword, Ptree* rest)
+{
+  using namespace PtreeUtil;
+
+  Ptree *vars, *block;
+  if (!Match(rest,"[( %? ) %? ]",&vars,&block)) {
+    ErrorMessage(env,"bad let block",0,keyword);
+    return 0;
+  }
+
+  PtreeIter iter(vars);
+  Ptree *p;
+  PtreeArray newdecls;
+
+  while( (p = iter()) != 0) {
+    Ptree *var,*type,*rhs;
+    if (!Match(p,"[%? [%?] = %?]",&type,&var,&rhs)) {
+      ErrorMessage(env,"Malformed decl clause in let block:  ",p,keyword);
+      return 0;
+    }
+    // If no type was specified (the usual case), then the variable name
+    // is actually parsed as the type name.
+    if (!var) {
+      var = type;
+      type = Ptree::qMake("typeof(`rhs`)");
+    }
+    // Create the new declaration and add to our array.
+    Ptree *newdecl = Ptree::qMake("`type` `var` = `rhs`;");
+    // Add it to the environment so that we can translate the body and it
+    // will recognize it.
+    Class *tclass = new Class(env,type->ToString());
+    env->RecordVariable(var->ToString(),tclass);
+    newdecls.Append(newdecl);
+    // Absorb the comma.
+    if ( !iter() ) {
+      break;
+    }
+  }
+
+  Ptree *start = List(Ptree::qMake("//Begin let block\n{\n"));
+  Ptree *cur = start;
+
+  Ptree *b2 = TranslateExpression(env,block);
+
+  for (unsigned i = 0; i != newdecls.Number(); ++i) {
+    cur = lappend(cur,Ptree::qMake("`newdecls[i]`\n"));
+  }
+  
+  cur = lappend(cur,lineDirective(env,block));
+  cur = lappend(cur,Ptree::qMake("`b2`\n"));
+  cur = lappend(cur,Ptree::qMake("}\n"));
+ 
+  return start;
+}
+
 // This translates plain par statements.  The semantics are that each expression
 // is launched as a separate thread.  All threads must finish before the par block
 // is completed and execution continues.
@@ -154,8 +215,6 @@ Ptree* Plasma::TranslatePar(Environment* env,Ptree* keyword, Ptree* rest)
 
   Ptree *start = List(Ptree::qMake("//Begin par block\n"));
   Ptree *cur = start;
-
-  //  dumpEnv(env);
 
   // This walker will be used to walk each expression that's an element of
   // the par block.  It just records what variables are used that occur in the

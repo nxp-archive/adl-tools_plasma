@@ -1116,6 +1116,39 @@ the collector will collect it when it is safe to do so.])
 
 )
 
+(section :title "Miscellaneous Language Features"
+
+(p [Plasma has a ,(code [let]) block which performs simple type inferencing.  The
+format of the block is:])
+
+(cprog [
+
+let (<decl> \[,<decl>\]) { 
+  <block>
+}
+
+])
+
+(p [where ,(code [<decl>]) may be either a variable declaration with a type, e.g. ,(code
+[int result = 2]), or without a type.  If a type is not present, the type will
+be inferred from the type of the initializing expression.])
+
+(p [A simple example is:])
+
+(cprog [
+
+let (a = 1, b = 2.2, c = foo()) {
+   ...
+}
+
+])
+
+(p [In the above example, ,(code [a]) will have a type of ,(code [int]), ,(code [b]) will
+have a type of ,(code [double]), and ,(code [c])'s type will be that of the return
+type of ,(code [foo]).])
+
+)
+
 (section :title "Library Features"
 
 (p [This section describes functions and classes provided by the Plasma standard

@@ -111,7 +111,7 @@ set_word() { ##########################################################
 keywords="\
   AUTO BOOLEAN CHAR WCHAR CONST DOUBLE EXTERN FLOAT FRIEND \
   INLINE INT LONG MUTABLE NAMESPACE PRIVATE PROTECTED PUBLIC REGISTER SHORT \
-  SIGNED STATIC UNSIGNED USING VIRTUAL VOID VOLATILE UserKeyword2"
+  SIGNED STATIC UNSIGNED USING VIRTUAL VOID VOLATILE UserKeyword UserKeyword2 UserKeyword3 UserKeyword6"
 header_template='
 
 namespace Opencxx

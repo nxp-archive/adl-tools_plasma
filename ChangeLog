@@ -1,3 +1,12 @@
+2005-04-20  Brian Kahne  <bkahne@freescale.com>
+
+	* Added support for a "let" statement.  It has the form of:
+
+	let (decl [, decl ...]) { body }
+
+	where decl is a variable declaration with or without a type.  If
+	no type is present, its type is inferenced using gcc's typeof operator.
+
         ====== plasma release 0.8.17 (v0_8_17) on Linux (cde-tx32-ldt189) ======
 
 2005-03-16  Brian Kahne  <bkahne@ibmoto.com>

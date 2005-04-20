@@ -571,62 +571,62 @@ Ptree* Walker::TranslateArgDeclList2(bool record, Environment* e,
 				     bool fill_args, int arg_name,
 				     Ptree* args)
 {
-    Ptree* rest;
-    Ptree* rest2;
+  Ptree* rest;
+  Ptree* rest2;
 
-    if(args == 0)
+  if(args == 0)
 	return args;
-    else{
+  else{
 	Ptree *a, *a2;
 	a = a2 = args->Car();
 	if(args->Cdr() == 0)
-	    rest = rest2 = 0;
+      rest = rest2 = 0;
 	else{
-	    rest = args->Cdr()->Cdr();	// skip ","
-	    rest2 = TranslateArgDeclList2(record, e, translate, fill_args,
-					  arg_name + 1, rest);
-	    if(rest == rest2)
+      rest = args->Cdr()->Cdr();	// skip ","
+      rest2 = TranslateArgDeclList2(record, e, translate, fill_args,
+                                    arg_name + 1, rest);
+      if(rest == rest2)
 		rest = rest2 = args->Cdr();
-	    else
+      else
 		rest2 = PtreeUtil::Cons(args->Cdr()->Car(), rest2);
 	}
 
 	bool is_ellipsis = a->IsLeaf();		// a may be "..."
 	if(is_ellipsis)
-	    /* do nothing */;
+      /* do nothing */;
 	else if(a->Car()->IsA(ntUserdefKeyword)){
-	    if(record)
+      if(record)
 		e->RecordDeclarator(PtreeUtil::Third(a));
 
-	    if(translate){
+      if(translate){
 		a2 = a->Cdr();
 		if(fill_args)
-		    a2 = FillArgumentName(a2, PtreeUtil::Second(a2), arg_name);
-	    }
+          a2 = FillArgumentName(a2, PtreeUtil::Second(a2), arg_name);
+      }
 	}
 	else if(a->Car()->IsA(REGISTER)){
-	    if(record)
+      if(record)
 		e->RecordDeclarator(PtreeUtil::Third(a));
 
-	    if(translate && fill_args){
+      if(translate && fill_args){
 		a2 = FillArgumentName(a, PtreeUtil::Third(a), arg_name);
 		if(a != a2)
-		    a2 = PtreeUtil::Cons(PtreeUtil::First(a), a2);
-	    }
+          a2 = PtreeUtil::Cons(PtreeUtil::First(a), a2);
+      }
 	}
 	else{
-	    if(record)
+      if(record)
 		e->RecordDeclarator(PtreeUtil::Second(a));
 
-	    if(translate && fill_args)
+      if(translate && fill_args)
 		a2 = FillArgumentName(a, PtreeUtil::Second(a), arg_name);
 	}
 
 	if(a != a2 || rest != rest2)
-	    return PtreeUtil::Cons(a2, rest2);
+      return PtreeUtil::Cons(a2, rest2);
 	else
-	    return args;
-    }
+      return args;
+  }
 }
 
 Ptree* Walker::FillArgumentName(Ptree* arg, Ptree* d, int arg_name)

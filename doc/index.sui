@@ -23,6 +23,7 @@
     ("Power Modeling" :file "index-1.html" :mark "Power Modeling" :class "section")
     ("Resource Modeling" :file "index-1.html" :mark "Resource Modeling" :class "section")
     ("Garbage Collection" :file "index-1.html" :mark "Garbage Collection" :class "section")
+    ("Miscellaneous Language Features" :file "index-1.html" :mark "Miscellaneous Language Features" :class "section")
     ("Library Features" :file "index-1.html" :mark "Library Features" :class "section")
     ("Clocked Hardware Modeling" :file "index-2.html" :mark "Clocked Hardware Modeling" :class "section")
     ("Network System Modeling" :file "index-2.html" :mark "Network System Modeling" :class "section")

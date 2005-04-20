@@ -207,6 +207,7 @@ namespace Opencxx
   */
   bool Parser::rTypeSpecifier(Ptree*& tspec, bool check, Encoding& encode)
   {
+    tspec = 0;
     Ptree *cv_q, *cv_q2;
 
     if(!optCvQualify(cv_q) || !optIntegralTypeOrClassSpec(tspec, encode))
@@ -220,7 +221,7 @@ namespace Opencxx
           return false;
       }
 
-      if (!optTypeofExpr(tspec)) {
+      if (!optTypeofExpr(tspec,encode)) {
         if(!rName(tspec, encode)) {
           return false;
         }
@@ -1006,7 +1007,7 @@ namespace Opencxx
     Ptree *type_name, *decl, *cv_q2;
     Token tk;
 
-    if (!optTypeofExpr(type_name)) {
+    if (!optTypeofExpr(type_name,type_encode)) {
       if(!rName(type_name, type_encode)) {
         return false;
       }
@@ -1853,23 +1854,7 @@ namespace Opencxx
         name = 0;
         // gcc keyword typeof(rName) means type of the given name
         if(lex->LookAhead(0) == TYPEOF){
-          t = lex->GetToken(tk);
-          if ((t = lex->GetToken(tk2)) != '(')
-            return false;
-          Ptree* type = PtreeUtil::List(new Leaf(tk2));
-          Encoding name_encode;
-          if (!rName(name, name_encode))
-            return false;
-          if (!name->IsLeaf())
-            name = new PtreeName(name, name_encode.Get());
-          else
-            name = new PtreeName(PtreeUtil::List(name), name_encode.Get());
-          type = PtreeUtil::Snoc(type, name);
-          if ((t = lex->GetToken(tk2)) != ')')
-            return false;
-          type = PtreeUtil::Snoc(type, new Leaf(tk2));
-          name = new PtreeTypeofExpr(new Leaf(tk), type);
-          return true;
+          return optTypeofExpr(name,encode);
         }
       }
 
@@ -3411,7 +3396,7 @@ namespace Opencxx
     : TYPEOF '(' expression ')'
     | TYPEOF '(' type.name ')'
   */
-  bool Parser::optTypeofExpr(Ptree*& exp)
+  bool Parser::optTypeofExpr(Ptree*& exp, Encoding& encode)
   {
     Token tk;
 
@@ -3422,6 +3407,8 @@ namespace Opencxx
 
     lex->GetToken(tk);
 
+    // Type encoding is a bit simplistic right now:  We just
+    // use SimpleName to record the entire expression.
     if(lex->LookAhead(0) == '('){
       Ptree* tname;
       Ptree* subexp;
@@ -3434,6 +3421,8 @@ namespace Opencxx
           exp = new PtreeTypeofExpr(new Leaf(tk),
                                     PtreeUtil::List(new Leaf(op), tname,
                                                     new Leaf(cp)));
+          char *str = exp->ToString();
+          encode.AppendWithLen(str,strlen(str)); 
           return true;
 	    }
       lex->Restore(pos);
@@ -3444,6 +3433,8 @@ namespace Opencxx
                                     PtreeUtil::List(
                                                     PtreeUtil::List(new Leaf(op), subexp, new Leaf(cp))
                                                     ));
+          char *str = exp->ToString();
+          encode.AppendWithLen(str,strlen(str)); 
           return true;
 	    }
       lex->Restore(pos);
@@ -3955,7 +3946,7 @@ namespace Opencxx
     
     lex->GetToken(tk);
     
-    keyword = new LeafReserved(tk);
+    keyword = new LeafUserKeyword6(tk);
     if (!rCompoundStatement(body))
       return false;
     st = PtreeUtil::List(keyword,body);
@@ -3981,7 +3972,7 @@ namespace Opencxx
 
     switch(t){
     case UserKeyword :
-      keyword = new LeafReserved(tk);
+      keyword = new LeafUserKeyword(tk);
       if(!rFunctionArguments(exp))
 	    return false;
       goto rest;
@@ -4024,7 +4015,7 @@ namespace Opencxx
       if(!rCompoundStatement(body))
 	    return false;
 
-      st = PtreeUtil::List(new Leaf(tk), new Leaf(tk2), exp, exp2,
+      st = PtreeUtil::List(new LeafUserKeyword3(tk), new Leaf(tk2), exp, exp2,
                            new Leaf(tk3), exp3, new Leaf(tk4), body);
       return true;
     default :

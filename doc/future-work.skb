@@ -311,21 +311,6 @@ int i; // Would be initialized to 0.
 	    exception.])
 	    
 	    )
-	       	       	           
-	 (item
-	    
-	    (p [A ,(code [let]) statement which would allow for the declaration
-	    of variables without explicitly stating their type will be added.
-	    The type would be implied from the type of the initializing
-	    expression.  For example:])
-	 
-	    (cprog [ 
- 
-let i = ValueCheck<int,std::bind2nd(std::equal_to<int>(),10)
- 
-])
-	       
-	    )
 	       
 	 (item
 	       

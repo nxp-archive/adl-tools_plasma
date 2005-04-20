@@ -45,6 +45,7 @@ public:
     _tstype(0),
     _penv(e->GetOuterEnvironment()), 
     _benv(e->GetBottom()),
+    _genv(0),
     _args(0),
     _handledThis(false),
     _inguard(false)
@@ -80,6 +81,7 @@ public:
   static void setPlasma(Class *c) { _plasma = c; };
 
 private:
+  Ptree *TranslateUserClosure(Ptree *s);
   Ptree *TranslateUserBlock(Ptree *s);
   Ptree *TranslateUserFor(Ptree *s);
   Ptree *TranslateUserWhile(Ptree *s);

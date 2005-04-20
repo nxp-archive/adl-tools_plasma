@@ -300,19 +300,6 @@ int i; <font color="#ffa600"><em>// Would be initialized to 0. </em></font>
 	    implemented without adding extra runtime overhead: A null-pointer
 	    access will cause a protection fault, which can then generate a C++
 	    exception.</p></li>
-<li><p>A <code>let</code> statement which would allow for the declaration
-	    of variables without explicitly stating their type will be added.
-	    The type would be implied from the type of the initializing
-	    expression.  For example:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
-<tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog"> 
- 
-let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
- 
-</pre>
-</td></tr>
-</tbody></table></td></tr>
-</tbody></table></li>
 <li><p>A <code>final</code> block will be added to the language.  This may
 	    only follow a <code>try</code> or <code>catch</code> block and will be
 	    executed whether an exception occurs or not.</p></li>
@@ -375,6 +362,6 @@ let i = ValueCheck&lt;int,std::bind2nd(std::equal_to&lt;int&gt;(),10)
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Fri Feb 18 11:12:17 2005</em>.</font></p></div>
+Last update <em>Wed Apr 20 17:55:36 2005</em>.</font></p></div>
 </body>
 </html>

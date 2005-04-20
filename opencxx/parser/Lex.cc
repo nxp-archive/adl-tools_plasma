@@ -963,6 +963,7 @@ namespace Opencxx
     { "typedef",	token(TYPEDEF) },
     { "typeid",         token(TYPEID) },
     { "typename",	token(CLASS) },	// it's not identical to class, but...
+    { "typeof",	token(TYPEOF) },
     { "union",		token(UNION) },
     { "unsigned",	token(UNSIGNED) },
     { "using",		token(USING) },

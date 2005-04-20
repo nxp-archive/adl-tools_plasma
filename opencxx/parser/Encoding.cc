@@ -51,7 +51,7 @@
   '?' no return type.  the return type of constructors
   '*' non-type template parameter
 
-  'S' singned
+  'S' signed
   'U' unsigned
   'C' const
   'V' volatile

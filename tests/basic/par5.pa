@@ -12,29 +12,31 @@ typedef vector<double> Doubles;
 struct Foo {
   void stuff() {};
   typedef vector<int> Ints;
-  void a()
+  void af()
   {
     Doubles results(5);
     par {
       {
-        double a = 1.1, b = 1.2, c = 1.3;
-        par {
-          {
-            results[0] = a;
-            cout << "Done with block " << a << ".\n";
-          }
-          {
-            for (int i = 0; i != 1; ++i) {
-              par {
-                cout << "Done with block " << b+.01 << ".\n";
-                cout << "Done with block " << b+.02 << ".\n";
-              }
+        double a = 1.1;
+        let (b = 1.2, c = 1.30) {
+          par {
+            {
+              results[0] = a;
+              cout << "Done with block " << a << ".\n";
             }
-            results[1] = b;
-          }
-          {
-            results[2] = c;
-            cout << "Done with block " << c << ".\n";
+            {
+              for (int i = 0; i != 1; ++i) {
+                par {
+                  cout << "Done with block " << b + .01 << ".\n";
+                  cout << "Done with block " << b + .02 << ".\n";
+                }
+              }
+              results[1] = b;
+            }
+            {
+              results[2] = c;
+              cout << "Done with block " << c << ".\n";
+            }
           }
         }
       }
@@ -52,27 +54,29 @@ struct Foo {
     copy(results.begin(),results.end(),oi);
     cout << endl;
   }
-  void b();
+  void bf();
 };
 
-void Foo::b()
+void Foo::bf()
 {
   Ints results(5);
   par {
     {
-      int a = 1,b=2,c=3;
-      par {
-        {
-          results[0] = a*10;
-          cout << "Done with block 10.1.\n";
-        }
-        {
-          results[1] = b*10;
-          cout << "Done with block 10.2.\n";
-        }
-        {
-          results[2] = c*10;
-          cout << "Done with block 10.3.\n";
+      int c = 3;
+      let (a = 1,b=2) {
+        par {
+          {
+            results[0] = a*10;
+            cout << "Done with block 10.1.\n";
+          }
+          {
+            results[1] = b*10;
+            cout << "Done with block 10.2.\n";
+          }
+          {
+            results[2] = c*10;
+            cout << "Done with block 10.3.\n";
+          }
         }
       }
     }
@@ -94,8 +98,8 @@ void Foo::b()
 int pMain(int argc,const char *argv[])
 {
   Foo f;
-  f.a();
-  f.b();
+  f.af();
+  f.bf();
   cout << "Done." << endl;
   return 0;
 }

@@ -6,6 +6,7 @@
 #include "VarWalker.h"
 
 #include "opencxx/Bind.h"
+#include "opencxx/PtreeIter.h"
 
 using namespace std;
 
@@ -84,6 +85,57 @@ Ptree* TsList::List(Ptree* p1, Ptree* p2, Ptree* p3, Ptree* p4)
     return new TsList(p1, TsList::List(p2, p3, p4));
 }
 
+// Unfortunately, we have to handle let statements explicitly b/c
+// we must register the variables with the environment.
+Ptree *VarWalker::TranslateUserClosure(Ptree *s)
+{
+  using namespace PtreeUtil;
+
+  Ptree *kw = s->Car();
+
+  NewScope();
+  Ptree* exp1 = Third(s);
+  Ptree* exp1t = Translate(exp1);
+  Ptree* body = Nth(s,4);
+  Ptree* bodyt = Translate(body);
+  ExitScope();
+
+  if (Eq(kw,"let")) {
+
+    PtreeIter iter(exp1);
+    Ptree *p;
+
+    while( (p = iter()) != 0) {
+      Ptree *var,*type,*rhs;
+      if (!Match(p,"[%? [%?] = %?]",&type,&var,&rhs)) {
+        ErrorMessage("Malformed decl clause in let block:  ",p,kw);
+        return 0;
+      }
+      // If no type was specified (the usual case), then the variable name
+      // is actually parsed as the type name.
+      if (!var) {
+        var = type;
+        type = Ptree::qMake("typeof(`rhs`)");
+      }
+      // Add it to the environment so that we can translate the body and it
+      // will recognize it.
+      Class *tclass = new Class(env,type->ToString());
+      env->RecordVariable(var->ToString(),tclass);
+      // Absorb the comma.
+      if ( !iter() ) {
+        break;
+      }
+    }    
+  }
+
+  if (exp1 == exp1t && body == bodyt) {
+    return s;
+  } else {
+    Ptree* rest = PtreeUtil::ShallowSubst(exp1t, exp1, bodyt, body, s->Cdr());
+    return new PtreeUserPlainStatement(kw, rest);
+  }
+}
+
 Ptree *VarWalker::TranslateUserBlock(Ptree *s)
 {
   Ptree *body = PtreeUtil::Second(s);
@@ -110,11 +162,11 @@ Ptree *VarWalker::TranslateUserFor(Ptree *s)
     ExitScope();
 
     if(exp1 == exp1t && exp2 == exp2t && exp3 == exp3t && body == body2)
-	return s;
+        return s;
     else{
-	Ptree* rest = PtreeUtil::ShallowSubst(exp1t, exp1, exp2t, exp2,
-					  exp3t, exp3, body2, body, s->Cdr());
-	return new PtreeUserPlainStatement(s->Car(), rest);
+        Ptree* rest = PtreeUtil::ShallowSubst(exp1t, exp1, exp2t, exp2,
+                                          exp3t, exp3, body2, body, s->Cdr());
+        return new PtreeUserPlainStatement(s->Car(), rest);
     }
 }
 
@@ -149,27 +201,23 @@ Ptree *VarWalker::TranslateUserWhile(Ptree *s)
 // We need to make sure that nested constructs are translated.  All we do
 // is translate the constituent items, making sure that the construct is
 // preserved so that it is handled elsewhere.
-// This is more fragile than I'd like, since there doesn't seem to be any
-// way to automatically translate a block- it has to be done differently for
-// each case.
 Ptree *VarWalker::TranslateUserPlain(Ptree *exp)
 {
   Ptree *keyword = exp->Car();
 
-  if (PtreeUtil::Eq(keyword,"par")) {
+  if (keyword->IsA(UserKeyword2)) {
+    return TranslateUserClosure(exp);
+  }
+  else if (keyword->IsA(UserKeyword6)) {
     return TranslateUserBlock(exp);
   }
-  else if (PtreeUtil::Eq(keyword,"pfor")) {
+  else if (keyword->IsA(UserKeyword3)) {
     return TranslateUserFor(exp);
   }
-  else if (PtreeUtil::Eq(keyword,"alt") || PtreeUtil::Eq(keyword,"prialt")) {
-    return TranslateUserBlock(exp);
-  }
-  else if (PtreeUtil::Eq(keyword,"afor") || PtreeUtil::Eq(keyword,"priafor")) {
-    return TranslateUserFor(exp);
-  } else if (PtreeUtil::Eq(keyword,"on")) {
+  else if (keyword->IsA(UserKeyword)) {
     return TranslateUserWhile(exp);
-  } else {
+  } 
+  else {
     return exp;
   }
 }
@@ -191,8 +239,9 @@ Ptree *VarWalker::TranslateUserStatement(Ptree *exp)
   if (object == object2 && args == args2 && body == body2) {
     return exp;
   } else {
-    return new PtreeUserStatementExpr(object2,PtreeUtil::List(op,keyword,p1,args2,p2,body2));
-  } 
+    return new PtreeUserStatementExpr(object2,PtreeUtil::List(op,keyword,p1,args2,p2,body2)
+                                      );
+  }
 }
 
 // Add 'this' pointer info to argument structures.

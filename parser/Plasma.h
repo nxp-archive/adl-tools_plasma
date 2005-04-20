@@ -65,6 +65,7 @@ public:
 
 private:
   // Translation functions for the new types introduced by Plasma.
+  Ptree* TranslateLet(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePar(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslatePfor(Environment* env,Ptree* keyword, Ptree* rest);
   Ptree* TranslateAlt(Environment* env,Ptree* keyword, Ptree* rest,bool reverse);
