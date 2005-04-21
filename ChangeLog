@@ -4,6 +4,8 @@
 
         ====== plasma release 0.8.18 (v0_8_18) on Linux (cde-tx32-ldt189) ======
 
+        ====== plasma release 0.8.18 (v0_8_18) on Linux (cde-tx32-ldt189) ======
+
 2005-04-20  Brian Kahne  <bkahne@freescale.com>
 
 	* Added support for a "let" statement.  It has the form of:
