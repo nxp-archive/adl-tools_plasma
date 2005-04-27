@@ -15,7 +15,7 @@ fi
 
 if [ x$NORECONF = x ]; then
   echo "Running autoreconf.  To skip this step, prefix script with NORECONF=1"
-  autoreconf --force --install --symlink --include=./macros || exit 1
+  autoreconf --force --install --include=./macros || exit 1
 else
   echo "Skipping autoreconf process."
 fi
