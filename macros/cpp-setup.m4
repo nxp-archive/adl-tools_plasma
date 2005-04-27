@@ -94,11 +94,11 @@ REQUIRED_MINOR=$2
 AC_MSG_CHECKING([that gcc has the required version ($REQUIRED_MAJOR.$REQUIRED_MINOR)])
 if [[ x$REQUIRED_MAJOR != x ]]; then
   if [[ $GCC_MAJOR -lt $REQUIRED_MAJOR ]]; then
-    AC_MSG_ERROR([GCC must have a minimum major version of $REQUIRED_MAJOR.])
+    AC_MSG_ERROR([GCC must have a minimum major version of $REQUIRED_MAJOR (found $GCC_MAJOR).])
   fi
   if [[ x$REQUIRED_MINOR != x -a $GCC_MAJOR -eq $REQUIRED_MAJOR ]]; then
-    if [[ $GCC_MAJOR -lt $REQUIRED_MINOR ]]; then
-      AC_MSG_ERROR([GCC must have a minimum minor version of $REQUIRED_MINOR.])
+    if [[ $GCC_MINOR -lt $REQUIRED_MINOR ]]; then
+      AC_MSG_ERROR([GCC must have a minimum minor version of $REQUIRED_MINOR (found $GCC_MINOR).])
     fi
   fi
 fi

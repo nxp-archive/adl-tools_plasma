@@ -67,7 +67,7 @@ _LATEXEND
 if $PDFLATEX -interaction=nonstopmode $latextest > /dev/null ; then
   AC_MSG_RESULT([ok])
 else
-  AC_ERROR([no.  You need to get the most recent version of the hyperref package.])
+  AC_WARN([no.  You need to get the most recent version of the hyperref package.])
   PDFLATEX=
 fi
 rm -f latex-test.*

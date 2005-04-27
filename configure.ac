@@ -11,7 +11,7 @@ AC_STDC_HEADERS
 AC_LANG_CPLUSPLUS
 AM_PROG_AS
 AC_PROG_LEX
-AM_CPP_SETUP(3,2)
+AM_CPP_SETUP(3,4)
 
 #########################################################################
 #  Configure arguments 

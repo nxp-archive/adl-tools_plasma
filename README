@@ -5,8 +5,18 @@ Plasma:  Parallel LAnguage for System Modelling and Analysis
 Plasma is a superset of C++, adding parallel extensions similar
 to that provided by the language Occam.
 
-To Build:
----------
+To Build From CVS:
+------------------
+
+./autogen.sh <options>
+
+   	This runs autoconf and automake, then runs configure.  After it's done,
+	run make.
+
+	You need automake 1.9.2 and autoconf 2.59 for this to work.
+
+To Build From A Distribution:
+-----------------------------
 
 ./configure <options>
 
