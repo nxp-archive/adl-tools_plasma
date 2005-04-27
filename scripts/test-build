@@ -16,7 +16,9 @@ prefix=`pwd`
 # Try to configure from CVS.
 (   cvs checkout plasma && \
 	cd plasma && \
-	./configure )
+	./configure ) || exit 1
+
+rm -rf plasma plasma-* bin lib share include
 
 # Build the project.
 (   cvs checkout plasma && \
@@ -24,7 +26,7 @@ prefix=`pwd`
     ./autogen.sh --enable-opt --prefix=${prefix} && \
     make check &&
     make install &&
-    make dist )
+    make dist ) || exit 1
  
 # Place installation checks here.
 if [ ! -f include/gc/gc_cpp.h ] ; then
