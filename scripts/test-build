@@ -13,6 +13,11 @@ rm -rf plasma plasma-* bin lib share include
 
 prefix=`pwd`
 
+# Try to configure from CVS.
+(   cvs checkout plasma && \
+	cd plasma && \
+	./configure )
+
 # Build the project.
 (   cvs checkout plasma && \
     cd plasma && \
@@ -33,4 +38,4 @@ fi
 ( tar zxvf plasma/plasma-*.tar.gz && \
     cd plasma-* && \
     ./configure --enable-opt --prefix=${prefix} && \
-    make check )
+    make check ) && echo "Test build SUCCEEDED."
