@@ -5,6 +5,23 @@ Plasma:  Parallel LAnguage for System Modelling and Analysis
 Plasma is a superset of C++, adding parallel extensions similar
 to that provided by the language Occam.
 
+Needed Packages on GAIN
+-----------------------
+
+To build:
+
+  gnu-gcc-3.4.3-binutils-2.15 or gnu-gcc-3.4.1-binutils-2.15
+
+To reconfigure, you will need:
+
+  gnu-autoconf-2.59
+  perl-5.8
+
+For documentation:
+
+	tetex-2.0.2
+    inria-skribe-/1.2b
+
 To Build From CVS:
 ------------------
 
@@ -14,6 +31,8 @@ To Build From CVS:
 	run make.
 
 	You need automake 1.9.2 and autoconf 2.59 for this to work.
+
+	You can also just run ./configure, as described below.
 
 To Build From A Distribution:
 -----------------------------
