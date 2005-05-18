@@ -1,0 +1,18 @@
+Define statement:  ( reg foo1 ) {
+    size = 10 ;
+    write = func ( intbv < 20 > v , unsigned q ) {
+        size = 20 ;
+    } ;
+}
+Arg:  v
+Type:  intbv < 20  > 
+Arg:  q
+Type:  unsigned int 
+Key:  size
+Value:  10
+  Boolean: true
+  Integer: 10
+Key:  write
+Value:  func ( intbv < 20 > v , unsigned q ) {
+    size = 20 ;
+}
