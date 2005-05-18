@@ -50,6 +50,7 @@
   'e' ...
   '?' no return type.  the return type of constructors
   '*' non-type template parameter
+  'N' Numerical template value, e.g. Foo<3> ==> T[3]N[1]3.
 
   'S' signed
   'U' unsigned
@@ -230,6 +231,15 @@ namespace Opencxx
     Append((unsigned char)(DigitOffset + type.len + 1));
     Append('@');
     Append((char*)type.name, type.len);
+  }
+
+  void Encoding::ValueParam(unsigned x)
+  {
+    const int N = 20;
+    char buf[N];
+    int len = snprintf(buf,N,"%d",x);
+    Append('N');
+    AppendWithLen(buf,len);
   }
 
   void Encoding::Insert(unsigned char c)
@@ -445,6 +455,12 @@ namespace Opencxx
           typespec = PtreeUtil::Nconc(typespec, tlabel);
           goto finish;
 	    }
+      case 'N' :
+        {
+          Ptree *tlabel = MakeLeaf(encoded);
+          typespec = PtreeUtil::Nconc(typespec,tlabel);
+          goto finish;
+        }
       case '*' :
 	    goto error;
       default :

@@ -6,6 +6,8 @@ Define statement:  ( stuff bar ) {
          int i = 1 ;
     } ;
 }
+Arg:  val
+Type:  intbv < 32  >
 Key:  readhook
 Value:  {
      int i = 1 ;

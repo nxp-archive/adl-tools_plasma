@@ -35,6 +35,11 @@ my @Tests = (
 			  cmd  => "./parse-test -E in5.C",
 			  diff => "in5.regress",
 			 },
+			 # Test of templates w/integer parms.
+			 {
+			  cmd  => "./parse-test -E in6.C",
+			  diff => "in6.regress",
+			 },
 			);
 
 doTest(\@Tests);

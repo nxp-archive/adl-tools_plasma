@@ -35,12 +35,12 @@
 namespace Opencxx
 {
 
-class Ptree;
+  class Ptree;
 
-class Encoding {
-public:
+  class Encoding {
+  public:
     enum { MaxNameLen = 256 }; // const MaxNameLen = 256;
-			       // MSVC doesn't compile
+    // MSVC doesn't compile
     Encoding() { len = 0; }
     Encoding(Encoding& e) { Reset(e); }
     void Clear() { len = 0; }
@@ -68,6 +68,7 @@ public:
     void EllipsisArg() { Append((unsigned char)'e'); }
     void NoReturnType() { Append((unsigned char)'?'); }
     void ValueTempParam() { Append((unsigned char)'*'); }
+    void ValueParam(unsigned x);
 
     void Insert(unsigned char);
     void Insert(char*, int);
@@ -85,10 +86,10 @@ public:
     static bool IsSimpleName(unsigned char*);
     static Ptree* NameToPtree(char*, int);
 
-private:
+  private:
     unsigned char name[MaxNameLen];
     int len;
-};
+  };
 
 }
 

@@ -2175,7 +2175,12 @@ namespace Opencxx
         if(!rLogicalOrExpr(a, true))
           return false;
 
-        encode.ValueTempParam();
+        unsigned v;
+        if (a->Reify(v)) {
+          encode.ValueParam(v);
+        } else {
+          encode.ValueTempParam();
+        }
       }
 
       args = PtreeUtil::Snoc(args, a);

@@ -1,3 +1,5 @@
+Arg:  j
+Type:  int
 Define statement:  ( reg foo ) {
     readhook = func (  ) {
          int j = 10 ;

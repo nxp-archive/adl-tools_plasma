@@ -1,3 +1,8 @@
+2005-05-18  Brian Kahne  <bkahne@freescale.com>
+
+	* Modified Encoding so that integer template parameters are
+	encoded using an 'N' prefix followed by the number as a string.
+
 2005-04-27  Brian Kahne  <bkahne@freescale.com>
 
 	* configure and Makefile.in files are now checked in so that the

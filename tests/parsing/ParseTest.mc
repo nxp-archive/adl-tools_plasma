@@ -58,6 +58,22 @@ Ptree* ParseTest::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* res
     }
     return rest;
   } else if (Eq(keyword,"func")) {
+    Ptree *tbody = Cons(keyword,rest);
+    Ptree *args;
+    if (GetArgDeclList((PtreeDeclarator*)tbody,args)) {
+      while (args) {
+        Ptree *arg = Second(args->Car());
+        cout << "Arg:  " << arg << endl;
+        TypeInfo type;
+        type.Set(arg->GetEncodedType(),env);
+        cout << "Type:  " << type.MakePtree() << endl;
+        args = args->Cdr();
+        if (!args) {
+          break;
+        }
+        args = args->Cdr();
+      }
+    }
     Ptree *body = Nth(rest,3);
     rest = TranslateExpression(env,body);
     return Cons(keyword,rest);
