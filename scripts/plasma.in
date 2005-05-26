@@ -81,6 +81,7 @@ B<g++>.  A I<3.x> version is recommended.
 my $prefix="@prefix@";
 my $cxx="@CXXPROG@";
 my $version="@VERSION@";
+my $confopts="@CONFOPTS@";
 
 use Getopt::Long qw(:config no_ignore_case pass_through);
 use Pod::Usage;
@@ -256,6 +257,15 @@ sub printhelp() {
   print "Copyright (c) 2004 Freescale Semiconductor Inc.  All Rights Reserved.\n\n";
   pod2usage(-exitval => $eval,-verbose=>$verbose) if (!$nohelp);
   exit 0;
+}
+
+# Add on any configuration specific options.
+if ($confopts) {
+  # We prefix each cpp option with -d so that Plasma will know that it's a
+  # preprocessor option.
+  my $newcppopts = join ' ',map { "-d$_"; } (split / /,$confopts);
+  $cppoptions .= " $newcppopts";
+  $gccoptions .= " $confopts";
 }
 
 print "[occ options:  $occoptions]\n" if $verbose;

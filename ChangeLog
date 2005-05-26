@@ -1,3 +1,17 @@
+
+2005-05-26  Brian Kahne  <bkahne@freescale.com>
+
+	* If configure finds that the path to the compiler is a link, it
+	tries to follow it.
+
+	* Modified plasma.in so that the contents of an autoconf variable
+	CONFOPTS will be added to cpp and gcc options when plasma is run.
+
+	* Modified configure.ac so that if you configure on an IA32
+	machine, -m32 is added to CONFOPTS.  The idea is that we want
+	32-bit code generated even on an Opteron if Plasma is built on an
+	IA32 machine.
+
         ====== plasma release 0.8.19 (v0_8_19) on Linux (cde-tx32-ldt189) ======
 
 2005-05-18  Brian Kahne  <bkahne@freescale.com>

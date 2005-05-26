@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.19])
+AC_INIT([plasma],[0.8.20])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -44,6 +44,13 @@ fi
 
 ## Get the full compiler path.
 AC_PATH_PROG(CXXPROG,$CXX)
+## If this is a symbolic link, try to read the link.
+if [[ -L $CXXPROG ]]; then
+  CXX_temp=`readlink $CXXPROG`
+  if [[ ! -z $CXX_temp ]]; then
+    CXXPROG="$CXX_temp"
+  fi
+fi
 echo "Compiler is located at:  $CXXPROG"
 
 ##
@@ -88,11 +95,15 @@ AC_SUBST(DOCDIR)
 # by the sample compiler in the regression suite.
 if [[ $build_cpu = i686 ]]; then
   COMPILE_OK=1
+  # We also set the -m32 flag so that if we use this on an Opteron,
+  # Plasma will know to force 32-bit code generation.
+  CONFOPTS="-m32"
 else
   COMPILE_OK=0
 fi
 AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
+AC_SUBST(CONFOPTS)
 
 AC_CONFIG_COMMANDS([ptree-gen],
     [(cd opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],
