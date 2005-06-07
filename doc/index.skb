@@ -655,6 +655,8 @@ par {
       (include "user-guide.skb")
       
       (include "examples.skb")
+	  
+	  (include "implementation.skb")
                
       (include "future-work.skb")
       

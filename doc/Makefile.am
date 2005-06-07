@@ -1,5 +1,5 @@
 
-EXTRA_DIST = $(skribe_src) pipe2.pa
+EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 
 WEBURL=http://www.somerset.sps.mot.com/projects/tools/plasma/
 

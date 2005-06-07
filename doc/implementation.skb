@@ -1,0 +1,194 @@
+
+(chapter :title "Implementation Notes"
+   
+   (p [This chapter discusses the current implementation of Plasma.  Since this
+   project originated as a language experiment, it was more important to be able
+   to be able to make use of the language than to generate the most efficient
+   code possible.  Therefore, the current version of Plasma is implemented as a
+   preprocessor coupled with a simple user-mode thread library.  The
+   preprocessor transforms Plasma code into plain C++ with calls to the
+   library.])
+   
+   (section :title "Plasma Front-End"
+	  
+	  (p [Plasma's front-end parser makes use of ,(ref :text "OpenC++"
+	  :url "http://opencxx.sourceforge.net/"), an open-source C++ grammar and
+	  meta-object protocol.  The Plasma front-end processing code is linked in
+	  with the OpenC++ framework to form the Plasma executable.])
+	  
+	  (p [From the user's point of view, using the Plasma program is identical
+	  to using a normal C++ compiler: You can produce an object file, an
+	  executable, or link together multiple object files to produce an
+	  executable.  In reality, if the compiler is invoked for compilation, the
+	  following steps are performed:])
+	  
+	  (itemize
+		 
+		 (item [OpenC++ runs the C preprocessor on the input file, producing a
+		 ,(code [.occ]) file from a ,(code [.pa]) file.])
+		 
+		 (item [OpenC++ parses the ,(code [.occ]) file, producing an AST with
+		 some semantics, such as an environment for each lexical scope storing
+		 type information.])
+		 
+		 (item [Using the Visitor Pattern, OpenC++ traverses the AST.  The
+		 Plasma ,(i [meta-object]), the class responsible for transforming Plasma
+		 primitives into C++, is invoked by the visitor whenever Plasma
+		 constructs are encountered.  Its job is to create new AST constructs
+		 which represent the original Plasma code in C++.])
+		 
+		 (item [The new AST is written to a ,(code [.ii]) file.  The actual C++
+		 compiler (in this case it is g++) is then invoked upon this file.])
+		 
+		 )
+	  
+	  (p [The transformation of the Plasma primitives is generally fairly
+	  straightforward.  Unfortunately, C++'s lack of orthogonality sometimes
+	  complicates matters.  For example, the ,(code [par]) block:])
+	  
+	  (cprog [
+par {
+  statement 1;
+  statement 2;
+  statement 3;
+  ...
+}
+	  ])
+	  
+	  (p [is transformed into:])
+	  
+	  (cprog [
+function1 (args) {
+  statement 1;
+}
+
+function2 (args) {
+  statement 2;
+}
+
+function3 (args) {
+  statement 3;
+}
+
+THandle pid1 = pSpawn(function1); 
+THandle pid2 = pSpawn(function2); 
+THandle pid3 = pSpawn(function3); 
+
+pWait(pid1);
+pWait(pid2);
+pWait(pid3);
+])
+	  
+	  (p [In other words, each statement in the ,(code [par]) block is placed
+	  into its own function.  Each function is then launched as a thread and
+	  then the parent thread waits for the children to finish before proceeding.
+	  However, since the statements in the ,(code [par]) block may refer to
+	  local variables outside of the ,(code [par]) block, it is necessary to
+	  pass these variables in as references.  This is done by creating a custom
+	  structure for holding references to the variables.  This structure is
+	  initialized and then passed to the thread function via the ,(code
+	  [pSpawn]) thread primitive.  If C++ supported nested functions, the
+	  argument-passing structures would not be necessary.])
+	  
+	  (p [The ,(code [alt]) construct is simpler to implement:  It is
+	  transformed into a loop, whose body first queries each channel and jumps
+	  to the relevant code if the channel is ready.  If no channel is ready,
+	  then each channel's ,(code [set_notify]) method is called with the current
+	  thread's handle, then the current thread calls ,(code [pSleep]).  When the
+	  thread awakes, it jumps back to the top of the list and queries each of
+	  the channels again.  The fact that it is in a loop lets the same code work
+	  for the case where a channel allows multiple consumers:  If the thread
+	  awakes and then another consumer empties the channel, the thread will
+	  simply go to sleep again.])
+	  
+	  (p [For example, the following ,(code [alt]) code:])
+	  
+	  (cprog [
+    alt {
+      c0.port (int v) {
+        plasma::mprintf ("Got a value from port c0:  %d\n",v);
+      }
+      c1.port (int v) {
+        plasma::mprintf ("Got a value from port c1:  %d\n",v);
+      }
+      c2.port (int v) {
+        plasma::mprintf ("Got a value from port c2:  %d\n",v);
+      }
+      c3.port (int v) {
+        plasma::mprintf ("Got a value from port c3:  %d\n",v);
+      }
+    }
+])
+	  
+	  (p [transforms into the following C++ code:])
+	  
+	  (cprogfile "../doc/ex1.pa")
+	  
+	  (p [The ,(code [try/catch]) block in the above code ensures that all
+	  channels are cleaned up if an exception occurs.])
+
+	  )
+   
+   (section :title "Plasma Back-End"
+	  
+	  (p [The Plasma threading library is a simple user-mode threading library
+	  based upon ,(ref :text "Quickthreads" :url
+	  "http://www.cs.washington.edu/research/compiler/papers.d/quickthreads.html").
+	  All threads in Plasma run within a single OS process.  The QuickThreads
+	  library only implements thread-switching primitives.  The scheduler,
+	  various queues, etc., are implemented within the Plasma library.])
+	  
+	  (p [The Plasma language is (optionally) garbage collected.  This is
+	  accomplished by using the ,(ref :url
+      "http://www.hpl.hp.com/personal/Hans_Boehm/gc/" :text "Boehm Weiser
+      Garbage Collector"), a conservative garbage collector.  In order for it to
+	  work with the thread library, a hook was added so that the stacks of all
+	  threads could be searched during a collection.])
+	  
+	  (p [The basic components of the library are:])
+	  
+	  (itemize
+		 (item [,(code [Thread]):  A class representing a thread.  This stores
+		 context information, priority, and a list of threads waiting on this
+		 thread.  When the thread terminates, any waiting threads are added back
+		 to the ready queue.])
+		 
+		 (item [,(code [Proc]):  Threads are grouped together by this class,
+		 which corresponds to a ,(i [Processor]) in the language.  The class
+		 stores a series of ready-queues in priority order, along with
+		 information about whether the processor is in a busy state.])
+		 
+		 (item [,(code [Cluster]):  This contains the scheduler and the logic
+		 for launching new threads, terminating threads, etc.  The idea is that
+		 a more robust implementation of Plasma would have one ,(code [Cluster])
+		 object per OS thread; currently, only a single ,(code [Cluster]) ever
+		 exists.])
+		 
+		 (item [,(code [System]):  This object tracks global time and contains
+		 the queues for ordering delayed and busy threads.])
+		 
+		 (item [The main interface library, defined in ,(code [Interface.h])
+		 contains stub functions which call methods on the ,(code [Cluster]) object.])
+		 
+		 )
+	  
+	  (p [The thread library generally operates in either of two modes, defined
+	  by whether calls to ,(code [pBusy]) are allowed.  If they are not allowed,
+	  then preemption is enabled:  An alarm is set using a UNIX signal.  The
+	  signal handler calls the scheduler which schedules a new thread to be
+	  run.])
+	  
+	  (p [If calls to ,(code [pBusy]) are allowed, then preemption is disabled
+	  and all thread switching is done cooperatively, either explicitly via
+	  calls to functions such as ,(code [pBusy]), or implicitly, such as by reading
+	  from an empty channel.  In addition, calls to ,(code [pDelay]) mean that
+	  the current thread is added to the delay list; it will only execute again
+	  once time has advanced sufficiently.  A call to ,(code [pBusy]) means that
+	  the entire ,(code [Proc]) object is removed from the list of available
+	  processors and added to the busy queue; it will only be moved back to the
+	  queue once time has advanced sufficiently.])
+	  	  
+	  )
+
+   )
+   

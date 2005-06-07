@@ -52,8 +52,9 @@
 <tbody>
  <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
  <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Future-Work">Future Work</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Implementation-Notes">Implementation Notes</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">5</td><td colspan="4" width="100%"><a href="index-5.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -73,7 +74,7 @@
       The result is that no stage in the pipeline needs to know about time or
       the clock this is completely encapsulated within the channels.  The timing
       of the whole system can thus be modified simply by changing the
-      declarations of the clocked channels.</p><p>The source code for this example can be found <a href="./source-code-1.html#RISC-Pipeline-Example">here</a>.  It is organized such that each
+      declarations of the clocked channels.</p><p>The source code for this example can be found <a href="./source-code-1.html#RISC Pipeline Example">here</a>.  It is organized such that each
       pipeline stage is a separate thread.  Examining the main entry point
       function, <code>pMain</code>, you can see that all channels are declared
       here, as well as all pipeline stages:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
@@ -133,7 +134,7 @@
       it easy to get a top-level view of how the model is assembled.</p><p>One other point of interest:  Notice that the channel named <code>decode_regread</code> has a period of half the clock.  As noted at the top of
       the source file, this is because register reads occur on a half-clock
       boundary.  This shows that the timing of the particular channel, and thus
-      of the model, can be altered by simply changing a declaration.</p><p>Another example of modeling hardware can be found <a href="./source-code-2.html#RISC-Pipeline-Example-2">here</a>.  In this example, the architecture of
+      of the model, can be altered by simply changing a declaration.</p><p>Another example of modeling hardware can be found <a href="./source-code-2.html#RISC Pipeline Example 2">here</a>.  In this example, the architecture of
       the processor is implemented in an auxiliary class called <code>DLX</code>.  The
       Plasma code simply implements the microarchitecture.  Communication is
       done by channels, as in the first example.  One difference is that the
@@ -153,7 +154,7 @@
       queries to a database.  The database either finds that it can answer the
       query by accessing memory or else it has to dispatch a request to a disk
       array.  The decision factor, in this case, is a uniform random pick with a
-      set probability.</p><p>The source code for this model can be found <a href="./source-code-3.html#Network-System-Example">here</a>.</p><p>In this example, different threads are explicitly run on different
+      set probability.</p><p>The source code for this model can be found <a href="./source-code-3.html#Network System Example">here</a>.</p><p>In this example, different threads are explicitly run on different
       processors, as shown below:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
 <tr><td><pre class="prog">  <font color="#ffa600"><em>// create the dynamically-sized interconnect</em></font>
@@ -238,7 +239,7 @@
       modeled as a flywheel and an engine.  The flywheel has a concept of
       friction, so that it slows down if the engine is not accelerating it.  The
       engine contains several cylinders; based upon the amount of fuel added,
-      the model calculates the new speed of the engine.</p><p>The source code can be found <a href="./source-code-4.html#Embedded-Application-Example">here</a>.</p><p>The engine model and the controller are started in <a href="./source-code-4.html#ecu/ecu.pa">ecu.pa</a>.  The idea is that a separate thread is
+      the model calculates the new speed of the engine.</p><p>The source code can be found <a href="./source-code-4.html#Embedded Application Example">here</a>.</p><p>The engine model and the controller are started in <a href="./source-code-4.html#ecu/ecu.pa">ecu.pa</a>.  The idea is that a separate thread is
       launched for each cylinder in the engine.  The 
       <a href="index-1.html#The-Time-Model" class="inbound"><em>pBusy</em></a> function is used to consume time in order to
       understand the load on the micro-controller.  Thus, if the load were too
@@ -258,7 +259,7 @@
       Python by <a href="http://people.cs.uchicago.edu/~varmaa/mini_c/" class="http">Atul Varma</a>.</p><p>The compiler works as follows:</p><ul class="itemize"><li>The <a href="./source-code-5.html#Lexer">lexer</a>, implemented in <a href="http://www.gnu.org/software/bison/bison.html" class="http">bison</a>, operates
 	 in its own thread and tokenizes each input file (unlike most compilers,
 	 this one can handle more than one C file).  These tokens are sent over
-	 a channel to the parser.  The input file is memory mapped using <code>mmap</code> so that identifiers can be referenced using <a href="./source-code-5.html#String-Class">a
+	 a channel to the parser.  The input file is memory mapped using <code>mmap</code> so that identifiers can be referenced using <a href="./source-code-5.html#String Class">a
 	 pointer and length tuple</a>.  The only time
 	 that a new string has to be generated is when the tokenizer encounters
 	 C's automatic string concatenation.  In that case, a new string is
@@ -271,7 +272,7 @@
 	 started in the main program <a href="./source-code-5.html#cc/main.pa">here</a>.</li>
 <li><p>The rest of the compilation steps originate <a href="./source-code-5.html#cc/Compiler.pa">here</a>.  For each translation unit, a
 	    symbol table is first created.  This is done serially due to the
-	    sequential nature of symbol lookup in C.  The <a href="./source-code-5.html#Symbol-Table">symbol
+	    sequential nature of symbol lookup in C.  The <a href="./source-code-5.html#Symbol Table">symbol
 	    table</a> is implemented as a two-step
 	    look-up process:</p><ul class="itemize"><li>A single hash table is used to map symbols to
 	       small-integer indices.</li>
@@ -307,7 +308,7 @@
       For instance, the symbol table environments are pointed to be many
       different AST nodes.  Figuring out who owns what would be difficult- an
       ad-hoc reference-counting scheme would probably have to be implemented,
-      further complicating the code.  The <a href="./source-code-5.html#String-Class">string class</a> is even more complicated: Some of its strings
+      further complicating the code.  The <a href="./source-code-5.html#String Class">string class</a> is even more complicated: Some of its strings
       will point to the mmap'd source file and some to the heap.  However, the
       implementation does not need to care, since the heap strings will be
       collected by the garbage collector.</p></div><br>
@@ -318,6 +319,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Wed Apr 20 17:55:36 2005</em>.</font></p></div>
+Last update <em>Tue Jun  7 14:29:58 2005</em>.</font></p></div>
 </body>
 </html>

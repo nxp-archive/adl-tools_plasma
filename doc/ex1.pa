@@ -1,0 +1,74 @@
+# 37606 "chan2.ii"
+try {
+ plasma::pLock();
+ _sym15360_4:
+ int _sym15360_2;
+ _sym15360_2 = 0;
+ if ( (c3) . ready() ) { goto _sym15360_1; }
+ _sym15360_2 = 1;
+ if ( (c2) . ready() ) { goto _sym15360_1; }
+ _sym15360_2 = 2;
+ if ( (c1) . ready() ) { goto _sym15360_1; }
+ _sym15360_2 = 3;
+ if ( (c0) . ready() ) { goto _sym15360_1; }
+ (c3) . set_notify(plasma::pCurThread());
+ (c2) . set_notify(plasma::pCurThread());
+ (c1) . set_notify(plasma::pCurThread());
+ (c0) . set_notify(plasma::pCurThread());
+ plasma::pSleep();
+plasma::pLock();
+ (c3) . clear_notify();
+ (c2) . clear_notify();
+ (c1) . clear_notify();
+ (c0) . clear_notify();
+ goto _sym15360_4;
+ _sym15360_1:
+switch(_sym15360_2) {
+ case 0: {
+ int v  = (c3) . get();
+ plasma::pUnlock();
+ {
+ 
+# 42 "chan2.pa"
+ {
+    plasma :: mprintf ( "Got a value from port c3:  %d\n" , v ) ;
+    if ( v < 0 ) ++ donecount ;
+} 
+} } break;
+ case 1: {
+ int v  = (c2) . get();
+ plasma::pUnlock();
+ {
+ 
+# 38 "chan2.pa"
+ {
+    plasma :: mprintf ( "Got a value from port c2:  %d\n" , v ) ;
+} 
+} } break;
+ case 2: {
+ int v  = (c1) . get();
+ plasma::pUnlock();
+ {
+ 
+# 34 "chan2.pa"
+ {
+    plasma :: mprintf ( "Got a value from port c1:  %d\n" , v ) ;
+} 
+} } break;
+ case 3: {
+ int v  = (c0) . get();
+ plasma::pUnlock();
+ {
+ # 30 "chan2.pa"
+ {
+    plasma :: mprintf ( "Got a value from port c0:  %d\n" , v ) ;
+} 
+} } break;
+ }
+ }
+ catch (...) {
+ (c3) . clear_notify();
+ (c2) . clear_notify();
+ (c1) . clear_notify();
+ (c0) . clear_notify();
+ }
