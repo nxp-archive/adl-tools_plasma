@@ -79,7 +79,7 @@ AM_QT
 AM_SKRIBE
 
 ## Do final substitions and generation.
-CXXFLAGS="-g -Wall $CPPSETUP"
+CXXFLAGS="$CXXFLAGS -g -Wall $CPPSETUP"
 
 ## Add on macro directory to ACLOCAL_FLAGS.
 ACLOCAL_FLAGS="${ACLOCAL_FLAGS} -I ./macros"
