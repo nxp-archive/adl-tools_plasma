@@ -191,8 +191,9 @@ sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
-noinst_DATA = Plasma_Intro.pdf
+noinst_DATA = Plasma_Intro.pdf Plasma_MTV_2006.pdf
 CLEANFILES = *.aux *.bib *.blg *.log *.out *.toc *.pdf
+W2LFLAGS = -config $(srcdir)/article.xml
 all: all-am
 
 .SUFFIXES:
@@ -205,9 +206,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  doc/papers/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  doc/papers/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  doc/papers/Makefile
+	  $(AUTOMAKE) --foreign  doc/papers/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -356,6 +357,7 @@ uninstall-am: uninstall-info-am
 
 
 Plasma_Intro.pdf : Plasma_Intro.sxw
+Plasma_MTV_2006.pdf : Plasma_MTV_2006.sxw
 
 %.tex: %.sxw
 	$(W2L) $(W2LFLAGS) $<

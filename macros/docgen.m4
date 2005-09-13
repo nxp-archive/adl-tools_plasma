@@ -23,7 +23,7 @@ AC_PATH_PROG(SKRIBE,skribe)
 AC_PATH_PROG(BIBTEX,bibtex,)
 AC_PATH_PROG(PDFLATEX,pdflatex)
 AC_PATH_PROG(TRIP,trip)
-AC_PATH_PROG(W2L,w2l)
+AC_CHECK_PROG([W2L],[w2l],[w2l])
 
 if [[ x$PDFLATEX != x ]] ; then
 ## Make sure that our latex is good- it has to have the most
