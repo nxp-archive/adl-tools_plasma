@@ -192,7 +192,7 @@ subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 noinst_DATA = Plasma_Intro.pdf Plasma_MTV_2006.pdf
-EXTRA_DIST = $(noinst_DATA)
+EXTRA_DIST = $(wildcard *.sxw)
 CLEANFILES = *.aux *.bib *.blg *.log *.out *.toc *.pdf
 W2LFLAGS = -config $(srcdir)/article.xml
 all: all-am
