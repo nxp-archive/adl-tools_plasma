@@ -4,6 +4,8 @@ noinst_DATA = Plasma_Intro.pdf Plasma_MTV_2006.pdf
 Plasma_Intro.pdf : Plasma_Intro.sxw
 Plasma_MTV_2006.pdf : Plasma_MTV_2006.sxw
 
+EXTRA_DIST = $(noinst_DATA)
+
 CLEANFILES = *.aux *.bib *.blg *.log *.out *.toc *.pdf
 
 W2LFLAGS = -config $(srcdir)/article.xml
