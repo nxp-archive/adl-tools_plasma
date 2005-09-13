@@ -77,8 +77,8 @@ subdir = tests/basic
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/macros/cpp-setup.m4 \
-	$(top_srcdir)/macros/libtool.m4 $(top_srcdir)/macros/qt.m4 \
-	$(top_srcdir)/macros/skribe.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/libtool.m4 \
+	$(top_srcdir)/macros/qt.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -413,6 +413,7 @@ AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AWK = @AWK@
+BIBTEX = @BIBTEX@
 CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
@@ -484,11 +485,19 @@ PERLPROG = @PERLPROG@
 PROFILE = @PROFILE@
 RANLIB = @RANLIB@
 RFLAG = @RFLAG@
+RSTOK_FALSE = @RSTOK_FALSE@
+RSTOK_TRUE = @RSTOK_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SKRIBE = @SKRIBE@
+SKRIBEOK_FALSE = @SKRIBEOK_FALSE@
+SKRIBEOK_TRUE = @SKRIBEOK_TRUE@
 STRIP = @STRIP@
+TRIP = @TRIP@
 VERSION = @VERSION@
+W2L = @W2L@
+W2LOK_FALSE = @W2LOK_FALSE@
+W2LOK_TRUE = @W2LOK_TRUE@
 WEBHOME = @WEBHOME@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
@@ -737,9 +746,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/basic/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/basic/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/basic/Makefile
+	  $(AUTOMAKE) --gnu  tests/basic/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

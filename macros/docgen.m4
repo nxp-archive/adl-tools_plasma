@@ -1,30 +1,31 @@
 ##
-## Configures Skribe.  We expect skribe, dvipdf, and latex to be in
-## the user's path.
+## Configures various documentation generation tools.  We expect 
+## everything to be in the user's path.  The tools we look for are:
+## skribe, pdflatex, bibtex, and trip
 ##
 ## Output:
 ##
-## SKRIBE:   Path of the Skribe program.
+## SKRIBE  : Path of the Skribe program.
 ## PDFLATEX: Path of the pdflatex program.
+## BIBTEX  : Path of the bibtex program.
+## TRIP    : Path of the restructured-text processing tool (trip). 
+## W2L     : Path of the OpenOffice Writer -> Latex converter
 ##
-## LATEXOK:  AM_CONDITIONAL set if Latex can be used.
+## LATEXOK : AM_CONDITIONAL set if Latex can be used.
+## RSTOK   : AM_CONDITIONAL set if trip can be used.
+## SKRIBEOK: AM_CONDITIONAL set if skribe can be used.
+## W2LOK   : AM_CONDITIONAL set if w2l can be used.
 ##
-AC_DEFUN([AM_SKRIBE],
+AC_DEFUN([AM_DOCS],
 [
 
 AC_PATH_PROG(SKRIBE,skribe)
-if test "x$SKRIBE" = x ; then
-  echo "The skribe program was not found.  Documentation will not be built."
-  echo "To build the documentation, make sure that skribe is installed and in your path."
-  echo "You can find skribe here:  http://www-sop.inria.fr/mimosa/fp/Skribe/"
-  DOCDIR=
-fi
-
+AC_PATH_PROG(BIBTEX,bibtex,)
 AC_PATH_PROG(PDFLATEX,pdflatex)
+AC_PATH_PROG(TRIP,trip)
+AC_PATH_PROG(W2L,w2l)
 
-if [[ x$PDFLATEX = x ]] ; then
-  echo "PDF documentation will not be build because pdflatex could not be found."
-else
+if [[ x$PDFLATEX != x ]] ; then
 ## Make sure that our latex is good- it has to have the most
 ## recent version of hyperref.
 AC_MSG_CHECKING([that latex is good])
@@ -72,6 +73,16 @@ else
 fi
 rm -f latex-test.*
 fi
-AM_CONDITIONAL(LATEXOK, test x$PDFLATEX != x)
+
+AM_CONDITIONAL(LATEXOK, test x$PDFLATEX != x -a x$BIBTEX != x)
+AM_CONDITIONAL(SKRIBEOK, test x$SKRIBE != x)
+AM_CONDITIONAL(RSTOK, test x$TRIP != x)
+AM_CONDITIONAL(W2LOK, test x$W2L != x)
+
+AC_SUBST(PDFLATEX)
+AC_SUBST(BIBTEX)
+AC_SUBST(SKRIBE)
+AC_SUBST(TRIP)
+AC_SUBST(W2L)
 
 ])

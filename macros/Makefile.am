@@ -1,10 +1,13 @@
 ## Please update this variable if any new macros are created
 
-dist_MACROS = plasma.m4
+dist_MACROS = plasma.m4 
 
 MACROS= \
 	cpp-setup.m4 \
 	qt.m4 \
+	docgen.m4 \
+	general.m4 \
+	libtool.m4 \
 	$(dist_MACROS)
 
 EXTRA_DIST = $(MACROS)

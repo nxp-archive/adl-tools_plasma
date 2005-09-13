@@ -75,8 +75,26 @@ AC_SUBST(INCLTDL)
 ## Configure Quickthreads.
 AM_QT
 
-## Configure Skribe and Latex.
-AM_SKRIBE
+## Configure the documentation tools.
+AM_DOCS
+
+if [[ x$SKRIBE = x ]]; then
+  echo "! The skribe program was not found.  Documentation will not be built."
+  echo "! To build the documentation, make sure that skribe is installed and in your path."
+  echo "! You can find skribe here:  http://www-sop.inria.fr/mimosa/fp/Skribe/"
+  DOCDIR=
+fi
+
+if [[ x$PDFLATEX = x -o x$BIBTEX = x ]] ; then
+  echo "! PDF documentation will not be build because pdflatex could not be found."
+fi
+
+if [[ x$W2L = x ]] ; then
+  echo "! OpenOffice documentation will not be converted to Latex/PDF because the"
+  echo "! OpenOffice Writer -> Latex converter, writer2latex, could not be found."
+  echo "! Make sure that the w2l tool is in your path, or download and install the"
+  echo "! tool from http://www.hj-gym.dk/~hj/writer2latex/"
+fi
 
 ## Do final substitions and generation.
 CXXFLAGS="$CXXFLAGS -g -Wall $CPPSETUP"
@@ -120,6 +138,7 @@ AC_CONFIG_FILES([\
    opencxx/Makefile \
    parser/Makefile \
    doc/Makefile \
+   doc/papers/Makefile \
    tests/Makefile \
    tests/parsing/Makefile \
    tests/basic/Makefile \
