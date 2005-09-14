@@ -533,7 +533,7 @@ the behavior of a blocked writing thread.])
 Thus, it is possible to have a read-only channel.])
 
 (p [Currently, Plasma contains the following channels.  These are declared in
-,(code [plasma.h]).])
+,(code [plasma/plasma.h]).])
 
 (itemize
 
@@ -1152,7 +1152,7 @@ type of ,(code [foo]).])
 (section :title "Library Features"
 
 (p [This section describes functions and classes provided by the Plasma standard
-library, ,(code [plasma.h]).])
+library, ,(code [plasma/plasma.h]).])
 
 (ssection :title "I/O Routines"
 

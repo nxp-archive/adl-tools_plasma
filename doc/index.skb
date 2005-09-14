@@ -399,7 +399,7 @@ alt {
 	    (cprog [
  
 #include <iostream>
-#include "plasma.h"
+#include "plasma/plasma.h"
 
 using namespace plasma;
 using namespace std;
