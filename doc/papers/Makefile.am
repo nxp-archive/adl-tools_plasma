@@ -1,10 +1,9 @@
 
-noinst_DATA = Plasma_Intro.pdf Plasma_MTV_2005.pdf
+noinst_DATA = Plasma_Intro.pdf
 
 Plasma_Intro.pdf : Plasma_Intro.sxw
-Plasma_MTV_2006.pdf : Plasma_MTV_2006.sxw
 
-EXTRA_DIST = $(wildcard *.sxw)
+EXTRA_DIST = Plasma_Intro.sxw Plasma_MTV_2005.lyx
 
 CLEANFILES = *.aux *.bib *.blg *.log *.out *.toc *.pdf
 

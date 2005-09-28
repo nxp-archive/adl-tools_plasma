@@ -15,7 +15,7 @@
   <option name="no_preamble" value="false" />
   <option name="documentclass" value="article" />
   <option name="global_options" value="twocolumn" />
-  <option name="backend" value="generic" />
+  <option name="backend" value="pdftex" />
   <option name="inputencoding" value="ascii" />
   <option name="multilingual" value="true" />
   <option name="greek_math" value="true" />
