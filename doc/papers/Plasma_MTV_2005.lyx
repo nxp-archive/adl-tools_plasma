@@ -100,17 +100,7 @@ Freescale Semiconductor Inc
 \newline 
 Austin, TX 78729, USA
 \newline 
-bkahne, 
-\begin_inset ERT
-status Collapsed
-
-\layout Standard
-
-\backslash 
-href{mailto:Peter.Wilson@freescale.com}{Peter.Wilson@freescale.com}
-\end_inset 
-
-
+{bkahne, Peter.Wilson}@freescale.com
 \newline 
 
 \newline 
@@ -130,22 +120,12 @@ University of California, Irvine
 \newline 
 Irvine, CA 92697, USA
 \newline 
-aseemg, 
-\begin_inset ERT
-status Collapsed
-
-\layout Standard
-
-\backslash 
-href{mailto:dutt@uci.edu}{dutt@uci.edu}
-\end_inset 
-
-
+{aseemg, dutt}@uci.edu
 \layout Abstract
 
 The ability to enhance single-thread performance, such as by increasing
  clock frequency, is reaching a point of diminishing returns: power is becoming
- a dominate factor and limiting scalability.
+ a dominating factor and limiting scalability.
  Adding additional cores is a scalable way to increase performance, but
  it requires that system designers have a method for developing multi-threaded
  applications.
@@ -394,17 +374,8 @@ foreignlanguage{english}{behavior}
  should be implemented as software and which as application-specific acceleratio
 n hardware; to partition and balance the software across the right number
  of execution units; and finally to build an implementation with the software
- being compiled and mapped appropriately and the acceleration 
-\begin_inset ERT
-status Collapsed
-
-\layout Standard
-
-\backslash 
-foreignlanguage{english}{behaviors}
-\end_inset 
-
- being directly synthesized.
+ being compiled and mapped appropriately to processors and the acceleration
+ behaviors being directly synthesized into hardware.
 \layout Standard
 
 The current implementation is limited in scope, being intended to allow
@@ -727,6 +698,11 @@ Communications
 
 Channels 
 \layout Standard
+
+
+\begin_inset LatexCommand \label{sub:Channels}
+
+\end_inset 
 
 Communication between threads is handled by typed 
 \shape italic 
@@ -1459,18 +1435,9 @@ Proc
 System Modeling
 \layout Standard
 
-In order to evaluate Plasma
-\begin_inset ERT
-status Collapsed
-
-\layout Standard
-
-\backslash 
-textquotesingle{}
-\end_inset 
-
-s effectiveness for system modeling, we attempted to model a 2-D Discrete
- Wavelet Transform (DWT) block, which was adopted in JPEG2000 and MPEG4.
+In order to evaluate Plasma's effectiveness for system modeling, we attempted
+ to model a 2-D Discrete Wavelet Transform (DWT) block, which was adopted
+ in the JPEG2000 and MPEG4 compression standards.
  The multi-resolution representation derived from DWT time-frequency decompositi
 on demonstrates extraordinary advantages in signal analysis and compression.
  The full frame nature of DWT decorrelates the image over a large scale
@@ -1709,13 +1676,23 @@ collapsed false
 
 \layout Caption
 
+
+\begin_inset LatexCommand \label{cap:Ports,-Channels,-and}
+
+\end_inset 
+
 Ports, Channels, and Interfaces in SystemC
 \end_inset 
 
 
 \layout Standard
 
-shows module 
+Figure 
+\begin_inset LatexCommand \ref{cap:Ports,-Channels,-and}
+
+\end_inset 
+
+ shows module 
 \shape italic 
 mod_a
 \shape up 
@@ -1987,16 +1964,11 @@ end{verbatim}
  Note that, the above exercise was just to set up the communication primitive
  and declarations, and does not involve statements about any communication
  transaction.
- On the otherhand, Plasma has taken care of this problem by providing much
+ On the other hand, Plasma has taken care of this problem by providing much
  simpler constructs.
- As seen in section 
-\begin_inset ERT
-status Collapsed
+ As seen in Section 
+\begin_inset LatexCommand \ref{sub:Channels}
 
-\layout Standard
-
-\backslash 
-hyperlink{a042Communicationsoutline}{4.2}
 \end_inset 
 
 , channels can be instantiated in one statement and can simply be used by
@@ -2214,8 +2186,12 @@ ded application development.
  The fact that the language is inherently parallel provides for the potential
  to optimize context switches and perform safety checks to guard against
  common concurrency problems in parallelism.
- We also talked about the various communication primitives provided by the
- language and compared it against other languages for brevity.
+ We also 
+\shape default 
+described 
+\shape up 
+the various communication primitives provided by the language and compared
+ it against other languages for brevity.
  Plasma offers explicit support fort multi-processor simulation by featuring
  special constructs, which allow allocation of threads to specific processors.
  In this paper, we also briefly presented the power modeling capabilities
