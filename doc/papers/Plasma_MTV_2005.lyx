@@ -1021,8 +1021,7 @@ Plasma supports power modeling by providing some simple hooks for recording
 \shape italic 
 pEnergy(energy_t)
 \shape default 
- to add to the current processor's consumed-energy value, where energy_t
- is currently defined as a double.
+ to add to the current processor's consumed-energy value.
  Calling 
 \shape italic 
 pGetEnergy(Processor)
@@ -1076,9 +1075,9 @@ par
 pSpawn
 \shape default 
  primitive.
- However, since C++ does not allow nested threads, each function must be
- placed at the global level and any variables used by the code must be passed
- as references.
+ However, since C++ does not allow nested functions, each function must
+ be placed at the global level and any variables used by the code must be
+ passed as references.
 \layout Standard
 
 The Plasma language is (optionally) garbage collected.
@@ -1148,8 +1147,8 @@ pBusy
 Proc
 \shape default 
  object is removed from the list of available processors and added to the
- busy queue; it will only be moved back to the queue once time has advanced
- sufficiently.
+ busy queue; it will only be moved back to the queue once simulation time
+ has advanced sufficiently.
 \layout Section
 
 System Modeling
@@ -1875,7 +1874,7 @@ SystemC
 clarity
 \shape up 
 .
- Plasma offers explicit support fort multi-processor simulation by featuring
+ Plasma offers explicit support for multi-processor simulation by featuring
  special constructs, which allow allocation of threads to specific processors.
  In this paper, we also briefly presented the power modeling capabilities
  of Plasma at the system level.
