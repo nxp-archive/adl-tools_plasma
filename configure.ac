@@ -89,13 +89,6 @@ if [[ x$PDFLATEX = x -o x$BIBTEX = x ]] ; then
   echo "! PDF documentation will not be build because pdflatex could not be found."
 fi
 
-if [[ x$W2L = x ]] ; then
-  echo "! OpenOffice documentation will not be converted to Latex/PDF because the"
-  echo "! OpenOffice Writer -> Latex converter, writer2latex, could not be found."
-  echo "! Make sure that the w2l tool is in your path, or download and install the"
-  echo "! tool from http://www.hj-gym.dk/~hj/writer2latex/"
-fi
-
 ## Do final substitions and generation.
 CXXFLAGS="$CXXFLAGS -g -Wall $CPPSETUP"
 
@@ -138,7 +131,6 @@ AC_CONFIG_FILES([\
    opencxx/Makefile \
    parser/Makefile \
    doc/Makefile \
-   doc/papers/Makefile \
    tests/Makefile \
    tests/parsing/Makefile \
    tests/basic/Makefile \

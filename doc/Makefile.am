@@ -1,11 +1,4 @@
 
-# Only do the papers if we have the open-office converter and Latex.
-if W2LOK
-if LATEXOK
-  SUBDIRS = papers
-endif
-endif
-
 EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 
 WEBURL=http://www.somerset.sps.mot.com/projects/tools/plasma/

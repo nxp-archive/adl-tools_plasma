@@ -23079,13 +23079,6 @@ if [ x$PDFLATEX = x -o x$BIBTEX = x ] ; then
   echo "! PDF documentation will not be build because pdflatex could not be found."
 fi
 
-if [ x$W2L = x ] ; then
-  echo "! OpenOffice documentation will not be converted to Latex/PDF because the"
-  echo "! OpenOffice Writer -> Latex converter, writer2latex, could not be found."
-  echo "! Make sure that the w2l tool is in your path, or download and install the"
-  echo "! tool from http://www.hj-gym.dk/~hj/writer2latex/"
-fi
-
 ## Do final substitions and generation.
 CXXFLAGS="$CXXFLAGS -g -Wall $CPPSETUP"
 
@@ -23126,7 +23119,7 @@ fi
 
 
 # Generate configuration files.
-                                                                                                                                                                                              ac_config_files="$ac_config_files Makefile macros/Makefile scripts/Makefile qt/Makefile qt/md/Makefile src/Makefile opencxx/Makefile parser/Makefile doc/Makefile doc/papers/Makefile tests/Makefile tests/parsing/Makefile tests/basic/Makefile tests/sw/Makefile tests/eav/Makefile tests/ecu/Makefile tests/lemon/Makefile tests/cc/Makefile tests/cc/tests/Makefile"
+                                                                                                                                                                                    ac_config_files="$ac_config_files Makefile macros/Makefile scripts/Makefile qt/Makefile qt/md/Makefile src/Makefile opencxx/Makefile parser/Makefile doc/Makefile tests/Makefile tests/parsing/Makefile tests/basic/Makefile tests/sw/Makefile tests/eav/Makefile tests/ecu/Makefile tests/lemon/Makefile tests/cc/Makefile tests/cc/tests/Makefile"
 
 
                               ac_config_files="$ac_config_files scripts/plasma scripts/plasma-config tests/cc/compile_check.pm"
@@ -23786,7 +23779,6 @@ do
   "opencxx/Makefile" ) CONFIG_FILES="$CONFIG_FILES opencxx/Makefile" ;;
   "parser/Makefile" ) CONFIG_FILES="$CONFIG_FILES parser/Makefile" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
-  "doc/papers/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/papers/Makefile" ;;
   "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
   "tests/parsing/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/parsing/Makefile" ;;
   "tests/basic/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/basic/Makefile" ;;
