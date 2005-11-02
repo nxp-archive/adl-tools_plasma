@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // The symbol table.  This works as follows:  All symbols are interned
 // within a single hash and are given unique integer keys (a symbol 
 // counter value).  The symbol table itself is a vector of linked lists,

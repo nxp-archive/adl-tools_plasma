@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This class abstracts x86 registers into a stack
 // machine for use by the code generator.
 //

@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // C subset grammar.  This uss the lemon parser generator
 // http://www.hwaci.com/sw/lemon/lemon.html to create the parser.
 //

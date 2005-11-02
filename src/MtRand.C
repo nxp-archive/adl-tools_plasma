@@ -1,3 +1,9 @@
+//
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
 /* A C-program for MT19937: Integer     version                   */
 /*  genrand() generates one pseudorandom unsigned integer (32bit) */
 /* which is uniformly distributed among 0 to 2^32-1  for each     */

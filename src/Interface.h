@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // C++-only interface stuff.  This is used internally by the RTOS
 // and implicitly included within Plasma programs.
 //

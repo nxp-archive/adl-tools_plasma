@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Tests to make sure that a prialt obeys priorities if
 // the consumer is put to sleep, then awakens due to one
 // channel but another channel of higher priority is

@@ -1,3 +1,9 @@
+//
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
 //     This class attempts to abstract the x86 registers into a stack
 //     machine.  Calling push() gives you a register that isn't currently
 //     in use by the stack machine, pop() gives you a register with the

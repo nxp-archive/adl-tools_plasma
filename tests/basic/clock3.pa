@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This creates a simple pipeline and passes data through it- each
 // stage of the pipeline uses a clocked channel so that time advances.
 // This also makes sure that par blocks can be nested within alt blocks

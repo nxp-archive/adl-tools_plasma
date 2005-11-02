@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Very simple string class- a string is a pointer
 // and a length.  This allows one of these classes
 // to point to data in a read-only mmapped file.

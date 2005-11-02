@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Don't include this directly- include CLexer.h to wrap this.
 //
 // The tokenizer class.  This is a re-entrant C class

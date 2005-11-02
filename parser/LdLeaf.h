@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Line directive leaf- this class stores a line directive and makes
 // sure that when the object is written, it starts at the beginning of the line.
 //

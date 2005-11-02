@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Tests to make sure that a channel will work correctly if used within an
 // alt block where the user does not map the result to a variable.  We need
 // to make sure that the consumer will drain a value from the channel even

@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Tests a queued channel- all producer write to the same
 // channel, which is then read by the consumer.  The size
 // of the queue is fixed, so we emit a line to check the size.

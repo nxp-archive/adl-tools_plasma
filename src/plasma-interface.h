@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This is the main user interface to the threads package.
 // It is implicitly included so that a user program does not
 // need to have an include statement for it.

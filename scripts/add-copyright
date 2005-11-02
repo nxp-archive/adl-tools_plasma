@@ -1,0 +1,37 @@
+#!/usr/bin/perl -i.bak
+
+$extension = '.bak';
+FILE: for (@ARGV) {
+  $file = $_;
+  $backup = "$file$extension";
+  open IN,$file;
+
+  # Look for an existing copyright and skip if one exists.
+  while (<IN>) {
+	if ( /^\/\/ Copyright \(C\) 2005 by Freescale Semiconductor Inc\./ ) {
+	  # Found the copyright- skip.
+	  next FILE;
+	}
+  }
+  seek IN,0,0;
+  rename $file, $backup;
+  open OUT, ">$file";
+  select OUT;
+  
+  print <<EOT;
+//
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+EOT
+
+  while (<IN>) {
+	print;
+  }
+
+} continue {
+  close IN;
+  close OUT;
+}

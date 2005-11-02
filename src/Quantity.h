@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Quantity manager class: Use this to model a resource.  Various threads can
 // make requests of the resource and will be busy until the request is
 // satisfied.  You instantiate this class with a timeslice parameter; this sets

@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Main code generation class.  This is designed to be re-entrant so
 // that it can handle multiple threads.  Non-reentrant stuff is encapsulated
 // within a single mutex class that's not visible in the header.  This

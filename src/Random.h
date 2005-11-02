@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Random number support for Plasma simulation.
 // The basic Random class supports 1 or more independent streams
 // of random numbers.  The class is parameterized on the actual

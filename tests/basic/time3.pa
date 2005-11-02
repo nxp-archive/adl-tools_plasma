@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Test of busy w/delay.  Block 3, b/c it has a higher priority,
 // wakes up the processor to run.  Therefore, its delay is correct,
 // while block 4 has an extra delay b/c of the busy.

@@ -1,6 +1,12 @@
 %{
 
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Tokenizer for our C compiler.  The input is handled as
 // a mmap'd file, so we don't copy identifiers or strings- we
 // use the String class, which stores a pointer and length.

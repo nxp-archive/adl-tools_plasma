@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // test program to pretend to be joke fhr system
 // as per dick brown's picture 23 may 1990
 // changed by wm on 1/27/92.  Random streams, etc.

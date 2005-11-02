@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Implements the KISS random number generator.  This is a simple,
 // but quite good, random number generator with a period of 2^127.
 // The function is not reversible (that I know of).  It requires 

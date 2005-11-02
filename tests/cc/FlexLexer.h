@@ -1,3 +1,9 @@
+//
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
 // -*-C++-*-
 // FlexLexer.h -- define interfaces for lexical analyzer classes generated
 // by flex

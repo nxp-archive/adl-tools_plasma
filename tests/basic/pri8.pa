@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This tests to make sure that if a higher priority process is
 // busying a processor, that a low priority process, if awakened,
 // will not interrupt the processor.

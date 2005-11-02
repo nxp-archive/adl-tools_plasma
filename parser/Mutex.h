@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Mutex wrapper class:  Any class preceded by pMutex will
 // have all public member functions wrapped with mutex code.
 // A public member may be preceded by the pNoMutex modifier

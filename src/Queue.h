@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Simple queue class.  Requires that the target class
 // have a next pointer inside of itself.  This means that
 // queue manipulation requires only some pointer operations

@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Simple channel test using several producers all writing
 // to a single consumer.  It demoonstrates the alt block w/o
 // a default case.

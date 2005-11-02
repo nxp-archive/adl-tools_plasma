@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Test of the "on" block for specifying a target processor with a pfor block.
 // This tests to make sure that pDelay works in such a case.
 // 

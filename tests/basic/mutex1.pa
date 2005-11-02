@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Test of mutex data structures.  We create a shared queue written to by a
 // producer and read by a consumer.  The idea is that the queue class is written
 // in such a way that its data will be clobbered unless it's protected by mutex

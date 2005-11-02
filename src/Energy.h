@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This file contains a generic means for hashing values
 // against processors, and a particular implementation which
 // hashes energy values as doubles against processors.

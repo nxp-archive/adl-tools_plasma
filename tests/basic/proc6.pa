@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Test of priority queue operation.  Makes sure that
 // we properly sort what's up next by adding multiple items
 // to a series of processors.

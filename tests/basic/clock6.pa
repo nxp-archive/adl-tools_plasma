@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // This tests that multiple accesses to a clocked channel
 // with a skew will result in monotonically increasing access
 // times, i.e. you won't get two reads at the same time.

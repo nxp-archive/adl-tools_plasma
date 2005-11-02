@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // Tests that we can set a skew for a clocked channel.
 // This lets us have a channel that has the same period as
 // others, but has a constant offset.

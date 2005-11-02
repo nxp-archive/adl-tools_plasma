@@ -1,4 +1,10 @@
 //
+// Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+//
+// You may distribute under the terms of the Artistic License, as specified in
+// the COPYING file.
+//
+//
 // The VarWalker class traverses a Ptree, looking for variable
 // instances.  It records these so that the user can figure out
 // what variables are used within an expression.
