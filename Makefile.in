@@ -169,6 +169,7 @@ W2L = @W2L@
 W2LOK_FALSE = @W2LOK_FALSE@
 W2LOK_TRUE = @W2LOK_TRUE@
 WEBHOME = @WEBHOME@
+WEBURL = @WEBURL@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -626,6 +627,10 @@ uninstall-info: uninstall-info-recursive
 	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
 	tags tags-recursive uninstall uninstall-am uninstall-info-am
 
+
+# Install documentation (not done by 'all' target)
+docinstall:
+	cd doc && $(MAKE) docinstall
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

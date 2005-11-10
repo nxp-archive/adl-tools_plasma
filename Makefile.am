@@ -9,3 +9,7 @@ AUTOMAKE_OPTIONS = foreign
 # captures the state of the variable and substitutes it into the
 # final Makefile.
 ACLOCAL_AMFLAGS = -I ./macros -I ./libltdl
+
+# Install documentation (not done by 'all' target)
+docinstall:
+	cd doc && $(MAKE) docinstall

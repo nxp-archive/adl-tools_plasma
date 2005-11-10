@@ -79,7 +79,13 @@
       function, <code>pMain</code>, you can see that all channels are declared
       here, as well as all pipeline stages:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">int pMain(int argc,const char *argv[]) 
+<tr><td><pre class="prog"><font color="#ffa600"><em>// Shut off preemption.</em></font>
+void pSetup(ConfigParms &amp;cp)
+<font color="red"><strong>{</strong></font>
+  cp._busyokay = true;
+<font color="red"><strong>}</strong></font>
+
+int pMain(int argc,const char *argv[]) 
 <font color="red"><strong>{</strong></font>
   MemClkChan fetch_icache(Clock,0,1), icache_decode(Clock,0,1),
     alu_dcache(Clock,0,1), regwrite1_dcache(Clock,0,1);
@@ -157,7 +163,13 @@
       set probability.</p><p>The source code for this model can be found <a href="./source-code-3.html#Network System Example">here</a>.</p><p>In this example, different threads are explicitly run on different
       processors, as shown below:</p><table cellspacing="0" class="color" cellpadding="0"><tbody>
 <tr><td bgcolor="#ffffcc"><table cellspacing="0" class="frame" cellpadding="2" border="1" width="100%"><tbody>
-<tr><td><pre class="prog">  <font color="#ffa600"><em>// create the dynamically-sized interconnect</em></font>
+<tr><td><pre class="prog">  <strong>if</strong> (ReportInterval &lt;= 0) <font color="red"><strong>{</strong></font>
+    ReportInterval = 1;
+  <font color="red"><strong>}</strong></font>
+  mprintf(<font color="red">&quot;\n\tProgress reports every %ld seconds\n&quot;</font>, ReportInterval);
+  ReportInterval = ReportInterval * sec;
+
+  <font color="#ffa600"><em>// create the dynamically-sized interconnect</em></font>
   Chans 
     terms_to_comms(actual_users), 
     comms_to_terms(actual_users),
@@ -202,12 +214,6 @@
       saynum(transactions);
       say(<font color="red">&quot; in &quot;</font>);
       printfixed(pTime(), sec);
-      say(<font color="red">&quot; seconds for a transaction rate of &quot;</font>);
-      <font color="#ffa600"><em>//mprintfixed(transactions * sec, Now);</em></font>
-      printfixed(transactions, pTime()/sec);
-      say (<font color="red">&quot; tps\n&quot;</font>);
-      pExit(0);
-    <font color="red"><strong>}</strong></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -319,6 +325,6 @@
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Oct  4 17:57:17 2005</em>.</font></p></div>
+Last update <em>Wed Nov  9 18:15:18 2005</em>.</font></p></div>
 </body>
 </html>

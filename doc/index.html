@@ -69,7 +69,7 @@ Peter Wilson</i></font>
    on the result of a function launched as a separate thread.  Although C++ is a
    difficult language from which to extract formal properties, we believe that
    the combination of CSP (which does have well-understood semantics) and an
-   identified subset of Plasma will make this possible.</p><p>A PDF version of this document may be found at:</p><p><a href="http://www.somerset.sps.mot.com/projects/tools/plasma/index.pdf" class="http">http://www.somerset.sps.mot.com/projects/tools/plasma/index.pdf</a></p><p>The latest distribution tarball of Plasma may be found at:</p><p><a href="http://www.somerset.sps.mot.com/projects/tools/plasma/plasma-0.8.20.tar.gz" class="http">http://www.somerset.sps.mot.com/projects/tools/plasma/plasma-0.8.20.tar.gz</a></p><!-- Purpose of This Work -->
+   identified subset of Plasma will make this possible.</p><p>A PDF version of this document may be found at:</p><p><a href="index.pdf">http://www.somerset.sps.mot.com/projects/tools/plasma/index.pdf</a></p><p>The latest distribution tarball of Plasma may be found at:</p><p><a href="distribution">http://www.somerset.sps.mot.com/projects/tools/plasma/distribution</a></p><!-- Purpose of This Work -->
 <a name="Purpose-of-This-Work"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">1 Purpose of This Work</font>
 </h3></td></tr></table>
@@ -146,29 +146,7 @@ Peter Wilson</i></font>
       Taken together, these restrictions mean that SystemC is unlikely to be
       used for actual application development.  However, it does show the
       utility of taking a powerful and extensible general purpose language and
-      adding a modeling framework on top of it.</p><p>The Panama modeling environment, based upon SystemC and developed by
-      FIL, has shown that SystemC can be used to do microarchitectural trade-off
-      analysis.  The view adopted by Panama, that a system can be modeled as a
-      collection of objects, each specialized to the system element to be
-      modeled, and each given behavior through a script, is a promising
-      beginning. The idea here is that a skilled modeling technology team
-      creates the base objects, and folk in the product teams can personalize
-      the behavior of the objects simply by writing scripts. This approach has
-      the promise that the task of modeling can be distributed, and that a tools
-      group can provide re-usable technology for use where needed. This approach
-      has many advantages over the approach currently in effect in what was
-      Somerset, that the modeling group provides both the technology and a modeling
-      service.  Such a service-based approach is efficient in throughput- modelers
-      are always busy, but not in latency- no more modelers can be provided, and
-      so the time that a project must wait before it can have a model constructed can
-      be lengthy, unpredictable, and uncontrollable.</p><p>However, even Panama's approach can likely be improved upon: One area is its
-      choice of specialized objects and a rather limited scripting
-      language. Rather than having many different object types, each of which is
-      scriptable, we could have exactly one object, call it a <em>Processor</em>,
-      capable of executing scripts written in a more general-purpose scripting
-      language. Couple this improvement with the understanding that a key new
-      ability we need is to model software at multiple levels of abstraction,
-      and the idea behind Plasma becomes clear.</p></div><br>
+      adding a modeling framework on top of it.</p></div><br>
 <!-- An Introduction to Plasma -->
 <a name="An-Introduction-to-Plasma"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">3 An Introduction to Plasma</font>
@@ -621,6 +599,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Tue Oct  4 17:57:17 2005</em>.</font></p></div>
+Last update <em>Wed Nov  9 18:15:18 2005</em>.</font></p></div>
 </body>
 </html>

@@ -23,11 +23,11 @@
 
    (p [A PDF version of this document may be found at:])
    
-   (p (ref :url (string-append *web-url* "index.pdf")))
+   (p (ref :text (string-append *web-url* "/index.pdf") :url "index.pdf"))
    
    (p [The latest distribution tarball of Plasma may be found at:])
    
-   (p (ref :url (string-append *web-url* *dist-file*)))
+   (p (ref :text (string-append *web-url* "/" *dist-url*) :url *dist-url*))
    
    (section :title "Purpose of This Work"
 
@@ -120,32 +120,6 @@
       utility of taking a powerful and extensible general purpose language and
       adding a modeling framework on top of it.])
       
-      (p [The Panama modeling environment, based upon SystemC and developed by
-      FIL, has shown that SystemC can be used to do microarchitectural trade-off
-      analysis.  The view adopted by Panama, that a system can be modeled as a
-      collection of objects, each specialized to the system element to be
-      modeled, and each given behavior through a script, is a promising
-      beginning. The idea here is that a skilled modeling technology team
-      creates the base objects, and folk in the product teams can personalize
-      the behavior of the objects simply by writing scripts. This approach has
-      the promise that the task of modeling can be distributed, and that a tools
-      group can provide re-usable technology for use where needed. This approach
-      has many advantages over the approach currently in effect in what was
-      Somerset, that the modeling group provides both the technology and a modeling
-      service.  Such a service-based approach is efficient in throughput- modelers
-      are always busy, but not in latency- no more modelers can be provided, and
-      so the time that a project must wait before it can have a model constructed can
-      be lengthy, unpredictable, and uncontrollable.])
-
-      (p [However, even Panama's approach can likely be improved upon: One area is its
-      choice of specialized objects and a rather limited scripting
-      language. Rather than having many different object types, each of which is
-      scriptable, we could have exactly one object, call it a ,(i [Processor]),
-      capable of executing scripts written in a more general-purpose scripting
-      language. Couple this improvement with the understanding that a key new
-      ability we need is to model software at multiple levels of abstraction,
-      and the idea behind Plasma becomes clear.])
-
       )
 
    (section :title "An Introduction to Plasma"

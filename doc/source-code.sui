@@ -1,9 +1,9 @@
 (sui "Example Source Code"
   :file "source-code.html"
   (marks
-    ("544" :file "source-code-3.html" :mark "544" :class "mark")
-    ("270" :file "source-code-4.html" :mark "270" :class "mark")
-    ("339" :file "source-code-4.html" :mark "339" :class "mark"))
+    ("550" :file "source-code-3.html" :mark "550" :class "mark")
+    ("276" :file "source-code-4.html" :mark "276" :class "mark")
+    ("345" :file "source-code-4.html" :mark "345" :class "mark"))
   (chapters)
   (sections
     ("RISC Pipeline Example" :file "source-code-1.html" :mark "RISC Pipeline Example" :class "section")

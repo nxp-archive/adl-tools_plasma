@@ -164,6 +164,7 @@ W2L = @W2L@
 W2LOK_FALSE = @W2LOK_FALSE@
 W2LOK_TRUE = @W2LOK_TRUE@
 WEBHOME = @WEBHOME@
+WEBURL = @WEBURL@
 ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@

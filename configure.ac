@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.21])
+AC_INIT([plasma],[0.8.22])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -31,9 +31,14 @@ fi
 ## Check for web directory (documentation destination).
 AC_MSG_CHECKING([for web destination directory])
 ac_web_default=/proj/ppctools/GSTM/www/plasma
+ac_weburl_default=http://www.somerset.sps.mot.com/projects/tools/plasma
 WEBHOME=
+WEBURL=
 DOCDIR=doc
-AC_ARG_WITH([web],AC_HELP_STRING([--with-web],[specify a web destination directory.  The default is $ac_web_default.]),WEBHOME=$withval,WEBHOME=$ac_web_default)
+AC_ARG_WITH([web],AS_HELP_STRING([--with-web],[specify a web destination directory.  The default is /proj/ppctools/GSTM/www/plasma.]),
+	    WEBHOME=$withval,WEBHOME=$ac_web_default)
+AC_ARG_WITH([weburl],AS_HELP_STRING([--with-weburl],[specify a the URL to web documentation.  The default is http://www.somerset.sps.mot.com/projects/tools/plasma.]),
+	    WEBURL=$withval,WEBURL=$ac_weburl_default)
 
 if [[ -d $WEBHOME ]]; then
   AC_MSG_RESULT([$WEBHOME])
@@ -100,6 +105,7 @@ AC_SUBST(ACLOCAL_FLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
 AC_SUBST(WEBHOME)
+AC_SUBST(WEBURL)
 AC_SUBST(DOCDIR)
 
 # If compiling on x86, we can compile test programs generated
