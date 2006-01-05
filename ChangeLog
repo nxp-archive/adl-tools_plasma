@@ -1,3 +1,5 @@
+        ====== plasma release 0.8.23 (v0_8_23) on Linux (cde-tx32-ldt189) ======
+
 2006-01-05  Brian Kahne  <bkahne@freescale.com>
 
 	* Fixed a bug with parsing long strings: We didn't handle the case
