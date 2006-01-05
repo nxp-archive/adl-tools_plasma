@@ -1,0 +1,7 @@
+in7.C:13: parse error before `branch'
+Define statement:  ( reg foo1 ) {  }
+in7.C:36: parse error before `
+'
+occ: parse errors, exiting
+
+fatal error

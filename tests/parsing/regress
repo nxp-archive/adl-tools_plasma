@@ -40,6 +40,13 @@ my @Tests = (
 			  cmd  => "./parse-test -E in6.C",
 			  diff => "in6.regress",
 			 },
+             # Test of improperly formed long strings.
+			 {
+			  cmd    => "./parse-test -E in7.C",
+			  diff   => "in7.regress",
+			  stderr => 1,
+			  fail   => 255,
+			 },
 			);
 
 doTest(\@Tests);

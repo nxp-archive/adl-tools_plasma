@@ -1,3 +1,11 @@
+2006-01-05  Brian Kahne  <bkahne@freescale.com>
+
+	* Fixed a bug with parsing long strings: We didn't handle the case
+	where we received a null character, indicating that we had a badly
+	formed string (had run to the end of the buffer w/o finding the
+	terminator).  This meant that we ended up in an infinite loop.
+	Fixed this and added tests/parsing/in7.C to verify this.
+
         ====== plasma release 0.8.22 (v0_8_22) on Linux (cde-tx32-ldt189) ======
 
         ====== plasma release 0.8.22 (v0_8_22) on Linux (cde-tx32-ldt189) ======

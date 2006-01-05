@@ -774,6 +774,9 @@ namespace Opencxx
           file->Unget();
         }
       }
+      else if(c == '\0') {
+        return false;
+      }
     }
   }
 
