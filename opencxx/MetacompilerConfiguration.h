@@ -24,30 +24,31 @@
 namespace Opencxx
 {
 
-class ErrorLog;
+  class ErrorLog;
 
-class MetacompilerConfiguration
-{
-protected:
+  class MetacompilerConfiguration
+  {
+  protected:
     class IteratorIface
     {
     public:
-        virtual std::string Get() const = 0;
-        virtual bool AtEnd() const = 0;
-        virtual void Advance() = 0;
-        virtual std::auto_ptr<IteratorIface> Clone() const = 0;
+      virtual ~IteratorIface() {};
+      virtual std::string Get() const = 0;
+      virtual bool AtEnd() const = 0;
+      virtual void Advance() = 0;
+      virtual std::auto_ptr<IteratorIface> Clone() const = 0;
     };
 
-public:    
+  public:    
     class Iterator
     {
     public:
-        template <class T>
-        Iterator(std::auto_ptr<T> impl) : impl_(impl) {}
-        Iterator(const Iterator& iter) : impl_(iter.impl_->Clone()) {}
-        Iterator& operator=(Iterator iter)
-        {
-            // Breaks 3.4.x compilation because it is not standard compliant.
+      template <class T>
+      Iterator(std::auto_ptr<T> impl) : impl_(impl) {}
+      Iterator(const Iterator& iter) : impl_(iter.impl_->Clone()) {}
+      Iterator& operator=(Iterator iter)
+      {
+        // Breaks 3.4.x compilation because it is not standard compliant.
 	    // According to the Standard: Ch: 20.4.5 p3 
 	    // "auto_ptr_does not meet the CopyContructible and Assignable requirements..."
 	    // and according to 25.2.2. p1 ( about std::swap)
@@ -61,14 +62,16 @@ public:
 	    impl_      = iter.impl_;
 	    iter.impl_ = tmp;
 		
-            return *this;
-        }
-        std::string Get() const { return impl_->Get(); }
-        bool        AtEnd() const { return impl_->AtEnd(); }
-        void        Advance() { return impl_->Advance(); }
+        return *this;
+      }
+      std::string Get() const { return impl_->Get(); }
+      bool        AtEnd() const { return impl_->AtEnd(); }
+      void        Advance() { return impl_->Advance(); }
     private:
-        std::auto_ptr<IteratorIface> impl_;
+      std::auto_ptr<IteratorIface> impl_;
     };
+
+    virtual ~MetacompilerConfiguration() {};
 
     /** True iff running in verbose mode */ 
     virtual bool VerboseMode() const = 0;
@@ -114,7 +117,7 @@ public:
     virtual Iterator Cc2Options() const = 0;
     
     virtual Iterator Metaclasses() const = 0;
-};
+  };
 
 }
 

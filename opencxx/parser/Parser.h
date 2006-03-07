@@ -53,8 +53,8 @@ class ErrorLog;
   is<name>:  is the following symbol <name>?
 */
 
-class Parser : public Object {
-public:
+  class Parser : public Object {
+  public:
     Parser(Lex* lex, ErrorLog& errorLog);
     unsigned LineNumber(char* pos, char*& fname, int& fname_len);
 
@@ -62,7 +62,7 @@ public:
 
     enum DeclKind { kDeclarator, kArgDeclarator, kCastDeclarator };
     enum TemplateDeclKind { tdk_unknown, tdk_decl, tdk_instantiation, 
-			    tdk_specialization, num_tdks };
+                            tdk_specialization, num_tdks };
 
     bool rDefinition(Ptree*&);
     bool rNullDeclaration(Ptree*&);
@@ -82,6 +82,7 @@ public:
     bool rTempArgDeclaration(Ptree*&);
     bool rExternTemplateDecl(Ptree*&);
 
+    bool rNestedFunc(Ptree* &,Encoding&,Ptree *, Ptree *);
     bool rDeclaration(Ptree*&);
     bool rIntegralDeclaration(Ptree*&, Encoding&, Ptree*, Ptree*, Ptree*);
     bool rConstDeclaration(Ptree*&, Encoding&, Ptree*, Ptree*);
@@ -101,9 +102,9 @@ public:
     bool rDeclarators(Ptree*&, Encoding&, bool, bool = false);
     bool rDeclaratorWithInit(Ptree*&, Encoding&, bool, bool);
     bool rDeclarator(Ptree*&, DeclKind, bool, Encoding&, Encoding&, bool,
-		     bool = false);
+                     bool = false);
     bool rDeclarator2(Ptree*&, DeclKind, bool, Encoding&, Encoding&, bool,
-		      bool, Ptree**);
+                      bool, Ptree**);
     bool optPtrOperator(Ptree*&, Encoding&);
     bool rMemberInitializers(Ptree*&);
     bool rMemberInit(Ptree*&);
@@ -167,9 +168,9 @@ public:
     bool rVarNameCore(Ptree*&, Encoding&);
     bool isTemplateArgs();
 
-  bool rLogicalOrTypeExpr(Ptree* &exp,Encoding& type_encode);
-  bool rLogicalAndTypeExpr(Ptree* &exp,Encoding& type_encode);
-  bool rLogicalUnaryTypeExpr(Ptree* &exp,Encoding& type_encode);
+    bool rLogicalOrTypeExpr(Ptree* &exp,Encoding& type_encode);
+    bool rLogicalAndTypeExpr(Ptree* &exp,Encoding& type_encode);
+    bool rLogicalUnaryTypeExpr(Ptree* &exp,Encoding& type_encode);
 
     bool rFunctionBody(Ptree*&);
     bool rCompoundStatement(Ptree*&);
@@ -192,22 +193,22 @@ public:
     
     void InstallMetaclassLoader(MetaclassLoader* loader)
     {
-        metaclassLoader_ = loader;
+      metaclassLoader_ = loader;
     }
     
     bool SyntaxErrorsFound() const { return syntaxErrors_; }
 
-private:
+  private:
     bool moreVarName();
     bool SyntaxError();
     void ShowMessageHead(char*);
 
-private:
+  private:
     Lex* lex;
     MetaclassLoader* metaclassLoader_; // :TODO: make it an auto_ptr
     ErrorLog& errorLog_;
     bool syntaxErrors_;
-};
+  };
 
 }
 

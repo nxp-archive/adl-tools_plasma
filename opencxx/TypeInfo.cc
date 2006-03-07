@@ -681,6 +681,13 @@ finish:
     }
 }
 
+char* TypeInfo::SkipChunk(char *ptr)
+{
+  unsigned char *p = (unsigned char *)ptr;
+  int n = *p++ - (unsigned)DigitOffset;
+  return (char*)(p + n);
+}
+
 char* TypeInfo::SkipName(char* encode, Environment* e)
 {
     if(e == 0)
@@ -711,11 +718,11 @@ char* TypeInfo::GetReturnType(char* encode, Environment* env)
 
 char* TypeInfo::SkipType(char* ptr, Environment* env)
 {
-    while(ptr != 0)
+  while(ptr != 0)
 	switch(*ptr){
 	case '\0' :
 	case '_' :
-	    return 0;
+      return 0;
 	case 'S' :
 	case 'U' :
 	case 'C' :
@@ -723,25 +730,27 @@ char* TypeInfo::SkipType(char* ptr, Environment* env)
 	case 'P' :
 	case 'R' :
 	case 'A' :
-	    ++ptr;
-	    break;
+      ++ptr;
+      break;
 	case 'F' :
-	    ptr =  GetReturnType(ptr + 1, env);
-	    break;
+      ptr =  GetReturnType(ptr + 1, env);
+      break;
+    case 'N' :
+      return SkipChunk(ptr+1);
 	case 'T' :
 	case 'Q' :
-	    return SkipName(ptr, env);
+      return SkipName(ptr, env);
 	case 'M' :
-	    ptr = SkipName(ptr + 1, env);
-	    break;
+      ptr = SkipName(ptr + 1, env);
+      break;
 	default :
-	    if(*(unsigned char*)ptr < 0x80)
+      if(*(unsigned char*)ptr < 0x80)
 		return ptr + 1;
-	    else
+      else
 		return SkipName(ptr, env);
 	}
 
-    return ptr;
+  return ptr;
 }
 
 }

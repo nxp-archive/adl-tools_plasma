@@ -93,29 +93,29 @@ NthDeclarator(Ptree* def, int& nth)
 bool 
 GetArgDeclList(PtreeDeclarator* decl, Ptree*& args)
 {
-    Ptree* p = decl;
-    while(p != 0){
+  Ptree* p = decl;
+  while(p != 0){
 	Ptree* q = p->Car();
 	if(q != 0)
-	    if(q->IsLeaf()){
+      if(q->IsLeaf()) {
 		if(Eq(q, '(')){
-		    args = p->Cdr()->Car();
-		    return true;
+          args = p->Cdr()->Car();
+          return true;
 		}
 		else if (Eq(q, '['))
-		    break;
-	    }
-	    else if(Eq(q->Car(), '(')) {	// e.g. int (*p)[];
+          break;
+      }
+      else if(Eq(q->Car(), '(')) {	// e.g. int (*p)[];
 		p = q->Cdr()->Car();
 		if (p->IsLeaf())
-		    break;
-	    }
+          break;
+      }
 
 	p = p->Cdr();
-    }
+  }
 
-    args = 0;
-    return false;
+  args = 0;
+  return false;
 }
 
 

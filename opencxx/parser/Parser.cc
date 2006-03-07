@@ -59,6 +59,8 @@
 
 using namespace std;
 
+#define NESTED_FUNCS_OKAY
+
 namespace Opencxx
 {
 
@@ -4715,13 +4717,70 @@ namespace Opencxx
   }
 
   /*
+    Handles an optional nested function, or an integral declaration.
+   */
+  bool Parser::rNestedFunc(Ptree* &statement,Encoding &type_encode,Ptree *type, Ptree *head)
+  {
+    Token tk;
+
+    Ptree *decl;
+
+    // Save our state here.  If we have a nested function, we must re-parse
+    // in order to get a proper function declaration, rather than treating
+    // it as function arguments.
+    char *s = lex->Save();
+
+    if(!rDeclarators(decl, type_encode, false, true)) {
+      return false;
+    }
+
+    // Define if nested functions are allowed.  Otherwise, they will cause
+    // a parse error.
+#   ifdef NESTED_FUNCS_OKAY
+    if(lex->LookAhead(0) == ';') {
+      lex->GetToken(tk);
+      statement = new PtreeDeclaration(head, PtreeUtil::List(type, decl,
+                                                             new Leaf(tk)));
+      return true;
+    } else {
+      // We have a nested function.  Restore and re-parse the declaration.
+      lex->Restore(s);
+
+      if(!rDeclarators(decl, type_encode, false, false)) {
+        return false;
+      }
+      
+      Ptree* body;
+      if(!rFunctionBody(body))
+        return false;
+
+      if(PtreeUtil::Length(decl) != 1)
+        return false;
+
+      statement = new PtreeDeclaration(head,
+                                       PtreeUtil::List(type,
+                                                       decl->Car(), body));
+      return true;
+    }
+#   else
+    if(lex->GetToken(tk) != ';')
+      return false;
+
+    statement = new PtreeDeclaration(head, PtreeUtil::List(type, decl,
+                                                           new Leaf(tk)));
+    return true;
+#   endif
+
+  }
+
+  /*
     integral.decl.statement
     : decl.head integral.type.or.class.spec {cv.qualify} {declarators} ';'
   */
   bool Parser::rIntegralDeclStatement(Ptree*& statement, Encoding& type_encode,
                                       Ptree* integral, Ptree* cv_q, Ptree* head)
   {
-    Ptree *cv_q2, *decl;
+    Ptree *cv_q2;
     Token tk;
 
     if(!optCvQualify(cv_q2))
@@ -4729,9 +4788,9 @@ namespace Opencxx
 
     if(cv_q != 0)
       if(cv_q2 == 0)
-	    integral = PtreeUtil::Snoc(cv_q, integral);
+        integral = PtreeUtil::Snoc(cv_q, integral);
       else
-	    integral = PtreeUtil::Nconc(cv_q, PtreeUtil::Cons(integral, cv_q2));
+        integral = PtreeUtil::Nconc(cv_q, PtreeUtil::Cons(integral, cv_q2));
     else if(cv_q2 != 0)
       integral = PtreeUtil::Cons(integral, cv_q2);
 
@@ -4743,39 +4802,8 @@ namespace Opencxx
       return true;
     }
     else{
-      if(!rDeclarators(decl, type_encode, false, true)) {
-	    return false;
-      }
 
-      // Define if nested functions are allowed.  Otherwise, they will cause
-      // a parse error.
-#     ifdef NESTED_FUNCS_OKAY
-      if(lex->LookAhead(0) == ';') {
-        lex->GetToken(tk);
-        statement = new PtreeDeclaration(head, PtreeUtil::List(integral, decl,                                                                
-                                                               new Leaf(tk)));
-        return true;
-      } else {
-	    Ptree* body;
-	    if(!rFunctionBody(body))
-          return false;
-
-	    if(PtreeUtil::Length(decl) != 1)
-          return false;
-
-	    statement = new PtreeDeclaration(head,
-                                         PtreeUtil::List(integral,
-                                                         decl->Car(), body));
-	    return true;
-      }
-#     else
-      if(lex->GetToken(tk) != ';')
-        return false;
-
-      statement = new PtreeDeclaration(head, PtreeUtil::List(integral, decl,
-                                                             new Leaf(tk)));
-      return true;
-#     endif
+      return rNestedFunc(statement,type_encode,integral,head);
 
     }
   }
@@ -4787,8 +4815,7 @@ namespace Opencxx
   bool Parser::rOtherDeclStatement(Ptree*& statement, Encoding& type_encode,
                                    Ptree* cv_q, Ptree* head)
   {
-    Ptree *type_name, *cv_q2, *decl;
-    Token tk;
+    Ptree *type_name, *cv_q2;
 
     if(!rName(type_name, type_encode))
       return false;
@@ -4805,15 +4832,12 @@ namespace Opencxx
       type_name = PtreeUtil::Cons(type_name, cv_q2);
 
     type_encode.CvQualify(cv_q, cv_q2);
-    if(!rDeclarators(decl, type_encode, false, true))
-      return false;
 
-    if(lex->GetToken(tk) != ';')
-      return false;
+    // Define if nested functions are allowed.  Otherwise, they will cause
+    // a parse error.
 
-    statement = new PtreeDeclaration(head, PtreeUtil::List(type_name, decl,
-                                                           new Leaf(tk)));
-    return true;
+    return rNestedFunc(statement,type_encode,type_name,head);
+
   }
 
   bool Parser::MaybeTypeNameOrClassTemplate(Token&)

@@ -50,6 +50,8 @@ namespace Opencxx
   class Ptree : public LightObject {
   public:
 
+    virtual ~Ptree() {};
+
     /** This returns true if the metaobject indicates a lexical token. */
     virtual bool IsLeaf() const = 0;
 

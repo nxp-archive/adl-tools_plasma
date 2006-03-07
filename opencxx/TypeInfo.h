@@ -63,8 +63,8 @@ enum {
   TypeInfo interprets an encoded type name.  For details of the encoded
   type name, see class Encoding in encoding.h and encoding.cc.
 */
-class TypeInfo : public LightObject {
-public:
+  class TypeInfo : public LightObject {
+  public:
     TypeInfo();
     void Unknown();
     void Set(char*, Environment*);
@@ -105,7 +105,9 @@ public:
     Ptree* FullTypeName();
     Ptree* MakePtree(Ptree* = 0);
 
-private:
+    const char *Encoding() const { return encode; };
+
+  private:
     static Ptree* GetQualifiedName(Environment*, Ptree*);
     static Ptree* GetQualifiedName2(Class*);
     void Normalize();
@@ -115,13 +117,14 @@ private:
     static char* SkipName(char*, Environment*);
     static char* GetReturnType(char*, Environment*);
     static char* SkipType(char*, Environment*);
+    static char* SkipChunk(char *);
 
-private:
+  private:
     int refcount;
     char* encode;
     Class* metaobject;
     Environment* env;
-};
+  };
 
 }
 

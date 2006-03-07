@@ -1,0 +1,96 @@
+Define statement:  ( reg foo1 ) {
+    size = 10 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Key:  size
+Value:  20
+  Boolean: true
+  Integer: 20
+Key:  size
+Value:  10
+  Boolean: true
+  Integer: 10
+Stmt:  define ( stuff bar ) {
+    size = 20 ;
+}
+Define statement:  ( reg foo2 ) {
+     void A ( int a , int signbit ) {
+         ;
+    }
+     uint32 B ( int a , int signbit ) {
+         ;
+    }
+     bits < 32 > C ( int a , int signbit ) {
+         ;
+    }
+     const bits < 32 > D ( int a , int signbit ) {
+         ;
+    }
+     uint32 E ( bits < 32 > field , bits < 32 > x , bits < 32 > y ) {
+         int i = 1 ;
+    }
+     void F ( bits < 32 > field , bits < 32 > x , bits < 32 > y ) {
+         int i = 1 ;
+    }
+    size = 30 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Key:  size
+Value:  20
+  Boolean: true
+  Integer: 20
+Stmt:   void A ( int a , int signbit ) {
+     ;
+}
+Stmt:   uint32 B ( int a , int signbit ) {
+     ;
+}
+Stmt:   bits < 32 > C ( int a , int signbit ) {
+     ;
+}
+Stmt:   const bits < 32 > D ( int a , int signbit ) {
+     ;
+}
+Stmt:   uint32 E ( bits < 32 > field , bits < 32 > x , bits < 32 > y ) {
+     int i = 1 ;
+}
+Stmt:   void F ( bits < 32 > field , bits < 32 > x , bits < 32 > y ) {
+     int i = 1 ;
+}
+Key:  size
+Value:  30
+  Boolean: true
+  Integer: 30
+Stmt:  define ( stuff bar ) {
+    size = 20 ;
+}
+Define statement:  ( reg foo3 ) {
+    size = 30 ;
+    define ( stuff bar ) {
+        size = 20 ;
+    }
+}
+Define statement:  ( stuff bar ) {
+    size = 20 ;
+}
+Key:  size
+Value:  20
+  Boolean: true
+  Integer: 20
+Key:  size
+Value:  30
+  Boolean: true
+  Integer: 30
+Stmt:  define ( stuff bar ) {
+    size = 20 ;
+}

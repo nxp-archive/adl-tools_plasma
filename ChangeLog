@@ -1,3 +1,14 @@
+2006-03-07  Brian Kahne  <bkahne@freescale.com>
+
+	* Fixed bugs in TypeInfo:
+
+	  * Added ability to get encoding string.
+
+	  * Fixed the nth-template-argument accessor function.
+
+	* Fixed nested functions so that they work (I think).  This
+	feature is now turned on by default.
+
 2006-02-08  Brian Kahne  <bkahne@freescale.com>
 
 	* Removed trailing whitespace from shbang lines to avoid an

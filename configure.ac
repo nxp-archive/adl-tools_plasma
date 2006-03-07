@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.23])
+AC_INIT([plasma],[0.8.24])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -95,7 +95,7 @@ if [[ x$PDFLATEX = x -o x$BIBTEX = x ]] ; then
 fi
 
 ## Do final substitions and generation.
-CXXFLAGS="$CXXFLAGS -g -Wall $CPPSETUP"
+CXXFLAGS="-g -Wall $CPPSETUP"
 
 ## Add on macro directory to ACLOCAL_FLAGS.
 ACLOCAL_FLAGS="${ACLOCAL_FLAGS} -I ./macros"
@@ -155,6 +155,7 @@ AC_CONFIG_FILES([\
 ],[chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm ])
 
 # We always want to enable C++ support (argument taken by GC library).
+# We also supply our own threading library, so we don't need this to be done by gc.
 export enable_cplusplus=yes
 AC_CONFIG_SUBDIRS(gc libltdl)
 

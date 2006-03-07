@@ -61,6 +61,7 @@ namespace Opencxx
 class MetaclassLoader
 {
 public:
+  virtual ~MetaclassLoader() {};
     virtual void LoadMetaclass(const char* name) const = 0;
 };
 

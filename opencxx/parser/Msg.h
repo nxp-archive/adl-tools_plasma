@@ -27,9 +27,10 @@ class SourceLocation;
 class Msg
 {
 public:
-    enum Severity { Info, Warning, Error, Fatal };
-    virtual Severity GetSeverity() const = 0;
-    virtual void PrintOn(std::ostream&) const = 0;
+  enum Severity { Info, Warning, Error, Fatal };
+  virtual ~Msg() {};
+  virtual Severity GetSeverity() const = 0;
+  virtual void PrintOn(std::ostream&) const = 0;
 };
 
 }

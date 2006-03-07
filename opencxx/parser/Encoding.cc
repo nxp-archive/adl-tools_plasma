@@ -91,8 +91,6 @@ using namespace std;
 namespace Opencxx
 {
 
-  const int DigitOffset = 0x80;
-
   void Encoding::Reset(Encoding& e)
   {
     len = e.len;

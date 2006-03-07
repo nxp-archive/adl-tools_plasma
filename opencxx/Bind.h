@@ -42,19 +42,20 @@ class Class;
 class TypeInfo;
 class Environment;
 
-class Bind : public LightObject {
-public:
+  class Bind : public LightObject {
+  public:
     enum Kind {
-	isVarName, isTypedefName, isClassName, isEnumName, isTemplateClass,
-	isTemplateFunction
-     };
+      isVarName, isTypedefName, isClassName, isEnumName, isTemplateClass,
+      isTemplateFunction
+    };
+    virtual ~Bind() {};
     virtual Kind What() = 0;
     virtual void GetType(TypeInfo&, Environment*) = 0;
     virtual char* GetEncodedType();
     virtual bool IsType();
     virtual Class* ClassMetaobject();
     virtual void SetClassMetaobject(Class*);
-};
+  };
 
 }
 

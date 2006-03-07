@@ -47,6 +47,11 @@ my @Tests = (
 			  stderr => 1,
 			  fail   => 255,
 			 },
+			 # Test of nested functions.
+			 {
+			  cmd  => "./parse-test -E in8.C",
+			  diff => "in8.regress",
+			 },
 			);
 
 doTest(\@Tests);

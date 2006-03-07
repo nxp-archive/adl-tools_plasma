@@ -35,6 +35,8 @@
 namespace Opencxx
 {
 
+  const int DigitOffset = 0x80;
+
   class Ptree;
 
   class Encoding {
