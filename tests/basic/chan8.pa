@@ -12,17 +12,26 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 #include <plasma.h>
 
 typedef plasma::QueueChan<int> IntQChan;
+
+void mydelay(int delay)
+{
+  double j = 0;
+  for (int i = 0; i != delay; ++i) {
+    double k = 400000000;
+    double l = 500000000;
+    j += pow(k * l,5);
+  }
+}
 
 void producer(int val,int delay,IntQChan &chan) 
 {
   for (int i = 0; i != 10; ++i) {
     chan.write(val+i);
-    for (int j = 0; j != delay; ++j) {
-      int x = x + 1;
-    }
+    mydelay(delay);
   }
   chan.write(-1);
   plasma::mprintf ("Producer done.\n");
@@ -47,10 +56,10 @@ int pMain(int argc,const char *argv[])
   IntQChan channel;
 
   par {
-    producer(10,10000000,channel);
+    producer(10,1000000,channel);
     producer(100,1000,channel);
     producer(1000,10,channel);
-    producer(10000,10000000,channel);
+    producer(10000,1000000,channel);
     consumer(4,channel);
   }
   plasma::mprintf ("Done.\n");

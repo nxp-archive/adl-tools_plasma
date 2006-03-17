@@ -11,11 +11,24 @@
 
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 #include <plasma.h>
 
 typedef std::pair<int,int> IntPair;
 typedef plasma::Channel<IntPair> IntChan;
 typedef std::vector<IntChan> ChanVect;
+
+const int Count = 1000000;
+
+void mydelay()
+{
+  double j = 0;
+  for (int i = 0; i != Count; ++i) {
+    double k = 400000000;
+    double l = 500000000;
+    j += pow(k * l,5);
+  }
+}
 
 void producer(int val,int index,IntChan &chan) 
 {
@@ -39,9 +52,7 @@ void consumer(ChanVect &channels)
         if (v.first < 0) ++donecount;
       }
       {
-        for (int j = 0; j != 1000000; ++j) {
-          int x = 1;
-        }
+        mydelay();
         plasma::mprintf ("No value present.\n");
       }      
     }

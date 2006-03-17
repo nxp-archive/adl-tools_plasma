@@ -9,7 +9,20 @@
 //
 
 #include <stdio.h>
+#include <math.h>
 #include "plasma.h"
+
+const int Count = 1000000;
+
+void mydelay()
+{
+  double j = 0;
+  for (int i = 0; i != Count; ++i) {
+    double k = 400000000;
+    double l = 500000000;
+    j += pow(k * l,5);
+  }
+}
 
 int pMain(int argc,const char *argv[])
 {
@@ -19,10 +32,7 @@ int pMain(int argc,const char *argv[])
 
   pfor (int i = 0,xx = 2000; i != Max; ++i,--xx) {
     for (int j = 0; j != 10; ++j) {
-      int k = 0;
-      for (int l = 0; l != 100000000; ++l) {
-        k += 1;
-      }
+      mydelay();
       plasma::mprintf ("In block %d.\n",i);
     }
     plasma::mprintf ("Done with block %d.\n",i);

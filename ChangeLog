@@ -1,3 +1,9 @@
+2006-03-17  Brian Kahne  <bkahne@freescale.com>
+
+	* Fixed minor issues in order to port to gcc 4.1.  The problems
+	were that the new compiler eliminated a lot of timing loops,
+	making some regressions break when compiled with optimization.
+
         ====== plasma release 0.8.25 (v0_8_25) on Linux (cde-tx32-ldt189) ======
 
 2006-03-17  Brian Kahne  <bkahne@freescale.com>

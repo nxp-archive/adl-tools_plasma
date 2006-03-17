@@ -131,8 +131,11 @@ private:
 // as using weak binding.
 void pSetup(ConfigParms &) __attribute__ ((weak));
 
+// This calls an external dummy function in order to ensure that it doesn't
+// get inlined so that the main program can overload it.
 void pSetup(ConfigParms &) 
 {
+  dummy();
 }
 
 // Setup function.  We try to hook this up so that it's called

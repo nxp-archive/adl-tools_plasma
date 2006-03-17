@@ -28,6 +28,11 @@ using namespace std;
 
 namespace plasma {
 
+  int dummy()
+  {
+    return 0;
+  }
+
   template<class T1,class T2>
   bool greater_time<T1,T2>::operator()(const T1 *x,const T2 *y)
   {

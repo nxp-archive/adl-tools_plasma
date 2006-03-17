@@ -23,6 +23,8 @@ namespace plasma {
 
   class ConfigParms;
 
+  int dummy();
+
   // Returns true if x's time is greater than y's time.
   template <class T1,class T2>
   struct greater_time {

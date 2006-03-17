@@ -10,6 +10,7 @@
 //
 
 #include <stdio.h>
+#include <math.h>
 
 #include "plasma.h"
 
@@ -18,16 +19,25 @@ struct Foo {
   double d;  
 };
 
+const int Count = 10000;
+
+void mydelay()
+{
+  double j = 0;
+  for (int i = 0; i != Count; ++i) {
+    double k = 400000000;
+    double l = 500000000;
+    j += pow(k * l,5);
+  }
+}
+
 int pMain(int argc,const char *argv[])
 {
   const int Max = 2000;
   double *results = new double[Max];
   pfor (Foo i = {0,101}; i.i != Max; ++i.i, i.d += 2) {
     for (int j = 0; j != 10; ++j) {
-      int k = 0;
-      for (int l = 0; l != 100000; ++l) {
-        k += 1;
-      }
+      mydelay();
     }
     plasma::mprintf ("Done with block %d.\n",i);
     results[i.i] = i.d;

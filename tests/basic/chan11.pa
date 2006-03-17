@@ -10,6 +10,7 @@
 //
 #include <assert.h>
 #include <stdio.h>
+#include <math.h>
 #include <plasma.h>
 
 typedef plasma::Channel<int>    IntChan;
@@ -18,13 +19,23 @@ typedef plasma::Channel<double> FloatChan;
 typedef std::vector<IntChan> IntChanVect;
 typedef std::vector<FloatChan> FloatChanVect;
 
+const int Count = 10000;
+
+void mydelay()
+{
+  double j = 0;
+  for (int i = 0; i != Count; ++i) {
+    double k = 400000000;
+    double l = 500000000;
+    j += pow(k * l,5);
+  }
+}
+
 int iproducer(int val,IntChan &chan) 
 {
   for (int i = 0; i != 10; ++i) {
     chan.write(val+i);
-    for (int j = 0; j != 100000; ++j) {
-      int x = x + 1;
-    }
+    mydelay();
   }
   chan.write(-1);
   plasma::mprintf ("Producer done.\n");
@@ -71,9 +82,7 @@ int consumer(IntChanVect &ichannels,FloatChanVect &fchannels,IntChan &xc)
         }
       }
       {
-        for (int j = 0; j != 1000000; ++j) {
-          int x = 1;
-        }
+        mydelay();
         plasma::mprintf ("No value present.\n");      
       }
     }
