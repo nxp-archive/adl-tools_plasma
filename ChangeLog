@@ -1,3 +1,5 @@
+        ====== plasma release 0.8.26 (v0_8_26) on Linux (cde-tx32-ldt189) ======
+
 2006-03-17  Brian Kahne  <bkahne@freescale.com>
 
 	* Fixed minor issues in order to port to gcc 4.1.  The problems
