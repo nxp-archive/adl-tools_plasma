@@ -100,7 +100,7 @@ public:
   // Returns the top element of the stack, but doesn't pop
   // it.  Note that this is not guaranteed to be a register; it
   // could be a memory location!
-  Operand StackMachine::peek();
+  Operand peek();
   // Returns true if the stack machine is empty.
   bool empty() const { return _stack.empty(); };
   // Frees all registers that are marked as being in

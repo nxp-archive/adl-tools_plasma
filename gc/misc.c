@@ -34,6 +34,10 @@
 # include <tchar.h>
 #endif
 
+#ifdef NONSTOP
+# include <floss.h>
+#endif
+
 # ifdef THREADS
 #   ifdef PCR
 #     include "il/PCR_IL.h"
@@ -246,7 +250,7 @@ void *arg2;
     	byte_sz = WORDS_TO_BYTES(word_sz);
 	if (GC_all_interior_pointers) {
 	    /* We need one extra byte; don't fill in GC_size_map[byte_sz] */
-	    byte_sz--;
+	    byte_sz -= EXTRA_BYTES;
 	}
 
     	for (j = low_limit; j <= byte_sz; j++) GC_size_map[j] = word_sz;  
@@ -477,10 +481,11 @@ void GC_init()
 #if defined(GC_WIN32_THREADS) && !defined(GC_PTHREADS)
     if (!GC_is_initialized) {
       BOOL (WINAPI *pfn) (LPCRITICAL_SECTION, DWORD) = NULL;
-      HMODULE hK32 = GetModuleHandle("kernel32.dll");
+      HMODULE hK32 = GetModuleHandleA("kernel32.dll");
       if (hK32)
-          (FARPROC) pfn = GetProcAddress(hK32,
-			  "InitializeCriticalSectionAndSpinCount");
+	  pfn = (BOOL (WINAPI *) (LPCRITICAL_SECTION, DWORD))
+		GetProcAddress (hK32,
+				"InitializeCriticalSectionAndSpinCount");
       if (pfn)
           pfn(&GC_allocate_ml, 4000);
       else
@@ -804,7 +809,10 @@ void GC_init_inner()
 
 void GC_enable_incremental GC_PROTO(())
 {
-# if !defined(SMALL_CONFIG)
+# if !defined(SMALL_CONFIG) && !defined(KEEP_BACK_PTRS)
+  /* If we are keeping back pointers, the GC itself dirties all	*/
+  /* pages on which objects have been marked, making 		*/
+  /* incremental GC pointless.					*/
   if (!GC_find_leak) {
     DCL_LOCK_STATE;
     

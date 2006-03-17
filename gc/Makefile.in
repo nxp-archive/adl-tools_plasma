@@ -58,18 +58,19 @@ host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = gctest$(EXEEXT) $(am__EXEEXT_1)
 DIST_COMMON = $(am__configure_deps) $(dist_noinst_HEADERS) \
-	$(dist_noinst_SCRIPTS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(top_srcdir)/configure config.guess \
-	config.sub depcomp install-sh ltconfig ltmain.sh missing
+	$(dist_noinst_SCRIPTS) $(include_HEADERS) \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(top_srcdir)/configure config.guess config.sub depcomp \
+	install-sh ltmain.sh missing mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/configure.in
+am__aclocal_m4_deps = $(top_srcdir)/../macros/libtool.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
-mkinstalldirs = $(install_sh) -d
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -77,27 +78,26 @@ am__vpath_adj = case $$p in \
     *) f=$$p;; \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__libgc_la_SOURCES_DIST = allchblk.c alloc.c blacklst.c checksums.c \
 	dbg_mlc.c dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c \
-	headers.c aix_irix_threads.c malloc.c mallocx.c mark.c \
-	mark_rts.c misc.c new_hblk.c obj_map.c os_dep.c \
-	pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-	solaris_pthreads.c solaris_threads.c specific.c stubborn.c \
-	typd_mlc.c backgraph.c win32_threads.c pthread_support.c \
-	pthread_stop_world.c darwin_stop_world.c \
+	headers.c malloc.c mallocx.c mark.c mark_rts.c misc.c \
+	new_hblk.c obj_map.c os_dep.c pcr_interface.c ptr_chck.c \
+	real_malloc.c reclaim.c solaris_pthreads.c solaris_threads.c \
+	specific.c stubborn.c typd_mlc.c backgraph.c win32_threads.c \
+	pthread_support.c pthread_stop_world.c darwin_stop_world.c \
 	powerpc_darwin_mach_dep.s
 @POWERPC_DARWIN_TRUE@am__objects_1 = powerpc_darwin_mach_dep.lo
 am_libgc_la_OBJECTS = allchblk.lo alloc.lo blacklst.lo checksums.lo \
 	dbg_mlc.lo dyn_load.lo finalize.lo gc_dlopen.lo gcj_mlc.lo \
-	headers.lo aix_irix_threads.lo malloc.lo mallocx.lo mark.lo \
-	mark_rts.lo misc.lo new_hblk.lo obj_map.lo os_dep.lo \
-	pcr_interface.lo ptr_chck.lo real_malloc.lo reclaim.lo \
-	solaris_pthreads.lo solaris_threads.lo specific.lo stubborn.lo \
-	typd_mlc.lo backgraph.lo win32_threads.lo pthread_support.lo \
+	headers.lo malloc.lo mallocx.lo mark.lo mark_rts.lo misc.lo \
+	new_hblk.lo obj_map.lo os_dep.lo pcr_interface.lo ptr_chck.lo \
+	real_malloc.lo reclaim.lo solaris_pthreads.lo \
+	solaris_threads.lo specific.lo stubborn.lo typd_mlc.lo \
+	backgraph.lo win32_threads.lo pthread_support.lo \
 	pthread_stop_world.lo darwin_stop_world.lo $(am__objects_1)
 libgc_la_OBJECTS = $(am_libgc_la_OBJECTS)
 libgccpp_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
@@ -141,7 +141,8 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-HEADERS = $(dist_noinst_HEADERS)
+includeHEADERS_INSTALL = $(INSTALL_HEADER)
+HEADERS = $(dist_noinst_HEADERS) $(include_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
@@ -170,6 +171,8 @@ CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@ $(DEFS)
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COMPILER_XLC_FALSE = @COMPILER_XLC_FALSE@
+COMPILER_XLC_TRUE = @COMPILER_XLC_TRUE@
 CPLUSPLUS_FALSE = @CPLUSPLUS_FALSE@
 CPLUSPLUS_TRUE = @CPLUSPLUS_TRUE@
 CPP = @CPP@
@@ -223,7 +226,7 @@ RANLIB = @RANLIB@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
-THREADLIBS = @THREADLIBS@
+THREADDLLIBS = @THREADDLLIBS@
 UNWINDLIBS = @UNWINDLIBS@
 USE_LIBDIR_FALSE = @USE_LIBDIR_FALSE@
 USE_LIBDIR_TRUE = @USE_LIBDIR_TRUE@
@@ -281,6 +284,7 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 AUTOMAKE_OPTIONS = foreign
+ACLOCAL_AMFLAGS = -I ../macros -I ../libltdl
 SUBDIRS = doc include
 
 # documentation which is not installed
@@ -317,16 +321,15 @@ EXTRA_DIST = alpha_mach_dep.S mips_sgi_mach_dep.s sparc_mach_dep.S \
 @CPLUSPLUS_FALSE@extra = 
 @CPLUSPLUS_TRUE@extra = libgccpp.la
 lib_LTLIBRARIES = libgc.la $(extra) 
+include_HEADERS = include/gc.h include/gc_local_alloc.h \
+include/gc_pthread_redirects.h include/gc_config_macros.h \
+include/leak_detector.h include/gc_typed.h @addincludes@
+
+EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
 @POWERPC_DARWIN_FALSE@asm_libgc_sources = 
-
-#include_HEADERS = include/gc.h include/gc_local_alloc.h \
-#include/gc_pthread_redirects.h include/gc_config_macros.h \
-#include/leak_detector.h include/gc_typed.h @addincludes@
-
-#EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
 @POWERPC_DARWIN_TRUE@asm_libgc_sources = powerpc_darwin_mach_dep.s
 libgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c aix_irix_threads.c \
+dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
 malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
 obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
 solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
@@ -335,9 +338,9 @@ pthread_support.c pthread_stop_world.c darwin_stop_world.c \
 $(asm_libgc_sources)
 
 
-# Include THREADLIBS here to ensure that the correct versions of
+# Include THREADDLLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
-libgc_la_LIBADD = @addobjs@ $(THREADLIBS) $(UNWINDLIBS)
+libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS)
 libgc_la_DEPENDENCIES = @addobjs@
 libgc_la_LDFLAGS = -version-info 1:2:0
 EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
@@ -346,7 +349,7 @@ EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
     sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 libgccpp_la_SOURCES = gc_cpp.cc
-libgccpp_la_LIBADD = $(THREADLIBS) $(UNWINDLIBS)
+libgccpp_la_LIBADD = $(THREADDLLIBS) $(UNWINDLIBS)
 libgccpp_la_LDFLAGS = -version-info 1:2:0
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
@@ -355,11 +358,13 @@ AM_CFLAGS = @GC_CFLAGS@
 
 # gctest_OBJECTS = test.o
 gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgc.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+gctest_LDADD = ./libgc.la $(THREADDLLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
 test_cpp_SOURCES = tests/test_cpp.cc
-test_cpp_LDADD = ./libgc.la ./libgccpp.la $(THREADLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
-TESTS = gctest $(extra_checks)
+test_cpp_LDADD = ./libgc.la ./libgccpp.la $(THREADDLLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
+TESTS = $(check_PROGRAMS)
 all_objs = @addobjs@ $(libgc_la_OBJECTS)
+@COMPILER_XLC_FALSE@ASM_CPP_OPTIONS = -Wp,-P -x assembler-with-cpp
+@COMPILER_XLC_TRUE@ASM_CPP_OPTIONS = 
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
@@ -463,7 +468,6 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/aix_irix_threads.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/allchblk.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/alloc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backgraph.Plo@am__quote@
@@ -580,6 +584,23 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
+install-includeHEADERS: $(include_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(includedir)" || $(mkdir_p) "$(DESTDIR)$(includedir)"
+	@list='$(include_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(includeHEADERS_INSTALL) '$$d$$p' '$(DESTDIR)$(includedir)/$$f'"; \
+	  $(includeHEADERS_INSTALL) "$$d$$p" "$(DESTDIR)$(includedir)/$$f"; \
+	done
+
+uninstall-includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(include_HEADERS)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(includedir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(includedir)/$$f"; \
+	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -777,7 +798,7 @@ check-TESTS: $(TESTS)
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/Mac_files $(distdir)/cord $(distdir)/tests
+	$(mkdir_p) $(distdir)/../macros $(distdir)/Mac_files $(distdir)/cord $(distdir)/include $(distdir)/tests
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -923,7 +944,7 @@ check: check-recursive
 all-am: Makefile $(LTLIBRARIES) $(SCRIPTS) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
 install-exec: install-exec-recursive
@@ -971,7 +992,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am:
+install-data-am: install-includeHEADERS
 
 install-exec-am: install-libLTLIBRARIES
 
@@ -1001,7 +1022,8 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
+uninstall-am: uninstall-includeHEADERS uninstall-info-am \
+	uninstall-libLTLIBRARIES
 
 uninstall-info: uninstall-info-recursive
 
@@ -1014,13 +1036,14 @@ uninstall-info: uninstall-info-recursive
 	distclean-tags distcleancheck distdir distuninstallcheck dvi \
 	dvi-am html html-am info info-am install install-am \
 	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-man install-strip installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
+	install-includeHEADERS install-info install-info-am \
+	install-libLTLIBRARIES install-man install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic maintainer-clean-recursive \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am \
+	tags tags-recursive uninstall uninstall-am \
+	uninstall-includeHEADERS uninstall-info-am \
 	uninstall-libLTLIBRARIES
 
 
@@ -1033,9 +1056,12 @@ $(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
 include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
 include/gc_pthread_redirects.h include/gc_config_macros.h \
 include/gc_mark.h @addincludes@
-
 .s.lo:
-	$(LTCOMPILE) -Wp,-P -x assembler-with-cpp -c $<
+	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
+
+# :FIXME: why do we distribute this one???
+#
+#EXTRA_DIST += libtool.m4
 
 #
 # :GOTCHA: GNU make rule for making .s out of .S is flawed, 

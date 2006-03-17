@@ -27,6 +27,10 @@
 
 namespace plasma {
 
+  class Quantity;
+
+  void work(Quantity *);
+
   class Quantity {
   public:
     Quantity(int ts);

@@ -25,6 +25,10 @@ using namespace std;
 
 namespace plasma {
 
+  void *switch_ready(qt_t *sptr, void*, void *old);
+  void *switch_term(qt_t *, void* old, void *);
+  void *switch_block(qt_t *sptr, void*, void *old);
+
   sigset_t Cluster::_empty_mask;  // empty signal mask
   sigset_t Cluster::_alarm_mask;  // mask with SIGVTALRM
   unsigned Cluster::_timeslice;

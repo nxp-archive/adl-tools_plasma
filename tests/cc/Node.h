@@ -570,6 +570,7 @@ private:
 // Types may be nested (chained together).
 struct Type : public gc {
   Type();
+  virtual ~Type() {};
   Type(Type *t) : _child(t) {};
   Type *child() const { return _child; };
 
