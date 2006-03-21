@@ -2327,82 +2327,83 @@ Abstract Syntax Tree<!-- cc/Node.h -->
 <em>570: </em><font color="#ffa600"><em>// Types may be nested (chained together).</em></font>
 <em>571: </em><strong>struct</strong> Type : public gc <font color="red"><strong>{</strong></font>
 <em>572: </em>  Type();
-<em>573: </em>  Type(Type *t) : _child(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
-<em>574: </em>  Type *child() const <font color="red"><strong>{</strong></font> <strong>return</strong> _child; <font color="red"><strong>}</strong></font>;
-<em>575: </em>
-<em>576: </em>  <font color="#ffa600"><em>// Set the base (innermost) type ofa type.  For instance,</em></font>
-<em>577: </em>  <font color="#ffa600"><em>// calling this with a pointer(int) type on a pointer() type</em></font>
-<em>578: </em>  <font color="#ffa600"><em>// will give you a pointer(pointer(int)).</em></font>
-<em>579: </em>  void set_base_type(Type *t);
-<em>580: </em>  <font color="#ffa600"><em>// Returns the return type, if applicable (i.e. it's a function).</em></font>
-<em>581: </em>  virtual Type *get_return_type() const <font color="red"><strong>{</strong></font> <strong>return</strong> 0; <font color="red"><strong>}</strong></font>;
-<em>582: </em>  <font color="#ffa600"><em>// Returns true if this represents a function.</em></font>
-<em>583: </em>  virtual bool is_function() const <font color="red"><strong>{</strong></font> <strong>return</strong> false; <font color="red"><strong>}</strong></font>;
-<em>584: </em>  <font color="#ffa600"><em>// Returns size of type in bytes.</em></font>
-<em>585: </em>  virtual unsigned size() const;
-<em>586: </em>  <font color="#ffa600"><em>// Prints a string representation.</em></font>
-<em>587: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const = 0;
-<em>588: </em>  <font color="#ffa600"><em>// Prints only the outer most type.</em></font>
-<em>589: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const = 0;
-<em>590: </em>
-<em>591: </em>  <font color="#ffa600"><em>// Traversal function for generating symbol tables.</em></font>
-<em>592: </em>  virtual void gensymtab(SymTab *);
-<em>593: </em>
-<em>594: </em>protected:
-<em>595: </em>
-<em>596: </em>  Type *_child;
-<em>597: </em><font color="red"><strong>}</strong></font>;
-<em>598: </em>
-<em>599: </em><font color="#ffa600"><em>// Use this to print the Type pointer, as it supports nulls.</em></font>
-<em>600: </em>std::ostream &amp;operator&lt;&lt;(std::ostream &amp;o,const Type *);
-<em>601: </em>
-<em>602: </em><font color="#ffa600"><em>// Represents intrinsic types, e.g. int, char.</em></font>
-<em>603: </em><font color="#ffa600"><em>// Note:  The None type doesn't represent a type but is used to</em></font>
-<em>604: </em><font color="#ffa600"><em>// note that something is not a base type.</em></font>
-<em>605: </em><strong>struct</strong> BaseType : public Type <font color="red"><strong>{</strong></font>
-<em>606: </em>  enum BT <font color="red"><strong>{</strong></font> None, Int, Char, Double <font color="red"><strong>}</strong></font>;
-<em>607: </em>  BaseType(BT t) : _type(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
-<em>608: </em>  BT type() const <font color="red"><strong>{</strong></font> <strong>return</strong> _type; <font color="red"><strong>}</strong></font>;
-<em>609: </em>  virtual unsigned size() const;
-<em>610: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
-<em>611: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
-<em>612: </em>private:
-<em>613: </em>  BT _type;
-<em>614: </em><font color="red"><strong>}</strong></font>;
-<em>615: </em>
-<em>616: </em><font color="#ffa600"><em>// A type representing a function (for prototypes and calls).</em></font>
-<em>617: </em><strong>struct</strong> FunctionType : public Type <font color="red"><strong>{</strong></font>
-<em>618: </em>  FunctionType(Node *p,Type *c = 0) : Type(c), _params(p) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
-<em>619: </em>  Node *get_params() const <font color="red"><strong>{</strong></font> <strong>return</strong> _params; <font color="red"><strong>}</strong></font>;
-<em>620: </em>  bool is_function() const <font color="red"><strong>{</strong></font> <strong>return</strong> true; <font color="red"><strong>}</strong></font>;
-<em>621: </em>  Type *get_return_type() const <font color="red"><strong>{</strong></font> <strong>return</strong> _child; <font color="red"><strong>}</strong></font>;
-<em>622: </em>
-<em>623: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
-<em>624: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
-<em>625: </em>
-<em>626: </em>  virtual void gensymtab(SymTab *);
-<em>627: </em>private:
-<em>628: </em>  Node *_params;
-<em>629: </em><font color="red"><strong>}</strong></font>;
-<em>630: </em>
-<em>631: </em><strong>struct</strong> PointerType : public Type <font color="red"><strong>{</strong></font>
-<em>632: </em>  PointerType() <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
-<em>633: </em>  PointerType(Type *t) : Type(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
-<em>634: </em>  virtual unsigned size() const;
-<em>635: </em>
-<em>636: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
-<em>637: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
-<em>638: </em><font color="red"><strong>}</strong></font>;
-<em>639: </em>
-<em>640: </em><font color="#ffa600"><em>// Functions for querying types.</em></font>
-<em>641: </em>
-<em>642: </em>BaseType::BT intType(Type *t);
-<em>643: </em>bool isIntType(Type *t);
-<em>644: </em>bool isIntType(Node *n);
-<em>645: </em>bool isPtrType(Type *t);
-<em>646: </em>bool isPtrType(Node *n);
-<em>647: </em>
-<em>648: </em><font color="#1919af"><strong>#endif</strong></font>
+<em>573: </em>  virtual ~Type() <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>574: </em>  Type(Type *t) : _child(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>575: </em>  Type *child() const <font color="red"><strong>{</strong></font> <strong>return</strong> _child; <font color="red"><strong>}</strong></font>;
+<em>576: </em>
+<em>577: </em>  <font color="#ffa600"><em>// Set the base (innermost) type ofa type.  For instance,</em></font>
+<em>578: </em>  <font color="#ffa600"><em>// calling this with a pointer(int) type on a pointer() type</em></font>
+<em>579: </em>  <font color="#ffa600"><em>// will give you a pointer(pointer(int)).</em></font>
+<em>580: </em>  void set_base_type(Type *t);
+<em>581: </em>  <font color="#ffa600"><em>// Returns the return type, if applicable (i.e. it's a function).</em></font>
+<em>582: </em>  virtual Type *get_return_type() const <font color="red"><strong>{</strong></font> <strong>return</strong> 0; <font color="red"><strong>}</strong></font>;
+<em>583: </em>  <font color="#ffa600"><em>// Returns true if this represents a function.</em></font>
+<em>584: </em>  virtual bool is_function() const <font color="red"><strong>{</strong></font> <strong>return</strong> false; <font color="red"><strong>}</strong></font>;
+<em>585: </em>  <font color="#ffa600"><em>// Returns size of type in bytes.</em></font>
+<em>586: </em>  virtual unsigned size() const;
+<em>587: </em>  <font color="#ffa600"><em>// Prints a string representation.</em></font>
+<em>588: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const = 0;
+<em>589: </em>  <font color="#ffa600"><em>// Prints only the outer most type.</em></font>
+<em>590: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const = 0;
+<em>591: </em>
+<em>592: </em>  <font color="#ffa600"><em>// Traversal function for generating symbol tables.</em></font>
+<em>593: </em>  virtual void gensymtab(SymTab *);
+<em>594: </em>
+<em>595: </em>protected:
+<em>596: </em>
+<em>597: </em>  Type *_child;
+<em>598: </em><font color="red"><strong>}</strong></font>;
+<em>599: </em>
+<em>600: </em><font color="#ffa600"><em>// Use this to print the Type pointer, as it supports nulls.</em></font>
+<em>601: </em>std::ostream &amp;operator&lt;&lt;(std::ostream &amp;o,const Type *);
+<em>602: </em>
+<em>603: </em><font color="#ffa600"><em>// Represents intrinsic types, e.g. int, char.</em></font>
+<em>604: </em><font color="#ffa600"><em>// Note:  The None type doesn't represent a type but is used to</em></font>
+<em>605: </em><font color="#ffa600"><em>// note that something is not a base type.</em></font>
+<em>606: </em><strong>struct</strong> BaseType : public Type <font color="red"><strong>{</strong></font>
+<em>607: </em>  enum BT <font color="red"><strong>{</strong></font> None, Int, Char, Double <font color="red"><strong>}</strong></font>;
+<em>608: </em>  BaseType(BT t) : _type(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>609: </em>  BT type() const <font color="red"><strong>{</strong></font> <strong>return</strong> _type; <font color="red"><strong>}</strong></font>;
+<em>610: </em>  virtual unsigned size() const;
+<em>611: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
+<em>612: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
+<em>613: </em>private:
+<em>614: </em>  BT _type;
+<em>615: </em><font color="red"><strong>}</strong></font>;
+<em>616: </em>
+<em>617: </em><font color="#ffa600"><em>// A type representing a function (for prototypes and calls).</em></font>
+<em>618: </em><strong>struct</strong> FunctionType : public Type <font color="red"><strong>{</strong></font>
+<em>619: </em>  FunctionType(Node *p,Type *c = 0) : Type(c), _params(p) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>620: </em>  Node *get_params() const <font color="red"><strong>{</strong></font> <strong>return</strong> _params; <font color="red"><strong>}</strong></font>;
+<em>621: </em>  bool is_function() const <font color="red"><strong>{</strong></font> <strong>return</strong> true; <font color="red"><strong>}</strong></font>;
+<em>622: </em>  Type *get_return_type() const <font color="red"><strong>{</strong></font> <strong>return</strong> _child; <font color="red"><strong>}</strong></font>;
+<em>623: </em>
+<em>624: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
+<em>625: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
+<em>626: </em>
+<em>627: </em>  virtual void gensymtab(SymTab *);
+<em>628: </em>private:
+<em>629: </em>  Node *_params;
+<em>630: </em><font color="red"><strong>}</strong></font>;
+<em>631: </em>
+<em>632: </em><strong>struct</strong> PointerType : public Type <font color="red"><strong>{</strong></font>
+<em>633: </em>  PointerType() <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>634: </em>  PointerType(Type *t) : Type(t) <font color="red"><strong>{</strong></font><font color="red"><strong>}</strong></font>;
+<em>635: </em>  virtual unsigned size() const;
+<em>636: </em>
+<em>637: </em>  virtual std::ostream &amp;print(std::ostream &amp;o) const;
+<em>638: </em>  virtual std::ostream &amp;print_outer(std::ostream &amp;o) const;
+<em>639: </em><font color="red"><strong>}</strong></font>;
+<em>640: </em>
+<em>641: </em><font color="#ffa600"><em>// Functions for querying types.</em></font>
+<em>642: </em>
+<em>643: </em>BaseType::BT intType(Type *t);
+<em>644: </em>bool isIntType(Type *t);
+<em>645: </em>bool isIntType(Node *n);
+<em>646: </em>bool isPtrType(Type *t);
+<em>647: </em>bool isPtrType(Node *n);
+<em>648: </em>
+<em>649: </em><font color="#1919af"><strong>#endif</strong></font>
 </pre>
 </td></tr>
 </tbody></table></td></tr>
@@ -5087,7 +5088,7 @@ Abstract Syntax Tree<!-- cc/Node.h -->
 <em>100: </em>  <font color="#ffa600"><em>// Returns the top element of the stack, but doesn't pop</em></font>
 <em>101: </em>  <font color="#ffa600"><em>// it.  Note that this is not guaranteed to be a register; it</em></font>
 <em>102: </em>  <font color="#ffa600"><em>// could be a memory location!</em></font>
-<em>103: </em>  Operand StackMachine::peek();
+<em>103: </em>  Operand peek();
 <em>104: </em>  <font color="#ffa600"><em>// Returns true if the stack machine is empty.</em></font>
 <em>105: </em>  bool empty() const <font color="red"><strong>{</strong></font> <strong>return</strong> _stack.empty(); <font color="red"><strong>}</strong></font>;
 <em>106: </em>  <font color="#ffa600"><em>// Frees all registers that are marked as being in</em></font>
@@ -6027,6 +6028,6 @@ Abstract Syntax Tree<!-- cc/Node.h -->
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Wed Nov  9 16:42:03 2005</em>.</font></p></div>
+Last update <em>Tue Mar 21 09:30:29 2006</em>.</font></p></div>
 </body>
 </html>

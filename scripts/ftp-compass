@@ -1,0 +1,248 @@
+#!/usr/bin/env perl 
+# -- -*-perl-*-a
+#
+
+=head1 NAME
+
+ftp-compass <options> <files>
+
+=head1 SYNOPSIS
+
+ftp-compass <options> <files>
+
+Copy files to a specified Compass folder.
+
+=head1 OPTIONS
+
+For the required Compass parameters listed below, you can get these parameters
+by:
+
+1) logging into Compass.
+
+2) go to the folder where you want to add a file.
+
+3) select "Multiple Docs" from the "Add..." menu.
+
+4) The the HTML source of the page.
+
+5) Copy the values into the variables below.
+
+Note: If you change your password you will need to update param1
+
+Command-line options:
+
+=over 8
+
+=item B<--help, --h>
+
+Display help
+
+=item B<--man, -m>
+
+Display the complete help as a man page.
+
+=item B<folder=string>
+
+Specify the destination folder name.  This is a required parameter.
+
+=item B<param1=string>
+
+Specify the Compass param1 value.  This is a required parameter.
+
+=item B<user=string>
+
+Specify a user name.  By default, the default is the value of $USER.
+
+=item B<popi=string>
+
+Specify the POPI setting.  The default is "GBI" (General Business Information).
+The short string version may be used, e.g. "GBI" or "FIUO"
+
+=item B<export=string>
+
+Specify the export setting.  The default is none.  When specifying an export
+setting, the full name must be used, e.g. "Military".
+
+=item B<description=string>
+
+You can apply a decription to mulitple documents when uploading to Compass.  The default
+is to leave empty.
+
+=item B<llserver=server-name>
+
+Specify an alternate Livelink server.  The default is http://compass.freescale.net
+
+=item B<ftpserver=server-name>
+
+Specify an alternate ftp server.  The default is compass-ftp.freescale.net
+
+=back
+
+=cut
+
+
+#********************************************************
+#***
+#***	Name:		ftp-compass.pl
+#***	Author:		Brad Bosley
+#***	Function:	Example script to upload files to 
+#***				Compass using FTP. This script emulates
+#***				the same steps done during an Add Multiple Docs
+#***				call using a Netscape browser.
+#***
+#***				If the file already exists on Compass
+#***				then a version will be added.
+#*** Update on 02/28/05 by Cheryl Brock
+#********************************************************
+
+
+use Getopt::Long;
+use Pod::Usage;
+use LWP::UserAgent;
+use HTTP::Request;
+use Net::FTP;
+use URI::Escape;
+use strict;
+
+# Make sure stdout keeps flushed.
+autoflush STDOUT 1;
+
+##
+## 1.  Initialization.
+##
+my $UA		    = new LWP::UserAgent;
+my $llserver	= "http://compass.freescale.net";
+my $ftpserver	= "compass-ftp.freescale.net";
+my $username    = $ENV{USER};
+my $popi	    = uri_escape("GBI");
+my $export	    = "";
+
+my ($help,$man,$url,$res,$ftp,$param1,$folder,$description,$description,@files);
+
+printhelp(0,1) if (!@ARGV);
+
+if (!&GetOptions
+	(
+	 "h|help"        => \$help,
+	 "m|man"         => \$man,
+	 "folder=s"      => \$folder,
+	 "param1=s"      => \$param1,
+	 "user=s"        => \$username,
+	 "llserver=s"    => \$llserver,
+	 "ftpserver=s"   => \$ftpserver,
+	 "popi=s"        => \$popi,
+	 "export=s"      => \$export,
+	 "<>"            => \&plusargs,
+	)) {
+  printhelp(1,1);
+}
+
+sub plusargs {
+  push @files,shift;
+}
+
+printhelp(0,1) if $help;
+
+printhelp(0,2) if $man;
+
+if (!$param1) {
+  print "Error:  No param1 value was specified.\n";
+  printhelp(1,1);
+}
+
+if (!$folder) {
+  print "Error:  No folder was specified.\n";
+  printhelp(1,1);
+}
+
+$description = uri_escape($description);
+
+# Check to make sure that all files exist before we initiate the transaction.
+for (@files) {
+  die "File '$_' does not exist.\n" if (! -r $_);
+}
+
+##
+## 2.  Create temp ftp location.
+##
+print "Initiating transaction...\n";
+$url = "$llserver/ftpsetup.pl?username=$username&nodeid=$folder";
+$res = sendURL($url,$UA);
+
+if ($res->is_error) {
+  print "Content:", $res->content, "\n";
+  print "Status Line:", $res->status_line, "\n";
+  die "Error setting up FTP directory\n";
+}
+
+##
+## 3.  ftp the file(s)
+##
+print "Transferring files via FTP:  @files ...\n";
+$ftp = Net::FTP->new($ftpserver);
+$ftp->login("anonymous","$username\@freescale.com");
+$ftp->cwd("/pub/$username/$folder");
+$ftp->binary();
+for (@files) {
+  $ftp->put($_);
+}
+$ftp->quit;
+
+##
+## 4.  Run cgi script on server to move file 
+##     from ftp location into compass
+##
+print "Moving files to the proper Compass folder...\n";
+$url = "$llserver/ftpupload.pl?username=$username&nodeid=$folder&param1=$param1&sysat_POPI=$popi&sysat_Export=$export&description=$description";
+$res = sendURL($url,$UA);
+
+# You may want to look at the output from this URL to 
+# determine if the document was successfully uploaded.
+# The error check below would only catch if there was 
+# an error connecting to the web server.
+
+#print $res->as_string();
+
+if ($res->is_error) {
+	die "Error calling ftpupload.pl\n";
+}
+
+print "Done.\n";
+
+#********************************************************
+#***
+#***	FUNCTIONS
+#***
+#********************************************************
+
+sub sendURL
+{
+	#Sends the URL to the HTTP server and returns the response
+	my ($url,$UA) = @_;
+	my ($req,$res);
+
+	##### SETUP THE REQUEST #####
+	$req = new HTTP::Request GET => $url;
+
+	##### SEND THE REQUEST AND GET THE RESPONSE #####
+	$res = $UA->request($req);
+
+#	##### Retry until we get it if we get a User Agent Timeout. #####
+#	my $numTries = 50;
+#	my $count = 1;
+#
+#	while(($res->code == 408) && ($count < $numTries)) {
+#		print ".";
+#		$res = $UA->request($req);
+#		$count++;
+#	}
+
+	##### RETURN THE RESPONSE OBJECT #####
+	return $res;
+}
+
+sub printhelp() {
+  my ($eval,$verbose) = (shift,shift);
+  pod2usage(-exitval => $eval,-verbose=>$verbose);
+  exit 0;
+}

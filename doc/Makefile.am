@@ -1,9 +1,9 @@
 
 EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 
-webdir = $(WEBHOME)
+webdir = $(InfoHome)
 
-web_DATA = index.html 
+web_DATA = index.html $(wildcard *.html)
 
 # Only build a pdf if latex is good.
 if LATEXOK
@@ -15,12 +15,12 @@ skribe_src = $(shell ls *.skb)
 TESTDIR = $(top_srcdir)/tests
 
 DistBase = distribution
-DistDir = $(webdir)/$(DistBase)
-DistUrl = $(WEBURL)/$(DistBase)
 
 DISTFILE = $(PACKAGE)-$(VERSION).tar.gz
 
-SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-url* \"$(DistBase)\")"
+FtpCompass = $(top_srcdir)/scripts/ftp-compass --param1=$(CompassParam1)
+
+SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-url* \"$(DISTURL)\")"
 
 DOCCLEANFILES = *.sui *.html *.pdf *.dvi *.tex *.log *.aux *.out
 
@@ -35,21 +35,21 @@ install:
 docclean:
 	rm -f $(DOCCLEANFILES)
 
-docinstall: all-am
-	$(mkinstalldirs) $(DESTDIR)$(webdir)
-	@list=$$(ls *.html *.pdf); for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f="`echo $$p | sed -e 's|^.*/||'`"; \
-	  echo " $(install_sh_DATA) $$d$$p $(DESTDIR)$(webdir)/$$f"; \
-	  $(install_sh_DATA) $$d$$p $(DESTDIR)$(webdir)/$$f; \
-	done
-	echo " $(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO)";
-	$(install_sh_DATA) $(INFO) $(DESTDIR)$(webdir)/$(INFO);
-    ## Remove from the web directory any existing distributions.
-	rm -f $(DESTDIR)/$(DistDir)/$(PACKAGE)*.tar.gz
-	$(mkinstalldirs) $(DESTDIR)$(DistDir)
-    ## Final step:  Make a distribution and copy it to the web directory.
-	(cd $(top_srcdir) && $(MAKE) dist && cp $(DISTFILE) $(DESTDIR)$(DistDir) )
+# This installs just the documentation.
+web-data-install:
+	if [ $(CompassExists) ] ; then \
+		$(FtpCompass) --folder=$(CompassPlasmaDir) $(web_DATA) ; \
+	fi
+	if [ ! -z $(webdir) -a -e $(webdir) ] ; then \
+		echo " $(install_sh_DATA) $(INFO) $(webdir)/$(INFO)"; \
+		$(install_sh_DATA) $(INFO) $(webdir)/$(INFO); \
+	fi
+
+# Create a distribution, then install it and all documentation.
+docinstall: web-data-install all-am
+	if [ $(CompassExists) ] ; then \
+		(cd $(top_srcdir) && $(MAKE) dist ) && $(FtpCompass) --folder=$(CompassDistDir) $(top_srcdir)/$(DISTFILE) ; \
+	fi
 
 
 index.html: $(skribe_src) source-code.html

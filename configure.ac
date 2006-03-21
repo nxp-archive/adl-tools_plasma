@@ -29,23 +29,46 @@ if test "x$PERLPROG" = x ; then
 fi
 
 ## Check for web directory (documentation destination).
-AC_MSG_CHECKING([for web destination directory])
-ac_web_default=/proj/ppctools/GSTM/www/plasma
-ac_weburl_default=http://www.somerset.sps.mot.com/projects/tools/plasma
-WEBHOME=
 WEBURL=
-DOCDIR=doc
-AC_ARG_WITH([web],AS_HELP_STRING([--with-web],[specify a web destination directory.  The default is /proj/ppctools/GSTM/www/plasma.]),
-	    WEBHOME=$withval,WEBHOME=$ac_web_default)
-AC_ARG_WITH([weburl],AS_HELP_STRING([--with-weburl],[specify a the URL to web documentation.  The default is http://www.somerset.sps.mot.com/projects/tools/plasma.]),
+ac_weburl_default=http://compass.freescale.net/go/PlasmaSite
+AC_ARG_WITH([weburl],AS_HELP_STRING([--with-weburl],[specify a the URL to web documentation.  The default is $ac_weburl_default.]),
 	    WEBURL=$withval,WEBURL=$ac_weburl_default)
+AC_SUBST(WEBURL)
+DISTURL=
+ac_disturl_default=http://compass.freescale.net/go/PlasmaDist
+AC_ARG_WITH([disturl],AS_HELP_STRING([--with-disturl],[specify a the URL to the distribution.  The default is $ac_disturl_default.]),
+	    DISTURL=$withval,DISTURL=$ac_disturl_default)
+AC_SUBST(DISTURL)
 
-if [[ -d $WEBHOME ]]; then
-  AC_MSG_RESULT([$WEBHOME])
+AC_MSG_CHECKING([for info destination directory])
+ac_infohome_default=/proj/ppctools/www/a-z/plasma
+InfoHome=
+DOCDIR=doc
+AC_ARG_WITH([infohome],AC_HELP_STRING([--with-infohome],[specify a web destination directory for the info.xml file.  The default is $ac_infohome_default.]),InfoHome=$withval,InfoHome=$ac_infohome_default)
+if [[ -d $InfoHome ]]; then
+  AC_MSG_RESULT([$InfoHome])
 else
-  AC_MSG_RESULT([Directory $WEBHOME not found.  Documentation will not be installed.])
-  DOCDIR=
+  AC_MSG_RESULT([Directory $InfoHome not found.  Documentation will not be installed.])
 fi
+AC_SUBST(InfoHome)
+
+## Check to see if compass exists.  If not, then we don't install documentation.
+AC_MSG_CHECKING([to see if Compass exists])
+CompassPlasmaDir=162987954
+CompassDistDir=162979417
+CompassParam1=QXJkMXZhcmsh
+CompassExists=1
+`ping -c 1 compass.freescale.net > /dev/null` || CompassExists=
+if [[ !$CompassExists ]] ; then
+	AC_MSG_RESULT([yes.  Documentation will be installed to Compass.])
+else
+	AC_MSG_RESULT([no.  Documentation will not be installed.])
+fi
+
+AC_SUBST(CompassPlasmaDir)
+AC_SUBST(CompassDistDir)
+AC_SUBST(CompassParam1)
+AC_SUBST(CompassExists)
 
 ## Get the full compiler path.
 AC_PATH_PROG(CXXPROG,$CXX)
@@ -104,8 +127,6 @@ AC_SUBST(PROFILE)
 AC_SUBST(ACLOCAL_FLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
-AC_SUBST(WEBHOME)
-AC_SUBST(WEBURL)
 AC_SUBST(DOCDIR)
 
 # If compiling on x86, we can compile test programs generated
