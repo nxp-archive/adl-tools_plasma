@@ -103,6 +103,7 @@ public:
 
     void Dump();
     void Dump(int);
+    void DumpAll();
 
     Ptree* GetLineNumber(Ptree*, int&);
 

@@ -16,6 +16,7 @@
 ##   PLASMA_PATH:   The Plasma install prefix.
 ##   PLASMA_CFLAGS: Plasma cflags.
 ##   PLASMA_LIBS:   Plasma link line.
+##   PLASMA_LTLIBS: Plasma link line for libtool.
 ##
 AC_DEFUN([AM_PLASMA],
 [
@@ -41,9 +42,10 @@ AC_DEFUN([AM_PLASMA],
     PLASMA_PATH=`$PlasmaConfig --prefix`
     PLASMA_CFLAGS=`$PlasmaConfig --cflags`
     PLASMA_LIBS=`$PlasmaConfig --libs`
+    PLASMA_LTLIBS=`$PlasmaConfig --ltlibs`
     PLASMA_VERSION=`$PlasmaConfig --version`
 
-    AC_MSG_CHECKING([for plasma's version])
+    AC_MSG_CHECKING([for plasma's version ($1 required).])
     DPP_VERSION_CHECK([$PLASMA_VERSION], [$1], , [PlasmaExists=no])
 
     if [[ $PlasmaExists = "no" ]] ; then	
@@ -56,9 +58,15 @@ AC_DEFUN([AM_PLASMA],
 
   if [[ $PlasmaExists != "no" ]] ; then
     AC_MSG_CHECKING([that we can compile a plasma program.])
+
+	ac_ext_orig=$ac_ext
+	ac_compile_orig=$ac_compile
+	ac_link_orig=$ac_link
+
     ac_ext=pa
     ac_compile='$PLASMA -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
     ac_link='$PLASMA -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+
     AC_RUN_IFELSE([
 
 #include "plasma/plasma.h"
@@ -73,6 +81,10 @@ AC_DEFUN([AM_PLASMA],
 	return 0;
     }
     ],AC_MSG_RESULT([ok.]),PlasmaExists=no)
+
+	ac_ext=$ac_ext_orig
+	ac_compile=$ac_compile_orig
+	ac_link=$ac_link_orig
 
 	if [[ $PlasmaExists = "no" ]] ; then
       AC_MSG_WARN([failed.])
@@ -91,5 +103,6 @@ AC_DEFUN([AM_PLASMA],
   AC_SUBST(PLASMA_PATH)
   AC_SUBST(PLASMA_CFLAGS)
   AC_SUBST(PLASMA_LIBS)
+  AC_SUBST(PLASMA_LTLIBS)
 
 ])

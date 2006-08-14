@@ -1,3 +1,8 @@
+2006-08-14  Brian Kahne  <bkahne@freescale.com>
+
+	* opencxx/Environment.cc (DumpAll): Added a dump-everything
+	function for debugging purposes.
+
         ===== plasma release 0.8.26 (v0_8_26) on Linux (cde-tx32-ldt189) on 8/4/2006 =====
 
         ===== plasma release 0.8.26 (v0_8_26) on Linux (cde-tx32-ldt189) on 8/4/2006 =====

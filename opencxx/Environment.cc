@@ -668,6 +668,25 @@ void Environment::Dump(int level)
     e->Dump();
 }
 
+void Environment::DumpAll()
+{
+  std::cerr << "Env (" << this << "): {\n";
+  Dump();
+  unsigned n = baseclasses_or_using.Number();
+  if (n) {
+    std::cerr << "Using environments: {\n";
+    for(unsigned i = 0; i < n; ++i) {
+      Environment* e = baseclasses_or_using.Ref(i);
+      e->DumpAll();
+    }
+    std::cerr << "}\n";
+  }
+  std::cerr << "}\n";
+  if (next) {
+    next->DumpAll();
+  }
+}
+
 Ptree* Environment::GetLineNumber(Ptree* p, int& number)
 {
     if (walker == 0) {
