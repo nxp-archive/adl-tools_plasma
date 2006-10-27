@@ -719,7 +719,6 @@ void Environment::Array::Append(Environment* p)
         size += 8;
         Environment** a = new (GC) Environment*[size];
         memmove(a, array, size_t(num * sizeof(Environment*)));
-        delete [] array;
         array = a;
     }
 

@@ -1,3 +1,9 @@
+2006-10-27  Brian Kahne  <bkahne@freescale.com>
+
+	* opencxx/Environment.cc (Append):  Removed an explicit delete
+	which was causing a free() error b/c the memory was not allocated
+	by the system but rather by GC.
+
 2006-08-14  Brian Kahne  <bkahne@freescale.com>
 
 	* opencxx/Environment.cc (DumpAll): Added a dump-everything

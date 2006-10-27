@@ -28,6 +28,7 @@
 
   using namespace std;
 
+
 %}
 
 /* This generates an interactive c++ tokenizer which
