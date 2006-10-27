@@ -1,3 +1,5 @@
+        ======== plasma release 0.8.27 (v0_8_27) on Linux (lb32001) on 10/27/2006 ========
+
 2006-10-27  Brian Kahne  <bkahne@freescale.com>
 
 	* opencxx/Environment.cc (Append):  Removed an explicit delete
