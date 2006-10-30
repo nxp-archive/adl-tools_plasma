@@ -4,7 +4,7 @@ GcBuildDir = $(top_builddir)/gc
 GcSrcDir = $(top_srcdir)/gc
 
 OCC = $(OccBuildDir)/occ
-OCCFLAGS = -I$(top_builddir) -I$(GcSrcDir)
+OCCFLAGS = -I$(top_srcdir) -I$(GcSrcDir)
 
 bin_PROGRAMS = plasma-comp
 

@@ -3,7 +3,8 @@
 #
 # Tests used in this regression.
 
-use lib "..";
+use FindBin;
+use lib "$FindBin::RealBin/..";
 use rdriver;
 use regress_utils;
 use strict;

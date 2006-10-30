@@ -7,18 +7,59 @@ package regress_utils;
 require Exporter;
 
 our @ISA = ("Exporter"); 
-our @EXPORT = qw( check_channel check_qchannel
+our @EXPORT = qw( $src check_channel check_qchannel
 		  check_clocked_channel check_spawn 
-		  check_sequence check_time_seq check_times );
+		  check_sequence check_time_seq check_times file_diff filter_errors );
 
-use lib ".";
+use FindBin;
+use lib $FindBin::RealBin;
+use lib "$FindBin::RealBin/../share";
 use rdriver;
 use Data::Dumper;
+
+# This imports variables that Automake defines in the makefile.  For
+# consistancy, it defines them in the regression even if they're not set
+# externally. If the variable is not found in the environment, then we put it
+# there so that any child-processes will also see a consistent view between
+# running the regression manually and being invoked by make.
+$src = $ENV{srcdir};
+
+$ENV{srcdir} = $src = "." if (!$src);
 
 ##
 ## Place generic helper functions here.
 ## <HELPERS>
 ##
+
+# Filters out leading paths from compiler error messages, then does a file
+# comparison against a reference file.
+# arg0:  Output to write to a temporary file.
+# arg1:  Temporary file name.
+# arg2:  Reference file.
+sub filter_errors {
+  my ($data,$out,$regress) = @_;
+  open OUT,">$out" or die "Could not open $out";
+  $data =~ s#(\S+/)+##g;
+  print OUT $data;
+  close OUT;
+
+  file_diff ($out,$regress);
+}
+
+
+# Runs diff on two files.
+# arg0:  Generated file- will be erased if diff finds no differences.
+# arg1:  Reference file.
+sub file_diff {
+  my ($gen,$exp,$nodel) = @_;
+  dprint ("Comparing $gen (found) vs. $exp (expected)\n");
+  if (system "diff -bi $gen $exp") {
+	print "Differences were found.\n",
+	  " <---- Generated $gen | Reference $exp ---->\n";
+	die;
+  }
+  unlink $gen unless $keepoutput;
+}
 
 # Make sure that all expected integers are received.
 sub check_channel {

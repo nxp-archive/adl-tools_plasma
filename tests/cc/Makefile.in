@@ -307,10 +307,10 @@ minicc_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 minicc_LDADD = -lgc -ldl
 clex_lflag = -Cfe
 CLEANFILES = *.ii clex.cc cparse.cc cparse.h *.s
-PLASMA = $(top_srcdir)/scripts/plasma --devel=$(top_srcdir)
-AM_LDFLAGS = -L$(top_srcdir)/src/.libs -Wl,-R$(top_srcdir)/src/.libs \
-	-L$(top_srcdir)/qt/.libs -Wl,-R$(top_srcdir)/qt/.libs \
-	-L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
+PLASMA = $(top_builddir)/scripts/plasma --devel-src=$(top_srcdir) --devel-build=$(top_builddir)
+AM_LDFLAGS = -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
+	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
+	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
 
 # This must be added to each C++ file's LDADD variable.
 CXX_LDADD = -lplasma -lqt -lgc -ldl
@@ -320,7 +320,7 @@ LINK = $(PLASMA) -o $@
 # For some stupid reason, Automake thinks that this is a C++ project, so
 # I have to fool it here.
 CXXLINK = $(PLASMA) -o $@
-DEPENDENCIES = $(top_srcdir)/src/.libs/libplasma.a
+DEPENDENCIES = $(top_builddir)/src/.libs/libplasma.a
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -876,11 +876,15 @@ foo: tests/foo.c tests/foo_lib.c minicc
 	$(CXX) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
 %.cc : %.ll ;
-	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $(@:.cc=.ll)
+	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
 
 %.cc : %.yy ;
-	$(YACC) $<
+	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
 
+lempar.c:
+	ln -nfs $(top_srcdir)/tests/lemon/lempar.c
+
+cparse.cc : lempar.c
 cparse.h: cparse.cc
 CLexer.o: cparse.h
 clex.o: cparse.h

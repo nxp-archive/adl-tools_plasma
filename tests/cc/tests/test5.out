@@ -1,1 +1,1 @@
-tests/in6.c:15:  Error:  Unknown identifier b
+in6.c:15:  Error:  Unknown identifier b

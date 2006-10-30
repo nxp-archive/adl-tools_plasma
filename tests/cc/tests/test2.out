@@ -1,2 +1,2 @@
-tests/in3.c:8:  syntax error.
+in3.c:8:  syntax error.
 Parse failed!

@@ -10,7 +10,7 @@ GcBuildDir = $(top_builddir)/gc
 GcSrcDir = $(top_srcdir)/gc
 
 OCC = $(OccBuildDir)/occ
-OCCFLAGS = -I$(top_builddir) -I$(GcSrcDir)
+OCCFLAGS = -I$(top_srcdir) -I$(GcSrcDir)
 
 parse_test_SOURCES = \
 	ParseTest.mc

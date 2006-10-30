@@ -90,11 +90,15 @@ foo: tests/foo.c tests/foo_lib.c minicc
 	$(CXX) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
 %.cc : %.ll ;
-	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $(@:.cc=.ll)
+	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
 
 %.cc : %.yy ;
-	$(YACC) $<
+	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
 
+lempar.c:
+	ln -nfs $(top_srcdir)/tests/lemon/lempar.c
+
+cparse.cc : lempar.c
 cparse.h: cparse.cc
 CLexer.o: cparse.h
 clex.o: cparse.h

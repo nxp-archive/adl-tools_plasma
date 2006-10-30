@@ -133,7 +133,7 @@ nobase_pkinclude_HEADERS = \
 	UnknownCliOptionException.h	\
 	Walker.h
 
-INCLUDES = -I$(top_builddir) -I$(GC_INCLUDEDIR) $(INCLTDL)
+INCLUDES = -I$(top_srcdir) -I$(GC_INCLUDEDIR) $(INCLTDL)
 
 EXTRA_DIST = parser/ptree-gen
 

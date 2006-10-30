@@ -105,7 +105,7 @@ my $link = 1;
 my $compile = 0;
 my $verbose = 0;
 my $printversion = 0;
-my $devel;
+my ($devel_build,$devel_src);
 
 # OCC options (pre-compile)
 my $occoptions = "";
@@ -116,7 +116,8 @@ my $gccoptions = "";
 
 if (!&GetOptions
     (
-     "devel=s"       => \$devel,
+     "devel-build=s" => \$devel_build,
+     "devel-src=s"   => \$devel_src,
      "help|h|?"      => \$help,
      "man"           => \$man,
      "version|V"     => \$printversion,
@@ -165,7 +166,7 @@ printhelp(0,0,1) if $printversion;
 
 my ($base,$pincs,$plibs,$prog);
 my $baselibs = "-lplasma -lgc -lqt -ldl";
-if (!$devel) {
+if (!$devel_build) {
   # Normal install mode:  Run using installed stuff.
   $base  = $prefix;
   $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
@@ -173,12 +174,12 @@ if (!$devel) {
   $prog  = "$base/bin/plasma-comp";
 } else {
   # Development mode:  Run using development layout.
-  $base  = $devel;
-  $pincs = "-d-include$base/src/plasma-interface.h -I$base/src -I$base/gc";
-  $plibs = "-L$base/src/.libs -Wl,-R$base/src/.libs " .
-           "-L$base/qt/.libs -Wl,-R$base/qt/.libs " .
-           "-L$base/gc/.libs -Wl,-R$base/gc/.libs $baselibs";
-  $prog  = "$base/parser/plasma-comp";
+  $devel_src = $devel_build if (!$devel_src);
+  $pincs = "-d-include$devel_src/src/plasma-interface.h -I$devel_src/src -I$devel_src/gc";
+  $plibs = "-L$devel_build/src/.libs -Wl,-R$devel_build/src/.libs " .
+           "-L$devel_build/qt/.libs -Wl,-R$devel_build/qt/.libs " .
+           "-L$devel_build/gc/.libs -Wl,-R$devel_build/gc/.libs $baselibs";
+  $prog  = "$devel_build/parser/plasma-comp";
 }
 
 sub dprint {

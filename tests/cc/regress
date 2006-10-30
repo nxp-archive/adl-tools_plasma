@@ -3,82 +3,90 @@
 #
 # Tests used in this regression.
 
-use lib "..";
 use lib ".";
+use FindBin;
+use lib "$FindBin::RealBin/..";
 use compile_check;
 use rdriver;
+use regress_utils;
 use strict;
 use Data::Dumper;
 
 my @Tests = (
 			 # 1. Basic check of multiple .c files.
 			 {
-			  cmd     => "./minicc -ast tests/in1.c tests/in2.c",
-			  diff    => "tests/test1.out",
+			  cmd     => "./minicc -ast $src/tests/in1.c $src/tests/in2.c",
+			  diff    => "$src/tests/test1.out",
 			 },
 			 # 2. Checks that a parsing error will be reported.
 			 {
-			  cmd     => "./minicc -ast tests/in3.c",
-			  diff    => "tests/test2.out",
+			  cmd     => "./minicc -ast $src/tests/in3.c",
+			  checker => sub { filter_errors($_[0],"test2.tmp","$src/tests/test2.out"); },
 			  stderr  => 1,
 			  fail    => 1,
+			  temps   => [ "test2.tmp" ],
 			 },
 			 # 3. Large test of all supported features.
 			 {
-			  cmd     => "./minicc -ast tests/in4.c",
-			  diff    => "tests/test3.out",
+			  cmd     => "./minicc -ast $src/tests/in4.c",
+			  diff    => "$src/tests/test3.out",
 			 },
 			 # 4. Simple symbol-table parsing.
 			 {
-			  cmd     => "./minicc -syms tests/in5.c",
-			  diff    => "tests/test4.out",
+			  cmd     => "./minicc -syms $src/tests/in5.c",
+			  diff    => "$src/tests/test4.out",
 			 },
 			 # 5. Simple symbol-table parsing.
 			 {
-			  cmd     => "./minicc -syms tests/in6.c",
-			  diff    => "tests/test5.out",
+			  cmd     => "./minicc -syms $src/tests/in6.c",
+			  checker => sub { filter_errors($_[0],"test5.tmp","$src/tests/test5.out"); },
 			  stderr  => 1,
 			  fail    => 2,
+			  temps   => [ "test5.tmp" ],
 			 },
 			 # 6. Simple symbol-table parsing.
 			 {
-			  cmd     => "./minicc -syms tests/in7.c",
-			  diff    => "tests/test6.out",
+			  cmd     => "./minicc -syms $src/tests/in7.c",
+			  checker => sub { filter_errors($_[0],"test6.tmp","$src/tests/test6.out"); },
 			  stderr  => 1,
 			  fail    => 2,
+			  temps   => [ "test6.tmp" ],
 			 },
 			 # 7. Symbol table for big input file.
 			 {
-			  cmd     => "./minicc -syms tests/in4.c",
-			  diff    => "tests/test10.out",
+			  cmd     => "./minicc -syms $src/tests/in4.c",
+			  diff    => "$src/tests/test10.out",
 			 },
 			 # 8. Type-checking test.
 			 {
-			  cmd     => "./minicc -check tests/in8.c",
-			  diff    => "tests/test7.out",
+			  cmd     => "./minicc -check $src/tests/in8.c",
+			  checker => sub { filter_errors($_[0],"test7.tmp","$src/tests/test7.out"); },
 			  stderr  => 1,
 			  fail    => 2,
+			  temps   => [ "test7.tmp" ],
 			 },			 
 			 # 9. Type-checking test.
 			 {
-			  cmd     => "./minicc -check tests/in9.c",
-			  diff    => "tests/test8.out",
+			  cmd     => "./minicc -check $src/tests/in9.c",
+			  checker => sub { filter_errors($_[0],"test8.tmp","$src/tests/test8.out"); },
 			  stderr  => 1,
 			  fail    => 2,
+			  temps   => [ "test8.tmp" ],
 			 },
 			 # 10. Flow control test.
 			 {
-			  cmd     => "./minicc -check tests/in10.c",
-			  diff    => "tests/test9.out",
+			  cmd     => "./minicc -check $src/tests/in10.c",
+			  checker => sub { filter_errors($_[0],"test9.tmp","$src/tests/test9.out"); },
 			  stderr  => 1,
+			  temps   => [ "test9.tmp" ],
 			 },
 			 # 11. Full check on multiple big input files (test should just not fail).
 			 {
-			  cmd     => "./minicc -check tests/in4.c tests/in4.c tests/in4.c tests/in4.c ",
+			  cmd     => "./minicc -check $src/tests/in4.c $src/tests/in4.c $src/tests/in4.c $src/tests/in4.c ",
 			 },
 			 # 12. Compilation of a large-ish program.
 			 {
-			  cmd     => "./minicc tests/foo.c tests/foo_lib.c",
+			  cmd     => "./minicc $src/tests/foo.c $src/tests/foo_lib.c",
 			  checker => \&check_12,
 			 },
 	    );
@@ -87,7 +95,7 @@ my @Tests = (
 if ($compile_check::CompileOk) {
   push @Tests,{
 			   cmd    => "./foo 1 2 hello 3",
-			   diff    => "tests/test11.out",
+			   diff    => "$src/tests/test11.out",
 			  };
 }
 
@@ -98,8 +106,8 @@ doTest(\@Tests);
 ##
 
 sub check_12 {
-  compare_asm_file("foo_lib.s","tests/foo_lib.good");
-  compare_asm_file("foo.s","tests/foo.good");
+  compare_asm_file("foo_lib.s","$src/tests/foo_lib.good");
+  compare_asm_file("foo.s","$src/tests/foo.good");
 };
 
 sub compare_asm_file {

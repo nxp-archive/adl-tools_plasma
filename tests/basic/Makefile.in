@@ -729,19 +729,19 @@ connect1_SOURCES = connect1.pa
 connect1_DEPENDENCIES = $(DEPENDENCIES)
 gc1_SOURCES = gc1.pa
 gc1_DEPENDENCIES = $(DEPENDENCIES)
-AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir)/src -I$(top_srcdir)/gc
+AM_CXXFLAGS = $(CXXFLAGS) -I$(top_srcdir) -I$(top_srcdir)/src -I$(top_srcdir)/gc
 CLEANFILES = *.ii
-PLASMA = $(top_srcdir)/scripts/plasma --devel=$(top_srcdir)
-AM_LDFLAGS = -L$(top_srcdir)/src/.libs -Wl,-R$(top_srcdir)/src/.libs \
-	-L$(top_srcdir)/qt/.libs -Wl,-R$(top_srcdir)/qt/.libs \
-	-L$(top_srcdir)/gc/.libs -Wl,-R$(top_srcdir)/gc/.libs
+PLASMA = $(top_builddir)/scripts/plasma --devel-src=$(top_srcdir) --devel-build=$(top_builddir)
+AM_LDFLAGS = -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
+	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
+	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
 
 # This must be added to each C++ file's LDADD variable.
 CXX_LDADD = -lplasma -lqt -lgc -ldl
 CXXLD = $(CXX)
 LINK = $(PLASMA) -o $@
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-DEPENDENCIES = $(top_srcdir)/src/.libs/libplasma.a
+DEPENDENCIES = $(top_builddir)/src/.libs/libplasma.a
 all: all-am
 
 .SUFFIXES:
