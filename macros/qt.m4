@@ -19,6 +19,9 @@ if [[ x$ac_qt_host = x ]] ; then
     i686) 
 	ac_qt_host="iX86"
 	;;
+    x86_64) 
+	ac_qt_host="x86_64"
+	;;
     sparc)
 	ac_qt_host="sparc"
 	;;

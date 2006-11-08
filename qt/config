@@ -1,6 +1,6 @@
 #! /bin/sh -x
 
-rm -f Makefile.md README.md qtmd.h qtmdb.S qtmdc.c qtmds.S configuration
+rm -f Makefile.md README.md qtmd.h qtmdb.S qtmdb_c.c qtmdc.c qtmds.S configuration
 
 case $1 in
 	axp*)
@@ -23,6 +23,7 @@ case $1 in
 		ln -s md/axp.h qtmd.h
 		ln -s md/axp.c qtmdc.c
 		ln -s md/axp.S qtmds.S
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/axp_b.S qtmdb.S
 		ln -s md/axp.README README.md
 		iter_init=1000000000
@@ -59,6 +60,7 @@ case $1 in
 		ln -s md/hppa.h qtmd.h
 		ln -s md/null.c qtmdc.c
 		ln -s md/hppa.S qtmds.S
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/hppa_b.S qtmdb.S
 		iter_init=10000000
 		iter_runone=1000000
@@ -95,6 +97,34 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/i386.h qtmd.h
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
+		ln -s md/i386.README README.md
+		iter_init=10000000
+		iter_runone=1000000
+		iter_blockint=1000000
+		iter_blockfloat=1000000
+		iter_vainit0=1000000
+		iter_vainit2=1000000
+		iter_vainit4=1000000
+		iter_vainit8=1000000
+		iter_vastart0=1000000
+		iter_vastart2=1000000
+		iter_vastart4=1000000
+		iter_vastart8=1000000
+		iter_bench_call_reg=1000000
+		iter_bench_call_imm=1000000
+		iter_bench_add=100000000
+		iter_bench_load=10000000
+		;;
+
+	x86_64*)
+		: "64-bit X76 and compatibles"
+		ln -s md/default.Makefile Makefile.md
+		ln -s md/setjmp_d.h qtmd.h
+		ln -s md/null.S qtmds.S
+		ln -s md/null.S qtmdb.S
+		ln -s md/setjmp64.c qtmdc.c
+		ln -s md/setjmp_b.c qtmdb_c.c
 		ln -s md/i386.README README.md
 		iter_init=10000000
 		iter_runone=1000000
@@ -119,6 +149,7 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/m68k.h qtmd.h
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/m68k.S qtmds.S
 		ln -s md/m68k_b.S qtmdb.S
 		ln -s md/null.README README.md
@@ -131,6 +162,7 @@ case $1 in
 		ln -s md/m88k.c qtmdc.c
 		ln -s md/m88k.S qtmds.S
 		ln -s md/m88k_b.S qtmdb.S
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/null.README README.md
 		iter_init=1000000
 		iter_runone=100000
@@ -157,6 +189,7 @@ case $1 in
 		ln -s md/ppc.S qtmds.S
 		ln -s md/ppc_b.S qtmdb.S
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/null.README README.md
 		iter_init=1000000
 		iter_runone=100000
@@ -194,6 +227,7 @@ case $1 in
 		ln -s md/mips.h qtmd.h
 		ln -s md/null.c qtmdc.c
 		ln -s md/mips_b.S qtmdb.S
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/null.README README.md
 		iter_init=10000000
 		iter_runone=10000000
@@ -231,6 +265,7 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/sparc.h qtmd.h
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
 		iter_init=10000000
 		iter_runone=1000000
 		iter_blockint=1000000
@@ -254,6 +289,7 @@ case $1 in
 		ln -s md/default.Makefile Makefile.md
 		ln -s md/vax.h qtmd.h
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/vax.S qtmds.S
 		ln -s md/vax_b.S qtmdb.S
 		ln -s md/null.README README.md
@@ -281,6 +317,7 @@ case $1 in
 		ln -s md/ksr1.Makefile Makefile.md
 		ln -s md/ksr1.h qtmd.h
 		ln -s md/null.c qtmdc.c
+		ln -s md/null.c qtmdb_c.c
 		ln -s md/ksr1.S qtmds.S
 		ln -s md/ksr1_b.S qtmdb.S
 		ln -s md/null.README README.md

@@ -87,7 +87,7 @@ clex_lflag = -Cfe
 
 foo: tests/foo.c tests/foo_lib.c minicc
 	./minicc $(filter %.c,$^)
-	$(CXX) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
+	$(CXX) $(MINI_CC_FLAGS) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
 %.cc : %.ll ;
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<

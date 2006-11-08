@@ -1,3 +1,13 @@
+2006-11-08  Brian Kahne  <bkahne@freescale.com>
+
+	* Plasma has been ported to the AMD64 architecture.  For
+	QuickThreads support, I used a setjmp/longjmp piece of code from
+	another project which extended QuickThreads.  No other major
+	porting problems existed, except for a few minor little issues,
+	such as needing to modify some casts in the ecu tests directory
+	and to ensure that the assembler used -m32 when assembling the
+	output of minicc in tests/cc.
+
 2006-10-30  Brian Kahne  <bkahne@freescale.com>
 
 	* Plasma should now build correctly if configured and built from a

@@ -241,7 +241,7 @@ void flywheel(Chan &from_flywheel, Chan &to_starter)
     new_speed = accelerate(1.0, 0.0, 0.0, mass, speed);
     //fprintf(logfile, "\n\tfriction is slowing car: u=%2.2f v=%2.2f", speed, new_speed);
 		
-    fprintf(logfile, "\nTFS::%8lld::Tooth ", pTime(), next_tooth);
+    fprintf(logfile, "\nTFS::%8lld::Tooth %d", pTime(), next_tooth);
     fprintf(logfile, "speed %2.2f -- %2.2f", speed, new_speed);
     speed = new_speed;
 		

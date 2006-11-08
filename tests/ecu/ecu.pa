@@ -66,6 +66,7 @@ zen, an etpu and a cpm (or rather, logical equivalents thereof).
 
 #include <cmath>
 #include <cstdio>
+#include <stdint.h>
 
 #include "constants.h"				// useful units
 #include "configuration.h"			// globals specifying configuration (eg, num cyclinders)
@@ -329,9 +330,9 @@ int pMain(int argc,const char *argv[])
   init_statistics();
 	
   // configuration
-  cpu_MIPS[(int)zen.name()] = zen_mips;
-  cpu_MIPS[(int)tpu.name()] = tpu_mips;
-  cpu_MIPS[(int)hardware.name()] = 0;
+  cpu_MIPS[(uint64_t)zen.name()] = zen_mips;
+  cpu_MIPS[(uint64_t)tpu.name()] = tpu_mips;
+  cpu_MIPS[(uint64_t)hardware.name()] = 0;
 	
   // run the engine
 	

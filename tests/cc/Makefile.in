@@ -167,6 +167,7 @@ MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
+MINI_CC_FLAGS = @MINI_CC_FLAGS@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
@@ -873,7 +874,7 @@ include ./$(DEPDIR)/CodeGen.Po
 
 foo: tests/foo.c tests/foo_lib.c minicc
 	./minicc $(filter %.c,$^)
-	$(CXX) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
+	$(CXX) $(MINI_CC_FLAGS) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
 %.cc : %.ll ;
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<

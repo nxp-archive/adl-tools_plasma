@@ -133,15 +133,16 @@ AC_SUBST(DOCDIR)
 # by the sample compiler in the regression suite.
 if [[ $build_cpu = i686 ]]; then
   COMPILE_OK=1
-  # We also set the -m32 flag so that if we use this on an Opteron,
-  # Plasma will know to force 32-bit code generation.
-  CONFOPTS="-m32"
+elif [[ $build_cpu = x86_64 ]]; then
+  COMPILE_OK=1
+  MINI_CC_FLAGS="-m32"	
 else
   COMPILE_OK=0
 fi
 AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
 AC_SUBST(CONFOPTS)
+AC_SUBST(MINI_CC_FLAGS)
 
 AC_CONFIG_COMMANDS([ptree-gen],
     [(cd opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],

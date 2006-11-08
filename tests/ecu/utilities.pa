@@ -18,7 +18,7 @@ using namespace plasma;
 void Compute(int32 work)
 {
   // this scales the amount of computation to the speed of the host cpu
-  int32 cpu = (int)pCurProc().name();
+  int32 cpu = (uint64_t)pCurProc().name();
   int32 mips = cpu_MIPS[cpu];
   int32 dt = work/mips;
   

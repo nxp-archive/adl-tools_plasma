@@ -1,6 +1,8 @@
 
 SUBDIRS = md
 
+noinst_PROGRAMS = meas
+
 lib_LTLIBRARIES = libqt.la libstp.la
 
 libqt_la_SOURCES = \
@@ -10,6 +12,15 @@ libqt_la_SOURCES = \
 
 libstp_la_SOURCES = \
 	stp.c
+
+meas_SOURCES = \
+	meas.c \
+	qtmdb.S \
+	qtmdb_c.c
+
+meas_LDADD = \
+	libstp.la \
+	libqt.la
 
 noinst_HEADERS = \
 	qt.h \
@@ -30,3 +41,5 @@ EXTRA_DIST = 	CHANGES \
 # Remove the configuration information on a distclean.
 distclean: distclean-am
 	./config clean
+
+LINK = $(LIBTOOL) --mode=link $(CXX) -o $@
