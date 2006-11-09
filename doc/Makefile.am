@@ -11,7 +11,7 @@ web_DATA = $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
 
 # Only build a pdf if latex is good.
 if LATEXOK
-  web_DATA += index.pdf
+  web_DATA += $(srcdir)/index.pdf
 endif
 
 skribe_src = $(wildcard $(srcdir)/*.skb)
