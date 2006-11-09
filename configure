@@ -24784,7 +24784,13 @@ ac_config_commands="$ac_config_commands ptree-gen"
 ac_config_files="$ac_config_files Makefile macros/Makefile scripts/Makefile qt/Makefile qt/md/Makefile src/Makefile opencxx/Makefile parser/Makefile doc/Makefile tests/Makefile tests/parsing/Makefile tests/basic/Makefile tests/sw/Makefile tests/eav/Makefile tests/ecu/Makefile tests/lemon/Makefile tests/cc/Makefile tests/cc/tests/Makefile"
 
 
-ac_config_files="$ac_config_files scripts/plasma scripts/plasma-config tests/cc/compile_check.pm"
+ac_config_files="$ac_config_files scripts/plasma"
+
+
+ac_config_files="$ac_config_files scripts/plasma-config"
+
+
+ac_config_files="$ac_config_files tests/cc/compile_check.pm"
 
 
 # We always want to enable C++ support (argument taken by GC library).
@@ -26143,10 +26149,10 @@ echo "$as_me: error: cannot create directory $as_dir" >&2;}
   done
 done
  ;;
-    "ptree-gen":C) (cd opencxx/parser && chmod +x ptree-gen && ./ptree-gen) ;;
-    "scripts/plasma":F) chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm  ;;
-    "scripts/plasma-config":F) chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm  ;;
-    "tests/cc/compile_check.pm":F) chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm  ;;
+    "ptree-gen":C) (cd ${srcdir}/opencxx/parser && chmod +x ptree-gen && ./ptree-gen) ;;
+    "scripts/plasma":F) chmod +x,-w scripts/plasma  ;;
+    "scripts/plasma-config":F) chmod +x,-w scripts/plasma-config  ;;
+    "tests/cc/compile_check.pm":F) chmod +x,-w tests/cc/compile_check.pm  ;;
 
   esac
 done # for ac_tag

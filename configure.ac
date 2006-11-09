@@ -145,7 +145,7 @@ AC_SUBST(CONFOPTS)
 AC_SUBST(MINI_CC_FLAGS)
 
 AC_CONFIG_COMMANDS([ptree-gen],
-    [(cd opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],
+    [(cd ${srcdir}/opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],
     [])
 
 # Generate configuration files.
@@ -172,9 +172,15 @@ AC_CONFIG_FILES([\
 
 AC_CONFIG_FILES([\
 	scripts/plasma \
+],[chmod +x,-w scripts/plasma ])
+
+AC_CONFIG_FILES([\
 	scripts/plasma-config \
+],[chmod +x,-w scripts/plasma-config ])
+
+AC_CONFIG_FILES([\
 	tests/cc/compile_check.pm
-],[chmod +x,-w scripts/plasma scripts/plasma-config tests/cc/compile_check.pm ])
+],[chmod +x,-w tests/cc/compile_check.pm ])
 
 # We always want to enable C++ support (argument taken by GC library).
 # We also supply our own threading library, so we don't need this to be done by gc.
