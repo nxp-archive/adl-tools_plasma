@@ -47,13 +47,10 @@
       </structure>
       <revisioncontrol>
         <p>
-          Plasma uses CVS for revision control.
+          Plasma uses Subversion for revision control.
         </p>
         <p>
-          CVSROOT:  /nfs/ibmoto/tools/CVS_root
-        </p>
-        <p>
-          Project name:  plasma
+          Repository location:  /proj/ppctools/svn/plasma
         </p>
       </revisioncontrol>
       <buildenv>
