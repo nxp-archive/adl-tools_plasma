@@ -37,7 +37,7 @@ Peter Wilson</i></font>
 <br/><center><table width="97%" border="1" cellpadding="0" cellspacing="0" style="border-collapse: collapse;" frame="box" rules="none"><tbody>
 <tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>main page</strong></font></th></tr>
 <tr bgcolor="#ffffff"><td align="center" colspan="1"><table width="100%" border="0" style="border-collapse: collapse;" frame="void" rules="none"><tbody>
-<tr><td align="left" valign="top" colspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1"><a href="index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
+<tr><td align="left" valign="top" colspan="1"><strong>top:</strong></td><td align="right" valign="top" colspan="1"><a href="../../plasma/doc/index.html#The-Plasma-Language" class="inbound">The Plasma Language</a></td></tr>
 </tbody></table>
 </td></tr>
 </tbody></table>
@@ -46,11 +46,11 @@ Peter Wilson</i></font>
 <tr bgcolor="#8381de"><th align="center" colspan="1"><font color="#ffffff"><strong>Chapters</strong></font></th></tr>
 <tr bgcolor="#ffffff"><td align="center" colspan="1"><table cellspacing="1" cellpadding="1" width="100%" class="toc">
 <tbody>
- <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
- <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="index-2.html#Examples">Examples</a></td></tr>
- <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="index-3.html#Implementation-Notes">Implementation Notes</a></td></tr>
- <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="index-4.html#Future-Work">Future Work</a></td></tr>
- <tr><td valign="top" align="left">5</td><td colspan="4" width="100%"><a href="index-5.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
+ <tr><td valign="top" align="left">1</td><td colspan="4" width="100%"><a href="../../plasma/doc/index-1.html#Plasma-User's-Guide">Plasma User's Guide</a></td></tr>
+ <tr><td valign="top" align="left">2</td><td colspan="4" width="100%"><a href="../../plasma/doc/index-2.html#Examples">Examples</a></td></tr>
+ <tr><td valign="top" align="left">3</td><td colspan="4" width="100%"><a href="../../plasma/doc/index-3.html#Implementation-Notes">Implementation Notes</a></td></tr>
+ <tr><td valign="top" align="left">4</td><td colspan="4" width="100%"><a href="../../plasma/doc/index-4.html#Future-Work">Future Work</a></td></tr>
+ <tr><td valign="top" align="left">5</td><td colspan="4" width="100%"><a href="../../plasma/doc/index-5.html#Plasma-Development-Schedule">Plasma Development Schedule</a></td></tr>
 </tbody>
 </table>
 </td></tr>
@@ -238,7 +238,7 @@ cout &lt;&lt; <font color="red">&quot;The result is:  &quot;</font> &lt;&lt; res
 <div class="skribesubsubsectiontitle"><h4><font color="#8381de">3.2.1 Channels</font>
 </h4></div><div class="subsubsection">
 <p>Communication between threads is handled by typed channels.  A
-	    channel can be any object which satisfies a certain <a href="index-1.html#Channels" class="inbound">API</a> and is written in a
+	    channel can be any object which satisfies a certain <a href="../../plasma/doc/index-1.html#Channels" class="inbound">API</a> and is written in a
 	    thread-safe manner.  This means that a channel can be extremely
 	    efficient: It does not require the use of virtual functions and a
 	    production-ready version of the compiler may be able to use
@@ -355,7 +355,7 @@ alt <font color="red"><strong>{</strong></font>
 <p>The Plasma standard library contains a special kind of channel,
 	    called a clocked channel, for modeling synchronous hardware.  This
 	    is a standard channel in the sense that it is just a templated class
-	    that conforms to the channel <a href="index-1.html#Channels" class="inbound">API</a>.  The difference is in its behavior:  Writes may occur at any
+	    that conforms to the channel <a href="../../plasma/doc/index-1.html#Channels" class="inbound">API</a>.  The difference is in its behavior:  Writes may occur at any
 	    time but reads are restricted to clock boundaries, where the clock
 	    period is specified by a constructor parameter.</p><p>The benefit of this approach is that the user's code remains
 	    uncluttered by clocking logic.  Timing changes may be made by simply
@@ -541,7 +541,7 @@ par <font color="red"><strong>{</strong></font>
 	 hamming distance between consecutive data values read from a channel.
 	 Additionally, a model might wrap all calls to <code>pEnergy</code> so that
 	 a scaling value, based on clock-frequency, might be applied.</p><p>This concept can be extended to other resources besides just power
-	 and computation: The <a href="index-1.html#ProcValue" class="inbound"><code>ProcValue</code></a>
+	 and computation: The <a href="../../plasma/doc/index-1.html#ProcValue" class="inbound"><code>ProcValue</code></a>
 	 template allows a user to associate a data value with a processor.  The
 	 class's methods allow for incrementing a value, retrieving and clearing
 	 it, or just retrieving it.  The power API is a simple wrapper around
@@ -553,7 +553,7 @@ par <font color="red"><strong>{</strong></font>
 </div><div class="subsection">
 <p>The need to model an object with limited resources frequently
 	 arises.  For example, a memory controller has a specific, fixed
-	 bandwidth.  Plasma provides a class, called <a href="index-1.html#Resource-Modeling" class="inbound"><code>Quantity</code></a>, to help with this task.  It
+	 bandwidth.  Plasma provides a class, called <a href="../../plasma/doc/index-1.html#Resource-Modeling" class="inbound"><code>Quantity</code></a>, to help with this task.  It
 	 lets the user specify how long an individual request will take, e.g. a
 	 read will take 10 time units.  Threads then make requests of this
 	 object; their underlying processor is placed into a busy state until
@@ -566,19 +566,19 @@ par <font color="red"><strong>{</strong></font>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">4 User's Guide</font>
 </h3></td></tr></table>
 </div><div class="section">
-The Plasma user guide is available <a href="index-1.html#Plasma-User's-Guide" class="inbound">here</a>.  Refer to it for more details about Plasma.</div><br>
+The Plasma user guide is available <a href="../../plasma/doc/index-1.html#Plasma-User's-Guide" class="inbound">here</a>.  Refer to it for more details about Plasma.</div><br>
 <!-- Examples -->
 <a name="Examples"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">5 Examples</font>
 </h3></td></tr></table>
 </div><div class="section">
-Plasma examples are available <a href="index-2.html#Examples" class="inbound">here</a>.</div><br>
+Plasma examples are available <a href="../../plasma/doc/index-2.html#Examples" class="inbound">here</a>.</div><br>
 <!-- Implementation Details -->
 <a name="Implementation-Details"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">6 Implementation Details</font>
 </h3></td></tr></table>
 </div><div class="section">
-Implementation details and scheduling information can be found here <a href="index-5.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
+Implementation details and scheduling information can be found here <a href="../../plasma/doc/index-5.html#Plasma-Development-Schedule" class="inbound">here</a>.</div><br>
 <!-- Additional Documentation -->
 <a name="Additional-Documentation"></a>
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">7 Additional Documentation</font>
@@ -591,7 +591,7 @@ A Twiki page, containing additional background information, can be found
 <div class="skribesectiontitle"><table width="100%"><tr><td bgcolor="#dedeff"><h3><font color="black">8 Future Work</font>
 </h3></td></tr></table>
 </div><div class="section">
-A description of proposed future enhancements can be found <a href="index-4.html#Future-Work" class="inbound">here</a>.</div><br>
+A description of proposed future enhancements can be found <a href="../../plasma/doc/index-4.html#Future-Work" class="inbound">here</a>.</div><br>
 </div></td>
 </tr></table><div class="skribe-ending">
 <hr> 
@@ -599,6 +599,6 @@ A description of proposed future enhancements can be found <a href="index-4.html
 This <span class="sc">Html</span> page has been produced by 
 <a href="http://www.inria.fr/mimosa/fp/Skribe" class="http">Skribe</a>.
 <br/>
-Last update <em>Wed Nov  8 15:48:43 2006</em>.</font></p></div>
+Last update <em>Thu Nov  9 13:38:19 2006</em>.</font></p></div>
 </body>
 </html>

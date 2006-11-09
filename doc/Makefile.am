@@ -1,16 +1,20 @@
+#
+# For now, building of documentation always occurs within the original source
+# directory, even if the project is configured in a separate build directory.
+#
 
 EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 
 webdir = $(InfoHome)
 
-web_DATA = index.html $(wildcard *.html)
+web_DATA = $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
 
 # Only build a pdf if latex is good.
 if LATEXOK
   web_DATA += index.pdf
 endif
 
-skribe_src = $(shell ls *.skb)
+skribe_src = $(wildcard $(srcdir)/*.skb)
 
 TESTDIR = $(top_srcdir)/tests
 
@@ -20,11 +24,12 @@ DISTFILE = $(PACKAGE)-$(VERSION).tar.gz
 
 FtpCompass = $(top_srcdir)/scripts/ftp-compass --param1=$(CompassParam1)
 
-SKRIBEVARS = --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-url* \"$(DISTURL)\")"
+SKRIBEVARS = -I $(srcdir) --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-url* \"$(DISTURL)\")"
 
-DOCCLEANFILES = *.sui *.html *.pdf *.dvi *.tex *.log *.aux *.out
+DOCCLEANFILES = $(srcdir)/*.sui $(srcdir)/*.html $(srcdir)/*.pdf $(srcdir)/*.dvi \
+				$(srcdir)/*.tex $(srcdir)/*.log $(srcdir)/*.aux $(srcdir)/*.out
 
-INFO = info.xml
+INFO = $(srcdir)/info.xml
 
 install:
 	@echo "***"
@@ -48,15 +53,15 @@ web-data-install:
 # Create a distribution, then install it and all documentation.
 docinstall: web-data-install all-am
 	if [ $(CompassExists) ] ; then \
-		(cd $(top_srcdir) && $(MAKE) dist ) && $(FtpCompass) --folder=$(CompassDistDir) $(top_srcdir)/$(DISTFILE) ; \
+		(cd $(top_builddir) && $(MAKE) dist ) && $(FtpCompass) --folder=$(CompassDistDir) $(top_builddir)/$(DISTFILE) ; \
 	fi
 
 
-index.html: $(skribe_src) source-code.html
+$(srcdir)/index.html: $(skribe_src) $(srcdir)/source-code.html
 
-source-code.html: pipe2.pa
+$(srcdir)/source-code.html: $(srcdir)/pipe2.pa
 
-index.pdf: $(skribe_src)
+$(srcdir)/index.pdf: $(skribe_src)
 
 %.html : %.skb ;
 	$(SKRIBE) $(SKRIBEVARS) $< -o $@
