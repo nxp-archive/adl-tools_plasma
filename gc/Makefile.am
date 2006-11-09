@@ -194,10 +194,10 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 # This is so that our includes look the same in the workspace
 # and in the install tree.
 all: all-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc
 
 check: check-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc
 
 install: install-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc

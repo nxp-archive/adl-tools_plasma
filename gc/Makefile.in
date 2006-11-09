@@ -1087,13 +1087,13 @@ include/gc_mark.h @addincludes@
 # This is so that our includes look the same in the workspace
 # and in the install tree.
 all: all-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc
 
 check: check-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc
 
 install: install-recursive
-	ln -sf include gc
+	ln -sf $(srcdir)/include $(srcdir)/gc
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
