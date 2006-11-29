@@ -1,6 +1,12 @@
 #!/usr/bin/env perl 
 # -- -*-perl-*-a
 #
+#
+# Copyright (C) 2005 by Freescale Semiconductor Inc.  All rights reserved.
+#
+# You may distribute under the terms of the Artistic License, as specified in
+# the COPYING file.
+#
 
 =head1 NAME
 
@@ -47,7 +53,14 @@ Specify the destination folder name.  This is a required parameter.
 
 =item B<param1=string>
 
-Specify the Compass param1 value.  This is a required parameter.
+Specify the Compass param1 value.  This is a required parameter.  If not
+specified, the script will search for a file in the user's home directory called
+.compass.param1 and will read the entry from this file.  If this file is not
+present, and no command-line option was specified, the script will report an
+error and exit.
+
+The .compass.param1 file should contain the param1 value on a line by itself.
+Comments (lines starting with '#') are allowed.
 
 =item B<user=string>
 
@@ -110,6 +123,7 @@ autoflush STDOUT 1;
 ##
 ## 1.  Initialization.
 ##
+my $p1file      = "$ENV{HOME}/.compass.param1";
 my $UA		    = new LWP::UserAgent;
 my $llserver	= "http://compass.freescale.net";
 my $ftpserver	= "compass-ftp.freescale.net";
@@ -146,8 +160,23 @@ printhelp(0,1) if $help;
 printhelp(0,2) if $man;
 
 if (!$param1) {
-  print "Error:  No param1 value was specified.\n";
-  printhelp(1,1);
+  # Not specified on the command-line.  Try to open up a dot file in the user's
+  # home directory and get the value from there.
+  if ( -e $p1file) {
+	open P1,$p1file or die "Could not open $p1file";
+	while ( <P1> ) {
+	  next if ( /^\s*#/ );
+	  next if ( length($_) == 0 );
+	  if ( /^\s*([^\s]+)\s*/ ) {
+		$param1 = $1;
+	  }
+	}
+	close P1;
+	print "Param1:  $param1\n";
+  } else {
+	print "Error:  No param1 value was specified and the file $p1file could not be opened..\n";
+	printhelp(1,1);
+  } 
 }
 
 if (!$folder) {

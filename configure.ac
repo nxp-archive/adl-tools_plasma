@@ -56,7 +56,6 @@ AC_SUBST(InfoHome)
 AC_MSG_CHECKING([to see if Compass exists])
 CompassPlasmaDir=162987954
 CompassDistDir=162979417
-CompassParam1=QXJkNHZhcmsk
 CompassExists=1
 `ping -c 1 compass.freescale.net > /dev/null` || CompassExists=
 if [[ !$CompassExists ]] ; then

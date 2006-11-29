@@ -22,7 +22,7 @@ DistBase = distribution
 
 DISTFILE = $(PACKAGE)-$(VERSION).tar.gz
 
-FtpCompass = $(top_srcdir)/scripts/ftp-compass --param1=$(CompassParam1)
+FtpCompass = $(top_srcdir)/scripts/ftp-compass
 
 SKRIBEVARS = -I $(srcdir) --eval "(define *test-dir* \"$(TESTDIR)\")" --eval "(define *web-url* \"$(WEBURL)\")" --eval "(define *dist-url* \"$(DISTURL)\")"
 
