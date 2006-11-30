@@ -50,13 +50,13 @@
           Plasma uses Subversion for revision control.
         </p>
         <p>
-          Repository location:  /proj/ppctools/svn/plasma
+          Repository location:  /proj/.ppc_43/vc_noec/svn/plasma
         </p>
       </revisioncontrol>
       <buildenv>
         The build environment uses autoconf and automake.  The general process
-        for building from CVS is (assuming that the user has checked out the
-        project and changed to that directory):
+        for building from a fresh Subversion checokut is (assuming that the user
+        has checked out the project and changed to that directory):
         <ol>
           <li>./autogen.sh</li>
           <li>make</li>
@@ -77,16 +77,17 @@
       <regression>
         <p>
         To run the regression, type <b>make check</b>.  This should be done
-        before a commit to CVS.</p>
+        before a commit.</p>
         <p>
-        At regular intervals, the correctness of the current head of CVS should
-        be checked.  To do this, copy the file <b>plasma/scripts/test-build</b>
-        to a directory, then execute it.  It checks Plasma out of CVS, builds it
-        with optimizations, runs the regression, installs it into the directory
-        that the script is located in, and makes various checks to ensure that
-        the intallation worked.  Note that you do not need to delete the
-        directory and re-copy <b>test-build</b> each time you run this test, as it does
-        its own clean up.</p>
+        At regular intervals, the correctness of the current head of the
+        repository should be checked.  To do this, copy the file
+        <b>plasma/scripts/test-build</b> to a directory, then execute it.  It
+        checks Plasma out of the repository, builds it with optimizations, runs
+        the regression, installs it into the directory that the script is
+        located in, and makes various checks to ensure that the intallation
+        worked.  Note that you do not need to delete the directory and re-copy
+        <b>test-build</b> each time you run this test, as it does its own clean
+        up.</p>
       </regression>
     </test>
     <documentation>
@@ -137,7 +138,7 @@
          cadinstall plasma
          </p>
          <p>
-         This will check the project out of CVS and build it in the appropriate
+         This will check the project out of its repository and build it in the appropriate
          location in GAIN.
          </p>
          <p>
