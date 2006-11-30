@@ -54,8 +54,10 @@ subdir = tests/sw
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/macros/cpp-setup.m4 \
-	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/libtool.m4 \
-	$(top_srcdir)/macros/qt.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/flex.m4 \
+	$(top_srcdir)/macros/general.m4 \
+	$(top_srcdir)/macros/libtool.m4 $(top_srcdir)/macros/qt.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -167,6 +169,7 @@ LATEXOK_TRUE = @LATEXOK_TRUE@
 LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
+LEX_CFLAGS = @LEX_CFLAGS@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LIBADD_DL = @LIBADD_DL@
 LIBLTDL = @LIBLTDL@
@@ -317,9 +320,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/sw/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/sw/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/sw/Makefile
+	  $(AUTOMAKE) --gnu  tests/sw/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.28])
+AC_INIT([plasma],[0.8.29])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -10,17 +10,16 @@ AC_PROG_INSTALL
 AC_STDC_HEADERS
 AC_LANG_CPLUSPLUS
 AM_PROG_AS
-AC_PROG_LEX
+
 AM_CPP_SETUP(3,4)
 
 #########################################################################
 #  Configure arguments 
 #########################################################################
 
-## Make sure flex exists.
-if [[ x$LEX = x: ]] ; then
-  AC_ERROR("Flex not found- this tool is required.")
-fi
+## Configure flex.
+FlexRequiredVersion=2.5.27
+AM_FLEX($FlexRequiredVersion, , AC_MSG_ERROR([flex $FlexRequiredVersion is required in order to build this project.]))
 
 ## Check for the location of Perl
 AC_PATH_PROG(PERLPROG,perl)

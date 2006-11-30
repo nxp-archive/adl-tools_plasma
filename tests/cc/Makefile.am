@@ -41,7 +41,6 @@ noinst_HEADERS = \
 	Tokens.h \
 	CFlexLexer.h \
 	Channels.h \
-	FlexLexer.h \
 	String.h \
 	Types.h \
 	cparse.h
@@ -71,6 +70,8 @@ include ./$(DEPDIR)/CodeGen.Po
 BUILT_SOURCES = clex.cc
 
 EXTRA_DIST = compile_check.pm.in regress
+
+INCLUDES = $(LEX_CFLAGS)
 
 # We use the lemon parser generator, but we assign it to YACC
 # so that automake won't bitch about seeing a .yy file and not

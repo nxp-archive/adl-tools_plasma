@@ -44,8 +44,10 @@ subdir = tests/cc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/macros/cpp-setup.m4 \
-	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/libtool.m4 \
-	$(top_srcdir)/macros/qt.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/flex.m4 \
+	$(top_srcdir)/macros/general.m4 \
+	$(top_srcdir)/macros/libtool.m4 $(top_srcdir)/macros/qt.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -155,6 +157,7 @@ LATEXOK_TRUE = @LATEXOK_TRUE@
 LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
+LEX_CFLAGS = @LEX_CFLAGS@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LIBADD_DL = @LIBADD_DL@
 LIBLTDL = @LIBLTDL@
@@ -277,7 +280,6 @@ noinst_HEADERS = \
 	Tokens.h \
 	CFlexLexer.h \
 	Channels.h \
-	FlexLexer.h \
 	String.h \
 	Types.h \
 	cparse.h
@@ -298,6 +300,7 @@ DEP_FILES = \
 
 BUILT_SOURCES = clex.cc
 EXTRA_DIST = compile_check.pm.in regress
+INCLUDES = $(LEX_CFLAGS)
 
 # We use the lemon parser generator, but we assign it to YACC
 # so that automake won't bitch about seeing a .yy file and not
@@ -336,9 +339,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/cc/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/cc/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/cc/Makefile
+	  $(AUTOMAKE) --gnu  tests/cc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
