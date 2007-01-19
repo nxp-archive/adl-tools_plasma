@@ -991,7 +991,7 @@ extern void GC_thr_init GC_PROTO((void));/* Needed for Solaris/X86	*/
 # endif /* !AIX && !cygwin */
 #endif /* !sparc */
 
-#if (!defined(GC_INIT))
+#if (!defined(GC_PRE_INIT))
 #  define GC_PRE_INIT()
 #endif
 
