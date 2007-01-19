@@ -1,3 +1,7 @@
+2007-01-19  Brian Kahne  <bkahne@freescale.com>
+
+	* For Solaris, we'll compile, but we only test the parser.
+
          file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.29 (v0_8_29) on Linux (lb0169) on 12/8/2006 
 
          file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.29 (v0_8_29) on Linux (lb32001) on 12/8/2006 

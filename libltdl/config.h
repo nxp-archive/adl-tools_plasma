@@ -2,22 +2,22 @@
 /* config-h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to 1 if you have the `argz_append' function. */
-/* #undef HAVE_ARGZ_APPEND */
+#define HAVE_ARGZ_APPEND 1
 
 /* Define to 1 if you have the `argz_create_sep' function. */
-/* #undef HAVE_ARGZ_CREATE_SEP */
+#define HAVE_ARGZ_CREATE_SEP 1
 
 /* Define to 1 if you have the <argz.h> header file. */
-/* #undef HAVE_ARGZ_H */
+#define HAVE_ARGZ_H 1
 
 /* Define to 1 if you have the `argz_insert' function. */
-/* #undef HAVE_ARGZ_INSERT */
+#define HAVE_ARGZ_INSERT 1
 
 /* Define to 1 if you have the `argz_next' function. */
-/* #undef HAVE_ARGZ_NEXT */
+#define HAVE_ARGZ_NEXT 1
 
 /* Define to 1 if you have the `argz_stringify' function. */
-/* #undef HAVE_ARGZ_STRINGIFY */
+#define HAVE_ARGZ_STRINGIFY 1
 
 /* Define to 1 if you have the <assert.h> header file. */
 #define HAVE_ASSERT_H 1
@@ -57,7 +57,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if the system has the type `error_t'. */
-/* #undef HAVE_ERROR_T */
+#define HAVE_ERROR_T 1
 
 /* Define to 1 if you have the `index' function. */
 /* #undef HAVE_INDEX */
@@ -102,7 +102,7 @@
 /* #undef HAVE_SHL_LOAD */
 
 /* Define to 1 if you have the <stdint.h> header file. */
-/* #undef HAVE_STDINT_H */
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdio.h> header file. */
 #define HAVE_STDIO_H 1
@@ -130,7 +130,7 @@
 /* #undef HAVE_SYS_DIR_H */
 
 /* Define to 1 if you have the <sys/dl.h> header file. */
-#define HAVE_SYS_DL_H 1
+/* #undef HAVE_SYS_DL_H */
 
 /* Define to 1 if you have the <sys/ndir.h> header file, and it defines `DIR'.
    */
@@ -160,7 +160,7 @@
 #define LTDL_SHLIB_EXT ".so"
 
 /* Define to the system default library search path. */
-#define LTDL_SYSSEARCHPATH "/lib:/usr/lib"
+#define LTDL_SYSSEARCHPATH "/lib:/usr/lib:/usr/kerberos/lib:/usr/X11R6/lib:/usr/lib/qt-3.1/lib:/usr/lib/mysql"
 
 /* Define if dlsym() requires a leading underscore in symbol names. */
 /* #undef NEED_USCORE */
@@ -187,7 +187,7 @@
 /* #undef const */
 
 /* Define to a type to use for `error_t' if it is not otherwise available. */
-#define error_t int
+/* #undef error_t */
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
