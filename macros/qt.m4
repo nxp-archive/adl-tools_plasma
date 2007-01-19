@@ -23,7 +23,7 @@ if [[ x$ac_qt_host = x ]] ; then
 	ac_qt_host="x86_64"
 	;;
     sparc)
-	ac_qt_host="sparc"
+	ac_qt_host="sparc-os2"
 	;;
     powerpc)
 	ac_qt_host="ppc"

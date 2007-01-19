@@ -946,8 +946,8 @@ extern void GC_thr_init GC_PROTO((void));/* Needed for Solaris/X86	*/
      * This circumvents a Solaris 2.X (X<=4) linker bug.
      */
 #   ifdef __cplusplus
+#     define GC_PRE_INIT() extern "C" void GC_noop1(GC_word);
 #     define GC_INIT() { extern int _end[], _etext[]; \
-		         extern "C" void GC_noop1(GC_word); \
 		         GC_noop1((GC_word)_end); \
 			 GC_noop1((GC_word)_etext); }
 #   else
@@ -990,6 +990,10 @@ extern void GC_thr_init GC_PROTO((void));/* Needed for Solaris/X86	*/
 #  endif /* !__MACH && !GC_WIN32_THREADS */
 # endif /* !AIX && !cygwin */
 #endif /* !sparc */
+
+#if (!defined(GC_INIT))
+#  define GC_PRE_INIT()
+#endif
 
 #if !defined(_WIN32_WCE) \
     && ((defined(_MSDOS) || defined(_MSC_VER)) && (_M_IX86 >= 300) \

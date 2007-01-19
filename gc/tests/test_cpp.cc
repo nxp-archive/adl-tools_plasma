@@ -172,6 +172,7 @@ long Disguise( void* p ) {
 void* Undisguise( long i ) {
     return (void*) ~ i;}
 
+GC_PRE_INIT()
 
 #ifdef MSWIN32
 int APIENTRY WinMain(
