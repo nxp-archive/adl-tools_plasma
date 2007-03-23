@@ -1,3 +1,9 @@
+2007-03-23  Brian Kahne  <bkahne@freescale.com>
+
+	* Added support for nested template functions.  As with nested
+	functions, this can be disabled by undefining NESTED_FUNCS_OKAY.
+	Added parsing/in9.C to test this.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.30 (v0_8_30) on Linux (lb32001) on 3/7/2007 ==
 
          file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.30 (v0_8_30) on SunOS (sb0183) on 1/22/2007 

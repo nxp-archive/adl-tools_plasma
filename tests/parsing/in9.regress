@@ -1,0 +1,8 @@
+Define statement:  ( reg foo2 ) {
+    template < typename T >  void A ( T a , T b ) {
+         ;
+    }
+}
+Stmt:  template < typename T >  void A ( T a , T b ) {
+     ;
+}

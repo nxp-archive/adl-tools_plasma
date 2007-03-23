@@ -586,7 +586,7 @@ namespace Opencxx
     case tdk_instantiation:
       // Repackage the decl as a PtreeTemplateInstantiation
       decl = body;
-      // assumes that decl has the form: [0 [class ...] ;]
+      // assumes that decl has the form: [0 [class ...] ;]fin
       if (PtreeUtil::Length(decl) != 3)
 	    return false;
 
@@ -4621,6 +4621,9 @@ namespace Opencxx
     | comma.expression ';'
     | openc++.postfix.expr
     | openc++.primary.exp
+    | template.decl   <- Note that this is to allow for nested template
+                         functions and may be disabled by not defineding
+                         NESTED_FUNCS_OKAY                     
   */
   bool Parser::rExprStatement(Ptree*& st)
   {
@@ -4638,6 +4641,14 @@ namespace Opencxx
       else{
 	    Ptree* exp;
 	    lex->Restore(pos);
+#       ifdef NESTED_FUNCS_OKAY
+        // Could this be a nested template function?
+        if (rTemplateDecl(st)) {
+          return true;
+        } else {
+          lex->Restore(pos);
+        }
+#       endif
 	    if(!rCommaExpression(exp))
           return false;
 
