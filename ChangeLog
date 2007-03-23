@@ -1,3 +1,9 @@
+2007-03-23  Brian Kahne  <bkahne@freescale.com>
+
+	* I no longer build meas in the qt directory b/c for some reason,
+	it  doesn't build on i686 platforms.  This is just a test program,
+	so it's not required by anything else.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.31 (v0_8_31) on Linux (lb32001) on 3/23/2007 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.31 (v0_8_31) on Linux (lb0169) on 3/23/2007 ==

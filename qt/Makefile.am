@@ -1,7 +1,8 @@
 
 SUBDIRS = md
 
-noinst_PROGRAMS = meas
+# For some reason, this doesn't build on i686 platforms.
+#noinst_PROGRAMS = meas
 
 lib_LTLIBRARIES = libqt.la libstp.la
 

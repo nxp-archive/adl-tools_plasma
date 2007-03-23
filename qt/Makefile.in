@@ -15,7 +15,6 @@
 @SET_MAKE@
 
 
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -38,7 +37,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-noinst_PROGRAMS = meas$(EXEEXT)
 subdir = qt
 DIST_COMMON = README $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in INSTALL
@@ -68,10 +66,6 @@ libqt_la_OBJECTS = $(am_libqt_la_OBJECTS)
 libstp_la_LIBADD =
 am_libstp_la_OBJECTS = stp.lo
 libstp_la_OBJECTS = $(am_libstp_la_OBJECTS)
-PROGRAMS = $(noinst_PROGRAMS)
-am_meas_OBJECTS = meas.$(OBJEXT) qtmdb.$(OBJEXT) qtmdb_c.$(OBJEXT)
-meas_OBJECTS = $(am_meas_OBJECTS)
-meas_DEPENDENCIES = libstp.la libqt.la
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -84,9 +78,8 @@ LTCOMPILE = $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) \
 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
 	$(AM_CFLAGS) $(CFLAGS)
 CCLD = $(CC)
-SOURCES = $(libqt_la_SOURCES) $(libstp_la_SOURCES) $(meas_SOURCES)
-DIST_SOURCES = $(libqt_la_SOURCES) $(libstp_la_SOURCES) \
-	$(meas_SOURCES)
+SOURCES = $(libqt_la_SOURCES) $(libstp_la_SOURCES)
+DIST_SOURCES = $(libqt_la_SOURCES) $(libstp_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-exec-recursive install-info-recursive \
@@ -252,6 +245,9 @@ subdirs = @subdirs@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 SUBDIRS = md
+
+# For some reason, this doesn't build on i686 platforms.
+#noinst_PROGRAMS = meas
 lib_LTLIBRARIES = libqt.la libstp.la
 libqt_la_SOURCES = \
 	qt.c \
@@ -299,9 +295,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  qt/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  qt/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  qt/Makefile
+	  $(AUTOMAKE) --gnu  qt/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -351,25 +347,13 @@ libqt.la: $(libqt_la_OBJECTS) $(libqt_la_DEPENDENCIES)
 libstp.la: $(libstp_la_OBJECTS) $(libstp_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libstp_la_LDFLAGS) $(libstp_la_OBJECTS) $(libstp_la_LIBADD) $(LIBS)
 
-clean-noinstPROGRAMS:
-	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
-	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
-	  echo " rm -f $$p $$f"; \
-	  rm -f $$p $$f ; \
-	done
-meas$(EXEEXT): $(meas_OBJECTS) $(meas_DEPENDENCIES) 
-	@rm -f meas$(EXEEXT)
-	$(LINK) $(meas_LDFLAGS) $(meas_OBJECTS) $(meas_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/meas.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qt.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qtmdb_c.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/qtmdc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stp.Plo@am__quote@
 
@@ -589,7 +573,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
+all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(libdir)"; do \
@@ -622,7 +606,7 @@ maintainer-clean-generic:
 clean: clean-recursive
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+	mostlyclean-am
 
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
@@ -671,19 +655,18 @@ uninstall-info: uninstall-info-recursive
 
 .PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am check check-am \
 	clean clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS clean-recursive ctags ctags-recursive \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-recursive distclean-tags distdir \
-	dvi dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-exec install-exec-am \
-	install-info install-info-am install-libLTLIBRARIES \
-	install-man install-strip installcheck installcheck-am \
-	installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
-	tags tags-recursive uninstall uninstall-am uninstall-info-am \
-	uninstall-libLTLIBRARIES
+	clean-recursive ctags ctags-recursive distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-recursive distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool mostlyclean-recursive \
+	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	uninstall-info-am uninstall-libLTLIBRARIES
 
 
 # Remove the configuration information on a distclean.
