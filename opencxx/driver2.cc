@@ -99,7 +99,7 @@ namespace Opencxx
 #if !SHARED_OPTION
   static void RunSoLinker(const char* org_src, char* target);
 #endif
-  static char* MakeTempFilename(const char* src, const char* suffix);
+  char* MakeTempFilename(const char* src, const char* suffix);
 
 
   bool ParseTargetSpecificOptions(char*, char*&)
@@ -500,7 +500,7 @@ namespace Opencxx
     For example, if src is "../foo.cc", MakeTempFilename() makes
     "foo.<suffix>".
   */
-  static char* MakeTempFilename(const char* src, const char* suffix)
+  char* MakeTempFilename(const char* src, const char* suffix)
   {
     const char* start;
     const char* end;

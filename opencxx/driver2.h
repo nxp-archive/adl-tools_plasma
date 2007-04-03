@@ -59,6 +59,7 @@ void RunCompiler(
     const char* org_src, const char* occ_src
   , const MetacompilerConfiguration& config);
 char* OpenCxxOutputFileName(const char* src);
+char* MakeTempFilename(const char* src, const char* suffix);
 
 }
 
