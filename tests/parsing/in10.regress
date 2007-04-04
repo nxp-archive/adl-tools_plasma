@@ -1,0 +1,19 @@
+in10.C:17: parse error before `}'
+Define statement:  ( reg foo1 ) {
+    i = 10 ;
+    size = 10 ;
+    define ( stuff bar ) {  }
+}
+Define statement:  ( stuff bar ) {  }
+Key:  i
+Value:  10
+  Boolean: true
+  Integer: 10
+Key:  size
+Value:  10
+  Boolean: true
+  Integer: 10
+Stmt:  define ( stuff bar ) {  }
+occ: parse errors, exiting
+
+fatal error
