@@ -191,55 +191,58 @@ void Program::Replace(char* startpos, char* endpos, Ptree* text)
 */
 unsigned Program::LineNumber(char* ptr, char*& filename, int& filename_length)
 {
-    int n;
-    int  len;
-    unsigned name;
+  int n;
+  int  len;
+  unsigned name;
 
-    int nline = 0;
-    unsigned pos = unsigned(ptr - buf);
-    if(pos > size){
+  int nline = 0;
+  unsigned pos = unsigned(ptr - buf);
+  if(pos > size){
 	// error?
 	filename = defaultname;
 	filename_length = strlen(defaultname);
 	return 0;
-    }
+  }
 
-    int line_number = -1;
-    filename_length = 0;
+  int line_number = -1;
+  filename_length = 0;
 
-    while(pos > 0){
+  while(pos > 0){
 	switch(Ref(--pos)){
 	case '\n' :
-	    ++nline;
-	    break;
+      ++nline;
+      break;
 	case '#' :
-	    len = 0;
-	    n = ReadLineDirective(pos, -1, name, len);
-	    if(n >= 0){			// unless #pragma
-		if(line_number < 0)
-		    line_number = n + nline;
-
-		if(len > 0 && filename_length == 0){
-		    filename = (char*)Read(name);
-		    filename_length = len;
-		}
-	    }
-	    break;
+      // Only record if this is the first character after a newline.
+      if (pos == 0 || (Ref(pos-1) == '\n')) {
+        len = 0;
+        n = ReadLineDirective(pos, -1, name, len);
+        if(n >= 0){			// unless #pragma
+          if(line_number < 0)
+            line_number = n + nline;
+          
+          if(len > 0 && filename_length == 0){
+            filename = (char*)Read(name);
+            filename_length = len;
+          }
+        }
+      }
+      break;
 	}
 
 	if(line_number >= 0 && filename_length > 0)
-	    return line_number;
-    }
+      return line_number;
+  }
 
-    if(filename_length == 0){
+  if(filename_length == 0){
 	filename = defaultname;
 	filename_length = strlen(defaultname);
-    }
+  }
 
-    if(line_number < 0)
+  if(line_number < 0)
 	line_number = nline + 1;
 
-    return line_number;
+  return line_number;
 }
 
 /*
