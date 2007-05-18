@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.34])
+AC_INIT([plasma],[0.8.35])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -180,9 +180,6 @@ AC_CONFIG_FILES([\
 	tests/cc/compile_check.pm
 ],[chmod +x,-w tests/cc/compile_check.pm ])
 
-# We always want to enable C++ support (argument taken by GC library).
-# We also supply our own threading library, so we don't need this to be done by gc.
-export enable_cplusplus=yes
 AC_CONFIG_SUBDIRS(gc libltdl)
 
 AC_OUTPUT

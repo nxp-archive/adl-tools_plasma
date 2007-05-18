@@ -1,3 +1,12 @@
+	
+2007-05-18  Brian Kahne  <bkahne@freescale.com>
+
+	* Removed the building of libgccpp.la because it caused link
+	errors when linked statically against libstdc++ (it overrides new
+	and delete, which causes multiply-defined-symbol errors if done
+	statically).  We don't use this library, so that shouldn't be a
+	problem.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.34 (v0_8_34) on Linux (lb0169) on 4/4/2007 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.34 (v0_8_34) on Linux (lb32001) on 4/4/2007 ==
