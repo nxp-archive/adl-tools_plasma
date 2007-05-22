@@ -1,3 +1,10 @@
+2007-05-22  Brian Kahne  <bkahne@freescale.com>
+
+	* Various tweaks to get this to compile with --disable-shared.  If
+	shared objects are disabled, then we add pthread as a system
+	library and we also define --allow-multiple-definition so that
+	some of our symbols can replace symbols in other libraries.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.35 (v0_8_35) on Linux (lb32001) on 5/18/2007 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.35 (v0_8_35) on Linux (lb0169) on 5/18/2007 ==

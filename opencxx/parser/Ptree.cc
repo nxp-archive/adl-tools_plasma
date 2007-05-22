@@ -207,6 +207,8 @@ Ptree* Ptree::Make(const char* pat, ...)
 
     va_end(args);
 
+    assert(j < 4096);
+
     if(j > 0)
 	if(result == 0)
 	    result = new DupLeaf(buf, j);

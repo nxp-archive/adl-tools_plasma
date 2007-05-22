@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.35])
+AC_INIT([plasma],[0.8.36])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -141,6 +141,20 @@ AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
 AC_SUBST(CONFOPTS)
 AC_SUBST(MINI_CC_FLAGS)
+
+# The basic system libraries needed are just -ld.  If compiling w/o
+# shared libraries, however, we need pthread as well.
+SYS_LIBS="-ldl"
+EXTRA_LDFLAGS=
+
+if [[ x${enable_shared} = xno ]]; then
+  SYS_LIBS="${SYS_LIBS} -lpthread"
+  EXTRA_LDFLAGS=" -Wl,--allow-multiple-definition"
+fi
+AC_SUBST(SYS_LIBS)
+AC_SUBST(EXTRA_LDFLAGS)
+
+
 
 AC_CONFIG_COMMANDS([ptree-gen],
     [(cd ${srcdir}/opencxx/parser && chmod +x ptree-gen && ./ptree-gen)],

@@ -13,7 +13,7 @@ datadir=${exec_prefix}/share/
 transform=@program_transform_name@
 
 CFLAGS="-I@includedir@"
-LIBPATHS="-L${libdir} -Wl,-R${libdir}"
+LIBPATHS="@EXTRA_LDFLAGS@ -L${libdir} -Wl,-R${libdir}"
 STATIC_LIBS="${libdir}/libplasma.a ${libdir}/libqt.a ${libdir}/libgc.a"
 LIBS="-lplasma -lgc -lqt"
 LTLIBS="${libdir}/libplasma.la ${libdir}/libqt.la ${libdir}/libgc.la"
@@ -124,7 +124,7 @@ if $static_libs; then
 fi
 
 if $sys_libs; then
-    all_flags="$all_flags -ldl"
+    all_flags="$all_flags @SYS_LIBS@"
 fi
 
 if test -z "$all_flags" || test "x$all_flags" = "x "; then

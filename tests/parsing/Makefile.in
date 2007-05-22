@@ -108,6 +108,7 @@ ECHO_T = @ECHO_T@
 EFENCE = @EFENCE@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_LDFLAGS = @EXTRA_LDFLAGS@
 F77 = @F77@
 FFLAGS = @FFLAGS@
 GCC_MAJOR = @GCC_MAJOR@
@@ -162,6 +163,7 @@ SKRIBE = @SKRIBE@
 SKRIBEOK_FALSE = @SKRIBEOK_FALSE@
 SKRIBEOK_TRUE = @SKRIBEOK_TRUE@
 STRIP = @STRIP@
+SYS_LIBS = @SYS_LIBS@
 TRIP = @TRIP@
 VERSION = @VERSION@
 W2L = @W2L@
@@ -251,9 +253,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/parsing/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/parsing/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tests/parsing/Makefile
+	  $(AUTOMAKE) --foreign  tests/parsing/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

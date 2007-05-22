@@ -99,7 +99,7 @@ namespace Opencxx
 #if !SHARED_OPTION
   static void RunSoLinker(const char* org_src, char* target);
 #endif
-  char* MakeTempFilename(const char* src, const char* suffix);
+  char* MakeTempFilename(const char* src, const char* suffix) __attribute__((weak));
 
 
   bool ParseTargetSpecificOptions(char*, char*&)

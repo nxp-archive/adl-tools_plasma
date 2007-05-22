@@ -138,6 +138,7 @@ ECHO_T = @ECHO_T@
 EFENCE = @EFENCE@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
+EXTRA_LDFLAGS = @EXTRA_LDFLAGS@
 F77 = @F77@
 FFLAGS = @FFLAGS@
 GCC_MAJOR = @GCC_MAJOR@
@@ -192,6 +193,7 @@ SKRIBE = @SKRIBE@
 SKRIBEOK_FALSE = @SKRIBEOK_FALSE@
 SKRIBEOK_TRUE = @SKRIBEOK_TRUE@
 STRIP = @STRIP@
+SYS_LIBS = @SYS_LIBS@
 TRIP = @TRIP@
 VERSION = @VERSION@
 W2L = @W2L@
@@ -312,12 +314,12 @@ minicc_LDADD = -lgc -ldl
 clex_lflag = -Cfe
 CLEANFILES = *.ii clex.cc cparse.cc cparse.h *.s
 PLASMA = $(top_builddir)/scripts/plasma --devel-src=$(top_srcdir) --devel-build=$(top_builddir)
-AM_LDFLAGS = -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
+AM_LDFLAGS = $(EXTRA_LDFLAGS) -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
 	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
 	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
 
 # This must be added to each C++ file's LDADD variable.
-CXX_LDADD = -lplasma -lqt -lgc -ldl
+CXX_LDADD = -lplasma -lqt -lgc $(SYS_LIBS)
 CXXLD = $(CXX)
 LINK = $(PLASMA) -o $@
 
@@ -339,9 +341,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/cc/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/cc/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tests/cc/Makefile
+	  $(AUTOMAKE) --foreign  tests/cc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

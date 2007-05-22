@@ -165,18 +165,18 @@ printhelp(0,2) if $man;
 printhelp(0,0,1) if $printversion;
 
 my ($base,$pincs,$plibs,$prog);
-my $baselibs = "-lplasma -lgc -lqt -ldl";
+my $baselibs = "-lplasma -lgc -lqt @SYS_LIBS@";
 if (!$devel_build) {
   # Normal install mode:  Run using installed stuff.
   $base  = $prefix;
   $pincs = "-d-include$base/include/plasma/plasma-interface.h -I$base/include";
-  $plibs = "-L$base/lib -Wl,-R$base/lib $baselibs";
+  $plibs = "@EXTRA_LDFLAGS@ -L$base/lib -Wl,-R$base/lib $baselibs";
   $prog  = "$base/bin/plasma-comp";
 } else {
   # Development mode:  Run using development layout.
   $devel_src = $devel_build if (!$devel_src);
   $pincs = "-d-include$devel_src/src/plasma-interface.h -I$devel_src/src -I$devel_src/gc";
-  $plibs = "-L$devel_build/src/.libs -Wl,-R$devel_build/src/.libs " .
+  $plibs = "@EXTRA_LDFLAGS@ -L$devel_build/src/.libs -Wl,-R$devel_build/src/.libs " .
            "-L$devel_build/qt/.libs -Wl,-R$devel_build/qt/.libs " .
            "-L$devel_build/gc/.libs -Wl,-R$devel_build/gc/.libs $baselibs";
   $prog  = "$devel_build/parser/plasma-comp";
