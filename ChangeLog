@@ -1,3 +1,5 @@
+       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.36 (v0_8_36) on Linux (lb0169) on 5/22/2007 ==
+
 2007-05-22  Brian Kahne  <bkahne@freescale.com>
 
 	* Various tweaks to get this to compile with --disable-shared.  If
