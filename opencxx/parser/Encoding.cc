@@ -75,6 +75,7 @@
   operator <type> ==> @<encoded type>		cast operator
 */
 
+#include <stdexcept>
 #include <string.h>
 #include <iostream>
 #include <opencxx/parser/Encoding.h>
@@ -364,20 +365,20 @@ namespace Opencxx
 	    goto const_or_volatile;
       case 'V' :
 	    cv = PtreeUtil::List(volatile_t);
-        const_or_volatile :
-          switch(*encoded) {
-          case 'M' :
-          case 'P' :
-          case 'R' :
-            decl = PtreeUtil::Nconc(cv, decl);
-            break;
-          case 'F' :
-            ++encoded;
-            goto cv_function;
-          default :
-            typespec = PtreeUtil::Nconc(cv, typespec);
-            break;
-          }
+      const_or_volatile :
+        switch(*encoded) {
+        case 'M' :
+        case 'P' :
+        case 'R' :
+          decl = PtreeUtil::Nconc(cv, decl);
+          break;
+        case 'F' :
+          ++encoded;
+          goto cv_function;
+        default :
+          typespec = PtreeUtil::Nconc(cv, typespec);
+          break;
+        }
 	    break;
       case 'M' :
 	    {
@@ -397,10 +398,10 @@ namespace Opencxx
 	    goto pointer_or_reference;
       case 'R' :
 	    decl = PtreeUtil::Cons(ampersand, decl);
-        pointer_or_reference :
-          if(*encoded == 'A' || *encoded == 'F')
-            decl = PtreeUtil::List(PtreeUtil::List(left_paren, decl,
-                                                   right_paren));
+      pointer_or_reference :
+        if(*encoded == 'A' || *encoded == 'F')
+          decl = PtreeUtil::List(PtreeUtil::List(left_paren, decl,
+                                                 right_paren));
 
 	    break;
       case 'A' :
@@ -408,30 +409,30 @@ namespace Opencxx
                                                       right_bracket));
 	    break;
       case 'F' :
-        cv_function :
-          {
-            Ptree* args = 0;
-            while(*encoded != '\0'){
-              if(*encoded == '_'){
-                ++encoded;
-                break;
-              }
-              else if(*encoded == 'v'){
-                encoded += 2;
-                break;
-              }
-
-              if(args != 0)
-                args = PtreeUtil::Snoc(args, comma);
-
-              args = PtreeUtil::Snoc(args, MakePtree(encoded, 0));
+      cv_function :
+        {
+          Ptree* args = 0;
+          while(*encoded != '\0'){
+            if(*encoded == '_'){
+              ++encoded;
+              break;
+            }
+            else if(*encoded == 'v'){
+              encoded += 2;
+              break;
             }
 
-            decl = PtreeUtil::Nconc(decl, PtreeUtil::List(left_paren, args,
-                                                          right_paren));
-            if(cv != 0)
-              decl = PtreeUtil::Nconc(decl, cv);
+            if(args != 0)
+              args = PtreeUtil::Snoc(args, comma);
+
+            args = PtreeUtil::Snoc(args, MakePtree(encoded, 0));
           }
+
+          decl = PtreeUtil::Nconc(decl, PtreeUtil::List(left_paren, args,
+                                                        right_paren));
+          if(cv != 0)
+            decl = PtreeUtil::Nconc(decl, cv);
+        }
 	    break;
       case '\0' :
 	    goto finish;
@@ -470,14 +471,14 @@ namespace Opencxx
 
           goto finish;
 	    }
-        error :
-          TheErrorLog().Report(MopMsg(Msg::Fatal, "Encoding::MakePtree()", "sorry, cannot handle this type"));
+      error :
+        throw runtime_error("Encoding::MakePtree():  sorry, cannot handle this type");
 	    break;
       }
     }
 
-    finish :
-      return PtreeUtil::List(typespec, decl);
+  finish :
+    return PtreeUtil::List(typespec, decl);
   }
 
   Ptree* Encoding::MakeQname(unsigned char*& encoded)
