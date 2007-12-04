@@ -1,8 +1,4 @@
-       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.38 (v0_8_38) on Linux (lb0172) on 12/4/2007 ==
 
-       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.38 (v0_8_38) on Linux (lb32001) on 12/4/2007 ==
-
-<<<<<<< .mine
 2007-12-04  Brian Kahne  <bkahne@freescale.com>
 
 	* Fixed a bug with the boolean version of Reify.  It was
@@ -10,7 +6,6 @@
 	of a boolean constant, e.g. 't' would match as 'true'.  Modified
 	parsing/in5.C to test this.
 
-=======
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.37 (v0_8_37) on Linux (lb32001) on 7/9/2007 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.37 (v0_8_37) on Linux (lb0170) on 6/28/2007 ==
@@ -19,7 +14,6 @@
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.37 (v0_8_37) on Linux (lb0170) on 6/28/2007 ==
 
->>>>>>> .r434
 2007-06-28  Brian Kahne  <bkahne@freescale.com>
 
 	* Fixed some distribution problems:  We weren't distributing
