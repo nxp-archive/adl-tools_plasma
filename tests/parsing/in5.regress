@@ -2,6 +2,9 @@ Define statement:  ( reg foo1 ) {
     size = 10 ;
     sparse = true ;
     otherstuff = false ;
+    notbool1 = t ;
+    notbool2 = f ;
+    notbool3 = stuff ;
     foo = 1 ;
 }
 Key:  size
@@ -14,6 +17,12 @@ Value:  true
 Key:  otherstuff
 Value:  false
   Boolean: false
+Key:  notbool1
+Value:  t
+Key:  notbool2
+Value:  f
+Key:  notbool3
+Value:  stuff
 Key:  foo
 Value:  1
   Boolean: true

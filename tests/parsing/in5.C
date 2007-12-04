@@ -9,5 +9,8 @@ define(reg foo1) {
   size = 10;
   sparse = true;
   otherstuff = false;
+  notbool1 = t;
+  notbool2 = f;
+  notbool3 = stuff;
   foo = 1;
 }

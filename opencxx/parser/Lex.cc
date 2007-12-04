@@ -196,10 +196,10 @@ namespace Opencxx
     int len = t->GetLength();
 
     // First, can we match against true or false?
-    if (!strncmp(p,"true",len)) {
+    if (len == 4 && strncmp(p,"true",len) == 0) {
       value = true;
       return true;
-    } else if (!strncmp(p,"false",len)) {
+    } else if (len == 5 && strncmp(p,"false",len) == 0) {
       value = false;
       return true;
     } else {
