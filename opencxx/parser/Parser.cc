@@ -1964,7 +1964,7 @@ namespace Opencxx
     operator.name
     : '+' | '-' | '*' | '/' | '%' | '^' | '&' | '|' | '~'
     | '!' | '=' | '<' | '>' | AssignOp | ShiftOp | EqualOp
-    | RelOp | LogAndOp | LogOrOp | IncOp | ',' | PmOp | ArrowOp
+    | RelOp | LogAndOp | LogOrOp | IncOp | ',' | PmOp | ArrowOp | '@'
     | NEW {'[' ']'}
     | DELETE {'[' ']'}
     | '(' ')'
@@ -1980,7 +1980,7 @@ namespace Opencxx
        || t == '&' || t == '|' || t == '~' || t == '!' || t == '=' || t == '<'
        || t == '>' || t == AssignOp || t == ShiftOp || t == EqualOp
        || t == RelOp || t == LogAndOp || t == LogOrOp || t == IncOp
-       || t == ',' || t == PmOp || t == ArrowOp){
+       || t == ',' || t == PmOp || t == ArrowOp || t == '@') {
       lex->GetToken(tk);
       name = new Leaf(tk);
       encode.SimpleName(name);
@@ -3759,6 +3759,7 @@ namespace Opencxx
     | postfix.expr '(' function.arguments ')'
     | postfix.expr '.' var.name
     | postfix.expr ArrowOp var.name
+    | postfix.expr '@' var.name
     | postfix.expr IncOp
     | openc++.postfix.expr
 
@@ -3806,6 +3807,7 @@ namespace Opencxx
 	    exp = new PtreePostfixExpr(exp, PtreeUtil::List(new Leaf(op)));
 	    break;
       case '.' :
+      case '@' :
       case ArrowOp :
 	    t2 = lex->GetToken(op);
 	    t = lex->LookAhead(0);

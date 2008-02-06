@@ -1173,10 +1173,10 @@ namespace Opencxx
 
   int Lex::SingleCharOp(unsigned char c)
   {
-    /* !"#$%&'()*+,-./0123456789:;<=>? */
-    static char valid[] = "x   xx xxxxxxxx          xxxxxx";
+    /* !"#$%&'()*+,-./0123456789:;<=>?@ */
+    static char valid[] = "x   xx xxxxxxxx          xxxxxxx";
 
-    if('!' <= c && c <= '?' && valid[c - '!'] == 'x')
+    if('!' <= c && c <= '@' && valid[c - '!'] == 'x')
       return c;
     else if(c == '[' || c == ']' || c == '^')
       return c;
