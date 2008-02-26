@@ -24,7 +24,7 @@ echo "Done with automake processing."
 
 # Default configure flags:  Enable makefile dependency rules 
 # and disable optimization.
-conf_flags="--enable-maintainer-mode --disable-opt"
+conf_flags="--enable-maintainer-mode --disable-opt -C"
 
 # Run configure unless NOCONFIGURE is set.
 if [ x$NOCONFIGURE = x ]; then
