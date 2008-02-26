@@ -181,6 +181,8 @@ EXTRA_DIST += cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
+MAKELINK = cd $(srcdir) && ln -sf include gc
+
 # :FIXME: why do we distribute this one???
 #
 #EXTRA_DIST += libtool.m4
@@ -194,10 +196,10 @@ CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 # This is so that our includes look the same in the workspace
 # and in the install tree.
 all: all-recursive
-	ln -sf $(srcdir)/include $(srcdir)/gc
+	$(MAKELINK)
 
 check: check-recursive
-	ln -sf $(srcdir)/include $(srcdir)/gc
+	$(MAKELINK)
 
 install: install-recursive
-	ln -sf $(srcdir)/include $(srcdir)/gc
+	$(MAKELINK)
