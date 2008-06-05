@@ -160,7 +160,7 @@
 #define LTDL_SHLIB_EXT ".so"
 
 /* Define to the system default library search path. */
-#define LTDL_SYSSEARCHPATH "/lib:/usr/lib:include:ld.so.conf.d/*.conf:/usr/ofed/lib64"
+#define LTDL_SYSSEARCHPATH "/lib:/usr/lib:include:ld.so.conf.d/*.conf"
 
 /* Define if dlsym() requires a leading underscore in symbol names. */
 /* #undef NEED_USCORE */

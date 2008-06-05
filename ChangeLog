@@ -1,3 +1,8 @@
+2008-06-05  Brian Kahne  <bkahne@freescale.com>
+
+	* Updated the libtool macro so that it works properly with the gcc
+	4.1.1 found in /pkg.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.40 (v0_8_40) on Linux (lb32001) on 5/12/2008 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.40 (v0_8_40) on Linux (ld2058) on 2/26/2008 ==
