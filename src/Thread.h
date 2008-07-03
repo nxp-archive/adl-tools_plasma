@@ -85,8 +85,13 @@ namespace plasma {
     void setnt(Thread *n) { _nt = n; };
     void setpt(Thread *p) { _pt = p; };
 
+#   ifdef GC_DISABLED
+    static void *operator new(size_t sz) { return ::operator new(sz); };
+    static void *operator new(size_t sz,void *p) { return ::operator new(sz,p); };
+#   else
     static void *operator new(size_t sz) { return gc::operator new(sz); };
     static void *operator new(size_t sz,void *p) { return gc::operator new(sz,p); };
+#   endif
 
   private:
 

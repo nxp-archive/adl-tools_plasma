@@ -109,7 +109,12 @@ namespace plasma {
     static bool dummy = init();
 
     System::add_active_thread(&_main);
+    #ifdef GC_DISABLED
+    int foo;
+    _main.setStackBegin((void*)&foo);
+    #else
     _main.setStackBegin(GC_stackbottom);
+    #endif
 
     setalarm();                              // set alarm timer
   }

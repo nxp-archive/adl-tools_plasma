@@ -30,7 +30,11 @@ typedef gc_cleanup Object;
 inline
 int GcCount()
 {
-    return GC_gc_no;
+# ifdef GC_DISABLED
+  return 0;
+# else
+  return GC_gc_no;
+# endif
 }
 
 }

@@ -36,8 +36,16 @@
  */
 
 #ifndef GC_ALLOCATOR_H
-
 #define GC_ALLOCATOR_H
+
+//#define GC_DISABLED
+
+#ifdef  GC_DISABLED
+
+#define gc_allocator std::allocator
+#define traceable_allocator std::allocator
+
+#else
 
 #include "gc.h"
 
@@ -239,5 +247,7 @@ inline bool operator!=(const traceable_allocator<GC_T1>&, const traceable_alloca
 {
   return false;
 }
+
+#endif /* GC_DISABLED */
 
 #endif /* GC_ALLOCATOR_H */

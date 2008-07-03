@@ -21,8 +21,11 @@
 #include "Proc.h"
 
 typedef char * ptr_t;
+
+#ifndef GC_DISABLED
 extern "C" void (*GC_push_other_roots) GC_PROTO((void));
 extern "C" void GC_push_all_stack GC_PROTO((ptr_t b, ptr_t t));
+#endif
 
 using namespace std;
 
@@ -73,7 +76,9 @@ namespace plasma {
     _busyokay(false),
     _time(0)
   {
+#   ifndef GC_DISABLED
     GC_push_other_roots = System::push_other_roots;    
+#   endif
   }
 
   // The garbage collector needs to know about all of the "roots" in the
@@ -86,6 +91,7 @@ namespace plasma {
   void System::push_other_roots(void)
   {
     //    printf ("push_other_roots called:  %d threads.\n",System::num_active_threads());
+#   ifndef GC_DISABLED
     Thread *n = _active_list;
     while (n) {
       if (n->thread() && n->stackend()) {
@@ -94,6 +100,7 @@ namespace plasma {
       }
       n = n->nt();
     }
+#   endif
   }
 
   void System::init(const ConfigParms &cp)
@@ -122,14 +129,22 @@ namespace plasma {
   // Allocate new stack
   void *System::newstack()
   {
+#   ifdef GC_DISABLED
+    return malloc(_size);
+#   else
     return GC_MALLOC(_size);
+#   endif
   }
 
   // Dispose stack
   // caller is in charge of locking the processor!!!
   void System::dispose(void *st)
   {
+#   ifdef GC_DISABLED
+    free(st);
+#   else
     GC_FREE(st);
+#   endif
   }
 
   void System::add_busy(ptime_t t,Thread *th)

@@ -131,6 +131,37 @@ by UseGC.  GC is an alias for UseGC, unless GC_NAME_CONFLICT is defined.
 
 ****************************************************************************/
 
+  //#define GC_DISABLED
+
+#ifdef GC_DISABLED
+
+#include <unistd.h>
+
+enum GCPlacement {UseGC,
+#ifndef GC_NAME_CONFLICT
+		  GC=UseGC,
+#endif
+                  NoGC, PointerFreeGC};
+
+struct gc {
+};
+
+struct gc_cleanup {
+};
+
+inline void* operator new(size_t size, GCPlacement gcp)
+{
+    return ::operator new(size);
+}
+
+inline void* operator new [](size_t size, GCPlacement gcp)
+{
+    return ::operator new [](size);
+}
+
+
+
+#else
 #include "gc.h"
 
 #ifndef THINK_CPLUS
@@ -362,6 +393,7 @@ inline void* operator new[](
 
 #endif /* GC_OPERATOR_NEW_ARRAY */
 
+#endif /* GC_DISABLED */
 
 #endif /* GC_CPP_H */
 
