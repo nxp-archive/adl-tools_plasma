@@ -1054,7 +1054,7 @@ namespace Opencxx
   int Lex::Screening(char *identifier, int len)
   {
     struct rw_table	*low, *high, *mid;
-    int			c, t_token;
+    int			c, token;
 
     if (wcharSupport && !strncmp("wchar_t", identifier, len))
       return token(WCHAR);
@@ -1077,14 +1077,8 @@ namespace Opencxx
     if(user_keywords == 0)
       user_keywords = new HashTable;
 
-    {
-       HashTable::Value x;
-//    if (user_keywords->Lookup(identifier, len, reinterpret_cast<HashTable::Value*>(&t_token)))
-       if (user_keywords->Lookup(identifier, len, &x)) {
-	  t_token = reinterpret_cast <int>(x);
-	  return t_token;
-       }
-    }
+    if(user_keywords->Lookup(identifier, len, (HashTable::Value*)&token))
+      return token;
 
     return token(Identifier);
   }
