@@ -130,7 +130,7 @@ int NonLeaf::Write(std::ostream& out, int indent)
 
 void NonLeaf::PrintWithEncodeds(std::ostream& s, int indent, int depth)
 {
-    char* encode = GetEncodedType();
+    const char* encode = GetEncodedType();
     if(encode != 0){
 	s << '#';
 	Encoding::Print(s, encode);

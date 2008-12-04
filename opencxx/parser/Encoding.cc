@@ -111,7 +111,7 @@ namespace Opencxx
     }
   }
 
-  void Encoding::Print(ostream& s, char* p)
+  void Encoding::Print(ostream& s, const char* p)
   {
     unsigned char* ptr = (unsigned char*)p;
     for(;*ptr != '\0'; ++ptr)
@@ -273,7 +273,7 @@ namespace Opencxx
     name[len++] = c;
   }
 
-  void Encoding::Append(char* str, int n)
+  void Encoding::Append(const char* str, int n)
   {
     if(len + n >= MaxNameLen)
       TheErrorLog().Report(MopMsg(Msg::Fatal, "Encoding::Append(char*,int)", "too long encoded name"));
@@ -282,7 +282,7 @@ namespace Opencxx
     len += n;
   }
 
-  void Encoding::AppendWithLen(char* str, int n)
+  void Encoding::AppendWithLen(const char* str, int n)
   {
     if(len + n + 1 >= MaxNameLen)
       TheErrorLog().Report(MopMsg(Msg::Fatal, "Encoding::AppendWithLen()", "too long encoded name"));
@@ -292,7 +292,7 @@ namespace Opencxx
     len += n;
   }
 
-  Ptree* Encoding::MakePtree(unsigned char*& encoded, Ptree* decl)
+  Ptree* Encoding::MakePtree(const unsigned char*& encoded, Ptree* decl)
   {
     using namespace PtreeConstants;
     
@@ -441,7 +441,7 @@ namespace Opencxx
           Ptree* tlabel = MakeLeaf(encoded);      
           Ptree* args = 0;
           int n = *encoded++ - DigitOffset;
-          unsigned char* stop = encoded + n;
+          const unsigned char* stop = encoded + n;
           while(encoded < stop){
 		    if(args != 0)
               args = PtreeUtil::Snoc(args, comma);
@@ -481,7 +481,7 @@ namespace Opencxx
     return PtreeUtil::List(typespec, decl);
   }
 
-  Ptree* Encoding::MakeQname(unsigned char*& encoded)
+  Ptree* Encoding::MakeQname(const unsigned char*& encoded)
   {
     using namespace PtreeConstants;
     
@@ -501,7 +501,7 @@ namespace Opencxx
     return qname;
   }
 
-  Ptree* Encoding::MakeLeaf(unsigned char*& encoded)
+  Ptree* Encoding::MakeLeaf(const unsigned char*& encoded)
   {
     Ptree* leaf;
     int len = *encoded++ - DigitOffset;
@@ -514,12 +514,12 @@ namespace Opencxx
     return leaf;
   }
 
-  bool Encoding::IsSimpleName(unsigned char* p)
+  bool Encoding::IsSimpleName(const unsigned char* p)
   {
     return *p >= DigitOffset;
   }
 
-  Ptree* Encoding::NameToPtree(char* name, int len)
+  Ptree* Encoding::NameToPtree(const char* name, int len)
   {
     using namespace PtreeConstants;
     
@@ -541,7 +541,7 @@ namespace Opencxx
     else if(name[0] == '~')
       return PtreeUtil::List(tilder, new Leaf(&name[1], len - 1));
     else if(name[0] == '@'){		// cast operator
-      unsigned char* encoded = (unsigned char*)&name[1];
+      const unsigned char* encoded = (unsigned char*)&name[1];
       return PtreeUtil::List(operator_name, MakePtree(encoded, 0));
     }
 

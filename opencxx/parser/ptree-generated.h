@@ -693,7 +693,7 @@ class Token;
 class LeafAUTO : public LeafReserved {
 public:
     LeafAUTO(Token& t) : LeafReserved(t) {}
-    LeafAUTO(char* str, int len) : LeafReserved(str, len) {}
+    LeafAUTO(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return AUTO; }
 };
 
@@ -709,7 +709,7 @@ class Token;
 class LeafBOOLEAN : public LeafReserved {
 public:
     LeafBOOLEAN(Token& t) : LeafReserved(t) {}
-    LeafBOOLEAN(char* str, int len) : LeafReserved(str, len) {}
+    LeafBOOLEAN(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return BOOLEAN; }
 };
 
@@ -725,7 +725,7 @@ class Token;
 class LeafCHAR : public LeafReserved {
 public:
     LeafCHAR(Token& t) : LeafReserved(t) {}
-    LeafCHAR(char* str, int len) : LeafReserved(str, len) {}
+    LeafCHAR(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return CHAR; }
 };
 
@@ -741,7 +741,7 @@ class Token;
 class LeafWCHAR : public LeafReserved {
 public:
     LeafWCHAR(Token& t) : LeafReserved(t) {}
-    LeafWCHAR(char* str, int len) : LeafReserved(str, len) {}
+    LeafWCHAR(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return WCHAR; }
 };
 
@@ -757,7 +757,7 @@ class Token;
 class LeafCONST : public LeafReserved {
 public:
     LeafCONST(Token& t) : LeafReserved(t) {}
-    LeafCONST(char* str, int len) : LeafReserved(str, len) {}
+    LeafCONST(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return CONST; }
 };
 
@@ -773,7 +773,7 @@ class Token;
 class LeafDOUBLE : public LeafReserved {
 public:
     LeafDOUBLE(Token& t) : LeafReserved(t) {}
-    LeafDOUBLE(char* str, int len) : LeafReserved(str, len) {}
+    LeafDOUBLE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return DOUBLE; }
 };
 
@@ -789,7 +789,7 @@ class Token;
 class LeafEXTERN : public LeafReserved {
 public:
     LeafEXTERN(Token& t) : LeafReserved(t) {}
-    LeafEXTERN(char* str, int len) : LeafReserved(str, len) {}
+    LeafEXTERN(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return EXTERN; }
 };
 
@@ -805,7 +805,7 @@ class Token;
 class LeafFLOAT : public LeafReserved {
 public:
     LeafFLOAT(Token& t) : LeafReserved(t) {}
-    LeafFLOAT(char* str, int len) : LeafReserved(str, len) {}
+    LeafFLOAT(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return FLOAT; }
 };
 
@@ -821,7 +821,7 @@ class Token;
 class LeafFRIEND : public LeafReserved {
 public:
     LeafFRIEND(Token& t) : LeafReserved(t) {}
-    LeafFRIEND(char* str, int len) : LeafReserved(str, len) {}
+    LeafFRIEND(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return FRIEND; }
 };
 
@@ -837,7 +837,7 @@ class Token;
 class LeafINLINE : public LeafReserved {
 public:
     LeafINLINE(Token& t) : LeafReserved(t) {}
-    LeafINLINE(char* str, int len) : LeafReserved(str, len) {}
+    LeafINLINE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return INLINE; }
 };
 
@@ -853,7 +853,7 @@ class Token;
 class LeafINT : public LeafReserved {
 public:
     LeafINT(Token& t) : LeafReserved(t) {}
-    LeafINT(char* str, int len) : LeafReserved(str, len) {}
+    LeafINT(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return INT; }
 };
 
@@ -869,7 +869,7 @@ class Token;
 class LeafLONG : public LeafReserved {
 public:
     LeafLONG(Token& t) : LeafReserved(t) {}
-    LeafLONG(char* str, int len) : LeafReserved(str, len) {}
+    LeafLONG(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return LONG; }
 };
 
@@ -885,7 +885,7 @@ class Token;
 class LeafMUTABLE : public LeafReserved {
 public:
     LeafMUTABLE(Token& t) : LeafReserved(t) {}
-    LeafMUTABLE(char* str, int len) : LeafReserved(str, len) {}
+    LeafMUTABLE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return MUTABLE; }
 };
 
@@ -901,7 +901,7 @@ class Token;
 class LeafNAMESPACE : public LeafReserved {
 public:
     LeafNAMESPACE(Token& t) : LeafReserved(t) {}
-    LeafNAMESPACE(char* str, int len) : LeafReserved(str, len) {}
+    LeafNAMESPACE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return NAMESPACE; }
 };
 
@@ -917,7 +917,7 @@ class Token;
 class LeafPRIVATE : public LeafReserved {
 public:
     LeafPRIVATE(Token& t) : LeafReserved(t) {}
-    LeafPRIVATE(char* str, int len) : LeafReserved(str, len) {}
+    LeafPRIVATE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return PRIVATE; }
 };
 
@@ -933,7 +933,7 @@ class Token;
 class LeafPROTECTED : public LeafReserved {
 public:
     LeafPROTECTED(Token& t) : LeafReserved(t) {}
-    LeafPROTECTED(char* str, int len) : LeafReserved(str, len) {}
+    LeafPROTECTED(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return PROTECTED; }
 };
 
@@ -949,7 +949,7 @@ class Token;
 class LeafPUBLIC : public LeafReserved {
 public:
     LeafPUBLIC(Token& t) : LeafReserved(t) {}
-    LeafPUBLIC(char* str, int len) : LeafReserved(str, len) {}
+    LeafPUBLIC(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return PUBLIC; }
 };
 
@@ -965,7 +965,7 @@ class Token;
 class LeafREGISTER : public LeafReserved {
 public:
     LeafREGISTER(Token& t) : LeafReserved(t) {}
-    LeafREGISTER(char* str, int len) : LeafReserved(str, len) {}
+    LeafREGISTER(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return REGISTER; }
 };
 
@@ -981,7 +981,7 @@ class Token;
 class LeafSHORT : public LeafReserved {
 public:
     LeafSHORT(Token& t) : LeafReserved(t) {}
-    LeafSHORT(char* str, int len) : LeafReserved(str, len) {}
+    LeafSHORT(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return SHORT; }
 };
 
@@ -997,7 +997,7 @@ class Token;
 class LeafSIGNED : public LeafReserved {
 public:
     LeafSIGNED(Token& t) : LeafReserved(t) {}
-    LeafSIGNED(char* str, int len) : LeafReserved(str, len) {}
+    LeafSIGNED(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return SIGNED; }
 };
 
@@ -1013,7 +1013,7 @@ class Token;
 class LeafSTATIC : public LeafReserved {
 public:
     LeafSTATIC(Token& t) : LeafReserved(t) {}
-    LeafSTATIC(char* str, int len) : LeafReserved(str, len) {}
+    LeafSTATIC(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return STATIC; }
 };
 
@@ -1029,7 +1029,7 @@ class Token;
 class LeafUNSIGNED : public LeafReserved {
 public:
     LeafUNSIGNED(Token& t) : LeafReserved(t) {}
-    LeafUNSIGNED(char* str, int len) : LeafReserved(str, len) {}
+    LeafUNSIGNED(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return UNSIGNED; }
 };
 
@@ -1045,7 +1045,7 @@ class Token;
 class LeafUSING : public LeafReserved {
 public:
     LeafUSING(Token& t) : LeafReserved(t) {}
-    LeafUSING(char* str, int len) : LeafReserved(str, len) {}
+    LeafUSING(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return USING; }
 };
 
@@ -1061,7 +1061,7 @@ class Token;
 class LeafVIRTUAL : public LeafReserved {
 public:
     LeafVIRTUAL(Token& t) : LeafReserved(t) {}
-    LeafVIRTUAL(char* str, int len) : LeafReserved(str, len) {}
+    LeafVIRTUAL(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return VIRTUAL; }
 };
 
@@ -1077,7 +1077,7 @@ class Token;
 class LeafVOID : public LeafReserved {
 public:
     LeafVOID(Token& t) : LeafReserved(t) {}
-    LeafVOID(char* str, int len) : LeafReserved(str, len) {}
+    LeafVOID(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return VOID; }
 };
 
@@ -1093,7 +1093,7 @@ class Token;
 class LeafVOLATILE : public LeafReserved {
 public:
     LeafVOLATILE(Token& t) : LeafReserved(t) {}
-    LeafVOLATILE(char* str, int len) : LeafReserved(str, len) {}
+    LeafVOLATILE(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return VOLATILE; }
 };
 
@@ -1109,7 +1109,7 @@ class Token;
 class LeafUserKeyword : public LeafReserved {
 public:
     LeafUserKeyword(Token& t) : LeafReserved(t) {}
-    LeafUserKeyword(char* str, int len) : LeafReserved(str, len) {}
+    LeafUserKeyword(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return UserKeyword; }
 };
 
@@ -1125,7 +1125,7 @@ class Token;
 class LeafUserKeyword2 : public LeafReserved {
 public:
     LeafUserKeyword2(Token& t) : LeafReserved(t) {}
-    LeafUserKeyword2(char* str, int len) : LeafReserved(str, len) {}
+    LeafUserKeyword2(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return UserKeyword2; }
 };
 
@@ -1141,7 +1141,7 @@ class Token;
 class LeafUserKeyword3 : public LeafReserved {
 public:
     LeafUserKeyword3(Token& t) : LeafReserved(t) {}
-    LeafUserKeyword3(char* str, int len) : LeafReserved(str, len) {}
+    LeafUserKeyword3(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return UserKeyword3; }
 };
 
@@ -1157,7 +1157,7 @@ class Token;
 class LeafUserKeyword6 : public LeafReserved {
 public:
     LeafUserKeyword6(Token& t) : LeafReserved(t) {}
-    LeafUserKeyword6(char* str, int len) : LeafReserved(str, len) {}
+    LeafUserKeyword6(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return UserKeyword6; }
 };
 

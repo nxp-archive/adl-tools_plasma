@@ -107,6 +107,7 @@ namespace plasma {
     _kernel(true)
   {
     static bool dummy = init();
+    dummy = dummy;
 
     System::add_active_thread(&_main);
     #ifdef GC_DISABLED
@@ -595,7 +596,7 @@ namespace plasma {
   inline void Cluster::exec_ready(Thread *newthread,Thread *oldthread)
   {
     _cur = newthread;
-    void *dummy=0;
+    // void *dummy=0;
     oldthread->setStackEnd();
     QT_BLOCK(switch_ready, 0, oldthread, newthread->thread());
   }

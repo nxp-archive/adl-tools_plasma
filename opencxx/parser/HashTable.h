@@ -76,15 +76,15 @@ public:
     void MakeTable();
     bool IsEmpty();
     void Dump(std::ostream&);
-    int AddEntry(char* key, Value value, int* index = 0);
-    int AddEntry(bool, char* key, int len, Value value, int* index = 0);
+    int AddEntry(const char* key, Value value, int* index = 0);
+    int AddEntry(bool, const char* key, int len, Value value, int* index = 0);
 
-    int AddEntry(char* key, int len, Value value, int* index = 0) {
+    int AddEntry(const char* key, int len, Value value, int* index = 0) {
 	return AddEntry(true, key, len, value, index);
     }
 
     // allow a duplicated entry to be inserted
-    int AddDupEntry(char* key, int len, Value value, int* index = 0) {
+    int AddDupEntry(const char* key, int len, Value value, int* index = 0) {
 	return AddEntry(false, key, len, value, index);
     }
 
@@ -97,15 +97,15 @@ public:
     void ReplaceValue(int index, Value value);
 
 protected:
-    char* KeyString(char* key);
-    char* KeyString(char* key, int len);
+    char* KeyString(const char* key);
+    char* KeyString(const char* key, int len);
 
     bool Lookup2(char* key, Value *val, int* index);
     bool Lookup2(char* key, int len, Value *val, int* index);
     static unsigned NextPrimeNumber(unsigned number);
     bool GrowTable(int increment);
-    unsigned int StringToInt(char*);
-    unsigned int StringToInt(char*, int);
+    unsigned int StringToInt(const char*);
+    unsigned int StringToInt(const char*, int);
     int HashFunc(unsigned int p, int n);
 
 protected:

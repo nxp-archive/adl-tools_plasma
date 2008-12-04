@@ -33,7 +33,7 @@
 
 BEGIN_OPENCXX_NAMESPACE
 
-char* Bind::GetEncodedType()
+const char* Bind::GetEncodedType()
 {
     return 0;
 }

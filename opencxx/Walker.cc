@@ -72,8 +72,8 @@ using namespace std;
 BEGIN_OPENCXX_NAMESPACE
 
 Parser* Walker::default_parser = 0;
-char* Walker::default_metaclass = 0;
-char* Walker::default_template_metaclass = 0;
+const char* Walker::default_metaclass = 0;
+const char* Walker::default_template_metaclass = 0;
 
 Walker::Walker(Parser* p)
 {
@@ -839,12 +839,12 @@ Class* Walker::MakeClassMetaobject(Ptree* def, Ptree* userkey,
     return metaobject;
 }
 
-void Walker::ChangeDefaultMetaclass(char* name)
+void Walker::ChangeDefaultMetaclass(const char* name)
 {
     default_metaclass = name;
 }
 
-void Walker::ChangeDefaultTemplateMetaclass(char* name)
+void Walker::ChangeDefaultTemplateMetaclass(const char* name)
 {
     default_template_metaclass = name;
 }
@@ -1758,8 +1758,8 @@ Ptree* Walker::TranslateArguments(Ptree* arglist)
 }
 
 
-Ptree* Walker::FindDeclarator(Ptree* def, char* name, int len,
-			      char* signature, int& nth, Environment* e)
+Ptree* Walker::FindDeclarator(Ptree* def, const char* name, int len,
+			      const char* signature, int& nth, Environment* e)
 {
     Ptree* decls = PtreeUtil::Third(def);
     if(decls == 0 || decls->IsLeaf())
@@ -1785,12 +1785,12 @@ Ptree* Walker::FindDeclarator(Ptree* def, char* name, int len,
     return 0;
 }
 
-bool Walker::MatchedDeclarator(Ptree* decl, char* name, int len,
-			       char* signature, Environment* e)
+bool Walker::MatchedDeclarator(Ptree* decl, const char* name, int len,
+			       const char* signature, Environment* e)
 {
-    char* str;
+    const char* str;
     int strlen;
-    char* sig;
+    const char* sig;
 
     str = decl->GetEncodedName();
     sig = decl->GetEncodedType();
@@ -1805,7 +1805,7 @@ bool Walker::MatchedDeclarator(Ptree* decl, char* name, int len,
 bool Walker::WhichDeclarator(Ptree* def, Ptree* name, int& nth,
 			     Environment* env)
 {
-    char* str;
+    const char* str;
     int len;
     Environment* e;
     Ptree* decls = PtreeUtil::Third(def);
@@ -1840,7 +1840,7 @@ bool Walker::WhichDeclarator(Ptree* def, Ptree* name, int& nth,
 namespace {
 
     void Message(Msg::Severity severity, Parser* parser, 
-                 char* msg, Ptree* name, Ptree* where)
+                 const char* msg, Ptree* name, Ptree* where)
     {
 	assert(parser);
 	assert(where);
@@ -1852,24 +1852,24 @@ namespace {
 
 }
 
-void Walker::FatalMessage(char* msg, Ptree* name, Ptree* where)
+void Walker::FatalMessage(const char* msg, Ptree* name, Ptree* where)
 {
     Message(Msg::Fatal, parser, msg, name, where);
 }
 
-void Walker::ErrorMessage(char* msg, Ptree* name, Ptree* where)
+void Walker::ErrorMessage(const char* msg, Ptree* name, Ptree* where)
 {
     Message(Msg::Error, parser, msg, name, where);
 }
 
-void Walker::WarningMessage(char* msg, Ptree* name, Ptree* where)
+void Walker::WarningMessage(const char* msg, Ptree* name, Ptree* where)
 {
     Message(Msg::Warning, parser, msg, name, where);
 }
 
 // InaccurateErrorMessage() may report a wrong line number.
 
-void Walker::InaccurateErrorMessage(char* msg, Ptree* name, Ptree* where)
+void Walker::InaccurateErrorMessage(const char* msg, Ptree* name, Ptree* where)
 {
     if(default_parser == 0)
     {
@@ -1886,7 +1886,7 @@ void Walker::InaccurateErrorMessage(char* msg, Ptree* name, Ptree* where)
     }
 }
 
-void Walker::InaccurateWarningMessage(char* msg, Ptree* name, Ptree* where)
+void Walker::InaccurateWarningMessage(const char* msg, Ptree* name, Ptree* where)
 {
     if(default_parser == 0)
     {

@@ -78,9 +78,9 @@ namespace Opencxx
     Ptree* GetComments();
     Ptree* GetComments2();
 
-    unsigned LineNumber(char*, char*&, int&);
+    unsigned LineNumber(const char*, const char*&, int&);
 
-    static bool RecordKeyword(char*, int);
+    static bool RecordKeyword(const char*, int);
     static bool Reify(Ptree*, bool&);
     static bool Reify(Ptree*, unsigned int&);
     static bool Reify(Ptree* t, char*&);

@@ -63,7 +63,7 @@ bool TemplateClass::Initialize()
     return true;
 }
 
-char* TemplateClass::MetaclassName()
+const char* TemplateClass::MetaclassName()
 {
     return "TemplateClass";
 }

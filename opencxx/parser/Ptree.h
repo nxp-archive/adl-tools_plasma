@@ -83,7 +83,7 @@ namespace Opencxx
     /** Returns position in the char buffer when the
         text parsed as <code>this</code> starts.
     */
-    char* GetPosition() { return data.leaf.position; }
+    const char* GetPosition() { return data.leaf.position; }
 
     /** Returns the length of the text parsed as <code>this</code>. */
     int GetLength() { return data.leaf.length; }
@@ -128,10 +128,10 @@ namespace Opencxx
     virtual int What();
 
     /** Returns encoded type for nodes that support it. */
-    virtual char* GetEncodedType();
+    virtual const char* GetEncodedType();
 
     /** Returns encoded name for nodes that support it. */
-    virtual char* GetEncodedName();
+    virtual const char* GetEncodedName();
 
     /** Calls appropriate Translate... method in <code>walker</code>,
         depending on dynamic type of <code>this</code>.
@@ -196,7 +196,7 @@ namespace Opencxx
 	    Ptree* next;
       } nonleaf;
       struct {
-	    char* position;
+	    const char* position;
 	    int  length;
       } leaf;
     }data;

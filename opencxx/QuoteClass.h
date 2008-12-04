@@ -66,7 +66,7 @@ class Environment;
 class QuoteClass : public Class {
 public:
     static bool Initialize();
-    char* MetaclassName();
+    const char* MetaclassName();
     Ptree* TranslateMemberCall(Environment*, Ptree*, Ptree*);
 private:
     Ptree* ProcessBackQuote(Environment*, char*, Ptree*, Ptree*);

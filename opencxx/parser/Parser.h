@@ -56,7 +56,7 @@ class ErrorLog;
   class Parser : public Object {
   public:
     Parser(Lex* lex, ErrorLog& errorLog);
-    unsigned LineNumber(char* pos, char*& fname, int& fname_len);
+    unsigned LineNumber(const char* pos, const char*& fname, int& fname_len);
 
     bool rProgram(Ptree*&);
 

@@ -75,18 +75,18 @@ namespace Opencxx
     void Insert(unsigned char);
     void Insert(char*, int);
     void Append(unsigned char);
-    void Append(char*, int);
+    void Append(const char *, int);
     void Append(Encoding& e) { Append((char*)e.name, e.len); }
-    void AppendWithLen(char*, int);
+    void AppendWithLen(const char*, int);
     void AppendWithLen(Encoding& e) { AppendWithLen((char*)e.name, e.len); }
 
-    static void Print(std::ostream&, char*);
-    static Ptree* MakePtree(unsigned char*&, Ptree*);
+    static void Print(std::ostream&, const char*);
+    static Ptree* MakePtree(const unsigned char*&, Ptree*);
 
-    static Ptree* MakeQname(unsigned char*&);
-    static Ptree* MakeLeaf(unsigned char*&);
-    static bool IsSimpleName(unsigned char*);
-    static Ptree* NameToPtree(char*, int);
+    static Ptree* MakeQname(const unsigned char*&);
+    static Ptree* MakeLeaf(const unsigned char*&);
+    static bool IsSimpleName(const unsigned char*);
+    static Ptree* NameToPtree(const char*, int);
 
   private:
     unsigned char name[MaxNameLen];

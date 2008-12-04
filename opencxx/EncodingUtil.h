@@ -40,11 +40,11 @@ class Environment;
 
 namespace EncodingUtil {
 
-    unsigned char* GetTemplateArguments(unsigned char*, int&);
-    char* GetBaseName(char*, int&, Environment*&);
+    const unsigned char* GetTemplateArguments(const unsigned char*, int&);
+    const char* GetBaseName(const char*, int&, Environment*&);
 
-    Environment* ResolveTypedefName(Environment*, char*, int);
-    int GetBaseNameIfTemplate(unsigned char*, Environment*&);
+    Environment* ResolveTypedefName(Environment*, const char*, int);
+    int GetBaseNameIfTemplate(const unsigned char*, Environment*&);
 
 }
 

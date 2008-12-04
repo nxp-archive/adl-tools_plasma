@@ -44,10 +44,10 @@ public:
     PtreeEnumSpec(Ptree*);
     int What();
     Ptree* Translate(AbstractTranslatingWalker*);
-    char* GetEncodedName();
+    const char* GetEncodedName();
 
 private:
-    char* encoded_name;
+    const char* encoded_name;
 
 friend class Parser;
 };

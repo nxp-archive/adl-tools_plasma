@@ -57,7 +57,7 @@ PtreeClassSpec::PtreeClassSpec(Ptree* p, Ptree* q, Ptree* c)
 }
 
 PtreeClassSpec::PtreeClassSpec(Ptree* car, Ptree* cdr,
-		Ptree* c, char* encode) : NonLeaf(car, cdr)
+		Ptree* c, const char* encode) : NonLeaf(car, cdr)
 {
     encoded_name = encode;
     comments = c;
@@ -73,7 +73,7 @@ Ptree* PtreeClassSpec::Translate(AbstractTranslatingWalker* w)
     return w->TranslateClassSpec(this);
 }
 
-char* PtreeClassSpec::GetEncodedName()
+const char* PtreeClassSpec::GetEncodedName()
 {
     return encoded_name;
 }

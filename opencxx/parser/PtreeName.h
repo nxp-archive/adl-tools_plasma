@@ -46,7 +46,7 @@ class PtreeName : public NonLeaf {
 public:
     PtreeName(Ptree*, char* encodedName);
     int What();
-    char* GetEncodedName();
+    const char* GetEncodedName();
     void Print(std::ostream&, int, int);
     Ptree* Translate(AbstractTranslatingWalker*);
     void Typeof(AbstractTypingWalker*, TypeInfo&);
@@ -56,7 +56,7 @@ OPENCXX_DEPRECATED_PUBLIC:
     PtreeName(Ptree*, Encoding&);
 
 private:
-    char* name;
+    const char* name;
 };
 
 }

@@ -45,7 +45,7 @@ void BindVarName::GetType(TypeInfo& t, Environment* e)
     t.Set(type, e);
 }
 
-char* BindVarName::GetEncodedType()
+const char* BindVarName::GetEncodedType()
 {
     return type;
 }

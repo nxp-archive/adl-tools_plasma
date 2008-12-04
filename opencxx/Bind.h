@@ -51,7 +51,7 @@ class Environment;
     virtual ~Bind() {};
     virtual Kind What() = 0;
     virtual void GetType(TypeInfo&, Environment*) = 0;
-    virtual char* GetEncodedType();
+    virtual const char* GetEncodedType();
     virtual bool IsType();
     virtual Class* ClassMetaobject();
     virtual void SetClassMetaobject(Class*);

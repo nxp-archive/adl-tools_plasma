@@ -214,20 +214,20 @@ namespace Opencxx
     Ptree* TranslateNewDeclarator2(Ptree* decl);
     Ptree* TranslateArguments(Ptree*);
 
-    static Ptree* FindDeclarator(Ptree*, char*, int, char*, int&,
+    static Ptree* FindDeclarator(Ptree*, const char*, int, const char*, int&,
                                  Environment*);
-    static bool MatchedDeclarator(Ptree*, char*, int, char*, Environment*);
+    static bool MatchedDeclarator(Ptree*, const char*, int, const char*, Environment*);
     static bool WhichDeclarator(Ptree*, Ptree*, int&, Environment*);
 
-    void FatalMessage(char*, Ptree*, Ptree*);
-    void ErrorMessage(char*, Ptree*, Ptree*);
-    void WarningMessage(char*, Ptree*, Ptree*);
+    void FatalMessage(const char*, Ptree*, Ptree*);
+    void ErrorMessage(const char*, Ptree*, Ptree*);
+    void WarningMessage(const char*, Ptree*, Ptree*);
 
-    static void InaccurateErrorMessage(char*, Ptree*, Ptree*);
-    static void InaccurateWarningMessage(char*, Ptree*, Ptree*);
+    static void InaccurateErrorMessage(const char*, Ptree*, Ptree*);
+    static void InaccurateWarningMessage(const char*, Ptree*, Ptree*);
 
-    static void ChangeDefaultMetaclass(char*);
-    static void ChangeDefaultTemplateMetaclass(char*);
+    static void ChangeDefaultMetaclass(const char*);
+    static void ChangeDefaultTemplateMetaclass(const char*);
 
     OPENCXX_DEPRECATED_PUBLIC:
 
@@ -244,8 +244,8 @@ namespace Opencxx
 
   private:
     static Parser* default_parser;
-    static char* default_metaclass;
-    static char* default_template_metaclass;
+    static const char* default_metaclass;
+    static const char* default_template_metaclass;
   };
 
 }

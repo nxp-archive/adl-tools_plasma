@@ -43,13 +43,13 @@ class Environment;
 
 class BindEnumName : public Bind {
 public:
-    BindEnumName(char*, Ptree*);
+    BindEnumName(const char*, Ptree*);
     Kind What();
     void GetType(TypeInfo&, Environment*);
     Ptree* GetSpecification() { return specification; }
 
 private:
-    char* type;
+    const char* type;
     Ptree* specification;
 };
 

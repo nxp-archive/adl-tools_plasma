@@ -39,7 +39,7 @@ namespace Opencxx
 
 namespace PtreeTypeUtil {
 
-/* const */ char* TheArgumentName()
+const char* TheArgumentName()
 {
     return "_arg_%d_";
 }
@@ -51,7 +51,8 @@ FillArgumentName(Ptree* arg, Ptree* d, int arg_name)
     if(decl->Name() != 0)
 	return arg;
     else{
-	unsigned char* type = (unsigned char*)decl->GetEncodedType();
+//        const unsigned char* type = (unsigned char*)decl->GetEncodedType();
+       const unsigned char* type = (const unsigned char*)decl->GetEncodedType();
 	return Encoding::MakePtree(type,
 				   Ptree::Make(TheArgumentName(), arg_name));
     }

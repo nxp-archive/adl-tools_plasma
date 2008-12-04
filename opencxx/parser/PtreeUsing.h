@@ -49,7 +49,7 @@ public:
     /* the encoded name of the symbol or namespace specified
      * by this using declaration.
      */
-    char* GetEncodedName();
+    const char* GetEncodedName();
 
     /* true if this using declaration specifies a namespace.
      */
@@ -60,7 +60,7 @@ OPENCXX_DEPRECATED_PUBLIC:
     PtreeUsing(Ptree* p, Ptree* q, Ptree* r, Encoding& encName, Ptree* s);
 
 private:
-    char* name;
+    const char* name;
 };
 
 }

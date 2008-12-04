@@ -76,7 +76,7 @@ void Program::Subst(Ptree* newtext, Ptree* oldtext)
 
 void Program::Insert(Ptree* pos, Ptree* before_text, Ptree* after_text)
 {
-    char* p;
+    const char* p;
 
     if(before_text != 0){
 	p = PtreeUtil::LeftMost(pos);
@@ -163,7 +163,7 @@ bool Program::MinimumSubst2(Ptree* newtext, Ptree* oldtext)
     }
 }
 
-void Program::Replace(char* startpos, char* endpos, Ptree* text)
+void Program::Replace(const char* startpos, const char* endpos, Ptree* text)
 {
     if(startpos == 0 || endpos == 0)
 	return;
@@ -189,7 +189,7 @@ void Program::Replace(char* startpos, char* endpos, Ptree* text)
 /*
   LineNumber() returns the line number of the line pointed to by PTR.
 */
-unsigned Program::LineNumber(char* ptr, char*& filename, int& filename_length)
+unsigned Program::LineNumber(const char* ptr, const char*& filename, int& filename_length)
 {
   int n;
   int  len;

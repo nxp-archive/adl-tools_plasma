@@ -35,7 +35,7 @@
 namespace Opencxx
 {
 
-BindEnumName::BindEnumName(char* encoded_type, Ptree* spec)
+BindEnumName::BindEnumName(const char* encoded_type, Ptree* spec)
 {
     type = encoded_type;
     specification = spec;

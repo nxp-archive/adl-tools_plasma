@@ -27,7 +27,7 @@ namespace Opencxx
 
 // class Leaf
 
-Leaf::Leaf(char* ptr, int len)
+Leaf::Leaf(const char* ptr, int len)
 {
     data.leaf.position = ptr;
     data.leaf.length = len;
@@ -46,7 +46,7 @@ bool Leaf::IsLeaf() const
 
 void Leaf::Print(ostream& s, int, int)
 {
-    char* p = data.leaf.position;
+    const char* p = data.leaf.position;
     int n = data.leaf.length;
 
     // Recall that [, ], and @ are special characters.
@@ -71,7 +71,7 @@ void Leaf::Print(ostream& s, int, int)
 int Leaf::Write(ostream& out, int indent)
 {
     int n = 0;
-    char* ptr = data.leaf.position;
+    const char* ptr = data.leaf.position;
     int len = data.leaf.length;
     while(len-- > 0){
 	char c = *ptr++;
@@ -89,7 +89,7 @@ int Leaf::Write(ostream& out, int indent)
 void Leaf::PrintOn(std::ostream& out) const
 {
     // :TODO: reimplement with 'std::copy'
-    char* ptr = data.leaf.position;
+    const char* ptr = data.leaf.position;
     int len = data.leaf.length;
     while(len-- > 0)
     {

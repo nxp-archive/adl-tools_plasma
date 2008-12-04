@@ -139,12 +139,12 @@ void Ptree::Typeof(AbstractTypingWalker* w, TypeInfo& t)
     w->TypeofPtree(this, t);
 }
 
-char* Ptree::GetEncodedType()
+const char* Ptree::GetEncodedType()
 {
     return 0;
 }
 
-char* Ptree::GetEncodedName()
+const char* Ptree::GetEncodedName()
 {
     return 0;
 }

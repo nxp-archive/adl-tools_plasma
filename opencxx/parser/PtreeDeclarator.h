@@ -56,8 +56,8 @@ public:
     PtreeDeclarator(PtreeDeclarator*, Ptree*, Ptree*);
 
     int What();
-    char* GetEncodedType();
-    char* GetEncodedName();
+    const char* GetEncodedType();
+    const char* GetEncodedName();
     Ptree* Name() { return declared_name; }
     void Print(std::ostream&, int, int);
 

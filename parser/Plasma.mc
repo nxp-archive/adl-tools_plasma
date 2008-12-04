@@ -21,7 +21,7 @@ using namespace std;
 // we always include a newline, then dump out the text.
 int LdLeaf::Write(ostream &out, int indent)
 {
-  char* ptr = data.leaf.position;
+  const char* ptr = data.leaf.position;
   int len = data.leaf.length;
   out << '\n';
   out.write(ptr,len);

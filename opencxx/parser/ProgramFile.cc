@@ -57,7 +57,7 @@
 namespace Opencxx
 {
 
-ProgramFile::ProgramFile(std::ifstream& f, char *filename)
+ProgramFile::ProgramFile(std::ifstream& f, const char *filename)
 : Program(filename)
 {
     f.seekg(0, std::ios::end);

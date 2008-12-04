@@ -122,8 +122,8 @@ void MemberList::Append(Ptree* declaration, Ptree* decl,
 {
     int len;
     Mem mem;
-    char* name = decl->GetEncodedName();
-    char* signature = decl->GetEncodedType();
+    const char* name = decl->GetEncodedName();
+    const char* signature = decl->GetEncodedType();
     Environment* e = this_class->GetEnvironment();
     name = EncodingUtil::GetBaseName(name, len, e);
 
@@ -180,7 +180,7 @@ void MemberList::AppendBaseClass(Environment* env, Ptree* base_class)
     }
 }
 
-MemberList::Mem* MemberList::Lookup(char* name, char* signature)
+MemberList::Mem* MemberList::Lookup(const char* name, const char* signature)
 {
     for(int i = 0; i < num; ++i){
 	Mem* m = Ref(i);
@@ -191,7 +191,7 @@ MemberList::Mem* MemberList::Lookup(char* name, char* signature)
     return 0;
 }
 
-int MemberList::Lookup(char* name, int len, char* signature)
+int MemberList::Lookup(const char* name, int len, const char* signature)
 {
     for(int i = 0; i < num; ++i){
 	Mem* m = Ref(i);
@@ -205,7 +205,7 @@ int MemberList::Lookup(char* name, int len, char* signature)
 
 int MemberList::Lookup(Environment* env, Ptree* member, int index)
 {
-    char* name;
+    const char* name;
     int len;
 
     if(member == 0)
@@ -227,7 +227,7 @@ int MemberList::Lookup(Environment* env, Ptree* member, int index)
     return -1;
 }
 
-int MemberList::Lookup(Environment*, char* name, int index)
+int MemberList::Lookup(Environment*, const char* name, int index)
 {
     if(name == 0)
 	return -1;

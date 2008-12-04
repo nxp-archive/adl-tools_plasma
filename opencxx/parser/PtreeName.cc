@@ -70,7 +70,7 @@ int PtreeName::What()
     return ntName;
 }
 
-char* PtreeName::GetEncodedName()
+const char* PtreeName::GetEncodedName()
 {
     return name;
 }

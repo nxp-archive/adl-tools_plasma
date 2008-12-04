@@ -48,8 +48,8 @@ public:
 	Class* supplying;
 	Ptree* definition;
 	Ptree* declarator;
-	char* name;
-	char* signature;
+	const char* name;
+	const char* signature;
 	bool is_constructor, is_destructor;
 	bool is_virtual, is_static, is_mutable, is_inline;
 	int  access;
@@ -61,10 +61,10 @@ public:
     void Make(Class*);
     Mem* Ref(int);
     int Number() { return num; }
-    Mem* Lookup(char*, char*);
-    int Lookup(char*, int, char*);
+    Mem* Lookup(const char*, const char*);
+    int Lookup(const char*, int, const char*);
     int Lookup(Environment*, Ptree*, int);
-    int Lookup(Environment*, char*, int);
+    int Lookup(Environment*, const char*, int);
 
 private:
     void AppendThisClass(Class*);

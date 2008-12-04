@@ -64,7 +64,7 @@ using namespace std;
 namespace Opencxx
 {
 
-  unsigned Parser::LineNumber(char* pos, char*& fname, int& fname_len)
+  unsigned Parser::LineNumber(const char* pos, const char*& fname, int& fname_len)
   {
     unsigned line_number = lex->LineNumber(pos, fname, fname_len);
     if(fname_len > 1){
@@ -4872,9 +4872,9 @@ namespace Opencxx
   }
 
   namespace {
-    SourceLocation GetSourceLocation(Parser& parser, char* text)
+    SourceLocation GetSourceLocation(Parser& parser, const char* text)
     {
-      char*    filename = 0;
+      const char*    filename = 0;
       int      filenameLen = -1;
       unsigned lineNo = parser.LineNumber(text, filename, filenameLen);
       return SourceLocation(string(filename, filenameLen), lineNo);

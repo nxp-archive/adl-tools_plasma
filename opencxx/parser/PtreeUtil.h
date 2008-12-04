@@ -160,9 +160,9 @@ namespace Opencxx
     /** Computes Ca...ar */
     Ptree* Ca_ar(Ptree* p);
   
-    char* LeftMost(Ptree* p);
+    const char* LeftMost(Ptree* p);
 
-    char* RightMost(Ptree* p);
+    const char* RightMost(Ptree* p);
 
     /** Compares the pattern and list. If they match, this function
         returns true and binds the sublists to appropriate sublists of the
@@ -171,7 +171,7 @@ namespace Opencxx
         
         @deprecated Use PtreeUtil
     */
-    bool Match(Ptree*, char*, ...);
+    bool Match(Ptree*, const char*, ...);
 
 
     /** Generates a unique symbol name (aka identifier) and returns it. The

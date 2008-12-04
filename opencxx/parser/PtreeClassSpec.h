@@ -41,14 +41,14 @@ class AbstractTranslatingWalker;
 class PtreeClassSpec : public NonLeaf {
 public:
     PtreeClassSpec(Ptree*, Ptree*, Ptree*);
-    PtreeClassSpec(Ptree*, Ptree*, Ptree*, char*);
+    PtreeClassSpec(Ptree*, Ptree*, Ptree*, const char*);
     int What();
     Ptree* Translate(AbstractTranslatingWalker*);
-    char* GetEncodedName();
+    const char* GetEncodedName();
     Ptree* GetComments();
 
 private:
-    char* encoded_name;
+    const char* encoded_name;
     Ptree* comments;
 
 friend class Parser;

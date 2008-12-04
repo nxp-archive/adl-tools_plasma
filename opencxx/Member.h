@@ -97,7 +97,7 @@ protected:
     Ptree* MemberInitializers(Ptree* decl);
 
 private:
-    char* Name(int&);
+    const char* Name(int&);
     bool Find();
 
 protected:

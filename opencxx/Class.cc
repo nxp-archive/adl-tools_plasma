@@ -55,12 +55,12 @@ namespace Opencxx
 
 ClassArray* Class::class_list = 0;
 int Class::num_of_cmd_options = 0;
-char* Class::cmd_options[];
+const char* Class::cmd_options[];
 
-char* Class::metaclass_for_c_functions = 0;
+const char* Class::metaclass_for_c_functions = 0;
 Class* Class::for_c_functions = 0;
 
-char* Class::metaclass_for_plain = 0;
+const char* Class::metaclass_for_plain = 0;
 Class* Class::for_plain = 0;
 
 Ptree* Class::class_t = new LeafReserved("class", 5);
@@ -130,7 +130,7 @@ Class::~Class() {}
 
 // introspection
 
-char* Class::MetaclassName()
+const char* Class::MetaclassName()
 {
     return "Class";
 }
@@ -264,13 +264,13 @@ bool Class::LookupMember(Ptree* name, Member& mem, int index)
     return true;
 }
 
-bool Class::LookupMember(char* name)
+bool Class::LookupMember(const char* name)
 {
     Member m;
     return LookupMember(name, m);
 }
 
-bool Class::LookupMember(char* name, Member& mem, int index)
+bool Class::LookupMember(const char* name, Member& mem, int index)
 {
     MemberList* mlist = GetMemberList();
     if(mlist == 0)
@@ -341,7 +341,7 @@ int Class::ImmediateSubclasses(Ptree* name, ClassArray& subclasses)
     return subclasses.Number();
 }
 
-int Class::InstancesOf(char* name, ClassArray& classes)
+int Class::InstancesOf(const char* name, ClassArray& classes)
 {
     classes.Clear();
     if(class_list == 0)
@@ -424,7 +424,7 @@ void Class::AppendBaseClass(Class* c, int specifier, bool is_virtual)
     AppendBaseClass(c->Name(), specifier, is_virtual);
 }
 
-void Class::AppendBaseClass(char* name, int specifier, bool is_virtual)
+void Class::AppendBaseClass(const char* name, int specifier, bool is_virtual)
 {
     AppendBaseClass(new Leaf(name, strlen(name)), specifier, is_virtual);
 }
@@ -494,7 +494,7 @@ void Class::RemoveMember(Member& m)
     ChangeMember(m);
 }
 
-void Class::CheckValidity(char* name)
+void Class::CheckValidity(const char* name)
 {
     if(done_decl_translation)
     {
@@ -870,37 +870,37 @@ Ptree* Class::FinalizeClass()
     return 0;
 }
 
-void Class::RegisterNewModifier(char* str)
+void Class::RegisterNewModifier(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewModifier()", "the keyword is already used."));
 }
 
-void Class::RegisterNewAccessSpecifier(char* str)
+void Class::RegisterNewAccessSpecifier(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword4))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewAccessSpecifier()", "the keyword is already used."));
 }
 
-void Class::RegisterNewMemberModifier(char* str)
+void Class::RegisterNewMemberModifier(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword5))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewMemberModifier()", "the keyword is already used."));
 }
 
-void Class::RegisterNewWhileStatement(char* str)
+void Class::RegisterNewWhileStatement(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewWhileStatement()", "the keyword is already used."));
 }
 
-void Class::RegisterNewForStatement(char* str)
+void Class::RegisterNewForStatement(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword3))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewForStatement()", "the keyword is already used."));
 }
 
-void Class::RegisterNewBlockStatement(char* str)
+void Class::RegisterNewBlockStatement(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword6))
 	TheErrorLog().Report(MopMsg(Msg::Fatal,
@@ -908,13 +908,13 @@ void Class::RegisterNewBlockStatement(char* str)
                                 "the keyword is already used."));
 }
 
-void Class::RegisterNewClosureStatement(char* str)
+void Class::RegisterNewClosureStatement(const char* str)
 {
     if(!Lex::RecordKeyword(str, UserKeyword2))
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Class::RegisterNewClosureStatement()", "the keyword is already used."));
 }
 
-void Class::RegisterMetaclass(char* keyword, char* class_name)
+void Class::RegisterMetaclass(const char* keyword, const char* class_name)
 {
   //    std::cerr << "[Class::RegisterMetaclass(" 
   //              << keyword << "," << class_name << "]" << std::endl;
@@ -926,22 +926,22 @@ void Class::RegisterMetaclass(char* keyword, char* class_name)
                                 std::string ("the keyword '")+keyword+"' is already used."));
 }
 
-void Class::ChangeDefaultMetaclass(char* name)
+void Class::ChangeDefaultMetaclass(const char* name)
 {
     Walker::ChangeDefaultMetaclass(name);
 }
 
-void Class::ChangeDefaultTemplateMetaclass(char* name)
+void Class::ChangeDefaultTemplateMetaclass(const char* name)
 {
     Walker::ChangeDefaultTemplateMetaclass(name);
 }
 
-void Class::SetMetaclassForFunctions(char* name)
+void Class::SetMetaclassForFunctions(const char* name)
 {
     metaclass_for_c_functions = name;
 }
 
-void Class::SetMetaclassForPlain(char* name)
+void Class::SetMetaclassForPlain(const char* name)
 {
     metaclass_for_plain = name;
 }
@@ -1063,29 +1063,29 @@ void* Class::LookupClientData(Environment* env, Ptree* key)
     }
 }
 
-void Class::ErrorMessage(Environment* env, char* msg,
+void Class::ErrorMessage(Environment* env, const char* msg,
 			 Ptree* name, Ptree* where)
 {
     env->GetWalker()->ErrorMessage(msg, name, where);
 }
 
-void Class::WarningMessage(Environment* env, char* msg,
+void Class::WarningMessage(Environment* env, const char* msg,
 			   Ptree* name, Ptree* where)
 {
     env->GetWalker()->WarningMessage(msg, name, where);
 }
 
-void Class::ErrorMessage(char* msg, Ptree* name, Ptree* where)
+void Class::ErrorMessage(const char* msg, Ptree* name, Ptree* where)
 {
     Walker::InaccurateErrorMessage(msg, name, where);
 }
 
-void Class::WarningMessage(char* msg, Ptree* name, Ptree* where)
+void Class::WarningMessage(const char* msg, Ptree* name, Ptree* where)
 {
     Walker::InaccurateWarningMessage(msg, name, where);
 }
 
-bool Class::RecordCmdLineOption(char* key, char* value)
+bool Class::RecordCmdLineOption(const char* key, const char* value)
 {
     if(num_of_cmd_options < MaxOptions * 2){
 	cmd_options[num_of_cmd_options++] = key;
@@ -1096,13 +1096,13 @@ bool Class::RecordCmdLineOption(char* key, char* value)
 	return false;
 }
 
-bool Class::LookupCmdLineOption(char* key)
+bool Class::LookupCmdLineOption(const char* key)
 {
-    char* value;
+    const char* value;
     return LookupCmdLineOption(key, value);
 }
 
-bool Class::LookupCmdLineOption(char* key, char*& value)
+bool Class::LookupCmdLineOption(const char* key, const char*& value)
 {
     for(int i = 0; i < num_of_cmd_options; i += 2)
 	if(strcmp(key, cmd_options[i]) == 0){

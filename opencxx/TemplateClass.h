@@ -41,7 +41,7 @@ class TemplateClass : public Class {
 public:
     void InitializeInstance(Ptree* def, Ptree* margs);
     static bool Initialize();
-    char* MetaclassName();
+    const char* MetaclassName();
 
     Ptree* TemplateDefinition() { return template_definition; }
     Ptree* TemplateArguments();

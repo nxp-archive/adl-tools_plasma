@@ -64,7 +64,7 @@ class Ptree;
 
 class Program : public Object {
 public:
-    Program(char *name) {
+    Program(const char *name) {
 	replacement = 0;
 	defaultname = name;
     }
@@ -92,10 +92,10 @@ public:
 
     void Subst(Ptree* newtext, Ptree* oldtext);
     void Insert(Ptree* pos, Ptree* before_text, Ptree* after_text);
-    void Replace(char*, char*, Ptree*);
+    void Replace(const char*, const char*, Ptree*);
     void MinimumSubst(Ptree* newtext, Ptree* oldtext);
 
-    unsigned LineNumber(char*, char*&, int&);
+    unsigned LineNumber(const char*, const char*&, int&);
 
     void Write(std::ostream&, const char*);
     int ReadLineDirective(unsigned, int, unsigned&, int&);
@@ -106,7 +106,7 @@ private:
 protected:
     char*	buf;
     unsigned	size, index;
-    char	*defaultname;
+    const char	*defaultname;
 
 private:
     class Replacement : public LightObject {

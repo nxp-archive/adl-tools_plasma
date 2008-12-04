@@ -120,7 +120,7 @@ void Member::Signature(TypeInfo& t) const
 	return;
     }
 
-    char* type = declarator->GetEncodedType();
+    const char* type = declarator->GetEncodedType();
     if(type == 0)
 	t.Unknown();
     else
@@ -130,18 +130,18 @@ void Member::Signature(TypeInfo& t) const
 Ptree* Member::Name()
 {
     int len;
-    char* name = Name(len);
+    const char* name = Name(len);
     return Encoding::NameToPtree(name, len);
 }
 
-char* Member::Name(int& len)
+const char* Member::Name(int& len)
 {
     if(declarator == 0){
 	TheErrorLog().Report(MopMsg(Msg::Fatal, "Member::Name()", "not initialized object."));
 	return 0;
     }
 
-    char* name = declarator->GetEncodedName();
+    const char* name = declarator->GetEncodedName();
     if(name != 0){
 	Environment* e = metaobject->GetEnvironment();
 	name = EncodingUtil::GetBaseName(name, len, e);
@@ -186,7 +186,7 @@ bool Member::IsConstructor()
 	return false;
     }
 
-    char* name = declarator->GetEncodedName();
+    const char* name = declarator->GetEncodedName();
     if(name != 0){
 	int len;
 	Environment* e = metaobject->GetEnvironment();
@@ -208,7 +208,7 @@ bool Member::IsDestructor()
 	return false;
     }
 
-    char* name = declarator->GetEncodedName();
+    const char* name = declarator->GetEncodedName();
     if(name != 0){
 	int len;
 	Environment* e = metaobject->GetEnvironment();
@@ -362,8 +362,8 @@ bool Member::Find()
     MemberList* mlist = metaobject->GetMemberList();
 
     int len;
-    char* name = Name(len);
-    char* sig = declarator->GetEncodedType();
+    const char* name = Name(len);
+    const char* sig = declarator->GetEncodedType();
     if(mlist == 0 || name == 0 || sig == 0)
 	return false;
 
@@ -401,7 +401,7 @@ void Member::SetName(Ptree* name, Ptree* decl)
 	return;
     }
 
-    char* encoded = decl->GetEncodedName();
+    const char* encoded = decl->GetEncodedName();
     if(encoded != 0 && *encoded == 'Q'){
 	Ptree* qname = ((PtreeDeclarator*)decl)->Name();
 	Ptree* old_name = First(Last(qname));

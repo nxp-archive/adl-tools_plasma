@@ -60,7 +60,7 @@ PtreeFstyleCastExpr::PtreeFstyleCastExpr(Encoding& encType, Ptree* p, Ptree* q)
     type = encType.Get();
 }
 
-PtreeFstyleCastExpr::PtreeFstyleCastExpr(char* encType, Ptree* p, Ptree* q)
+PtreeFstyleCastExpr::PtreeFstyleCastExpr(const char* encType, Ptree* p, Ptree* q)
   : NonLeaf(p, q)
   , type(encType)
 {
@@ -71,7 +71,7 @@ int PtreeFstyleCastExpr::What()
     return ntFstyleCast;
 }
 
-char* PtreeFstyleCastExpr::GetEncodedType()
+const char* PtreeFstyleCastExpr::GetEncodedType()
 {
     return type;
 }

@@ -71,11 +71,11 @@ public:
     bool LookupTop(const char* name, int len, Bind*& t);
     bool LookupAll(const char* name, int len, Bind*& t);
 
-    bool RecordVariable(char* name, Class* c);
-    bool RecordPointerVariable(char* name, Class* c);
+    bool RecordVariable(const char* name, Class* c);
+    bool RecordPointerVariable(const char* name, Class* c);
 
-    int AddEntry(char*, int, Bind*);
-    int AddDupEntry(char*, int, Bind*);
+    int AddEntry(const char*, int, Bind*);
+    int AddDupEntry(const char*, int, Bind*);
 
     void RecordNamespace(Environment*, Ptree*);
     Environment* LookupNamespace(const char* name, int len);
@@ -85,14 +85,14 @@ public:
 
     void RecordTypedefName(Ptree*);
     void RecordEnumName(Ptree*);
-    void RecordClassName(char*, Class*);
+    void RecordClassName(const char*, Class*);
     void RecordTemplateClass(Ptree*, Class*);
     Environment* RecordTemplateFunction(Ptree*, Ptree*);
     Environment* RecordDeclarator(Ptree*);
     Environment* DontRecordDeclarator(Ptree*);
     void RecordMetaclassName(Ptree*);
     Ptree* LookupMetaclass(Ptree*);
-    static bool RecordClasskeyword(char*, char*);
+    static bool RecordClasskeyword(const char*, const char*);
     static Ptree* LookupClasskeyword(Ptree*);
 
     void SetMetaobject(Class* m) { metaobject = m; }

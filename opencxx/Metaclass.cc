@@ -112,7 +112,7 @@ namespace Opencxx
     return true;
   }
 
-  char* Metaclass::MetaclassName()
+  const char* Metaclass::MetaclassName()
   {
     return "Metaclass";
   }
@@ -127,7 +127,7 @@ namespace Opencxx
 #if defined(_MSC_VER) || defined(_PARSE_VCC)
       AddClassSpecifier(Ptree::Make("__declspec(dllexport)"));
 #endif
-      AppendMember(Ptree::Make("public: char* MetaclassName() {\n"
+      AppendMember(Ptree::Make("public: const char* MetaclassName() {\n"
                                "    return \"%p\"; }\n",
                                Name()));
 

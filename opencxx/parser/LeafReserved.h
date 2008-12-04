@@ -38,8 +38,8 @@ namespace Opencxx
 
 class LeafReserved : public Leaf {
 public:
-    LeafReserved(Token& t) : Leaf(t) {}
-    LeafReserved(char* str, int len) : Leaf(str, len) {}
+    LeafReserved (Token& t) : Leaf(t) {}
+    LeafReserved (const char* str, int len) : Leaf(str, len) {}
 };
 
 }

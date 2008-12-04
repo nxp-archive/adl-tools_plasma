@@ -198,7 +198,7 @@ static string RunOpencxx(
         assert(! "fatal message should throw");
     }
 
-    ProgramFile src_prog(src_stream);
+    ProgramFile src_prog(src_stream, src.c_str());
     if (config.VerboseMode()) {
         if (config.DoTranslate()) {
             ostringstream buf;

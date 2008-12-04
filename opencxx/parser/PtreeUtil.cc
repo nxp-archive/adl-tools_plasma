@@ -148,7 +148,7 @@ bool Eq(Ptree* p, const char* str)
 bool Eq(Ptree* p, const char* str, int n)
 {
     if(p && p->IsLeaf()){
-        char* text = p->GetPosition();
+        const char* text = p->GetPosition();
         int len = p->GetLength();
         if(len == n){
             int i;   
@@ -173,8 +173,8 @@ bool Eq(Ptree* p, Ptree* q)
 	int plen = p->GetLength();
 	int qlen = q->GetLength();
 	if(plen == qlen){
-	    char* pstr = p->GetPosition();
-	    char* qstr = q->GetPosition();
+	    const char* pstr = p->GetPosition();
+	    const char* qstr = q->GetPosition();
 	    while(--plen >= 0)
 		if(pstr[plen] != qstr[plen])
 		    return false;
@@ -717,7 +717,7 @@ Ptree* Ca_ar(Ptree* p)
     return p;
 }
 
-char* LeftMost(Ptree* p)
+const char* LeftMost(Ptree* p)
 {
     if (! p) {
         return 0;
@@ -728,7 +728,7 @@ char* LeftMost(Ptree* p)
     }
     else{
 	while (p) {
-	    char* i = LeftMost(p->Car());
+	    const char* i = LeftMost(p->Car());
 	    if (i) {
 		return i;
 	    }
@@ -740,7 +740,7 @@ char* LeftMost(Ptree* p)
     }
 }
 
-char* RightMost(Ptree* p)
+const char* RightMost(Ptree* p)
 {
     if(! p) {
 	return 0;
@@ -752,7 +752,7 @@ char* RightMost(Ptree* p)
     else{
 	int n = Length(p);
 	while (n > 0) {
-	    char* i = RightMost(Nth(p,--n));
+	    const char* i = RightMost(Nth(p,--n));
 	    if (i) {
 		return i;
             }
@@ -768,13 +768,13 @@ const int MAX = 32;
 Ptree** resultsArgs[MAX];
 int resultsIndex;
 
-static int CountArgs(char* pat);
-static char* SkipSpaces(char* pat);
-static char* MatchList(Ptree* list, char* pat);
-static char* MatchWord(Ptree* list, char* pat);
+static int CountArgs(const char* pat);
+static const char* SkipSpaces(const char* pat);
+static const char* MatchList(Ptree* list, const char* pat);
+static const char* MatchWord(Ptree* list, const char* pat);
 
 
-static int CountArgs(char* pat)
+static int CountArgs(const char* pat)
 {
     int n = 0;
 
@@ -788,7 +788,7 @@ static int CountArgs(char* pat)
     return n;
 }
 
-static char* MatchPat(Ptree* list, char* pat)
+static const char* MatchPat(Ptree* list, const char* pat)
 {
     switch(*pat){
     case '[' :          /* [] means 0 */
@@ -817,7 +817,7 @@ static char* MatchPat(Ptree* list, char* pat)
         return 0;
 }
 
-static char* MatchList(Ptree* list, char* pat)
+static const char* MatchList(Ptree* list, const char* pat)
 {
     char c, d;
     pat = SkipSpaces(pat);
@@ -852,9 +852,9 @@ static char* MatchList(Ptree* list, char* pat)
     return 0;
 }
 
-static char* MatchWord(Ptree* list, char* pat)
+static const char* MatchWord(Ptree* list, const char* pat)
 {
-    char* str = list->GetPosition();
+    const char* str = list->GetPosition();
     int str_len = list->GetLength();
 
     for(int j = 0; ; ++pat){
@@ -893,7 +893,7 @@ static char* MatchWord(Ptree* list, char* pat)
     }
 }
 
-static char* SkipSpaces(char* pat)
+static const char* SkipSpaces(const char* pat)
 {
     while(*pat == ' ' || *pat == '\t')
         ++pat;
@@ -902,7 +902,7 @@ static char* SkipSpaces(char* pat)
 }
 
 
-bool Match(Ptree* list, char* pattern, ...)
+bool Match(Ptree* list, const char* pattern, ...)
 {
     va_list args;
     int n = CountArgs(pattern);
@@ -915,7 +915,7 @@ bool Match(Ptree* list, char* pattern, ...)
 
     va_end(args);
 
-    char* pat = pattern;
+    const char* pat = pattern;
     resultsIndex = 0;
     pat = SkipSpaces(pat);
     pat = MatchPat(list, pat);

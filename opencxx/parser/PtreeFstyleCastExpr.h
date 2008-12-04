@@ -44,9 +44,9 @@ class TypeInfo;
 
 class PtreeFstyleCastExpr : public NonLeaf {
 public:
-    PtreeFstyleCastExpr(char*, Ptree*, Ptree*);
+    PtreeFstyleCastExpr(const char*, Ptree*, Ptree*);
     int What();
-    char* GetEncodedType();
+    const char* GetEncodedType();
     void Print(std::ostream&, int, int);
     Ptree* Translate(AbstractTranslatingWalker*);
     void Typeof(AbstractTypingWalker*, TypeInfo&);
@@ -55,7 +55,7 @@ OPENCXX_DEPRECATED_PUBLIC:
     PtreeFstyleCastExpr(Encoding& encType, Ptree*, Ptree*);
 
 private:
-    char* type;
+    const char* type;
 };
 
 }

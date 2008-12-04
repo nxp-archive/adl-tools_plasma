@@ -95,13 +95,13 @@ void HashTable::Dump(std::ostream& out)
     out << '}';
 }
 
-char* HashTable::KeyString(char* key) {
+char* HashTable::KeyString(const char* key) {
     char* str = new (GC) char[strlen(key) + 1];
     strcpy(str, key);
     return str;
 }
 
-char* HashTable::KeyString(char* key, int len) {
+char* HashTable::KeyString(const char* key, int len) {
     char* str = new (GC) char[len + 1];
     memmove(str, key, len);
     str[len] = '\0';
@@ -247,7 +247,7 @@ bool HashTable::GrowTable(int increment)
 // If succeeding, this returns an index of the added entry, otherwise -1.
 // Because `key' is duplicated, you can delete `key' later on.
 
-int HashTable::AddEntry(char* key, Value value, int* index)
+int HashTable::AddEntry(const char* key, Value value, int* index)
 {
     unsigned int p = StringToInt(key);
     for(int i = 0; i < Size; ++i){
@@ -279,7 +279,7 @@ int HashTable::AddEntry(char* key, Value value, int* index)
 }
 
 int HashTable::AddEntry(bool check_duplication,
-			char* key, int len, Value value, int* index)
+			const char* key, int len, Value value, int* index)
 {
     int i;
     unsigned int p = StringToInt(key, len);
@@ -356,7 +356,7 @@ bool HashTable::RemoveEntry(char* key, int len)
     }
 }
 
-unsigned int HashTable::StringToInt(char* key)
+unsigned int HashTable::StringToInt(const char* key)
 {
     if(key == 0)
 	return 0;
@@ -373,7 +373,7 @@ unsigned int HashTable::StringToInt(char* key)
     return p;
 }
 
-unsigned int HashTable::StringToInt(char* key, int len)
+unsigned int HashTable::StringToInt(const char* key, int len)
 {
     if(key == 0)
 	return 0;

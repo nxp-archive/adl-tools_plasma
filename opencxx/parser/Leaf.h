@@ -42,7 +42,7 @@ class ProgramString;
 
 class Leaf : public Ptree {
 public:
-    Leaf(char*, int);
+    Leaf(const char*, int);
     Leaf(Token&);
     bool IsLeaf() const;
 

@@ -43,7 +43,7 @@ my @Tests = (
 	     },
              # Test of improperly formed long strings.
 	     {
-	      cmd     => "./parse-test -E $src/in7.C",
+	      cmd     => "./parse-test -n -E $src/in7.C",
 	      checker => sub { filter_errors(@_[0],"in7.out","$src/in7.regress"); },
 	      stderr  => 1,
 	      fail    => 255,

@@ -168,12 +168,12 @@ int PtreeDeclarator::What()
     return ntDeclarator;
 }
 
-char* PtreeDeclarator::GetEncodedType()
+const char* PtreeDeclarator::GetEncodedType()
 {
     return type;
 }
 
-char* PtreeDeclarator::GetEncodedName()
+const char* PtreeDeclarator::GetEncodedName()
 {
     return name;
 }

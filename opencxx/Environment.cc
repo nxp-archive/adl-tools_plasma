@@ -131,7 +131,7 @@ Class* Environment::LookupClassMetaobject(Ptree* name)
     else{
         int len;
         Environment* e = this;
-        char* base = EncodingUtil::GetBaseName(name->GetEncodedName(), len, e);
+        const char* base = EncodingUtil::GetBaseName(name->GetEncodedName(), len, e);
         if(base != 0 && e != 0)
             if(LookupType(base, len, bind))
                 if(bind != 0){
@@ -227,13 +227,13 @@ bool Environment::Lookup(Ptree* name, Bind*& bind)
     else if(name->IsLeaf())
         return LookupAll(name->GetPosition(), name->GetLength(), bind);
     else{
-        char* encode = name->GetEncodedName();
+        const char* encode = name->GetEncodedName();
         if(encode == 0)
             return false;
         else{
             int len;
             Environment* e = this;
-            char* base = EncodingUtil::GetBaseName(encode, len, e);
+            const char* base = EncodingUtil::GetBaseName(encode, len, e);
             if(base != 0 && e != 0)
                 return e->LookupAll(base, len, bind);
             else
@@ -255,13 +255,13 @@ bool Environment::LookupTop(Ptree* name, Bind*& bind)
     else if(name->IsLeaf())
         return LookupTop(name->GetPosition(), name->GetLength(), bind);
     else{
-        char* encode = name->GetEncodedName();
+        const char* encode = name->GetEncodedName();
         if(encode == 0)
             return false;
         else{
             int len;
             Environment* e = this;
-            char* base = EncodingUtil::GetBaseName(encode, len, e);
+            const char* base = EncodingUtil::GetBaseName(encode, len, e);
             if(base != 0 && e != 0)
                 return e->LookupTop(base, len, bind);
             else
@@ -296,14 +296,14 @@ bool Environment::LookupAll(const char* name, int len, Bind*& t)
     return false;
 }
 
-bool Environment::RecordVariable(char* name, Class* c)
+bool Environment::RecordVariable(const char* name, Class* c)
 {
     Encoding encode;
     encode.SimpleName(c->Name());
     return htable->AddEntry(name, new BindVarName(encode.Get())) >= 0;
 }
 
-bool Environment::RecordPointerVariable(char* name, Class* c)
+bool Environment::RecordPointerVariable(const char* name, Class* c)
 {
     Encoding encode;
     encode.SimpleName(c->Name());
@@ -311,11 +311,11 @@ bool Environment::RecordPointerVariable(char* name, Class* c)
     return htable->AddEntry(name, new BindVarName(encode.Get())) >= 0;
 }
 
-int Environment::AddEntry(char* key, int len, Bind* b) {
+int Environment::AddEntry(const char* key, int len, Bind* b) {
     return htable->AddEntry(key, len, b);
 }
 
-int Environment::AddDupEntry(char* key, int len, Bind* b) {
+int Environment::AddDupEntry(const char* key, int len, Bind* b) {
     return htable->AddDupEntry(key, len, b);
 }
 
@@ -379,13 +379,13 @@ Environment* Environment::LookupNamespace0(const char* name, int len)
 
 void Environment::RecordUsing(Ptree* name)
 {
-    char* encode = name->GetEncodedName();
+    const char* encode = name->GetEncodedName();
     if(encode == 0)
         return;
 
     int len;
     Environment* e = this;
-    char* base = EncodingUtil::GetBaseName(encode, len, e);
+    const char* base = EncodingUtil::GetBaseName(encode, len, e);
     if(base == 0 || e == 0)
         return;
 
@@ -398,13 +398,13 @@ void Environment::RecordUsing(Ptree* name)
 
 void Environment::RecordUsingNamespace(Ptree* name)
 {
-    char* encode = name->GetEncodedName();
+    const char* encode = name->GetEncodedName();
     if(encode == 0)
         return;
 
     int len;
     Environment* e = this;
-    char* base = EncodingUtil::GetBaseName(encode, len, e);
+    const char* base = EncodingUtil::GetBaseName(encode, len, e);
     if(base == 0 || e == 0)
         return;
 
@@ -418,8 +418,8 @@ void Environment::RecordTypedefName(Ptree* decls)
     while(decls != 0){
         Ptree* d = decls->Car();
         if(d->What() == ntDeclarator){
-            char* name = d->GetEncodedName();
-            char* type = d->GetEncodedType();
+            const char* name = d->GetEncodedName();
+            const char* type = d->GetEncodedType();
             if(name != 0 && type != 0){
                 int len;
                 Environment* e = this;
@@ -436,27 +436,27 @@ void Environment::RecordTypedefName(Ptree* decls)
 void Environment::RecordEnumName(Ptree* spec)
 {
     Ptree* tag = PtreeUtil::Second(spec);
-    char* encoded_name = spec->GetEncodedName();
+    const char* encoded_name = spec->GetEncodedName();
     if(tag != 0 && tag->IsLeaf())
         AddEntry(tag->GetPosition(), tag->GetLength(),
                  new BindEnumName(encoded_name, spec));
     else{
         int n;
         Environment* e = this;
-        char* name = EncodingUtil::GetBaseName(encoded_name, n, e);
+        const char* name = EncodingUtil::GetBaseName(encoded_name, n, e);
         if(name != 0 && e != 0)
             e->AddEntry(name, n, new BindEnumName(encoded_name, spec));
     }
 }
 
-void Environment::RecordClassName(char* encoded_name, Class* metaobject)
+void Environment::RecordClassName(const char* encoded_name, Class* metaobject)
 {
     int n;
     Environment* e;
     Bind* bind;
 
     e = this;
-    char* name = EncodingUtil::GetBaseName(encoded_name, n, e);
+    const char* name = EncodingUtil::GetBaseName(encoded_name, n, e);
     if(name == 0 || e == 0)
         return;         // error?
 
@@ -486,7 +486,7 @@ void Environment::RecordTemplateClass(Ptree* spec, Class* metaobject)
     Bind* bind;
 
     e = this;
-    char* name = EncodingUtil::GetBaseName(spec->GetEncodedName(), n, e);
+    const char* name = EncodingUtil::GetBaseName(spec->GetEncodedName(), n, e);
     if(name == 0 || e == 0)
         return;         // error?
 
@@ -506,7 +506,7 @@ Environment* Environment::RecordTemplateFunction(Ptree* def, Ptree* body)
     int n;
     Ptree* decl = PtreeUtil::Third(body);
     if(decl->IsA(ntDeclarator)){
-        char* name = decl->GetEncodedName();
+        const char* name = decl->GetEncodedName();
         if(name != 0){
             Environment* e = this;
             name = EncodingUtil::GetBaseName(name, n, e);
@@ -523,8 +523,8 @@ Environment* Environment::RecordTemplateFunction(Ptree* def, Ptree* body)
 Environment* Environment::RecordDeclarator(Ptree* decl)
 {
     if(decl->What() == ntDeclarator){
-        char* name = decl->GetEncodedName();
-        char* type = decl->GetEncodedType();
+        const char* name = decl->GetEncodedName();
+        const char* type = decl->GetEncodedType();
         if(name != 0 && type != 0){
             int len;
             Environment* e = this;
@@ -544,7 +544,7 @@ Environment* Environment::RecordDeclarator(Ptree* decl)
 Environment* Environment::DontRecordDeclarator(Ptree* decl)
 {
     if(decl->What() == ntDeclarator){
-        char* name = decl->GetEncodedName();
+        const char* name = decl->GetEncodedName();
         if(name != 0){
             int len;
             Environment* e = this;
@@ -576,7 +576,7 @@ Ptree* Environment::LookupMetaclass(Ptree* name)
     return 0;
 }
 
-bool Environment::RecordClasskeyword(char* keyword, char* metaclass_name)
+bool Environment::RecordClasskeyword(const char* keyword, const char* metaclass_name)
 {
     Ptree* keywordp = new Leaf(keyword, strlen(keyword));
     Ptree* metaclassp = new Leaf(metaclass_name, strlen(metaclass_name));
@@ -624,11 +624,11 @@ Environment* Environment::IsMember(Ptree* member)
     Environment* e;
 
     if(!member->IsLeaf()){
-        char* encode = member->GetEncodedName();
+        const char* encode = member->GetEncodedName();
         if(encode != 0){
             int len;
             e = this;
-            char* base = EncodingUtil::GetBaseName(encode, len, e);
+            const char* base = EncodingUtil::GetBaseName(encode, len, e);
             if(base != 0 && e != 0 && e->metaobject != 0)
                 return e;
         }
@@ -694,7 +694,7 @@ Ptree* Environment::GetLineNumber(Ptree* p, int& number)
         return 0;
     }
 
-    char* fname;
+    const char* fname;
     int fname_len;
     number = (int)walker->GetParser()->LineNumber(p->GetPosition(),
                                                   fname, fname_len);

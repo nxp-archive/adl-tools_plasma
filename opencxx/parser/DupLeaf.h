@@ -43,8 +43,8 @@ namespace Opencxx
 
 class DupLeaf : public Leaf {
 public:
-    DupLeaf(char*, int);
-    DupLeaf(char*, int, char*, int);
+    DupLeaf(const char*, int);
+    DupLeaf(const char*, int, const char*, int);
 
     void Print(std::ostream&, int, int);
 };

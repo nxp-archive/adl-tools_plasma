@@ -65,7 +65,7 @@ Ptree* PtreeEnumSpec::Translate(AbstractTranslatingWalker* w)
     return w->TranslateEnumSpec(this);
 }
 
-char* PtreeEnumSpec::GetEncodedName()
+const char* PtreeEnumSpec::GetEncodedName()
 {
     return encoded_name;
 }

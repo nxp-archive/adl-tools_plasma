@@ -62,7 +62,7 @@ namespace Opencxx
 
 class ProgramFile : public Program {
 public:
-    ProgramFile(std::ifstream&, char *filename = "unknown");
+    ProgramFile(std::ifstream&, const char *filename = "unknown");
     ~ProgramFile();
 };
 

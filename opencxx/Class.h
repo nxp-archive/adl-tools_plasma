@@ -50,7 +50,7 @@ class TypeInfo;
 class Class : public Object {
 public:
     Class() {}
-    Class(Environment* e, char* name) { Construct(e, Ptree::Make(name)); }
+    Class(Environment* e, const char* name) { Construct(e, Ptree::Make(name)); }
     Class(Environment* e, Ptree* name) { Construct(e, name); }
 
     virtual void InitializeInstance(Ptree* def, Ptree* margs);
@@ -63,7 +63,7 @@ public:
     Ptree* BaseClasses();
     Ptree* Members();
     Ptree* Definition() { return definition; }
-    virtual char* MetaclassName();	// automaticallly implemented
+    virtual const char* MetaclassName();	// automaticallly implemented
 					// by Metaclass
     Class* NthBaseClass(int nth);
     Ptree* NthBaseClassName(int nth);
@@ -73,8 +73,8 @@ public:
     bool NthMember(int nth, Member& member);
     bool LookupMember(Ptree* name);
     bool LookupMember(Ptree* name, Member& member, int index = 0);
-    bool LookupMember(char* name);
-    bool LookupMember(char* name, Member& member, int index = 0);
+    bool LookupMember(const char* name);
+    bool LookupMember(const char* name, Member& member, int index = 0);
     MemberList* GetMemberList();
 
     // These are available only within Finalize()
@@ -83,7 +83,7 @@ public:
     static int Subclasses(Ptree* name, ClassArray& subclasses);
     int ImmediateSubclasses(ClassArray& subclasses);
     static int ImmediateSubclasses(Ptree* name, ClassArray& subclasses);
-    static int InstancesOf(char* metaclass_name, ClassArray& classes);
+    static int InstancesOf(const char* metaclass_name, ClassArray& classes);
 
     // obsolete
     Ptree* NthMemberName(int);
@@ -102,7 +102,7 @@ public:
     void RemoveBaseClasses();
     void AppendBaseClass(Class* c, int specifier = Public,
 			 bool is_virtual = false);
-    void AppendBaseClass(char* class_name, int specifier = Public,
+    void AppendBaseClass(const char* class_name, int specifier = Public,
 			 bool is_virtual = false);
     void AppendBaseClass(Ptree* class_name, int specifier = Public,
 			 bool is_virtual = false);
@@ -190,19 +190,19 @@ public:
     virtual Ptree* Finalize();		// obsolete
     static Ptree* FinalizeClass();
 
-    static void RegisterNewModifier(char* keyword);
-    static void RegisterNewAccessSpecifier(char* keyword);
-    static void RegisterNewMemberModifier(char* keyword);
-    static void RegisterNewWhileStatement(char* keyword);
-    static void RegisterNewBlockStatement(char* keyword);
-    static void RegisterNewForStatement(char* keyword);
-    static void RegisterNewClosureStatement(char* keyword);
-    static void RegisterMetaclass(char* keyword, char* class_name);
+    static void RegisterNewModifier(const char* keyword);
+    static void RegisterNewAccessSpecifier(const char* keyword);
+    static void RegisterNewMemberModifier(const char* keyword);
+    static void RegisterNewWhileStatement(const char* keyword);
+    static void RegisterNewBlockStatement(const char* keyword);
+    static void RegisterNewForStatement(const char* keyword);
+    static void RegisterNewClosureStatement(const char* keyword);
+    static void RegisterMetaclass(const char* keyword, const char* class_name);
 
-    static void ChangeDefaultMetaclass(char* name);
-    static void ChangeDefaultTemplateMetaclass(char* name);
-    static void SetMetaclassForFunctions(char* name);
-    static void SetMetaclassForPlain(char* name);
+    static void ChangeDefaultMetaclass(const char* name);
+    static void ChangeDefaultTemplateMetaclass(const char* name);
+    static void SetMetaclassForFunctions(const char* name);
+    static void SetMetaclassForPlain(const char* name);
 
     static void InsertBeforeStatement(Environment*, Ptree*);
     static void AppendAfterStatement(Environment*, Ptree*);
@@ -217,16 +217,16 @@ public:
 			   Ptree* key, void* client_data);
     void* LookupClientData(Environment*, Ptree* key);
 
-    void ErrorMessage(Environment*, char* message, Ptree* name,
+    void ErrorMessage(Environment*, const char* message, Ptree* name,
 		      Ptree* where);
-    void WarningMessage(Environment*, char* message, Ptree* name,
+    void WarningMessage(Environment*, const char* message, Ptree* name,
 			Ptree* where);
-    void ErrorMessage(char* message, Ptree* name, Ptree* where);
-    void WarningMessage(char* message, Ptree* name, Ptree* where);
+    void ErrorMessage(const char* message, Ptree* name, Ptree* where);
+    void WarningMessage(const char* message, Ptree* name, Ptree* where);
 
-    static bool RecordCmdLineOption(char* key, char* value);
-    static bool LookupCmdLineOption(char* key);
-    static bool LookupCmdLineOption(char* key, char*& value);
+    static bool RecordCmdLineOption(const char* key, const char* value);
+    static bool LookupCmdLineOption(const char* key);
+    static bool LookupCmdLineOption(const char* key, const char*& value);
 
 private:
     void Construct(Environment*, Ptree*);
@@ -239,7 +239,7 @@ private:
     ChangedMemberList* GetAppendedMembers() { return appended_member_list; }
     Ptree* GetAppendedCode() { return appended_code; }
     void TranslateClassHasFinished() { done_decl_translation = true; }
-    void CheckValidity(char*);
+    void CheckValidity(const char*);
 
 private:
     Ptree* definition;
@@ -260,12 +260,12 @@ private:
 
     enum { MaxOptions = 8 };
     static int num_of_cmd_options;
-    static char* cmd_options[MaxOptions * 2];
+    static const char* cmd_options[MaxOptions * 2];
 
-    static char* metaclass_for_c_functions;
+    static const char* metaclass_for_c_functions;
     static Class* for_c_functions;
 
-    static char* metaclass_for_plain;
+    static const char* metaclass_for_plain;
     static Class* for_plain;
 
     static Ptree* class_t;

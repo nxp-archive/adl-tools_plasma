@@ -129,7 +129,7 @@ namespace Opencxx
     Restore(t.ptr + 1);
   }
 
-  unsigned Lex::LineNumber(char* pos, char*& ptr, int& len)
+  unsigned Lex::LineNumber(const char* pos, const char*& ptr, int& len)
   {
     return file->LineNumber(pos, ptr, len);
   }
@@ -166,7 +166,7 @@ namespace Opencxx
     file->Rewind(p - file->Read(0));
   }
 
-  bool Lex::RecordKeyword(char* keyword, int token)
+  bool Lex::RecordKeyword(const char* keyword, int token)
   {
     int index;
     char* str;
@@ -218,7 +218,7 @@ namespace Opencxx
     if(t == 0 || !t->IsLeaf())
       return false;
 
-    char* p = t->GetPosition();
+    const char* p = t->GetPosition();
     int len = t->GetLength();
     value = 0;
     if(len > 2 && *p == '0' && is_xletter(p[1])){
@@ -262,7 +262,7 @@ namespace Opencxx
     if(t == 0 || !t->IsLeaf())
       return false;
 
-    char* p = t->GetPosition();
+    const char* p = t->GetPosition();
     int length = t->GetLength();
     if(*p != '"')
       return false;
@@ -888,7 +888,7 @@ namespace Opencxx
     Note: alphabetical order!
   */
   static struct rw_table {
-    char*	name;
+    const char*	name;
     long	value;
   } table[] = {
 #if (defined __GNUC__) || (defined _GNUC_SYNTAX)
@@ -1054,7 +1054,7 @@ namespace Opencxx
   int Lex::Screening(char *identifier, int len)
   {
     struct rw_table	*low, *high, *mid;
-    int			c, token;
+    int			c, t_token;
 
     if (wcharSupport && !strncmp("wchar_t", identifier, len))
       return token(WCHAR);
@@ -1077,8 +1077,14 @@ namespace Opencxx
     if(user_keywords == 0)
       user_keywords = new HashTable;
 
-    if(user_keywords->Lookup(identifier, len, (HashTable::Value*)&token))
-      return token;
+    {
+       HashTable::Value x;
+//    if (user_keywords->Lookup(identifier, len, reinterpret_cast<HashTable::Value*>(&t_token)))
+       if (user_keywords->Lookup(identifier, len, &x)) {
+	  t_token = reinterpret_cast <int>(x);
+	  return t_token;
+       }
+    }
 
     return token(Identifier);
   }

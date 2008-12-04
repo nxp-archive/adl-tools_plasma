@@ -42,13 +42,13 @@ class Environment;
 
 class BindTypedefName : public Bind {
 public:
-    BindTypedefName(char* t) { type = t; }
+    BindTypedefName(const char* t) { type = t; }
     Kind What();
     void GetType(TypeInfo&, Environment*);
-    char* GetEncodedType();
+    const char* GetEncodedType();
 
 private:
-    char* type;
+    const char* type;
 };
 
 }

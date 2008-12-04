@@ -54,22 +54,27 @@ namespace Opencxx
 using std::ostream;
 
 /** @warning Allocates new memory to the given string. */
-DupLeaf::DupLeaf(char* str, int len) : Leaf(new (GC) char[len], len)
+DupLeaf::DupLeaf(const char* str, int len) : Leaf(new (GC) char[len], len)
 {
-    memmove(data.leaf.position, str, len);
+   // it is not obvious how to get rid of this casting nonsense. I assume
+   // it is not a bug since the memory is allocated in the Leaf ctor
+   memmove(const_cast<void *>(reinterpret_cast<const void*>(data.leaf.position)), str, len);
 }
 
-DupLeaf::DupLeaf(char* str1, int len1, char* str2, int len2)
+DupLeaf::DupLeaf(const char* str1, int len1, const char* str2, int len2)
 : Leaf(new (GC) char[len1 + len2], len1 + len2)
 {
-    memmove(data.leaf.position, str1, len1);
-    memmove(&data.leaf.position[len1], str2, len2);
+   // it is not obvious how to get rid of this casting nonsense. I
+   // assume it is not a bug since the memory is allocated in the Leaf
+   // ctor
+   memmove(const_cast<void *>(reinterpret_cast<const void*>(data.leaf.position)), str1, len1);
+   memmove(const_cast<void *>(reinterpret_cast<const void*>(&data.leaf.position[len1])), str2, len2);
 }
 
 void DupLeaf::Print(ostream& s, int, int)
 {
     int i, j;
-    char* pos;
+    const char* pos;
 
     pos = data.leaf.position;
     j = data.leaf.length;

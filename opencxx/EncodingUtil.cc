@@ -40,8 +40,8 @@ namespace Opencxx
 
 namespace EncodingUtil {
 
-unsigned char* 
-GetTemplateArguments(unsigned char* name, int& len)
+const unsigned char* 
+GetTemplateArguments(const unsigned char* name, int& len)
 {
     int m = name[0] - 0x80;
     if(m <= 0){
@@ -55,7 +55,7 @@ GetTemplateArguments(unsigned char* name, int& len)
 }
 
 int 
-GetBaseNameIfTemplate(unsigned char* name, Environment*& e)
+GetBaseNameIfTemplate(const unsigned char* name, Environment*& e)
 {
     int m = name[0] - 0x80;
     if(m <= 0)
@@ -80,8 +80,8 @@ GetBaseNameIfTemplate(unsigned char* name, Environment*& e)
 // GetBaseName() returns "Foo" if ENCODE is "Q[2][1]X[3]Foo", for example.
 // If an error occurs, the function returns 0.
 
-char* 
-GetBaseName(char* encode, int& len, Environment*& env)
+const char* 
+GetBaseName(const char* encode, int& len, Environment*& env)
 {
     if(encode == 0){
 	len = 0;
@@ -134,7 +134,7 @@ GetBaseName(char* encode, int& len, Environment*& env)
 }
 
 Environment* 
-ResolveTypedefName(Environment* env, char* name, int len)
+ResolveTypedefName(Environment* env, const char* name, int len)
 {
     TypeInfo tinfo;
     Bind* bind;

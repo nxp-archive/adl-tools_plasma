@@ -65,7 +65,7 @@ PtreeUsing::PtreeUsing(Ptree* p, Ptree* q, Ptree* r, char* encName, Ptree* s)
 {
 }
 
-char* PtreeUsing::GetEncodedName()
+const char* PtreeUsing::GetEncodedName()
 {
   return name;
 }

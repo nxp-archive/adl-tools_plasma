@@ -122,7 +122,7 @@ class Token;
 class Leaf%keyword% : public LeafReserved {
 public:
     Leaf%keyword%(Token& t) : LeafReserved(t) {}
-    Leaf%keyword%(char* str, int len) : LeafReserved(str, len) {}
+    Leaf%keyword%(const char* str, int len) : LeafReserved(str, len) {}
     int What() { return %keyword%; }
 };
 

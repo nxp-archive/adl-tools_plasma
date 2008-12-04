@@ -69,7 +69,7 @@ public:
     Metaclass();
 
     static bool Initialize();
-    char* MetaclassName();
+    const char* MetaclassName();
 
     void TranslateClass(Environment*);
     Ptree* GetFinalizer();

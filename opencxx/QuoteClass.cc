@@ -120,7 +120,7 @@ bool QuoteClass::Initialize()
     return true;
 }
 
-char* QuoteClass::MetaclassName()
+const char* QuoteClass::MetaclassName()
 {
     return "QuoteClass";
 }

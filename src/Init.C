@@ -172,6 +172,7 @@ int setupInternal()
 void setup()
 {
   static int dummy = setupInternal();
+  dummy = dummy;
 }
 
 // This executes the function pMain, calling it with the usual

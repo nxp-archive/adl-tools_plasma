@@ -160,7 +160,7 @@
 #define LTDL_SHLIB_EXT ".so"
 
 /* Define to the system default library search path. */
-#define LTDL_SYSSEARCHPATH "/lib:/usr/lib:include:ld.so.conf.d/*.conf"
+#define LTDL_SYSSEARCHPATH "/lib:/usr/lib:/usr/lib/openmpi:/usr/lib64/openmpi:/usr/lib/mysql:/usr/lib64/mysql:/usr/lib/mysql:/usr/lib64/mysql:/usr/lib/qt-3.3/lib:/usr/lib64/qt-3.3/lib:/usr/X11R6/lib:/usr/X11R6/lib64"
 
 /* Define if dlsym() requires a leading underscore in symbol names. */
 /* #undef NEED_USCORE */
