@@ -41,6 +41,6 @@ EXTRA_DIST = 	CHANGES \
 
 # Remove the configuration information on a distclean.
 distclean: distclean-am
-	./config clean
+	(cd $(srcdir) && ./config clean)
 
 LINK = $(LIBTOOL) --mode=link $(CXX) -o $@

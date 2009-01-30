@@ -7,7 +7,12 @@ EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 
 webdir = $(InfoHome)
 
-web_DATA = $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
+web_DATA =
+
+# Only build if skribe exists.
+if SKRIBEOK
+  web_DATA += $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
+endif
 
 # Only build a pdf if latex is good.
 if LATEXOK

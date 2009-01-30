@@ -165,7 +165,6 @@ CompileOk_TRUE = @CompileOk_TRUE@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DISTURL = @DISTURL@
-DOCDIR = @DOCDIR@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -557,9 +556,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  opencxx/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  opencxx/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  opencxx/Makefile
+	  $(AUTOMAKE) --foreign  opencxx/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

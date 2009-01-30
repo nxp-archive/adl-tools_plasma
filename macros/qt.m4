@@ -43,6 +43,9 @@ AC_MSG_RESULT([$ac_qt_host])
 
 # Now run Quickthread's configure program.
 AC_MSG_NOTICE([Running config with host type $ac_qt_host])
+# The configure script modifies the source tree, so we have to unwrite protect it.
+(cd $srcdir/qt && chmod -R +w .)
+# Then we run configure.
 (cd $srcdir/qt && ./config $ac_qt_host > /dev/null 2>&1) ||
   AC_MSG_ERROR([Failed to configure Quickthreads.])
 

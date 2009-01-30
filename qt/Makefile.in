@@ -128,7 +128,6 @@ CompileOk_TRUE = @CompileOk_TRUE@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DISTURL = @DISTURL@
-DOCDIR = @DOCDIR@
 DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
@@ -300,9 +299,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  qt/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  qt/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  qt/Makefile
+	  $(AUTOMAKE) --foreign  qt/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -676,7 +675,7 @@ uninstall-info: uninstall-info-recursive
 
 # Remove the configuration information on a distclean.
 distclean: distclean-am
-	./config clean
+	(cd $(srcdir) && ./config clean)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

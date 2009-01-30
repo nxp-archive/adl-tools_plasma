@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.42])
+AC_INIT([plasma],[0.8.43])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
@@ -42,7 +42,6 @@ AC_SUBST(DISTURL)
 AC_MSG_CHECKING([for info destination directory])
 ac_infohome_default=/proj/ppctools/www/a-z/plasma
 InfoHome=
-DOCDIR=doc
 AC_ARG_WITH([infohome],AC_HELP_STRING([--with-infohome],[specify a web destination directory for the info.xml file.  The default is $ac_infohome_default.]),InfoHome=$withval,InfoHome=$ac_infohome_default)
 if [[ -d $InfoHome ]]; then
   AC_MSG_RESULT([$InfoHome])
@@ -108,11 +107,26 @@ if [[ x$SKRIBE = x ]]; then
   echo "! The skribe program was not found.  Documentation will not be built."
   echo "! To build the documentation, make sure that skribe is installed and in your path."
   echo "! You can find skribe here:  http://www-sop.inria.fr/mimosa/fp/Skribe/"
-  DOCDIR=
 fi
 
 if [[ x$PDFLATEX = x -o x$BIBTEX = x ]] ; then
   echo "! PDF documentation will not be build because pdflatex could not be found."
+fi
+
+# If we're using a newer version of tar, then we have to tweak the options so
+# that tar doesn't use V7 mode, which has a problem with the use of big UIDs.
+# Unfortunately, newer verions of tar automatically switch into v7 mode if they
+# see the -o option being used, which is automake's default.  We have to use the
+# --no-same-user option, instead, which is the same flag, just the long-form.  This
+# doesn't cause the switch.
+AC_MSG_CHECKING([if uid conversion will be done by tar])
+tar_version=$(tar --version | grep tar | awk '{print $[4]}')
+DPP_VERSION_CHECK(${tar_version},1.15,uid_conversion=no,uid_conversion=yes)
+if [[ $uid_conversion = no ]]; then
+	am__tar=$(echo $am__tar | sed -e 's/chof -/ch --no-same-owner -f -/')
+	AC_MSG_RESULT([no.  New tar invocation:  ${am__tar}])
+else
+	AC_MSG_RESULT([yes.  No change required to tar arguments.])
 fi
 
 ## Do final substitions and generation.
@@ -125,7 +139,6 @@ AC_SUBST(PROFILE)
 AC_SUBST(ACLOCAL_FLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
-AC_SUBST(DOCDIR)
 
 # If compiling on x86, we can compile test programs generated
 # by the sample compiler in the regression suite.
