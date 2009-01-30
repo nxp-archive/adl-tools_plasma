@@ -1,5 +1,7 @@
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.43 (v0_8_43) on Linux (ld2058) on 1/30/2009 ==
 
+       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.43 (v0_8_43) on Linux (ld2058) on 1/30/2009 ==
+
 2009-01-30  Brian Kahne  <bkahne@freescale.com>
 
 	* Got make distcheck to work.
