@@ -9,7 +9,7 @@ require Exporter;
 our @ISA = ("Exporter"); 
 our @EXPORT = qw( $src check_channel check_qchannel
 		  check_clocked_channel check_spawn 
-		  check_sequence check_time_seq check_times file_diff filter_errors );
+		  check_sequence check_time_seq check_times file_diff filter_errors is_cygwin );
 
 use FindBin;
 use lib $FindBin::RealBin;
@@ -25,6 +25,15 @@ use Data::Dumper;
 $src = $ENV{srcdir};
 
 $ENV{srcdir} = $src = "." if (!$src);
+
+sub is_cygwin {
+  if ( -e "/proc/version" ) {
+	if (system("grep -q '^CYGWIN' /proc/version") == 0) {
+	  return 1;
+	}
+  }
+  return 0;
+}
 
 ##
 ## Place generic helper functions here.

@@ -144,7 +144,8 @@ AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
 
 # If compiling on x86, we can compile test programs generated
-# by the sample compiler in the regression suite.
+# by the sample compiler in the regression suite.  However, we
+# turn this off for Cygwin right now b/c we end up with link errors.
 if [[ $build_cpu = i686 ]]; then
   COMPILE_OK=1
 elif [[ $build_cpu = x86_64 ]]; then
@@ -153,6 +154,11 @@ elif [[ $build_cpu = x86_64 ]]; then
 else
   COMPILE_OK=0
 fi
+case ${build} in
+	*cygwin)
+	COMPILE_OK=0
+	;;
+esac 
 AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
 AC_SUBST(COMPILE_OK)
 AC_SUBST(CONFOPTS)
@@ -167,6 +173,14 @@ if [[ x${enable_shared} = xno ]]; then
   SYS_LIBS="${SYS_LIBS} -lpthread"
   EXTRA_LDFLAGS=" -Wl,--allow-multiple-definition"
 fi
+
+# We need the multiple-definition stuff in Cygwin as well.
+case ${build} in
+	*cygwin)
+	EXTRA_LDFLAGS="${EXTRA_LDFLAGS} -Wl,--allow-multiple-definition"
+	;;
+esac
+
 AC_SUBST(SYS_LIBS)
 AC_SUBST(EXTRA_LDFLAGS)
 

@@ -37,6 +37,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 subdir = qt
 DIST_COMMON = README $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in INSTALL
@@ -323,9 +324,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  qt/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  qt/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  qt/Makefile
+	  $(AUTOMAKE) --foreign  qt/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -422,7 +423,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
-	-rm -f libtool
+	-rm -f libtool config.lt
 uninstall-info-am:
 
 # This directory's subdirectories are mostly independent; you can cd

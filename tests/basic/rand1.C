@@ -8,6 +8,7 @@
 // Random number test.
 //
 
+#include <stdlib.h>
 #include <iostream>
 #include <sstream>
 

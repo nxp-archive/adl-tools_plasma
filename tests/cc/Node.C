@@ -15,6 +15,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include <iostream>
+#include <typeinfo>
 
 #include "Types.h"
 #include "Node.h"

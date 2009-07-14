@@ -55,6 +55,8 @@
 //
 //@endlicenses@
 
+#include <string.h>
+
 #include <opencxx/defs.h>
 #include <opencxx/parser/MetaclassLoader.h>
 #include <opencxx/Metaclass.h>

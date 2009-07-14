@@ -10,9 +10,10 @@
 // to point to data in a read-only mmapped file.
 //
 
-#ifndef _STRING_H_
-#define _STRING_H_
+#ifndef _CC_STRING_H_
+#define _CC_STRING_H_
 
+#include <cstring>
 #include <assert.h>
 #include <iosfwd>
 
@@ -63,7 +64,7 @@ inline bool String::operator==(String x) const
   if (_len != x._len) {
     return false;
   } else {
-    return !strncmp(_ptr,x._ptr,_len);
+      return !std::strncmp(_ptr,x._ptr,_len);
   }
 }
 

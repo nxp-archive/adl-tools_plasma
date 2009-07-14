@@ -8,6 +8,7 @@
 // Tests of the various distributions possible.
 //
 
+#include <stdlib.h>
 #include <iostream>
 #include "Random.h"
 

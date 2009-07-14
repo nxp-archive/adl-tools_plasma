@@ -29,10 +29,12 @@
 //
 //@endlicenses@
 
-#include <opencxx/Walker.h>
 #include <cassert>
 #include <string>
 #include <sstream>
+#include <string.h>
+
+#include <opencxx/Walker.h>
 #include <opencxx/Bind.h>
 #include <opencxx/parser/Encoding.h>
 #include <opencxx/EncodingUtil.h>

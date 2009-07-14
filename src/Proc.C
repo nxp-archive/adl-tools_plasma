@@ -12,6 +12,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string.h>
 
 #include "Proc.h"
 #include "Cluster.h"

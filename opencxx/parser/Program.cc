@@ -52,6 +52,8 @@
 //@endlicenses@
 
 #include <iostream>
+#include <string.h>
+
 #include <opencxx/parser/Program.h>
 #include <opencxx/parser/Ptree.h>
 #include <opencxx/parser/auxil.h>

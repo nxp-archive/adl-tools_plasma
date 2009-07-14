@@ -12,6 +12,7 @@
 #include <iostream>
 #include <setjmp.h>
 #include <signal.h>
+#include <stdlib.h>
 
 #include "Machine.h"
 #include "System.h"
@@ -126,6 +127,19 @@ private:
   const char **_argv;
 };
 
+#ifdef __CYGWIN__
+
+// This calls an external dummy function in order to ensure that it doesn't
+// get inlined so that the main program can overload it.
+extern "C" void default_pSetup(ConfigParms &) 
+{
+  dummy();
+}
+
+void pSetup (ConfigParms &) __attribute__ ((weak, alias ("default_pSetup")));
+
+#else 
+
 // Default setup function- does nothing.  User may
 // override this in the main program b/c it's defined
 // as using weak binding.
@@ -137,6 +151,9 @@ void pSetup(ConfigParms &)
 {
   dummy();
 }
+
+#endif
+
 
 // Setup function.  We try to hook this up so that it's called
 // before anything that needs it, even if that stuff is also

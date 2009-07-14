@@ -15,6 +15,7 @@
 //@endlicenses@
 
 #include <set>
+#include <string.h>
 
 #include <opencxx/OpencxxConfiguration.h>
 #include <cassert>
@@ -77,7 +78,7 @@ namespace Opencxx
 
   static bool streq(const char* s1, const char* s2)
   {
-    return std::strcmp(s1, s2) == 0;
+    return strcmp(s1, s2) == 0;
   }
 
   static bool strpref(const char* prefix, const char* text)

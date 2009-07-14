@@ -39,6 +39,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 check_PROGRAMS = eav$(EXEEXT)
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/tests/Makefile.rules
@@ -274,9 +275,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/eav/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/eav/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  tests/eav/Makefile
+	  $(AUTOMAKE) --foreign  tests/eav/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -318,7 +319,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
-	-rm -f libtool
+	-rm -f libtool config.lt
 uninstall-info-am:
 tags: TAGS
 TAGS:

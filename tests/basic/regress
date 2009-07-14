@@ -10,32 +10,66 @@ use regress_utils;
 use strict;
 use Data::Dumper;
 
-my @Tests = (
-			 # Basic par block test.
+my @Tests = ();
+
+# Test which don't work on Cygwin.
+if (!is_cygwin()) {
+  push @Tests,(
+			   # Basic par block test.
+			   {
+				cmd     => "./par1",
+				checker => \&check_par1,
+			   },
+			   # Looping par block test.
+			   {
+				cmd     => "./par2",
+				checker => \&check_par2,
+			   },
+			   # Check of code generation w/classes.
+			   {
+				cmd     => "./par4",
+				checker => \&check_par1,
+			   },
+			 # Channel test using alt with a default block.
 			 {
-			  cmd     => "./par1",
-			  checker => \&check_par1,
+			  cmd     => "./chan3",
+			  checker => \&check_chan3,
 			 },
-			 # Looping par block test.
+			 # Channel test using afor and a default block.
 			 {
-			  cmd     => "./par2",
-			  checker => \&check_par2,
+			  cmd     => "./chan6",
+			  checker => \&check_chan6,
 			 },
-			 # Looping par block test with structure as loop variable.
+			 # Channel test using afor, non-integer iterator, and a default block.
 			 {
-			  cmd     => "./par3",
-			  checker => \&check_par3,
+			  cmd     => "./chan7",
+			  checker => \&check_chan7,
 			 },
-			 # Check of code generation w/classes.
+			 # Channel test w/multiple afor and alts in an alt and a default block
 			 {
-			  cmd     => "./par4",
-			  checker => \&check_par1,
+			  cmd     => "./chan11",
+			  checker => \&check_chan11,
 			 },
-			 # Check that nested pars work.
+			 # Test of priorities.
 			 {
-			  cmd     => "./par5",
-			  checker => \&check_par5,
+			  cmd     => "./pri2",
+			  checker => \&check_pri2,
 			 },
+			  );
+}
+
+#Standard tests.
+push @Tests, (
+			   # Looping par block test with structure as loop variable.
+			   {
+				cmd     => "./par3",
+				checker => \&check_par3,
+			   },
+			  # Check that nested pars work.
+			  {
+			   cmd     => "./par5",
+			   checker => \&check_par5,
+			  },
 			 # Check that nested pars and pfors work.
 			 {
 			  cmd     => "./par6",
@@ -80,11 +114,6 @@ my @Tests = (
 			  cmd     => "./chan2",
 			  checker => \&check_chan2,
 			 },
-			 # Channel test using alt with a default block.
-			 {
-			  cmd     => "./chan3",
-			  checker => \&check_chan3,
-			 },
 			 # Channel test using afor.
 			 {
 			  cmd     => "./chan4",
@@ -94,16 +123,6 @@ my @Tests = (
 			 {
 			  cmd     => "./chan5",
 			  checker => \&check_chan5,
-			 },
-			 # Channel test using afor and a default block.
-			 {
-			  cmd     => "./chan6",
-			  checker => \&check_chan6,
-			 },
-			 # Channel test using afor, non-integer iterator, and a default block.
-			 {
-			  cmd     => "./chan7",
-			  checker => \&check_chan7,
 			 },
 			 # Channel test using a queued channel.
 			 {
@@ -119,11 +138,6 @@ my @Tests = (
 			 {
 			  cmd     => "./chan10",
 			  checker => \&check_chan10,
-			 },
-			 # Channel test w/multiple afor and alts in an alt and a default block
-			 {
-			  cmd     => "./chan11",
-			  checker => \&check_chan11,
 			 },
 			 # Channel test w/a timeout channel.
 			 {
@@ -224,11 +238,6 @@ my @Tests = (
 			 {
 			  cmd     => "./pri1",
 			  checker => \&check_pri1,
-			 },
-			 # Test of priorities.
-			 {
-			  cmd     => "./pri2",
-			  checker => \&check_pri2,
 			 },
 			 # Test of priorities.
 			 {

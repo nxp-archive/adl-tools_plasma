@@ -37,6 +37,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 bin_PROGRAMS = plasma-comp$(EXEEXT)
 subdir = parser
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
@@ -294,9 +295,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  parser/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  parser/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  parser/Makefile
+	  $(AUTOMAKE) --foreign  parser/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -359,7 +360,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
-	-rm -f libtool
+	-rm -f libtool config.lt
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)

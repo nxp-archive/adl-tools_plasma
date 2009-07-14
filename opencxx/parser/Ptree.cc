@@ -45,7 +45,7 @@
 #include <iostream>
 #include <cstdarg>
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <sstream>
 #include <sys/time.h>
@@ -209,11 +209,13 @@ Ptree* Ptree::Make(const char* pat, ...)
 
     assert(j < 4096);
 
-    if(j > 0)
-	if(result == 0)
-	    result = new DupLeaf(buf, j);
-	else
-	    result = PtreeUtil::Snoc(result, new DupLeaf(buf, j));
+    if(j > 0) {
+        if(result == 0) {
+            result = new DupLeaf(buf, j);
+        } else {
+            result = PtreeUtil::Snoc(result, new DupLeaf(buf, j));
+        }
+    }
 
     return result;
 }

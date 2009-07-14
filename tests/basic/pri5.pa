@@ -10,6 +10,8 @@
 // until complete.
 //
 
+#include <stdio.h>
+
 using namespace plasma;
 using namespace std;
 

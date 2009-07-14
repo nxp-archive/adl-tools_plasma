@@ -31,6 +31,7 @@
 
 #include <iostream>
 #include <string>
+#include <string.h>
 #include <opencxx/Class.h>
 #include <opencxx/parser/Ptree.h>
 #include <opencxx/Member.h>

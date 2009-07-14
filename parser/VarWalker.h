@@ -13,6 +13,7 @@
 #ifndef _VARWALKER_H_
 #define _VARWALKER_H_
 
+#include <string.h>
 #include <vector>
 # include <ext/hash_set>
 using namespace __gnu_cxx;

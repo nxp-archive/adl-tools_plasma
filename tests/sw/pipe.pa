@@ -10,6 +10,7 @@
 // © copyright Motorola 1997. All rights reserved
 
 #include <sys/timeb.h>
+#include <string.h>
 
 #include "plasma.h"
 #include "Random.h"

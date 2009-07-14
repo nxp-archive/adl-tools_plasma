@@ -29,6 +29,7 @@
 //
 //@endlicenses@
 
+#include <string.h>
 #include <opencxx/parser/PtreeArray.h>
 #include <opencxx/parser/NonLeaf.h>
 #include <opencxx/parser/TheErrorLog.h>

@@ -29,6 +29,8 @@
 //@endlicenses@
 
 #include <cstdarg>
+#include <string.h>
+
 #include <opencxx/parser/PtreeUtil.h>
 #include <opencxx/parser/Ptree.h>
 #include <opencxx/parser/Leaf.h>
@@ -96,7 +98,7 @@ GetArgDeclList(PtreeDeclarator* decl, Ptree*& args)
   Ptree* p = decl;
   while(p != 0){
 	Ptree* q = p->Car();
-	if(q != 0)
+	if(q != 0) {
       if(q->IsLeaf()) {
 		if(Eq(q, '(')){
           args = p->Cdr()->Car();
@@ -110,6 +112,7 @@ GetArgDeclList(PtreeDeclarator* decl, Ptree*& args)
 		if (p->IsLeaf())
           break;
       }
+    }
 
 	p = p->Cdr();
   }
@@ -360,11 +363,13 @@ Ptree* Append(Ptree* p, Ptree* q)
 {
     Ptree *result, *tail;
 
-    if(p == 0)
-	if(q->IsLeaf())
-	    return Cons(q, 0);
-	else
-	    return q;
+    if(p == 0) {
+        if(q->IsLeaf()) {
+            return Cons(q, 0);
+        } else {
+            return q;
+        }
+    }
 
     result = tail = Cons(p->Car(), 0);
     p = p->Cdr();

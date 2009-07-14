@@ -9,6 +9,7 @@
 // checks to make sure that it's sorted.
 //
 
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
 

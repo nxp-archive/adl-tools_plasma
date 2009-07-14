@@ -12,6 +12,8 @@
 // for 200 cycles, allowing the low priority thread to compute during that time.
 //
 
+#include <stdio.h>
+
 using namespace plasma;
 using namespace std;
 

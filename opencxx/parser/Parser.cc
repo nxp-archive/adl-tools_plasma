@@ -39,6 +39,7 @@
   is<name>() looks ahead and returns true if the next symbol is <name>.
 */
 
+#include <string.h>
 #include <iostream>
 #include <opencxx/parser/Parser.h>
 #include <opencxx/parser/Token.h>
@@ -154,7 +155,7 @@ namespace Opencxx
     }
     else {
       Ptree* c = lex->GetComments2();
-      if (res = rDeclaration(p))
+      if ((res = rDeclaration(p)))
         {
           PtreeUtil::SetDeclaratorComments(p, c);
         }
@@ -844,11 +845,13 @@ namespace Opencxx
     if(storage_s != 0)
       head = PtreeUtil::Snoc(head, storage_s);
 
-    if(mem_s == 0)
-      if(optMemberSpec(mem_s))
+    if(mem_s == 0) {
+        if(optMemberSpec(mem_s)) {
 	    head = PtreeUtil::Nconc(head, mem_s);
-      else
+        } else {
 	    return false;
+        }
+    }
 
     if(!optCvQualify(cv_q)
        || !optIntegralTypeOrClassSpec(integral, type_encode))
@@ -1419,11 +1422,13 @@ namespace Opencxx
 
     optThrowDecl(throw_decl);	// ignore in this version
 
-    if(lex->LookAhead(0) == ':')
-      if(rMemberInitializers(mi))
+    if(lex->LookAhead(0) == ':') {
+        if(rMemberInitializers(mi)) {
 	    constructor = PtreeUtil::Snoc(constructor, mi);
-      else
+        } else {
 	    return false;
+        }
+    }
 
     if(lex->LookAhead(0) == '='){
       Token eq, zero;
@@ -1690,11 +1695,13 @@ namespace Opencxx
 
 	    optThrowDecl(throw_decl);	// ignore in this version
 
-	    if(lex->LookAhead(0) == ':')
-          if(rMemberInitializers(mi))
+	    if(lex->LookAhead(0) == ':') {
+            if(rMemberInitializers(mi)) {
 		    d = PtreeUtil::Snoc(d, mi);
-          else
+            } else {
 		    return false;
+            }
+        }
 
 	    break;		// "T f(int)(char)" is invalid.
       }
@@ -2236,14 +2243,15 @@ namespace Opencxx
       lex->Restore(pos);
       return(is_args = rArgDeclList(arglist, encode));
     }
-    else
-      if(is_args = rArgDeclList(arglist, encode))
+    else {
+        if(is_args = rArgDeclList(arglist, encode)) {
 	    return true;
-      else{
+        } else{
 	    lex->Restore(pos);
 	    encode.Clear();
 	    return rFunctionArguments(arglist);
       }
+    }
   }
 
   /*
@@ -3616,15 +3624,15 @@ namespace Opencxx
       lex->GetToken(op);
 
       char* pos = lex->Save();
-      if(rTypeName(tname))
-	    if(lex->GetToken(cp) == ')')
-          if(lex->LookAhead(0) != '('){
+      if(rTypeName(tname)) {
+          if(lex->GetToken(cp) == ')') {
+          if(lex->LookAhead(0) != '(') {
 		    atype = PtreeUtil::List(0, PtreeUtil::List(new Leaf(op), tname,
                                                        new Leaf(cp)));
 		    if(!isTypeSpecifier())
               return true;
           }
-          else if(rAllocateInitializer(init)){
+          } else if(rAllocateInitializer(init)) {
 		    atype = PtreeUtil::List(0,
                                     PtreeUtil::List(new Leaf(op), tname,
                                                     new Leaf(cp)),
@@ -3633,6 +3641,7 @@ namespace Opencxx
 		    if(lex->LookAhead(0) != '(')
               return true;
           }
+      }
 
       // if we reach here, we have to process '(' function.arguments ')'.
       lex->Restore(pos);

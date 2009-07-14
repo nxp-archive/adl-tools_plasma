@@ -9,6 +9,7 @@
 // in order to be able to see how adding processors affects performance.
 //
 
+#include <stdlib.h>
 #include <iostream>
 #include <vector>
 

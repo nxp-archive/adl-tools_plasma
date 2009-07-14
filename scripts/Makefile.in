@@ -36,6 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+LIBOBJDIR =
 subdir = scripts
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/plasma-config.in $(srcdir)/plasma.in
@@ -251,9 +252,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  scripts/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  scripts/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  scripts/Makefile
+	  $(AUTOMAKE) --foreign  scripts/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -302,7 +303,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
-	-rm -f libtool
+	-rm -f libtool config.lt
 uninstall-info-am:
 tags: TAGS
 TAGS:

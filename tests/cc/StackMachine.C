@@ -60,6 +60,8 @@
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
+#include <typeinfo>
+#include <algorithm>
 
 #include "StackMachine.h"
 #include "Node.h"
