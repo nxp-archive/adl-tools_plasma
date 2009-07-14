@@ -38,7 +38,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-LIBOBJDIR =
 bin_PROGRAMS = occ$(EXEEXT)
 subdir = opencxx
 DIST_COMMON = README $(nobase_pkinclude_HEADERS) $(srcdir)/Makefile.am \
@@ -581,9 +580,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  opencxx/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  opencxx/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  opencxx/Makefile
+	  $(AUTOMAKE) --gnu  opencxx/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -983,7 +982,7 @@ clean-libtool:
 	-rm -rf parser/.libs parser/_libs
 
 distclean-libtool:
-	-rm -f libtool config.lt
+	-rm -f libtool
 uninstall-info-am:
 install-nobase_pkincludeHEADERS: $(nobase_pkinclude_HEADERS)
 	@$(NORMAL_INSTALL)

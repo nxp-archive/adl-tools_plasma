@@ -44,7 +44,6 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-LIBOBJDIR =
 check_PROGRAMS = par1$(EXEEXT) par2$(EXEEXT) par3$(EXEEXT) \
 	par4$(EXEEXT) par5$(EXEEXT) par6$(EXEEXT) par7$(EXEEXT) \
 	par8$(EXEEXT) par9$(EXEEXT) par10$(EXEEXT) qsort1$(EXEEXT) \
@@ -789,9 +788,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/basic/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/basic/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/basic/Makefile
+	  $(AUTOMAKE) --gnu  tests/basic/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -1112,7 +1111,7 @@ clean-libtool:
 	-rm -rf .libs _libs
 
 distclean-libtool:
-	-rm -f libtool config.lt
+	-rm -f libtool
 uninstall-info-am:
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
