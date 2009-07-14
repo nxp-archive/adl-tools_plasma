@@ -40,11 +40,15 @@ noinst_PROGRAMS = lemon$(EXEEXT)
 subdir = tests/lemon
 DIST_COMMON = README $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/macros/argz.m4 \
 	$(top_srcdir)/macros/cpp-setup.m4 \
 	$(top_srcdir)/macros/docgen.m4 $(top_srcdir)/macros/flex.m4 \
 	$(top_srcdir)/macros/general.m4 \
-	$(top_srcdir)/macros/libtool.m4 $(top_srcdir)/macros/qt.m4 \
+	$(top_srcdir)/macros/libtool.m4 $(top_srcdir)/macros/ltdl.m4 \
+	$(top_srcdir)/macros/ltoptions.m4 \
+	$(top_srcdir)/macros/ltsugar.m4 \
+	$(top_srcdir)/macros/ltversion.m4 \
+	$(top_srcdir)/macros/lt~obsolete.m4 $(top_srcdir)/macros/qt.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -76,6 +80,7 @@ AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 AR = @AR@
+ARGZ_H = @ARGZ_H@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
@@ -108,7 +113,7 @@ DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DISTURL = @DISTURL@
 DSYMUTIL = @DSYMUTIL@
-ECHO = @ECHO@
+DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
@@ -116,8 +121,7 @@ EFENCE = @EFENCE@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 EXTRA_LDFLAGS = @EXTRA_LDFLAGS@
-F77 = @F77@
-FFLAGS = @FFLAGS@
+FGREP = @FGREP@
 GCC_MAJOR = @GCC_MAJOR@
 GCC_MINOR = @GCC_MINOR@
 GCC_VERSION = @GCC_VERSION@
@@ -132,25 +136,40 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 InfoHome = @InfoHome@
 LATEXOK_FALSE = @LATEXOK_FALSE@
 LATEXOK_TRUE = @LATEXOK_TRUE@
+LD = @LD@
 LDFLAGS = @LDFLAGS@
 LEX = @LEX@
 LEXLIB = @LEXLIB@
 LEX_CFLAGS = @LEX_CFLAGS@
 LEX_OUTPUT_ROOT = @LEX_OUTPUT_ROOT@
 LIBADD_DL = @LIBADD_DL@
+LIBADD_DLD_LINK = @LIBADD_DLD_LINK@
+LIBADD_DLOPEN = @LIBADD_DLOPEN@
+LIBADD_SHL_LOAD = @LIBADD_SHL_LOAD@
 LIBLTDL = @LIBLTDL@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
+LIPO = @LIPO@
 LN_S = @LN_S@
+LTDLDEPS = @LTDLDEPS@
+LTDLINCL = @LTDLINCL@
+LTDLOPEN = @LTDLOPEN@
 LTLIBOBJS = @LTLIBOBJS@
+LT_CONFIG_H = @LT_CONFIG_H@
+LT_DLLOADERS = @LT_DLLOADERS@
+LT_DLPREOPEN = @LT_DLPREOPEN@
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MINI_CC_FLAGS = @MINI_CC_FLAGS@
+NM = @NM@
 NMEDIT = @NMEDIT@
+OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
+OTOOL = @OTOOL@
+OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -181,7 +200,7 @@ W2LOK_TRUE = @W2LOK_TRUE@
 WEBURL = @WEBURL@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
-ac_ct_F77 = @ac_ct_F77@
+ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -215,6 +234,9 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
+ltdl_LIBOBJS = @ltdl_LIBOBJS@
+ltdl_LTLIBOBJS = @ltdl_LTLIBOBJS@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -225,8 +247,10 @@ psdir = @psdir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 subdirs = @subdirs@
+sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
+top_build_prefix = @top_build_prefix@
 lemon_SOURCES = lemon.c
 LEMPAR = lempar.c
 EXTRA_DIST = $(LEMPAR)
@@ -243,9 +267,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/lemon/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/lemon/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/lemon/Makefile
+	  $(AUTOMAKE) --gnu  tests/lemon/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

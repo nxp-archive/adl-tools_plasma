@@ -1,14 +1,15 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.43])
+AC_INIT([plasma],[0.8.44])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
+AC_CONFIG_MACRO_DIR([./macros])
 
 AC_CANONICAL_BUILD
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
-AC_STDC_HEADERS
-AC_LANG_CPLUSPLUS
+AC_HEADER_STDC
+AC_LANG([C++])
 AM_PROG_AS
 
 AM_CPP_SETUP(3,4)
@@ -24,7 +25,7 @@ AM_FLEX($FlexRequiredVersion, , AC_MSG_ERROR([flex $FlexRequiredVersion is requi
 ## Check for the location of Perl
 AC_PATH_PROG(PERLPROG,perl)
 if test "x$PERLPROG" = x ; then
-  AC_ERROR("Could not find perl.  Check your path to make sure that it is present.")
+  AC_MSG_ERROR(["Could not find perl.  Check your path to make sure that it is present."])
 fi
 
 ## Check for web directory (documentation destination).
@@ -42,7 +43,7 @@ AC_SUBST(DISTURL)
 AC_MSG_CHECKING([for info destination directory])
 ac_infohome_default=/proj/ppctools/www/a-z/plasma
 InfoHome=
-AC_ARG_WITH([infohome],AC_HELP_STRING([--with-infohome],[specify a web destination directory for the info.xml file.  The default is $ac_infohome_default.]),InfoHome=$withval,InfoHome=$ac_infohome_default)
+AC_ARG_WITH([infohome],AS_HELP_STRING([--with-infohome],[specify a web destination directory for the info.xml file.  The default is $ac_infohome_default.]),InfoHome=$withval,InfoHome=$ac_infohome_default)
 if [[ -d $InfoHome ]]; then
   AC_MSG_RESULT([$InfoHome])
 else
@@ -87,13 +88,15 @@ export enable_ltdl_install=yes
 AC_LIBLTDL_INSTALLABLE
 
 ## Setup to use libtool.
-AC_PROG_LIBTOOL
+LT_INIT
+LTDL_INIT
 
 ##
 ## Configure libltdl
 ##
 AC_LTDL_ENABLE_INSTALL
 AC_LIB_LTDL
+AC_SUBST(top_build_prefix)
 AC_SUBST(LIBLTDL)
 AC_SUBST(INCLTDL)
 
@@ -207,6 +210,6 @@ AC_CONFIG_FILES([\
 	tests/cc/compile_check.pm
 ],[chmod +x,-w tests/cc/compile_check.pm ])
 
-AC_CONFIG_SUBDIRS(gc libltdl)
+AC_CONFIG_SUBDIRS(gc)
 
 AC_OUTPUT
