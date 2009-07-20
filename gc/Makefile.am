@@ -181,7 +181,7 @@ EXTRA_DIST += cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
-MAKELINK = cd $(srcdir) && chmod +w . include && ln -sf include gc
+MAKELINK = cd $(srcdir) && chmod +w . include && if [ ! -e gc ]; then ln -sf include gc; fi
 
 # :FIXME: why do we distribute this one???
 #

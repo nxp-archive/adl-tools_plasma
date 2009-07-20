@@ -396,7 +396,7 @@ dist_noinst_HEADERS = version.h
 # this is an auxiliary shell file used by Makefile and Makefile.direct
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
-MAKELINK = cd $(srcdir) && chmod +w . include && ln -sf include gc
+MAKELINK = cd $(srcdir) && chmod +w . include && if [ ! -e gc ]; then ln -sf include gc; fi
 all: all-recursive
 
 .SUFFIXES:
