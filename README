@@ -13,6 +13,29 @@ Boehnm-Demers-Weiser conservative garbage collector.  License information for
 OpenC++ may be found in the directory opencxx/COPYING and license information
 for the garbage collector may be found in gc/doc/README.
 
+Platforms Supported
+-------------------
+
+MinGW32
+
+	Only the Boehm garbage collector and libltdl portions of Plasma have
+	been ported to MinGW.  This is sufficient for using the run-time
+	needs of ADL, but the actual Plasma language is not supported.  To
+	install, run "./configure --disable-lang-frontend && make all check
+	install".
+
+Cygwin
+		
+	Plasma has been ported to Cygwin, but preemption in the Plasma
+	run-time kernel is not currently supported.  To install, run
+	"./configure && make all check install".
+
+Linux (32 and 64 bit)
+
+	This is the primary development platform for Plasma.  Just run
+	"./configure" and "make all check install" to build, run the
+	regression, and install the package.
+
 Required Packages
 -----------------
 
