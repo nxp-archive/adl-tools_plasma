@@ -169,6 +169,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 InfoHome = @InfoHome@
+LANG_FRONTEND_FALSE = @LANG_FRONTEND_FALSE@
+LANG_FRONTEND_TRUE = @LANG_FRONTEND_TRUE@
+LANG_RUNTIME_FALSE = @LANG_RUNTIME_FALSE@
+LANG_RUNTIME_TRUE = @LANG_RUNTIME_TRUE@
 LATEXOK_FALSE = @LATEXOK_FALSE@
 LATEXOK_TRUE = @LATEXOK_TRUE@
 LD = @LD@
@@ -348,9 +352,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/sw/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/sw/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/sw/Makefile
+	  $(AUTOMAKE) --gnu  tests/sw/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

@@ -28,6 +28,92 @@ if test "x$PERLPROG" = x ; then
   AC_MSG_ERROR(["Could not find perl.  Check your path to make sure that it is present."])
 fi
 
+##
+## Check to see if we should build the language front-end.
+##
+AC_MSG_CHECKING([if the user wants the language front-end])
+lang_frontend=true
+AC_ARG_ENABLE(frontend,AS_HELP_STRING([--enable-frontend],[Create the language front-end libraries.  Default is true.]),
+[case "${enableval}" in
+  yes) 
+	lang_frontend=true
+	;;
+  no)  
+	lang_frontend=false
+	;;
+  *) 
+	AC_MSG_ERROR(bad value ${enableval} for --enable-frontend)
+	;;
+esac],[lang_frontend=true])
+
+AH_TEMPLATE([LANG_FRONTEND],[Defined and set to 1 if we're creating the language front-end.])	
+if [[ $lang_frontend = true ]] ; then
+	AC_MSG_RESULT([yes]) 
+	AC_DEFINE([LANG_FRONTEND],1)
+else
+	AC_MSG_RESULT([no]) 
+fi
+
+AM_CONDITIONAL([LANG_FRONTEND],[test x$lang_frontend = xtrue])
+
+##
+## Check to see if we should build the language runtime libraries.
+##
+AC_MSG_CHECKING([if the user wants the language runtime])
+lang_runtime=true
+AC_ARG_ENABLE(runtime,AS_HELP_STRING([--enable-runtime],[Create the language runtime libraries.  Default is true.]),
+[case "${enableval}" in
+  yes) 
+	lang_runtime=true
+	;;
+  no)  
+	lang_runtime=false
+	;;
+  *) 
+	AC_MSG_ERROR(bad value ${enableval} for --enable-runtime)
+	;;
+esac],[lang_runtime=true])
+
+# We don't bother with the runtime if the front-end isn't enabled.
+if [[ $lang_frontend = false ]]; then
+	lang_runtime=false;
+fi
+
+AH_TEMPLATE([LANG_RUNTIME],[Defined and set to 1 if we're creating the language runtime.])	
+if [[ $lang_runtime = true ]] ; then
+	AC_MSG_RESULT([yes]) 
+	AC_DEFINE([LANG_RUNTIME],1)
+else
+	AC_MSG_RESULT([no]) 
+fi
+
+AM_CONDITIONAL([LANG_RUNTIME],[test x$lang_runtime = xtrue])
+
+# If compiling on x86, we can compile test programs generated
+# by the sample compiler in the regression suite.  However, we
+# turn this off for Cygwin right now b/c we end up with link errors.
+if [[ $build_cpu = i686 ]]; then
+  COMPILE_OK=1
+elif [[ $build_cpu = x86_64 ]]; then
+  COMPILE_OK=1
+  MINI_CC_FLAGS="-m32"	
+else
+  COMPILE_OK=0
+fi
+case ${build} in
+	*cygwin)
+	COMPILE_OK=0
+	;;
+esac 
+# We need the front-end and runtime to create the compiler.
+if [[ $lang_runtime = false -o $lang_frontend = false ]]; then
+	COMPILE_OK=0
+fi
+AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
+AC_SUBST(COMPILE_OK)
+AC_SUBST(CONFOPTS)
+AC_SUBST(MINI_CC_FLAGS)
+
 ## Check for web directory (documentation destination).
 WEBURL=
 ac_weburl_default=http://compass.freescale.net/go/PlasmaSite
@@ -142,27 +228,6 @@ AC_SUBST(PROFILE)
 AC_SUBST(ACLOCAL_FLAGS)
 AC_SUBST(CXXFLAGS)
 AC_SUBST(CXXPROG)
-
-# If compiling on x86, we can compile test programs generated
-# by the sample compiler in the regression suite.  However, we
-# turn this off for Cygwin right now b/c we end up with link errors.
-if [[ $build_cpu = i686 ]]; then
-  COMPILE_OK=1
-elif [[ $build_cpu = x86_64 ]]; then
-  COMPILE_OK=1
-  MINI_CC_FLAGS="-m32"	
-else
-  COMPILE_OK=0
-fi
-case ${build} in
-	*cygwin)
-	COMPILE_OK=0
-	;;
-esac 
-AM_CONDITIONAL(CompileOk, [ test x$COMPILE_OK = x1 ])
-AC_SUBST(COMPILE_OK)
-AC_SUBST(CONFOPTS)
-AC_SUBST(MINI_CC_FLAGS)
 
 # The basic system libraries needed are just -ld.  If compiling w/o
 # shared libraries, however, we need pthread as well.

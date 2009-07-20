@@ -124,6 +124,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 InfoHome = @InfoHome@
+LANG_FRONTEND_FALSE = @LANG_FRONTEND_FALSE@
+LANG_FRONTEND_TRUE = @LANG_FRONTEND_TRUE@
+LANG_RUNTIME_FALSE = @LANG_RUNTIME_FALSE@
+LANG_RUNTIME_TRUE = @LANG_RUNTIME_TRUE@
 LATEXOK_FALSE = @LATEXOK_FALSE@
 LATEXOK_TRUE = @LATEXOK_TRUE@
 LD = @LD@
@@ -241,8 +245,10 @@ sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
-@CompileOk_FALSE@SUBDIRS = parsing
-@CompileOk_TRUE@SUBDIRS = parsing basic sw eav ecu lemon cc
+@LANG_FRONTEND_TRUE@Lang = parsing
+@LANG_RUNTIME_TRUE@RunTime = basic sw eav ecu
+@CompileOk_TRUE@Compiler = cc
+SUBDIRS = $(Lang) $(RunTime) lemon $(Compiler)
 EXTRA_DIST = rdriver.pm regress_utils.pm
 all: all-recursive
 
@@ -256,9 +262,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign  tests/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  tests/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign  tests/Makefile
+	  $(AUTOMAKE) --gnu  tests/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

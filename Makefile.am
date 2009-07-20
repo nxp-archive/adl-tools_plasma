@@ -1,6 +1,17 @@
 
+if LANG_RUNTIME
 
-SUBDIRS = macros scripts qt gc libltdl opencxx src parser tests doc
+RunTime = src
+
+endif
+
+if LANG_FRONTEND
+
+Lang = opencxx parser
+
+endif
+
+SUBDIRS = macros scripts qt gc libltdl $(Lang) $(RunTime) tests doc
 
 AUTOMAKE_OPTIONS = foreign
 

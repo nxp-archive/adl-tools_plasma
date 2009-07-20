@@ -67,7 +67,8 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	uninstall-recursive
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = macros scripts qt gc libltdl opencxx parser src tests \
+	doc
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -139,6 +140,10 @@ INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 InfoHome = @InfoHome@
+LANG_FRONTEND_FALSE = @LANG_FRONTEND_FALSE@
+LANG_FRONTEND_TRUE = @LANG_FRONTEND_TRUE@
+LANG_RUNTIME_FALSE = @LANG_RUNTIME_FALSE@
+LANG_RUNTIME_TRUE = @LANG_RUNTIME_TRUE@
 LATEXOK_FALSE = @LATEXOK_FALSE@
 LATEXOK_TRUE = @LATEXOK_TRUE@
 LD = @LD@
@@ -256,7 +261,9 @@ sys_symbol_underscore = @sys_symbol_underscore@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
-SUBDIRS = macros scripts qt gc libltdl opencxx src parser tests doc
+@LANG_RUNTIME_TRUE@RunTime = src
+@LANG_FRONTEND_TRUE@Lang = opencxx parser
+SUBDIRS = macros scripts qt gc libltdl $(Lang) $(RunTime) tests doc
 AUTOMAKE_OPTIONS = foreign
 
 # This ensures that aclocal will be run correctly if we touch
