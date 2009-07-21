@@ -21,7 +21,7 @@ MinGW32
 	Only the Boehm garbage collector and libltdl portions of Plasma have
 	been ported to MinGW.  This is sufficient for using the run-time
 	needs of ADL, but the actual Plasma language is not supported.  To
-	install, run "./configure --disable-lang-frontend && make all check
+	install, run "./configure --disable-frontend && make all check
 	install".
 
 Cygwin
