@@ -5,6 +5,12 @@
  * Some tests for old macros.  These violate our namespace rules and will
  * disappear shortly.  Use the GC_ names.
  */
+
+// BK:  Hack so that use in MINGW "just works".
+#ifdef __MINGW32__
+#  define GC_WIN32_THREADS 1
+#endif
+
 #if defined(SOLARIS_THREADS) || defined(_SOLARIS_THREADS)
 # define GC_SOLARIS_THREADS
 #endif
@@ -92,7 +98,7 @@
 #   define GC_DARWIN_THREADS
 #   define GC_PTHREADS
 # endif
-# if !defined(GC_PTHREADS) && defined(__FreeBSD__)
+# if !defined(GC_PTHREADS) && (defined(__FreeBSD__) || defined(__DragonFly__))
 #   define GC_FREEBSD_THREADS
 #   define GC_PTHREADS
 # endif

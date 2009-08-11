@@ -1,3 +1,7 @@
+2009-08-11  Brian Kahne  <bkahne@freescale.com>
+
+	* Upgraded to Boehm GC 6.8.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.45 (v0_8_45) on Linux (bkahne-ec1) on 7/20/2009 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.45 (v0_8_45) on Linux (lc0100) on 7/20/2009 ==
