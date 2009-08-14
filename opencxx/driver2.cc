@@ -99,13 +99,50 @@ namespace Opencxx
 #if !SHARED_OPTION
   static void RunSoLinker(const char* org_src, char* target);
 #endif
-  char* MakeTempFilename(const char* src, const char* suffix) __attribute__((weak));
+
+  struct DefaultMakeTempFilename : public MakeTempFilename {
+    /*
+      For example, if src is "../foo.cc", MakeTempFilename() makes
+      "foo.<suffix>".
+    */
+    char* operator()(const char* src, const char* suffix)
+    {
+      const char* start;
+      const char* end;
+
+      start = strrchr(src, '/');
+      if(start == 0)
+        start = src;
+      else
+        ++start;
+
+      end = strrchr(start, '.');
+      if(end == 0)
+        end = src + strlen(src);
+
+      char* result = new char[end - start + strlen(suffix) + 1];
+      strncpy(result, start, end - start);
+      result[end - start] = '\0';
+      strcat(result, suffix);
+      return result;
+    }
+  };
+
+  static DefaultMakeTempFilename defaultMakeTempFilename;
+
+  static MakeTempFilename *makeTempFilename = &defaultMakeTempFilename;
 
 
   bool ParseTargetSpecificOptions(char*, char*&)
   {
     return false;
   }
+
+  void SetMakeTempFilename(MakeTempFilename &mf)
+  {
+    makeTempFilename = &mf;
+  }
+
 
   void ExecVp(const char* file, char *const argv[])
   {
@@ -204,7 +241,7 @@ namespace Opencxx
       linker = config.LinkerCommand();
 #endif
       if(config.SharedLibraryName() != "") {
-	    slib = MakeTempFilename(config.SharedLibraryName().c_str(), SLIB_EXT);
+	    slib = (*makeTempFilename)(config.SharedLibraryName().c_str(), SLIB_EXT);
 	    argv.push_back("-o");
 	    argv.push_back(slib);
 	    delete [] slib;
@@ -235,7 +272,7 @@ namespace Opencxx
   char* RunPreprocessor(const char* src, 
                         const MetacompilerConfiguration& config)
   {
-    char* dest = MakeTempFilename(src, CPP_EXT);
+    char* dest = (*makeTempFilename)(src, CPP_EXT);
     string compiler = config.CompilerCommand();
     
     vector<string> argv;
@@ -297,7 +334,7 @@ namespace Opencxx
 
   char* OpenCxxOutputFileName(const char* src)
   {
-    return MakeTempFilename(src, OUTPUT_EXT);
+    return (*makeTempFilename)(src, OUTPUT_EXT);
   }
 
   /*
@@ -337,7 +374,7 @@ namespace Opencxx
     
     if (config.SharedLibraryName() != "") {
 
-      slib = MakeTempFilename(config.SharedLibraryName().c_str(), SLIB_EXT);
+      slib = (*makeTempFilename)(config.SharedLibraryName().c_str(), SLIB_EXT);
 #if SHARED_OPTION
 #if ((defined __APPLE__) && (defined __MACH__))
       argv.push_back("-dynamiclib");
@@ -410,7 +447,7 @@ namespace Opencxx
     const char* cc_argv[9];
     int i = 0;
 
-    char* slib = MakeTempFilename(src_file, SLIB_EXT);
+    char* slib = (*makeTempFilename)(src_file, SLIB_EXT);
     cc_argv[i++] = compilerName;
 #if SHARED_OPTION
 #if ((defined __APPLE__) && (defined __MACH__))
@@ -470,7 +507,7 @@ namespace Opencxx
     ld_argv[1] = "-Bshareable";
     ld_argv[2] = "-o";
     ld_argv[3] = target;
-    ld_argv[4] = MakeTempFilename(org_src, OBJ_EXT);
+    ld_argv[4] = (*makeTempFilename)(org_src, OBJ_EXT);
     ld_argv[5] = (char*)0;
 
     if(verboseMode){
@@ -495,31 +532,5 @@ namespace Opencxx
     delete [] ld_argv[4];
   }
 #endif /* SHARED_OPTION */
-
-  /*
-    For example, if src is "../foo.cc", MakeTempFilename() makes
-    "foo.<suffix>".
-  */
-  char* MakeTempFilename(const char* src, const char* suffix)
-  {
-    const char* start;
-    const char* end;
-
-    start = strrchr(src, '/');
-    if(start == 0)
-      start = src;
-    else
-      ++start;
-
-    end = strrchr(start, '.');
-    if(end == 0)
-      end = src + strlen(src);
-
-    char* result = new char[end - start + strlen(suffix) + 1];
-    strncpy(result, start, end - start);
-    result[end - start] = '\0';
-    strcat(result, suffix);
-    return result;
-  }
 
 }

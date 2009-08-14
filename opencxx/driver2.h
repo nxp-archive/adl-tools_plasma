@@ -46,20 +46,27 @@
 namespace Opencxx
 {
 
-class MetacompilerConfiguration;
+  class MetacompilerConfiguration;
 
-void RunSoCompiler(
-    const char* src_file
-  , const MetacompilerConfiguration& config);
-void RunLinker(const MetacompilerConfiguration& config);
-char* RunPreprocessor(
-    const char* src 
-  , const MetacompilerConfiguration& config);
-void RunCompiler(
-    const char* org_src, const char* occ_src
-  , const MetacompilerConfiguration& config);
-char* OpenCxxOutputFileName(const char* src);
-char* MakeTempFilename(const char* src, const char* suffix);
+  void RunSoCompiler(
+                     const char* src_file
+                     , const MetacompilerConfiguration& config);
+  void RunLinker(const MetacompilerConfiguration& config);
+  char* RunPreprocessor(
+                        const char* src 
+                        , const MetacompilerConfiguration& config);
+  void RunCompiler(
+                   const char* org_src, const char* occ_src
+                   , const MetacompilerConfiguration& config);
+  char* OpenCxxOutputFileName(const char* src);
+
+  struct MakeTempFilename {
+    virtual ~MakeTempFilename() {};
+
+    virtual char* operator()(const char* src, const char* suffix) = 0;
+  };
+
+  void SetMakeTempFilename(MakeTempFilename &m);
 
 }
 

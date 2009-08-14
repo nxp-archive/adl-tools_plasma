@@ -1,3 +1,10 @@
+2009-08-14  Brian Kahne  <bkahne@freescale.com>
+
+	* Modified how the temporary file-name routine is supplied.  This
+	used to be done via a weakly linked function, but that doesn't
+	work on Cygwin, so I've moded to using a functor with a function,
+	SetMakeTempFilename, that sets the local static variable.
+
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.46 (v0_8_46) on Linux (lc0100) on 8/12/2009 ==
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.46 (v0_8_46) on Linux (lc0089) on 8/12/2009 ==
