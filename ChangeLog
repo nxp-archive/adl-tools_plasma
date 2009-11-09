@@ -1,3 +1,5 @@
+       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.47 (v0_8_47) on Linux (lc0101) on 11/9/2009 ==
+
 2009-11-09  Brian Kahne  <bkahne@bkahne-ec1.am.freescale.net>
 
 	* Modified try/catch block parsing so that the catch declaration
