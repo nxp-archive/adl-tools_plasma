@@ -1,3 +1,9 @@
+2009-11-09  Brian Kahne  <bkahne@bkahne-ec1.am.freescale.net>
+
+	* Modified try/catch block parsing so that the catch declaration
+	is treated as an actual declaration and translated so that the
+	declaration is added to the environment.
+
 2009-08-14  Brian Kahne  <bkahne@freescale.com>
 
 	* Modified how the temporary file-name routine is supplied.  This

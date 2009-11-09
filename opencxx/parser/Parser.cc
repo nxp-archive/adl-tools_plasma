@@ -4606,10 +4606,13 @@ namespace Opencxx
 	    lex->GetToken(cp);
 	    handler = new Leaf(cp);
       }
-      else{
-	    Encoding encode;
-	    if(!rArgDeclaration(handler, encode))
+      else {
+        Encoding encode;
+        if(!rArgDeclaration(handler, encode)) {
           return false;
+        }
+        handler = new PtreeDeclaration(0,PtreeUtil::List(PtreeUtil::List(PtreeUtil::First(handler)),
+                                                         PtreeUtil::List(PtreeUtil::Second(handler))));
       }
 
       if(lex->GetToken(cp) != ')')

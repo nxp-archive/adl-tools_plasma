@@ -1059,32 +1059,34 @@ Ptree* Walker::TranslateFor(Ptree* s)
 
 Ptree* Walker::TranslateTry(Ptree* s)
 {
-    Ptree* try_block = PtreeUtil::Second(s);
-    Ptree* try_block2 = Translate(try_block);
+  Ptree* try_block = PtreeUtil::Second(s);
+  Ptree* try_block2 = Translate(try_block);
 
-    PtreeArray array;
-    Ptree* handlers = s->Cdr()->Cdr();
-    bool changed = false;
+  PtreeArray array;
+  Ptree* handlers = s->Cdr()->Cdr();
+  bool changed = false;
 
-    while(handlers != 0){
-	Ptree* handle = handlers->Car();
-	Ptree* body = PtreeUtil::Nth(handle,4);
-	Ptree* body2 = Translate(body);
-	if(body == body2)
+  while(handlers != 0){
+    Ptree* handle = handlers->Car();
+    Ptree* decl = PtreeUtil::Nth(handle,2);
+    Ptree* decl2 = Translate(decl);
+    Ptree* body = PtreeUtil::Nth(handle,4);
+    Ptree* body2 = Translate(body);
+    if(decl == decl2 && body == body2)
 	    array.Append(handle);
-	else{
-	    array.Append(PtreeUtil::ShallowSubst(body2, body, handle));
+    else{
+	    array.Append(PtreeUtil::ShallowSubst(decl2, decl, body2, body, handle));
 	    changed = true;
-	}
-
-	handlers = handlers->Cdr();
     }
 
-    if(try_block == try_block2 && !changed)
-	return s;
-    else
-	return new PtreeTryStatement(s->Car(),
-				     PtreeUtil::Cons(try_block2, array.All()));
+    handlers = handlers->Cdr();
+  }
+
+  if(try_block == try_block2 && !changed)
+    return s;
+  else
+    return new PtreeTryStatement(s->Car(),
+                                 PtreeUtil::Cons(try_block2, array.All()));
 }
 
 Ptree* Walker::TranslateBreak(Ptree* s)

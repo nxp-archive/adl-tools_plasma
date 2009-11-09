@@ -11,63 +11,68 @@ use strict;
 use Data::Dumper;
 
 my @Tests = (
-	     # Test of user-defined statements in outer-most scope.
-	     {
-	      cmd  => "./parse-test -E $src/in1.C",
-	      diff => "$src/in1.regress",
-	     },
-	     # Test of lambda functions (func).
-	     {
-	      cmd  => "./parse-test -E $src/in2.C",
-	      diff => "$src/in2.regress",
-	     },
-	     # Test of long-strings.
-	     {
-	      cmd  => "./parse-test -E $src/in3.C",
-	      diff => "$src/in3.regress",
-	     },
-	     # Another test of lambda functions.
-	     {
-	      cmd  => "./parse-test -E $src/in4.C",
-	      diff => "$src/in4.regress",
-	     },
-	     # Test of booleans.
-	     {
-	      cmd  => "./parse-test -E $src/in5.C",
-	      diff => "$src/in5.regress",
-	     },
-	     # Test of templates w/integer parms.
-	     {
-	      cmd  => "./parse-test -E $src/in6.C",
-	      diff => "$src/in6.regress",
-	     },
-             # Test of improperly formed long strings.
-	     {
-	      cmd     => "./parse-test -n -E $src/in7.C",
-	      checker => sub { filter_errors(@_[0],"in7.out","$src/in7.regress"); },
-	      stderr  => 1,
-	      fail    => 255,
-	      temps   => [ "in7.out" ],
-	     },
-	     # Test of nested functions.
-	     {
-	      cmd  => "./parse-test -E $src/in8.C",
-	      diff => "$src/in8.regress",
-	     },
-	     # Test of nested template functions.
-	     {
-	      cmd  => "./parse-test -E $src/in9.C",
-	      diff => "$src/in9.regress",
-	     },
-             # Test of line directives, where a '#' is embedded in a string.
-	     {
-	      cmd     => "./parse-test -E $src/in10.C",
-	      checker => sub { filter_errors(@_[0],"in10.out","$src/in10.regress"); },
-	      stderr  => 1,
-	      fail    => 255,
-	      temps   => [ "in10.out" ],
-	     },
-	    );
+	# Test of user-defined statements in outer-most scope.
+	{
+		cmd  => "./parse-test -E $src/in1.C",
+		diff => "$src/in1.regress",
+	},
+	# Test of lambda functions (func).
+	{
+		cmd  => "./parse-test -E $src/in2.C",
+		diff => "$src/in2.regress",
+	},
+	# Test of long-strings.
+	{
+		cmd  => "./parse-test -E $src/in3.C",
+		diff => "$src/in3.regress",
+	},
+	# Another test of lambda functions.
+	{
+		cmd  => "./parse-test -E $src/in4.C",
+		diff => "$src/in4.regress",
+	},
+	# Test of booleans.
+	{
+		cmd  => "./parse-test -E $src/in5.C",
+		diff => "$src/in5.regress",
+	},
+	# Test of templates w/integer parms.
+	{
+		cmd  => "./parse-test -E $src/in6.C",
+		diff => "$src/in6.regress",
+	},
+	# Test of improperly formed long strings.
+	{
+		cmd     => "./parse-test -n -E $src/in7.C",
+		checker => sub { filter_errors(@_[0],"in7.out","$src/in7.regress"); },
+		stderr  => 1,
+		fail    => 255,
+		temps   => [ "in7.out" ],
+	},
+	# Test of nested functions.
+	{
+		cmd  => "./parse-test -E $src/in8.C",
+		diff => "$src/in8.regress",
+	},
+	# Test of nested template functions.
+	{
+		cmd  => "./parse-test -E $src/in9.C",
+		diff => "$src/in9.regress",
+	},
+	# Test of line directives, where a '#' is embedded in a string.
+	{
+		cmd     => "./parse-test -E $src/in10.C",
+		checker => sub { filter_errors(@_[0],"in10.out","$src/in10.regress"); },
+		stderr  => 1,
+		fail    => 255,
+		temps   => [ "in10.out" ],
+	},
+	# Test of try/catch parsing.
+	{
+		cmd     => "./parse-test -E $src/in12.C",
+		diff    => "$src/in12.regress",
+	},
+		);
 
 doTest(\@Tests);
 

@@ -1,0 +1,19 @@
+
+enum Exception { A, B };
+
+define (foo=Bar) {
+  action = {
+    for (const int i = 0; i != 10; ++i) {
+      10;
+    }
+    try {
+      1;
+      2;
+      3;
+    }
+    catch (Exception e) {
+      1;
+      2;
+    }
+  };
+}
