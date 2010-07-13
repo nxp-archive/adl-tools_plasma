@@ -12,6 +12,7 @@
 //
 
 #include <iostream>
+#include <stdio.h>
 #include <list>
 #include <stdarg.h>
 

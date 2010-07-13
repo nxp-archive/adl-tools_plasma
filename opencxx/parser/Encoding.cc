@@ -77,6 +77,7 @@
 
 #include <stdexcept>
 #include <string.h>
+#include <stdio.h>
 #include <iostream>
 #include <opencxx/parser/Encoding.h>
 #include <opencxx/parser/ptreeAll.h>

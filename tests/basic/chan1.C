@@ -6,6 +6,7 @@
 //
 
 #include <assert.h>
+#include <stdio.h>
 #include <iostream>
 
 #include "Interface.h"

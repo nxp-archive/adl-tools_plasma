@@ -8,6 +8,7 @@
 // Test timeouts using a sequential buffer.
 //
 
+#include <stdio.h>
 #include "plasma.h"
 
 using namespace std;

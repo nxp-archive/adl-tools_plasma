@@ -9,6 +9,7 @@
 // Port to plasma:  Brian Kahne, July 2004
 // © copyright Motorola 1997. All rights reserved
 
+#include <stdio.h>
 #include <sys/timeb.h>
 #include <string.h>
 

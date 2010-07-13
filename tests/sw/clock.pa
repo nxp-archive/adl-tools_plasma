@@ -15,6 +15,7 @@
 //    and prints them out.
 //
 
+#include <stdio.h>
 #include "plasma.h"
 #include "Random.h"
 

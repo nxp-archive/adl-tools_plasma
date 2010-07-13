@@ -17,6 +17,7 @@
 //  on the use of the sw channels, sending either data or acks on a 
 //  given sw channel as appropriate.
 
+#include <stdio.h>
 #include "plasma.h"
 #include "Random.h"
 

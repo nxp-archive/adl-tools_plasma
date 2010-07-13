@@ -8,6 +8,7 @@
 // car.pa
 //
 
+#include <stdio.h>
 #include "configuration.h"
 
 using namespace std;

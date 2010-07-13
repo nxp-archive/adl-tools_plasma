@@ -12,11 +12,12 @@ web_DATA =
 # Only build if skribe exists.
 if SKRIBEOK
   web_DATA += $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
-endif
 
-# Only build a pdf if latex is good.
-if LATEXOK
-  web_DATA += $(srcdir)/index.pdf
+  # Only build a pdf if latex is good.
+  if LATEXOK
+    web_DATA += $(srcdir)/index.pdf
+  endif
+
 endif
 
 skribe_src = $(wildcard $(srcdir)/*.skb)

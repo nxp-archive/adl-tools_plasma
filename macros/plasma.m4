@@ -2,21 +2,23 @@
 ## AM_PLASMA([version], [, action-if-found [,action-if-not-found]])
 ##   Configure a program to use plasma.
 ##
-##   version:  Minimum require version.
-##   action-if-found:  Executed if plasma is found.
+##   version:              Minimum require version.
+##   compile:              If set to "false", then a test program will not be compiled.
+##   action-if-found:      Executed if plasma is found.
 ##   action-if-not-found:  Executed if plasma is not found.
 ##
 ## Command-line options:
 ##   --with-plasma to let a user specify the location of the plasma program.
+##                 This is the complete path to the program's location, e.g. /usr/foobar/bin.
 ##
 ## Output:
-##
-##   OCC:           OpenC++ executable.
-##   PLASMA:        The Plasma executable.
-##   PLASMA_PATH:   The Plasma install prefix.
-##   PLASMA_CFLAGS: Plasma cflags.
-##   PLASMA_LIBS:   Plasma link line.
-##   PLASMA_LTLIBS: Plasma link line for libtool.
+##   OCC:             OpenC++ executable.
+##   PLASMA:          The Plasma executable.
+##   PLASMA_PATH:     The Plasma install prefix.
+##   PLASMA_CFLAGS:   Plasma cflags.
+##   PLASMA_LIBS:     Plasma link line.
+##   PLASMA_LTLIBS:   Plasma link line for libtool.
+##   PLASMA_LIB_PATHS: Plasma library paths.
 ##
 AC_DEFUN([AM_PLASMA],
 [
@@ -43,6 +45,7 @@ AC_DEFUN([AM_PLASMA],
     PLASMA_CFLAGS=`$PlasmaConfig --cflags`
     PLASMA_LIBS=`$PlasmaConfig --libs`
     PLASMA_LTLIBS=`$PlasmaConfig --ltlibs`
+	PLASMA_LIB_PATHS=`$PlasmaConfig --lib-paths`
     PLASMA_VERSION=`$PlasmaConfig --version`
 
     AC_MSG_CHECKING([for plasma's version ($1 required).])
@@ -56,7 +59,8 @@ AC_DEFUN([AM_PLASMA],
 
   fi
 
-  if [[ $PlasmaExists != "no" ]] ; then
+  ShouldCompile="$2"
+  if [[ $PlasmaExists != "no" -a x$ShouldCompile != "xfalse" ]] ; then
     AC_MSG_CHECKING([that we can compile a plasma program.])
 
 	ac_ext_orig=$ac_ext
@@ -69,6 +73,7 @@ AC_DEFUN([AM_PLASMA],
 
     AC_RUN_IFELSE([
 
+#include <stdio.h>
 #include "plasma/plasma.h"
 
     using namespace plasma;
@@ -93,9 +98,9 @@ AC_DEFUN([AM_PLASMA],
   fi
 
   if [[ $PlasmaExists = yes ]]; then
-    ifelse([$2], , :, [$2])
-  else
     ifelse([$3], , :, [$3])
+  else
+    ifelse([$4], , :, [$4])
   fi
 
   AC_SUBST(OCC)
@@ -104,5 +109,5 @@ AC_DEFUN([AM_PLASMA],
   AC_SUBST(PLASMA_CFLAGS)
   AC_SUBST(PLASMA_LIBS)
   AC_SUBST(PLASMA_LTLIBS)
-
+  AC_SUBST(PLASMA_LIB_PATHS)
 ])

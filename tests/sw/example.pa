@@ -9,6 +9,7 @@
 // pete november 1990
 //
 
+#include <stdio.h>
 #include "plasma.h"
 #include "Random.h"
 

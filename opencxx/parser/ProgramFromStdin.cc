@@ -52,6 +52,7 @@
 //@endlicenses@
 
 #include <iostream>
+#include <stdio.h>
 #include <opencxx/parser/ProgramFromStdin.h>
 
 namespace Opencxx

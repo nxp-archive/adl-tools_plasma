@@ -8,6 +8,7 @@
 // afor test w/2 processors.
 //
 
+#include <stdio.h>
 #include "plasma.h"
 
 using namespace plasma;

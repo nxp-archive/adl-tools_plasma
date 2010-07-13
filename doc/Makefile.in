@@ -43,10 +43,8 @@ build_triplet = @build@
 host_triplet = @host@
 
 # Only build if skribe exists.
-@SKRIBEOK_TRUE@am__append_1 = $(srcdir)/index.html $(wildcard $(srcdir)/*.html)
-
-# Only build a pdf if latex is good.
-@LATEXOK_TRUE@am__append_2 = $(srcdir)/index.pdf
+@SKRIBEOK_TRUE@am__append_1 = $(srcdir)/index.html $(wildcard \
+@SKRIBEOK_TRUE@	$(srcdir)/*.html) $(srcdir)/index.pdf
 subdir = doc
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -259,7 +257,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 EXTRA_DIST = $(skribe_src) pipe2.pa ex1.pa
 webdir = $(InfoHome)
-web_DATA = $(am__append_1) $(am__append_2)
+web_DATA = $(am__append_1)
 skribe_src = $(wildcard $(srcdir)/*.skb)
 TESTDIR = $(top_srcdir)/tests
 DistBase = distribution
@@ -450,6 +448,10 @@ uninstall-am: uninstall-info-am uninstall-webDATA
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	uninstall uninstall-am uninstall-info-am uninstall-webDATA
 
+
+@SKRIBEOK_TRUE@  # Only build a pdf if latex is good.
+@SKRIBEOK_TRUE@  if LATEXOK
+@SKRIBEOK_TRUE@  endif
 
 install:
 	@echo "***"

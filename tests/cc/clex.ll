@@ -18,6 +18,7 @@
 // to a string.
 //
 
+#include <stdio.h>
 #include <string.h>
 
 #include "String.h"

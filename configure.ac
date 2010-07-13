@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.47])
+AC_INIT([plasma],[0.8.48])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 AC_CONFIG_MACRO_DIR([./macros])
@@ -219,7 +219,7 @@ else
 fi
 
 ## Do final substitions and generation.
-CXXFLAGS="-g -Wall $CPPSETUP"
+CXXFLAGS="-g -Wall -Wno-deprecated $CPPSETUP"
 
 ## Add on macro directory to ACLOCAL_FLAGS.
 ACLOCAL_FLAGS="${ACLOCAL_FLAGS} -I ./macros"

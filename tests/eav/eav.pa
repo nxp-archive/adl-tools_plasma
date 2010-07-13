@@ -8,6 +8,7 @@
 // eav.sw: a simplistic model of the eav
 //
 
+#include <stdio.h>
 #include <vector>
 
 #include "plasma.h"
