@@ -577,56 +577,56 @@ Ptree* Walker::TranslateArgDeclList2(bool record, Environment* e,
   Ptree* rest2;
 
   if(args == 0)
-	return args;
+    return args;
   else{
-	Ptree *a, *a2;
-	a = a2 = args->Car();
-	if(args->Cdr() == 0)
+    Ptree *a, *a2;
+    a = a2 = args->Car();
+    if(args->Cdr() == 0)
       rest = rest2 = 0;
-	else{
+    else{
       rest = args->Cdr()->Cdr();	// skip ","
       rest2 = TranslateArgDeclList2(record, e, translate, fill_args,
                                     arg_name + 1, rest);
       if(rest == rest2)
-		rest = rest2 = args->Cdr();
+        rest = rest2 = args->Cdr();
       else
-		rest2 = PtreeUtil::Cons(args->Cdr()->Car(), rest2);
-	}
+        rest2 = PtreeUtil::Cons(args->Cdr()->Car(), rest2);
+    }
 
-	bool is_ellipsis = a->IsLeaf();		// a may be "..."
-	if(is_ellipsis)
+    bool is_ellipsis = a->IsLeaf();		// a may be "..."
+    if(is_ellipsis)
       /* do nothing */;
-	else if(a->Car()->IsA(ntUserdefKeyword)){
+    else if(a->Car()->IsA(ntUserdefKeyword)){
       if(record)
-		e->RecordDeclarator(PtreeUtil::Third(a));
+        e->RecordDeclarator(PtreeUtil::Third(a));
 
       if(translate){
-		a2 = a->Cdr();
-		if(fill_args)
+        a2 = a->Cdr();
+        if(fill_args)
           a2 = FillArgumentName(a2, PtreeUtil::Second(a2), arg_name);
       }
-	}
-	else if(a->Car()->IsA(REGISTER)){
+    }
+    else if(a->Car()->IsA(REGISTER)){
       if(record)
-		e->RecordDeclarator(PtreeUtil::Third(a));
+        e->RecordDeclarator(PtreeUtil::Third(a));
 
       if(translate && fill_args){
-		a2 = FillArgumentName(a, PtreeUtil::Third(a), arg_name);
-		if(a != a2)
+        a2 = FillArgumentName(a, PtreeUtil::Third(a), arg_name);
+        if(a != a2)
           a2 = PtreeUtil::Cons(PtreeUtil::First(a), a2);
       }
-	}
-	else{
+    }
+    else{
       if(record)
-		e->RecordDeclarator(PtreeUtil::Second(a));
+        e->RecordDeclarator(PtreeUtil::Second(a));
 
       if(translate && fill_args)
-		a2 = FillArgumentName(a, PtreeUtil::Second(a), arg_name);
-	}
+        a2 = FillArgumentName(a, PtreeUtil::Second(a), arg_name);
+    }
 
-	if(a != a2 || rest != rest2)
+    if(a != a2 || rest != rest2)
       return PtreeUtil::Cons(a2, rest2);
-	else
+    else
       return args;
   }
 }
@@ -856,48 +856,48 @@ void Walker::ChangeDefaultTemplateMetaclass(const char* name)
 Class* Walker::LookupMetaclass(Ptree* def, Ptree* userkey, Ptree* class_def,
 			       bool is_template)
 {
-    Ptree *mclass, *margs;
-    Class* metaobject;
+  Ptree *mclass, *margs;
+  Class* metaobject;
 
-    Ptree* class_name = PtreeUtil::Second(class_def);
+  Ptree* class_name = PtreeUtil::Second(class_def);
 
-    // for bootstrapping
-    if(Metaclass::IsBuiltinMetaclass(class_name)){
-	metaobject = new Metaclass;
-	metaobject->InitializeInstance(def, 0);
-	return metaobject;
-    }
+  // for bootstrapping
+  if(Metaclass::IsBuiltinMetaclass(class_name)){
+    metaobject = new Metaclass;
+    metaobject->InitializeInstance(def, 0);
+    return metaobject;
+  }
 
-    Ptree* mdecl = env->LookupMetaclass(class_name);
-    if(mdecl != 0){
-	mclass = PtreeUtil::Second(mdecl);
-	margs = PtreeUtil::Nth(mdecl,4);
-	metaobject = TheMetaclassRegistry().New(mclass, def, margs);
-	if(metaobject == 0)
+  Ptree* mdecl = env->LookupMetaclass(class_name);
+  if(mdecl != 0){
+    mclass = PtreeUtil::Second(mdecl);
+    margs = PtreeUtil::Nth(mdecl,4);
+    metaobject = TheMetaclassRegistry().New(mclass, def, margs);
+    if(metaobject == 0)
 	    ErrorMessage("the metaclass is not loaded: ", mclass, class_def);
-	else if(userkey != 0)
+    else if(userkey != 0)
 	    ErrorMessage("the metaclass declaration conflicts"
-			 " with the keyword: ", mclass, class_def);
+                   " with the keyword: ", mclass, class_def);
 
-	return metaobject;
-    }
+    return metaobject;
+  }
 
-    if(userkey != 0){
-	mclass = env->LookupClasskeyword(userkey->Car());
-	if(mclass == 0)
+  if(userkey != 0){
+    mclass = env->LookupClasskeyword(userkey->Car());
+    if(mclass == 0)
 	    ErrorMessage("invalid keyword: ", userkey, class_def);
-	else{
+    else{
 	    metaobject = TheMetaclassRegistry().New(mclass, class_def,
-						    PtreeUtil::Third(userkey));
+                                              PtreeUtil::Third(userkey));
 	    if(metaobject == 0)
-		ErrorMessage("the metaclass associated with the"
-			     " keyword is not loaded: ", userkey, class_def);
+        ErrorMessage("the metaclass associated with the"
+                     " keyword is not loaded: ", userkey, class_def);
 
 	    return metaobject;
-	}
     }
+  }
 
-    return LookupBaseMetaclass(def, class_def, is_template);
+  return LookupBaseMetaclass(def, class_def, is_template);
 }
 
 Class* Walker::LookupBaseMetaclass(Ptree* def, Ptree* class_def,
@@ -906,31 +906,31 @@ Class* Walker::LookupBaseMetaclass(Ptree* def, Ptree* class_def,
   Class* metaobject = 0;
   Ptree* bases = PtreeUtil::Third(class_def);
   while(bases != 0){
-	bases = bases->Cdr();
-	Ptree* base = PtreeUtil::Last(bases->Car())->Car();
-	bases = bases->Cdr();
-	Class* m = env->LookupClassMetaobject(base);
-	if(m != 0){
+    bases = bases->Cdr();
+    Ptree* base = PtreeUtil::Last(bases->Car())->Car();
+    bases = bases->Cdr();
+    Class* m = env->LookupClassMetaobject(base);
+    if(m != 0){
       if(metaobject == 0)
-		metaobject = m;
+        metaobject = m;
       else if(m == 0 || strcmp(metaobject->MetaclassName(),
                                m->MetaclassName()) != 0){
-		ErrorMessage("inherited metaclasses conflict: ",
+        ErrorMessage("inherited metaclasses conflict: ",
                      PtreeUtil::Second(class_def), class_def);
-		return 0;
+        return 0;
       }
-	}
+    }
   }
 
   if(metaobject == 0)
-	return 0;
+    return 0;
 
   bool accept_template = metaobject->AcceptTemplate();
   if((is_template && accept_template) || (!is_template && !accept_template))
-	return TheMetaclassRegistry().New(metaobject->MetaclassName(),
+    return TheMetaclassRegistry().New(metaobject->MetaclassName(),
                                       def, 0);
   else
-	return 0;
+    return 0;
 }
 
 Ptree* Walker::TranslateClassSpec(Ptree* spec, Ptree*,
