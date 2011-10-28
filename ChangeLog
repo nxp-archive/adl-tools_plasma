@@ -4,6 +4,10 @@
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.50 (v0_8_50) on Linux (lc0093) on 10/28/2011 ==
 
+       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.50 (v0_8_50) on Linux (lc0205-tx30) on 10/28/2011 ==
+
+       == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.50 (v0_8_50) on Linux (lc0093) on 10/28/2011 ==
+
 2011-10-28  Brian Kahne  <bkahne@bkahne-ec1.am.freescale.net>
 
 	* Minor improvements to get this to work on gcc 4.4.x and autoconf
