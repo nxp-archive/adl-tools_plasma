@@ -292,6 +292,9 @@ namespace Opencxx
     argv.push_back("c++");
 #endif
 
+    // Ignore this annoying warning.
+    argv.push_back("-Wno-deprecated");
+
     MetacompilerConfiguration::Iterator iter = config.CppOptions();
     while (! iter.AtEnd()) {
       argv.push_back(iter.Get());

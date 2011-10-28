@@ -111,7 +111,7 @@ include $(top_srcdir)/tests/Makefile.rules
 
 # For some stupid reason, Automake thinks that this is a C++ project, so
 # I have to fool it here.
-CXXLINK = $(PLASMA) -o $@
+minicc_LINK = $(PLASMA) -o $@
 
 CLEANFILES += clex.cc cparse.cc cparse.h *.s
 

@@ -136,35 +136,37 @@ GetBaseName(const char* encode, int& len, Environment*& env)
 Environment* 
 ResolveTypedefName(Environment* env, const char* name, int len)
 {
-    TypeInfo tinfo;
-    Bind* bind;
-    Class* c = 0;
+  TypeInfo tinfo;
+  Bind* bind;
+  Class* c = 0;
 
-    if(env != 0)
-	if (env->LookupType(name, len, bind) && bind != 0)
+  if(env != 0) {
+    if (env->LookupType(name, len, bind) && bind != 0)
 	    switch(bind->What()){
 	    case Bind::isClassName :
-		c = bind->ClassMetaobject();
-		break;
+        c = bind->ClassMetaobject();
+        break;
 	    case Bind::isTypedefName :
-		bind->GetType(tinfo, env);
-		c = tinfo.ClassMetaobject();
-		/* if (c == 0) */
+        bind->GetType(tinfo, env);
+        c = tinfo.ClassMetaobject();
+        /* if (c == 0) */
 		    env = 0;
-		break;
+        break;
 	    default :
-		break;
+        break;
 	    }
-	else {
+    else {
 	    env = env->LookupNamespace(name, len);
 	    /* env is 0 if name is an unknown typedef name or namespace.
 	     */
-	}
+    }
+  }
 
-    if(c != 0)
-	return c->GetEnvironment();
-    else
-	return env;
+  if(c != 0) {
+    return c->GetEnvironment();
+  } else {
+    return env;
+  }
 }
 
 }

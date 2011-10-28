@@ -135,7 +135,7 @@ namespace Opencxx
   {
     using namespace std;
 
-    char* ext = strrchr(fname, '.');
+    const char* ext = strrchr(fname, '.');
     if(ext == 0)
       return false;
 

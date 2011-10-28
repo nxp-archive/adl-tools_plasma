@@ -151,73 +151,73 @@ const char* Ptree::GetEncodedName()
 
 Ptree* Ptree::Make(const char* pat, ...)
 {
-    va_list args;
-    const int N = 4096;
-    static char buf[N];
-    char c;
-    int len;
-    char* ptr;
-    Ptree* p;
-    Ptree* q;
-    int i = 0, j = 0;
-    Ptree* result = 0;
+  va_list args;
+  const int N = 4096;
+  static char buf[N];
+  char c;
+  int len;
+  char* ptr;
+  Ptree* p;
+  Ptree* q;
+  int i = 0, j = 0;
+  Ptree* result = 0;
 
-    va_start(args, pat);
-    while((c = pat[i++]) != '\0')
-	if(c == '%'){
+  va_start(args, pat);
+  while((c = pat[i++]) != '\0')
+    if(c == '%'){
 	    c = pat[i++];
 	    if(c == '%')
-		buf[j++] = c;
+        buf[j++] = c;
 	    else if(c == 'd'){
-		ptr = IntegerToString(va_arg(args, int), len);
-		memmove(&buf[j], ptr, len);
-		j += len;
+        ptr = IntegerToString(va_arg(args, int), len);
+        memmove(&buf[j], ptr, len);
+        j += len;
 	    }
 	    else if(c == 's'){
-		ptr = va_arg(args, char*);
-		len = strlen(ptr);
-		memmove(&buf[j], ptr, len);
-		j += len;
+        ptr = va_arg(args, char*);
+        len = strlen(ptr);
+        memmove(&buf[j], ptr, len);
+        j += len;
 	    }
 	    else if(c == 'c')
-		buf[j++] = va_arg(args, int);
+        buf[j++] = va_arg(args, int);
 	    else if(c == 'p'){
-		p = va_arg(args, Ptree*);
-		if(p == 0)
-		    /* ignore */;
-		else if(p->IsLeaf()){
-		    memmove(&buf[j], p->GetPosition(), p->GetLength());
-		    j += p->GetLength();
-		}
-		else{   
-		    if(j > 0)
-			q = PtreeUtil::List(new DupLeaf(buf, j), p);
-		    else
-			q = PtreeUtil::List(p);
+        p = va_arg(args, Ptree*);
+        if(p == 0)
+          /* ignore */;
+        else if(p->IsLeaf()){
+          memmove(&buf[j], p->GetPosition(), p->GetLength());
+          j += p->GetLength();
+        }
+        else{   
+          if(j > 0)
+            q = PtreeUtil::List(new DupLeaf(buf, j), p);
+          else
+            q = PtreeUtil::List(p);
 
-		    j = 0;
-		    result = PtreeUtil::Nconc(result, q);
-		}
+          j = 0;
+          result = PtreeUtil::Nconc(result, q);
+        }
 	    }
 	    else
-		TheErrorLog().Report(MopMsg(Msg::Fatal, "Ptree::Make()", "invalid format"));
-	}
-	else
+        TheErrorLog().Report(MopMsg(Msg::Fatal, "Ptree::Make()", "invalid format"));
+    }
+    else
 	    buf[j++] = c;
 
-    va_end(args);
+  va_end(args);
 
-    assert(j < 4096);
+  assert(j < 4096);
 
-    if(j > 0) {
-        if(result == 0) {
-            result = new DupLeaf(buf, j);
-        } else {
-            result = PtreeUtil::Snoc(result, new DupLeaf(buf, j));
-        }
+  if(j > 0) {
+    if(result == 0) {
+      result = new DupLeaf(buf, j);
+    } else {
+      result = PtreeUtil::Snoc(result, new DupLeaf(buf, j));
     }
+  }
 
-    return result;
+  return result;
 }
 
 bool Ptree::Reify(bool& value)

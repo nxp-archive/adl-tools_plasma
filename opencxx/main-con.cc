@@ -57,7 +57,7 @@
 using namespace std;
 using namespace Opencxx;
 
-static char thisVersion[] = VERSION;
+static char thisVersion[] = PACKAGE_VERSION;
 
 static char copyrightNote[]
         = "Copyright (c) 1997-2001 Shigeru Chiba.  All Rights Reserved.\n"

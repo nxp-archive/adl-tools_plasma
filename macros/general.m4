@@ -148,3 +148,100 @@ AC_DEFUN([DPP_VERSION_CHECK_MSG],
       true
    fi
 ])
+
+dnl ---------------------------------------------------------------------------
+dnl Make sure that the readlink program exists.
+dnl
+dnl Usage:
+dnl   ADL_READLINK([action-if-found],[action-if-not-found])
+dnl
+dnl Output:
+dnl   READLINK is set to the command to use to resolve a link.  This variable is
+dnl   substituted.
+dnl
+dnl ---------------------------------------------------------------------------
+AC_DEFUN([ADL_READLINK],
+[
+	AC_CACHE_CHECK([how to resolve symbolic links.],[adl_cv_prog_readlink],[
+	AC_ARG_ENABLE(resolve-symlinks,AC_HELP_STRING([--enable-resolve-symlinks],[Fully resolve symlinks when finding libraries, executables, etc.
+The option is off by default.  Note:  Using this option may cause subtle problems, such as paths being used which are related to per-host automount
+configurations.  However, it may be necessary to use this option to handle nested, relative symlinks.]),
+[case "${enableval}" in
+  yes) 
+	resolve_symlinks=true
+	;;
+  no)  
+	resolve_symlinks=false
+	;;
+  *) 
+	AC_MSG_ERROR(bad value ${enableval} for --enable-resolve-symlinks)
+	;;
+esac],[resolve_symlinks=false])
+
+	adl_cv_prog_readlink="readlink"
+	adl_ac_trg="adl.symlink-target"
+	adl_ac_src="adl.symlink-source"
+	rm -f ${adl_ac_trg} ${adl_ac_src}
+	touch ${adl_ac_src}
+	ln -s ${adl_ac_src} ${adl_ac_trg}
+	if ${adl_cv_prog_readlink} ${adl_ac_trg} > /dev/null ; then	
+		if [[ $resolve_symlinks = true ]] ; then
+			# If the -m option exists, then use it in order to canonicalize all elements of a path.
+			# Do this only if the user has requested it, as it can cause subtle problems, such as fully
+			# resolving symlinks in the /pkg environment, which can cause
+			# problems if a package has been localized.
+			if ${adl_cv_prog_readlink} -m ${adl_ac_trg} > /dev/null ; then	
+				adl_cv_prog_readlink="${adl_cv_prog_readlink} -m"
+			fi
+		fi
+	else
+		# Fail:  Could not run basic realink.
+		adl_cv_prog_readlink=no	
+	fi
+	rm -f ${adl_ac_trg} ${adl_ac_src}	
+	])
+
+	if [[ "x${adl_cv_prog_readlink}" = "xno" ]]; then
+	  ifelse([$2], , :, [$2])
+	else
+	  ifelse([$1], , :, [$1])
+	fi
+	READLINK="${adl_cv_prog_readlink}"
+	AC_SUBST([READLINK])
+])
+
+dnl ---------------------------------------------------------------------------
+dnl Get the full path to a program and export it for use by autoconf substitutuion
+dnl and by the config header.
+dnl
+dnl Usage:
+dnl   ADL_FULLPATH([Variable],[Program to find],[Whether to read a link (yes) or not (no)],[Check message],[Template message])
+dnl
+dnl Output:
+dnl   The variable is set to the full path.  We try and be smart about how to
+dnl   deal with the wrapper and /pkg.
+dnl
+dnl ---------------------------------------------------------------------------
+AC_DEFUN([ADL_FULLPATH],
+[
+  AH_TEMPLATE([$1],$5)
+	AC_PATH_PROG($1,$2)
+
+	AC_MSG_CHECKING([$4])
+  ## If this is a symbolic link, try to read the link.
+  if [[ $3 = yes -a -L ${$1} ]]; then
+    temp_loc=$($READLINK ${$1})
+    if [[ ! -z $temp_loc ]]; then
+      $1="$temp_loc"
+    fi
+    # If we get the GAIN/CDE wrapper, then deal with that here.
+    if [[ ${$1} = "wrapper" ]]; then
+	    $1=`wrapper --which=$2`
+    fi
+  fi
+
+  AC_DEFINE_UNQUOTED([$1],["${$1}"])
+  AC_SUBST($1)
+
+	AC_MSG_RESULT(${$1})
+])

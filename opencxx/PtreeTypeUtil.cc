@@ -60,25 +60,26 @@ FillArgumentName(Ptree* arg, Ptree* d, int arg_name)
 
 Ptree* StripCvFromIntegralType(Ptree* integral)
 {
-    using PtreeUtil::Second;
-    if(integral == 0)
-	return 0;
+  using PtreeUtil::Second;
+  if(integral == 0)
+    return 0;
 
-    if(!integral->IsLeaf())
-	if(integral->Car()->IsA(CONST) ||
-	   integral->Car()->IsA(VOLATILE))
-	{
-	    return Second(integral);
-	}
-	else {
+  if(!integral->IsLeaf()) {
+    if(integral->Car()->IsA(CONST) ||
+       integral->Car()->IsA(VOLATILE))
+      {
+        return Second(integral);
+      }
+    else {
 	    if (Second(integral)->IsA(CONST) || 
 	        Second(integral)->IsA(VOLATILE))
-            {
-                return integral->Car();
-            }
+        {
+          return integral->Car();
         }
+    }
+  }
 
-    return integral;
+  return integral;
 }
 
 

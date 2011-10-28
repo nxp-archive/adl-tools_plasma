@@ -2234,22 +2234,22 @@ namespace Opencxx
     char* pos = lex->Save();
     if(maybe_init) {
       if(rFunctionArguments(arglist))
-	    if(lex->LookAhead(0) == ')') {
+        if(lex->LookAhead(0) == ')') {
           is_args = false;
           encode.Clear();
           return true;
-	    }
+        }
 
       lex->Restore(pos);
       return(is_args = rArgDeclList(arglist, encode));
     }
     else {
-        if(is_args = rArgDeclList(arglist, encode)) {
-	    return true;
-        } else{
-	    lex->Restore(pos);
-	    encode.Clear();
-	    return rFunctionArguments(arglist);
+      if((is_args = rArgDeclList(arglist, encode))) {
+        return true;
+      } else{
+        lex->Restore(pos);
+        encode.Clear();
+        return rFunctionArguments(arglist);
       }
     }
   }
