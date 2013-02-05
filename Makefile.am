@@ -7,7 +7,13 @@ endif
 
 if LANG_FRONTEND
 
-Lang = opencxx parser
+Lang = opencxx 
+
+if PLASMA_PARSER
+
+Lang +=  parser
+
+endif
 
 endif
 

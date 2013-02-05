@@ -1,3 +1,12 @@
+2013-02-05  Brian Kahne  <bkahne@bkahne-ec1.am.freescale.net>
+
+	* Various build-system modifications so that we detect if we're
+	compiling with gcc > 4.4.x and disable compilation of the language
+	parser executable and runtime if that's the case.  The only
+	regression that's then run is the simple parser test.  This avoids
+	issues with C++11 constructs found in gcc 4.5.x and higher, which
+	confuse the parser.
+
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.8.50 (v0_8_50) on Linux (lc2031-tx30) on 12/7/2012 ==
 
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.8.50 (v0_8_50) on Linux (lc2015-tx30) on 12/7/2012 ==

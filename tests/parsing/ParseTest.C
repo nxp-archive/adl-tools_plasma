@@ -10,6 +10,7 @@
 #include "ParseTest.h"
 
 using namespace std;
+using namespace Opencxx;
 using namespace PtreeUtil;
 
 bool ParseTest::Initialize()
@@ -83,3 +84,12 @@ Ptree* ParseTest::TranslateUserPlain(Environment* env,Ptree* keyword, Ptree* res
   return 0;
 }
 
+static Class* parse_test_setup(Ptree* def, Ptree* marg)
+{
+  Class* c = new ParseTest;
+  c->InitializeInstance(def, marg);
+  return c;
+}
+
+static MetaclassRegistration _parse_test_setup_var("ParseTest", parse_test_setup, 
+                                                   ParseTest::Initialize, 0);

@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.8.50])
+AC_INIT([plasma],[0.9.0])
 AC_CONFIG_SRCDIR([src/Cluster.C])
 AM_INIT_AUTOMAKE([no-define -Wno-portability])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -32,6 +32,12 @@ if test "x$PERLPROG" = x ; then
 fi
 
 ##
+## We only support the full plasma program for gcc 4.4.x due to the use of C++11
+## in 4.5.x and higher.
+##
+DPP_VERSION_CHECK([$GCC_VERSION],[4.5.0],[PlasmaOK=false],[PlasmaOK=true])
+
+##
 ## Check to see if we should build the language front-end.
 ##
 AC_MSG_CHECKING([if the user wants the language front-end])
@@ -59,23 +65,65 @@ fi
 
 AM_CONDITIONAL([LANG_FRONTEND],[test x$lang_frontend = xtrue])
 
+
+##
+## If we're doing the front-end, then are we building the plasma parser (as
+## opposed to just OpenC++)?
+##
+AC_MSG_CHECKING([if we can build the Plasma parser])
+if [[ $PlasmaOK = true ]]; then
+	 AC_MSG_RESULT([ok])
+   plasma_parser=true	 
+else
+	 AC_MSG_RESULT([no:  Compiler version is higher than 4.4.x.  Only OpenC++ will be built])
+   plasma_parser=false	 
+fi
+AC_MSG_CHECKING([if the user wants the Plasma parser])
+if [[ $lang_frontend = true -a $plasma_parser = true ]]; then
+  plasma_parser=true
+  AC_ARG_ENABLE(plasma-parser,AS_HELP_STRING([--enable-plasma-parser],[Create the Plasma parser executable.  Default is true.]),
+  [case "${enableval}" in
+    yes) 
+  	plasma_parser=true
+	  ;;
+    no)  
+	  plasma_parser=false
+  	;;
+    *) 
+  	AC_MSG_ERROR(bad value ${enableval} for --enable-plasma-parser)
+	  ;;
+  esac],[plasma_parser=true])
+fi
+AH_TEMPLATE([PLASMA_PARSER],[Defined and set to 1 if we're creating the plasma parser executable.])	
+if [[ $plasma_parser = true ]] ; then
+  AC_MSG_RESULT([yes]) 
+	AC_DEFINE([PLASMA_PARSER],1)
+else
+  AC_MSG_RESULT([no]) 
+fi
+AM_CONDITIONAL([PLASMA_PARSER],[test x$plasma_parser = xtrue])
+
+
 ##
 ## Check to see if we should build the language runtime libraries.
 ##
+lang_runtime=false
 AC_MSG_CHECKING([if the user wants the language runtime])
-lang_runtime=true
-AC_ARG_ENABLE(runtime,AS_HELP_STRING([--enable-runtime],[Create the language runtime libraries.  Default is true.]),
-[case "${enableval}" in
-  yes) 
-	lang_runtime=true
-	;;
-  no)  
-	lang_runtime=false
-	;;
-  *) 
-	AC_MSG_ERROR(bad value ${enableval} for --enable-runtime)
-	;;
-esac],[lang_runtime=true])
+if [[ $PlasmaOK = true ]]; then
+  lang_runtime=true
+  AC_ARG_ENABLE(runtime,AS_HELP_STRING([--enable-runtime],[Create the language runtime libraries.  Default is true.]),
+  [case "${enableval}" in
+    yes) 
+  	lang_runtime=true
+  	;;
+    no)  
+  	lang_runtime=false
+  	;;
+    *) 
+  	AC_MSG_ERROR(bad value ${enableval} for --enable-runtime)
+  	;;
+  esac],[lang_runtime=true])
+fi
 
 # We don't bother with the runtime if the front-end isn't enabled.
 if [[ $lang_frontend = false ]]; then

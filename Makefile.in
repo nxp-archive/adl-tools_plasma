@@ -33,6 +33,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@LANG_FRONTEND_TRUE@@PLASMA_PARSER_TRUE@am__append_1 = parser
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS COPYING \
@@ -287,7 +288,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 @LANG_RUNTIME_TRUE@RunTime = src
-@LANG_FRONTEND_TRUE@Lang = opencxx parser
+@LANG_FRONTEND_TRUE@Lang = opencxx $(am__append_1)
 SUBDIRS = macros scripts qt gc libltdl $(Lang) $(RunTime) tests doc
 AUTOMAKE_OPTIONS = foreign
 

@@ -7,16 +7,19 @@
 
 #include "opencxx/mop2.h"
 
-// This has to be here b/c of a bug in OpenC++:  It doesn't
-// recognize that a qualified name is still a valid metaclass.
-using namespace Opencxx;
-
-class ParseTest : public Class {
+//
+// Note: We now setup this metaclass manually, rather than using occ, so that we
+// don't run into issues interfacing with newer gcc compilers, where OCC no
+// longer works.
+//
+class ParseTest : public Opencxx::Class {
 public:
   // Main entry point for translating new constructs.
-  virtual Ptree* TranslateUserPlain(Environment*,Ptree*, Ptree*);
+  virtual Opencxx::Ptree* TranslateUserPlain(Opencxx::Environment*,Opencxx::Ptree*, Opencxx::Ptree*);
   
   // Setup code.
   static bool Initialize();
+
+  const char* MetaclassName() { return "ParseTest"; }
 
 };
