@@ -58,7 +58,7 @@ am_parse_test_OBJECTS = parse_test-ParseTest.$(OBJEXT)
 parse_test_OBJECTS = $(am_parse_test_OBJECTS)
 am__DEPENDENCIES_1 =
 parse_test_DEPENDENCIES = $(OccBuildDir)/libocc.la \
-	$(am__DEPENDENCIES_1)
+	$(GcBuildDir)/libgc.la $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
@@ -280,7 +280,7 @@ parse_test_SOURCES = \
 	ParseTest.C
 
 parse_test_CXXFLAGS = -I$(top_srcdir) -I$(GcSrcDir)
-parse_test_LDADD = $(OccBuildDir)/libocc.la $(LIBLTDL)
+parse_test_LDADD = $(OccBuildDir)/libocc.la $(GcBuildDir)/libgc.la $(LIBLTDL)
 noinst_HEADERS = \
 	ParseTest.h
 
@@ -298,9 +298,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tests/parsing/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/parsing/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign tests/parsing/Makefile
+	  $(AUTOMAKE) --gnu tests/parsing/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \

@@ -17,7 +17,7 @@ parse_test_SOURCES = \
 
 parse_test_CXXFLAGS = -I$(top_srcdir) -I$(GcSrcDir)
 
-parse_test_LDADD = $(OccBuildDir)/libocc.la $(LIBLTDL)
+parse_test_LDADD = $(OccBuildDir)/libocc.la $(GcBuildDir)/libgc.la $(LIBLTDL)
 
 noinst_HEADERS = \
 	ParseTest.h
