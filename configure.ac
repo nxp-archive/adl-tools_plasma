@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.9.1])
+AC_INIT([plasma],[0.9.2])
 AC_CONFIG_SRCDIR([src/Cluster.C])
 AM_INIT_AUTOMAKE([no-define -Wno-portability])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
@@ -21,9 +21,15 @@ AM_CPP_SETUP(3,4)
 #  Configure arguments 
 #########################################################################
 
+# Make sure that a readlink program exists.
+adl_readlink=no
+ADL_READLINK( adl_readlink=yes , AC_MSG_WARN([Could not run readlink.  Plasma requires the readlink command in order to resolve symbolic links properly.]))
+
 ## Configure flex.
 FlexRequiredVersion=2.5.27
-AM_FLEX($FlexRequiredVersion, , AC_MSG_ERROR([flex $FlexRequiredVersion is required in order to build this project.]))
+ADL_FLEX($FlexRequiredVersion, HaveFlex=yes, AC_MSG_WARN([flex $FlexRequiredVersion is required in order to fully build this project.  Disabling tokenizer build rules.]))
+
+AM_CONDITIONAL([HAVE_FLEX],[test x$HaveFlex = xyes])
 
 ## Check for the location of Perl
 AC_PATH_PROG(PERLPROG,perl)
@@ -32,7 +38,7 @@ if test "x$PERLPROG" = x ; then
 fi
 
 ##
-## We only support the full plasma program for gcc 4.4.x due to the use of C++11
+## We only support the full adl program for gcc 4.4.x due to the use of C++11
 ## in 4.5.x and higher.
 ##
 DPP_VERSION_CHECK([$GCC_VERSION],[4.5.0],[PlasmaOK=false],[PlasmaOK=true])
@@ -315,6 +321,7 @@ AC_CONFIG_FILES([\
    qt/md/Makefile \
    src/Makefile \
    opencxx/Makefile \
+   extras/Makefile \
    parser/Makefile \
    doc/Makefile \
    tests/Makefile \

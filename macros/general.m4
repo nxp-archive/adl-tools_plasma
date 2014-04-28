@@ -234,9 +234,11 @@ AC_DEFUN([ADL_FULLPATH],
     if [[ ! -z $temp_loc ]]; then
       $1="$temp_loc"
     fi
-    # If we get the GAIN/CDE wrapper, then deal with that here.
+    # If we get the GAIN/CDE wrapper or dynamic TR, then deal with that here.
     if [[ ${$1} = "wrapper" ]]; then
 	    $1=`wrapper --which=$2`
+		elif [[ ${$1} = "tr.dynamic" ]]; then
+	    $1=`tr.dynamic --which=$2`
     fi
   fi
 

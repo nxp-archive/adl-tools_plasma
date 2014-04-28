@@ -35,9 +35,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 check_PROGRAMS = minicc$(EXEEXT) $(am__EXEEXT_1)
+@HAVE_FLEX_TRUE@am__append_1 = clex.ll
+@HAVE_FLEX_FALSE@am__append_2 = clex.cc
 DIST_COMMON = $(noinst_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/compile_check.pm.in \
 	$(top_srcdir)/tests/Makefile.rules clex.cc cparse.cc
+@HAVE_FLEX_TRUE@am__append_3 = clex.cc 
 subdir = tests/cc
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/macros/argz.m4 \
@@ -62,10 +65,16 @@ foo_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
+am__minicc_SOURCES_DIST = String.C Node.C SymTab.C StackMachine.C \
+	AsmStore.C main.pa CParser.pa Compiler.pa CodeGen.pa cparse.yy \
+	CLexer.pa clex.ll clex.cc
+@HAVE_FLEX_TRUE@am__objects_1 = clex.$(OBJEXT)
+@HAVE_FLEX_FALSE@am__objects_2 = clex.$(OBJEXT)
 am_minicc_OBJECTS = String.$(OBJEXT) Node.$(OBJEXT) SymTab.$(OBJEXT) \
 	StackMachine.$(OBJEXT) AsmStore.$(OBJEXT) main.$(OBJEXT) \
 	CParser.$(OBJEXT) Compiler.$(OBJEXT) CodeGen.$(OBJEXT) \
-	cparse.$(OBJEXT) CLexer.$(OBJEXT) clex.$(OBJEXT)
+	cparse.$(OBJEXT) CLexer.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2)
 minicc_OBJECTS = $(am_minicc_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -118,7 +127,7 @@ AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(foo_SOURCES) $(minicc_SOURCES)
-DIST_SOURCES = $(foo_SOURCES) $(minicc_SOURCES)
+DIST_SOURCES = $(foo_SOURCES) $(am__minicc_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -265,6 +274,7 @@ PDFLATEX = @PDFLATEX@
 PERLPROG = @PERLPROG@
 PROFILE = @PROFILE@
 RANLIB = @RANLIB@
+READLINK = @READLINK@
 RFLAG = @RFLAG@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -337,20 +347,9 @@ SUBDIRS = tests
 TESTS = regress
 @CompileOk_FALSE@PROG = 
 @CompileOk_TRUE@PROG = foo
-minicc_SOURCES = \
-	String.C \
-	Node.C \
-	SymTab.C \
-	StackMachine.C \
-	AsmStore.C \
-	main.pa \
-	CParser.pa \
-	Compiler.pa \
-	CodeGen.pa \
-	cparse.yy \
-	CLexer.pa \
-	clex.ll
-
+minicc_SOURCES = String.C Node.C SymTab.C StackMachine.C AsmStore.C \
+	main.pa CParser.pa Compiler.pa CodeGen.pa cparse.yy CLexer.pa \
+	$(am__append_1) $(am__append_2)
 foo_SOURCES = \
 	tests/foo.c \
 	tests/foo_lib.c
@@ -385,7 +384,7 @@ DEP_FILES = \
 	./$(DEPDIR)/Node.Po \
 	./$(DEPDIR)/SymTab.Po
 
-BUILT_SOURCES = clex.cc
+@HAVE_FLEX_TRUE@BUILT_SOURCES = clex.cc
 EXTRA_DIST = compile_check.pm.in regress
 INCLUDES = $(LEX_CFLAGS)
 
@@ -397,7 +396,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/gc
 minicc_LDFLAGS = -L$(top_srcdir)/gc -Wl,-R$(top_srcdir)/gc/.libs
 minicc_LDADD = -lgc -ldl
 clex_lflag = -Cfe
-CLEANFILES = *.ii clex.cc cparse.cc cparse.h *.s
+CLEANFILES = *.ii cparse.cc cparse.h *.s $(am__append_3)
 PLASMA = $(top_builddir)/scripts/plasma --devel-src=$(top_srcdir) --devel-build=$(top_builddir)
 AM_LDFLAGS = $(EXTRA_LDFLAGS) -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
 	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
@@ -1020,11 +1019,8 @@ foo: tests/foo.c tests/foo_lib.c minicc
 	./minicc $(filter %.c,$^)
 	$(CXX) $(MINI_CC_FLAGS) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
-%.cc : %.ll ;
-	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
-
-%.cc : %.yy ;
-	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
+@HAVE_FLEX_TRUE@%.cc : %.ll ;
+@HAVE_FLEX_TRUE@	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
 
 lempar.c:
 	ln -nfs $(top_srcdir)/tests/lemon/lempar.c

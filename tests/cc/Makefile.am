@@ -22,8 +22,13 @@ minicc_SOURCES = \
 	Compiler.pa \
 	CodeGen.pa \
 	cparse.yy \
-	CLexer.pa \
-	clex.ll
+	CLexer.pa
+
+if HAVE_FLEX
+minicc_SOURCES += clex.ll
+else
+minicc_SOURCES += clex.cc
+endif
 
 foo_SOURCES = \
 	tests/foo.c \
@@ -67,7 +72,9 @@ include ./$(DEPDIR)/CParser.Po
 include ./$(DEPDIR)/Compiler.Po
 include ./$(DEPDIR)/CodeGen.Po
 
+if HAVE_FLEX
 BUILT_SOURCES = clex.cc
+endif
 
 EXTRA_DIST = compile_check.pm.in regress
 
@@ -90,11 +97,12 @@ foo: tests/foo.c tests/foo_lib.c minicc
 	./minicc $(filter %.c,$^)
 	$(CXX) $(MINI_CC_FLAGS) -o $@ $(notdir $(patsubst %.c,%.s,$(filter %.c,$^)))
 
+if HAVE_FLEX
+
 %.cc : %.ll ;
 	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
 
-%.cc : %.yy ;
-	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
+endif
 
 lempar.c:
 	ln -nfs $(top_srcdir)/tests/lemon/lempar.c
@@ -113,5 +121,11 @@ include $(top_srcdir)/tests/Makefile.rules
 # I have to fool it here.
 minicc_LINK = $(PLASMA) -o $@
 
-CLEANFILES += clex.cc cparse.cc cparse.h *.s
+CLEANFILES += cparse.cc cparse.h *.s
+
+if HAVE_FLEX
+
+CLEANFILES += clex.cc 
+
+endif
 

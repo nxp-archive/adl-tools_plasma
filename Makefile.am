@@ -17,7 +17,7 @@ endif
 
 endif
 
-SUBDIRS = macros scripts qt gc libltdl $(Lang) $(RunTime) tests doc
+SUBDIRS = macros scripts qt gc libltdl $(Lang) $(RunTime) tests doc extras
 
 AUTOMAKE_OPTIONS = foreign
 
