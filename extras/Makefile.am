@@ -1,2 +1,2 @@
 
-EXTRA_DIST = extras/FlexLexer.h
+EXTRA_DIST = FlexLexer.h

@@ -104,6 +104,9 @@ if HAVE_FLEX
 
 endif
 
+%.cc : %.yy ;
+	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
+
 lempar.c:
 	ln -nfs $(top_srcdir)/tests/lemon/lempar.c
 

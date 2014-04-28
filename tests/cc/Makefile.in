@@ -426,9 +426,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tests/cc/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/cc/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign tests/cc/Makefile
+	  $(AUTOMAKE) --gnu tests/cc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -1021,6 +1021,9 @@ foo: tests/foo.c tests/foo_lib.c minicc
 
 @HAVE_FLEX_TRUE@%.cc : %.ll ;
 @HAVE_FLEX_TRUE@	$(LEX) $($(patsubst %.cc,%_lflag,$(@))) -o$@ $<
+
+%.cc : %.yy ;
+	$(YACC) $($(patsubst %.cc,%_yflag,$(@))) $<
 
 lempar.c:
 	ln -nfs $(top_srcdir)/tests/lemon/lempar.c
