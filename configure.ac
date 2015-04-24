@@ -1,5 +1,5 @@
 ## Process this file with autoconf to produce a configure script.
-AC_INIT([plasma],[0.9.2])
+AC_INIT([plasma],[0.9.3])
 AC_CONFIG_SRCDIR([src/Cluster.C])
 AM_INIT_AUTOMAKE([no-define -Wno-portability])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])

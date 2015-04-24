@@ -18,7 +18,7 @@
 ## FIXME: `make distcheck' in this directory will not currently work.
 ##     This is most likely to the explicit flags passed to submakes.
 
-AUTOMAKE_OPTIONS = foreign
+AUTOMAKE_OPTIONS = foreign serial-tests
 
 ACLOCAL_AMFLAGS = -I ../macros -I ../libltdl
 

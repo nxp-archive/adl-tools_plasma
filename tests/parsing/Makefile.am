@@ -1,4 +1,6 @@
 
+AUTOMAKE_OPTIONS = foreign serial-tests
+
 TESTS = regress
 
 check_PROGRAMS = parse-test
