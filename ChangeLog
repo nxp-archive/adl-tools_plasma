@@ -1,3 +1,9 @@
+2015-04-24  Brian Kahne  <bkahne@ubuntu>
+
+	* opencxx/parser/Lex.cc: Fixed a stack overrun error caused by an
+	incorrect cast of an integer to a pointer- this can clobber the
+	stack on a 64b Linux platform.
+
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.2 (v0_9_2) on Linux (lc2249-tx30) on 8/20/2014 ==
 
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.2 (v0_9_2) on Linux (lc2249-tx30) on 8/20/2014 ==

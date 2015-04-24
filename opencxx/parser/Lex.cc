@@ -55,6 +55,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <cstdio>
 #include <opencxx/parser/Lex.h>
 #include <opencxx/parser/token-names.h>
 #include <opencxx/parser/Token.h>
@@ -1054,7 +1055,8 @@ namespace Opencxx
   int Lex::Screening(char *identifier, int len)
   {
     struct rw_table	*low, *high, *mid;
-    int			c, token;
+    int			c;
+    size_t              token;
 
     if (wcharSupport && !strncmp("wchar_t", identifier, len))
       return token(WCHAR);
