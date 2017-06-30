@@ -1,8 +1,8 @@
 # Copyright (c) 1999-2001 by Red Hat, Inc. All rights reserved.
-# 
+#
 # THIS MATERIAL IS PROVIDED AS IS, WITH ABSOLUTELY NO WARRANTY EXPRESSED
 # OR IMPLIED.  ANY USE IS AT YOUR OWN RISK.
-# 
+#
 # Permission is hereby granted to use or copy this program
 # for any purpose,  provided the above notices are retained on all copies.
 # Permission to modify the code and to distribute modified code is granted,
@@ -12,120 +12,139 @@
 # Original author: Tom Tromey
 # Severely truncated by Hans-J. Boehm
 # Modified by: Grzegorz Jakacki <jakacki at acm dot org>
+# Modified by: Petter Urkedal <petter.urkedal@nordita.dk> (2005-04)
 
 ## Process this file with automake to produce Makefile.in.
 
 ## FIXME: `make distcheck' in this directory will not currently work.
 ##     This is most likely to the explicit flags passed to submakes.
 
-AUTOMAKE_OPTIONS = foreign serial-tests
+# We currently use the source files directly from libatomic_ops, if we
+# use the internal version.  This is done since libatomic_ops doesn't
+# use libtool, since it has no real use for it.  But that seems to make
+# it hard to use either the resulting object files or libraries.
+# Thus there seems too be no real reason to recursively build in the
+# libatomic_ops directory.
+# if USE_INTERNAL_LIBATOMICS_OPS
+# SUBDIRS = @maybe_libatomic_ops@
+# else
+# SUBDIRS =
+# endif
+SUBDIRS =
 
-ACLOCAL_AMFLAGS = -I ../macros -I ../libltdl
+ACLOCAL_AMFLAGS = -I m4
+AM_CPPFLAGS = \
+	-I$(top_builddir)/include -I$(top_srcdir)/include \
+	$(ATOMIC_OPS_CFLAGS)
 
-SUBDIRS = doc include
+# Initialize variables so that we can declare files locally.
+EXTRA_DIST =
+lib_LTLIBRARIES =
+include_HEADERS =
+pkginclude_HEADERS =
+dist_noinst_HEADERS =
+check_PROGRAMS =
+check_LTLIBRARIES =
+TESTS =
 
-EXTRA_DIST = 
-    ## more items will be succesively added below
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = bdw-gc.pc
 
-if CPLUSPLUS
-extra = libgccpp.la
-else
-extra = 
+# C Library
+# ---------
+
+lib_LTLIBRARIES += libgc.la
+libgc_la_SOURCES = \
+	allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
+	dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
+	malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
+	obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
+	specific.c stubborn.c typd_mlc.c \
+	backgraph.c thread_local_alloc.c
+
+# C Library: Architecture Dependent
+# ---------------------------------
+
+if PTHREADS
+libgc_la_SOURCES += pthread_start.c pthread_support.c pthread_stop_world.c
 endif
-lib_LTLIBRARIES = libgc.la $(extra) 
 
-include_HEADERS = include/gc.h include/gc_local_alloc.h \
-include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/leak_detector.h include/gc_typed.h @addincludes@
-
-EXTRA_HEADERS = include/gc_cpp.h include/gc_allocator.h
-
-if POWERPC_DARWIN
-asm_libgc_sources = powerpc_darwin_mach_dep.s
-else
-asm_libgc_sources = 
+if DARWIN_THREADS
+libgc_la_SOURCES += darwin_stop_world.c
 endif
 
-libgc_la_SOURCES = allchblk.c alloc.c blacklst.c checksums.c dbg_mlc.c \
-dyn_load.c finalize.c gc_dlopen.c gcj_mlc.c headers.c \
-malloc.c mallocx.c mark.c mark_rts.c misc.c new_hblk.c \
-obj_map.c os_dep.c pcr_interface.c ptr_chck.c real_malloc.c reclaim.c \
-solaris_pthreads.c solaris_threads.c specific.c stubborn.c typd_mlc.c \
-backgraph.c win32_threads.c \
-pthread_support.c pthread_stop_world.c darwin_stop_world.c \
-$(asm_libgc_sources)
+if WIN32_THREADS
+libgc_la_SOURCES += win32_threads.c
+endif
+
+if USE_INTERNAL_LIBATOMIC_OPS
+nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops.c
+endif
+
+if NEED_ATOMIC_OPS_ASM
+nodist_libgc_la_SOURCES = libatomic_ops/src/atomic_ops_sysdeps.S
+endif
 
 # Include THREADDLLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
-libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS)
+libgc_la_LIBADD = @addobjs@ $(THREADDLLIBS) $(UNWINDLIBS) $(ATOMIC_OPS_LIBS)
 libgc_la_DEPENDENCIES = @addobjs@
-libgc_la_LDFLAGS = -version-info 1:2:0
+libgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:3:0 -no-undefined
 
 EXTRA_libgc_la_SOURCES = alpha_mach_dep.S \
-    mips_sgi_mach_dep.s mips_ultrix_mach_dep.s powerpc_darwin_mach_dep.s \
+    mips_sgi_mach_dep.s mips_ultrix_mach_dep.s \
     rs6000_mach_dep.s sparc_mach_dep.S sparc_netbsd_mach_dep.s \
     sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
-libgccpp_la_SOURCES = gc_cpp.cc
-libgccpp_la_LIBADD = $(THREADDLLIBS) $(UNWINDLIBS)
-libgccpp_la_LDFLAGS = -version-info 1:2:0
 
-EXTRA_DIST += alpha_mach_dep.S mips_sgi_mach_dep.s sparc_mach_dep.S
+# C++ Interface
+# -------------
+
+if CPLUSPLUS
+lib_LTLIBRARIES += libgccpp.la
+pkginclude_HEADERS += include/gc_cpp.h
+include_HEADERS += include/extra/gc_cpp.h
+libgccpp_la_SOURCES = gc_cpp.cc
+libgccpp_la_LIBADD = ./libgc.la
+libgccpp_la_LDFLAGS = -version-info 1:3:0 -no-undefined
+endif
+
+# FIXME: If Visual C++ users use Makefile.am, this should go into
+# pkginclude_HEADERS with proper AM_CONDITIONALization.  Otherwise
+# delete this comment.
+EXTRA_DIST += gc_cpp.cpp
+
+
+# Misc
+# ----
 
 AM_CXXFLAGS = @GC_CFLAGS@
 AM_CFLAGS = @GC_CFLAGS@
 
-if CPLUSPLUS
-extra_checks = test_cpp
-else
-extra_checks = 
-endif
-
-check_PROGRAMS = gctest $(extra_checks)
-
-test.o:	$(srcdir)/tests/test.c
-	$(COMPILE) -c $(srcdir)/tests/test.c
-# 	Using $< in the above seems to fail with the HP/UX on Itanium make.
-test_cpp.o:	$(srcdir)/tests/test_cpp.cc
-	$(CXXCOMPILE) -c $(srcdir)/tests/test_cpp.cc
-
-## FIXME: this is probably the reason why some files from BUILT_SOURCES
-##     are included in the distribution
-# gctest_OBJECTS = test.o
-gctest_SOURCES = tests/test.c
-gctest_LDADD = ./libgc.la $(THREADDLLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
-test_cpp_SOURCES = tests/test_cpp.cc
-test_cpp_LDADD = ./libgc.la ./libgccpp.la $(THREADDLLIBS) $(UNWINDLIBS) $(EXTRA_TEST_LIBS)
-
-TESTS = $(check_PROGRAMS)
-
 ## FIXME: relies on internal code generated by automake.
-all_objs = @addobjs@ $(libgc_la_OBJECTS)
-$(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
-include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
-include/gc_pthread_redirects.h include/gc_config_macros.h \
-include/gc_mark.h @addincludes@
+## FIXME: ./configure --enable-dependency-tracking should be used
+#all_objs = @addobjs@ $(libgc_la_OBJECTS)
+#$(all_objs) : include/private/gcconfig.h include/private/gc_priv.h \
+#include/private/gc_hdrs.h include/gc.h include/gc_gcj.h \
+#include/gc_pthread_redirects.h include/gc_config_macros.h \
+#include/private/thread_local_alloc.h include/private_support.h \
+#include/private/pthread_stop_world.h \
+#include/gc_mark.h @addincludes@
 
 ## FIXME: we shouldn't have to do this, but automake forces us to.
-if COMPILER_XLC
-  ## XLC neither requires nor tolerates the unnecessary assembler goop
-  ASM_CPP_OPTIONS =
-else
-  ## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
-  ## these.
-  ASM_CPP_OPTIONS = -Wp,-P -x assembler-with-cpp
-endif
-.s.lo:
 ## We use -Wp,-P to strip #line directives.  Irix `as' chokes on
 ## these.
+if ASM_WITH_CPP_UNSUPPORTED
+  ASM_CPP_OPTIONS =
+else
+  ASM_CPP_OPTIONS = -Wp,-P -x assembler-with-cpp
+endif
+
+.s.lo:
 	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
 
-## We have our own definition of LTCOMPILE because we want to use our
-## CFLAGS, not those passed in from the top level make.
-LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) \
-	$(AM_CPPFLAGS) $(CPPFLAGS) \
-	$(AM_CFLAGS) $(MY_CFLAGS) $(GC_CFLAGS) 
-LINK = $(LIBTOOL) --mode=link $(CC) $(AM_CFLAGS) $(MY_CFLAGS) $(LDFLAGS) -o $@
+.S.lo:
+	$(LTCOMPILE) $(ASM_CPP_OPTIONS) -c $<
 
 ## We need to add DEFS to assembler flags
 ## :FIXME: what if assembler does not accept -D... ?
@@ -138,9 +157,8 @@ dist_noinst_SCRIPTS = callprocs configure.host
     ## configure.host --- used by Makefile.{am,dj,direct}
 
 # headers which are not installed
-# (see include/Makefile.am for more)
+# (see include/include.am for more)
 #
-dist_noinst_HEADERS = version.h
 
 # documentation which is not installed
 #
@@ -148,58 +166,36 @@ EXTRA_DIST += README.QUICK
 
 # other makefiles
 # :GOTCHA: deliberately we do not include 'Makefile'
-EXTRA_DIST += BCC_MAKEFILE NT_MAKEFILE NT_THREADS_MAKEFILE \
+EXTRA_DIST += BCC_MAKEFILE NT_MAKEFILE \
     OS2_MAKEFILE PCR-Makefile digimars.mak EMX_MAKEFILE	\
-    Makefile.direct Makefile.dj	Makefile.DLLs SMakefile.amiga \
-    WCC_MAKEFILE
+    Makefile.direct Makefile.dj Makefile.DLLs SMakefile.amiga \
+    WCC_MAKEFILE autogen.sh build_atomic_ops.sh build_atomic_ops.sh.cygwin \
+    NT_STATIC_THREADS_MAKEFILE NT_X64_STATIC_THREADS_MAKEFILE \
+    NT_X64_THREADS_MAKEFILE CMakeLists.txt tests/CMakeLists.txt
 
 # files used by makefiles other than Makefile.am
 #
-EXTRA_DIST += add_gc_prefix.c gcname.c if_mach.c if_not_there.c \
-    hpux_test_and_clear.s pc_excludes gc.mak MacOS.c \
-    MacProjects.sit.hqx mach_dep.c setjmp_t.c \
-    threadlibs.c AmigaOS.c \
+EXTRA_DIST += extra/add_gc_prefix.c extra/gc.c extra/gcname.c \
+    extra/if_mach.c extra/if_not_there.c gc.mak \
+    extra/MacOS.c MacProjects.sit.hqx mach_dep.c extra/setjmp_t.c \
+    extra/threadlibs.c extra/AmigaOS.c \
     Mac_files/datastart.c Mac_files/dataend.c \
-    Mac_files/MacOS_config.h Mac_files/MacOS_Test_config.h
-
-# part of C++ interface
-#
-EXTRA_DIST += gc_cpp.cc gc_cpp.cpp
-
-# tests not used by Makefile.am (:FIXME: why?)
-#
-EXTRA_DIST += tests/test_cpp.cc tests/trace_test.c \
-    tests/leak_test.c tests/thread_leak_test.c
-
-# cord package
-#
-EXTRA_DIST += cord/cordbscs.c cord/cordtest.c cord/de.c cord/de_win.c \
-    cord/de_win.ICO cord/cordprnt.c cord/cordxtra.c cord/de_cmds.h \
-    cord/de_win.h cord/de_win.RC
+    Mac_files/MacOS_config.h Mac_files/MacOS_Test_config.h \
+    include/private/msvc_dbg.h extra/msvc_dbg.c
 
 # this is an auxiliary shell file used by Makefile and Makefile.direct
 #
 CONFIG_STATUS_DEPENDENCIES = $(srcdir)/configure.host
 
-MAKELINK = cd $(srcdir) && chmod +w . include && if [ ! -e gc ]; then ln -sf include gc; fi
-
-# :FIXME: why do we distribute this one???
 #
-#EXTRA_DIST += libtool.m4
-
-#
-# :GOTCHA: GNU make rule for making .s out of .S is flawed, 
+# :GOTCHA: GNU make rule for making .s out of .S is flawed,
 # it will not remove dest if building fails
 .S.s:
 	if $(CPP) $< >$@ ; then :; else rm -f $@; fi
 
-# This is so that our includes look the same in the workspace
-# and in the install tree.
-all: all-recursive
-	$(MAKELINK)
-
-check: check-recursive
-	$(MAKELINK)
-
-install: install-recursive
-	$(MAKELINK)
+include include/include.am
+include cord/cord.am
+include tests/tests.am
+include doc/doc.am
+# Putting these at the top causes cord to be built first, and not find libgc.a
+# on HP/UX.  There may be a better fix.
