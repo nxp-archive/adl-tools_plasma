@@ -1,1 +1,1 @@
-/pkg/autoconf-/2.69/x86_64-linux/share/libtool/config/ltmain.sh
+/usr/share/libtool/build-aux/ltmain.sh
