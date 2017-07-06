@@ -24,8 +24,8 @@ set -x
 aclocal$am_version -I m4 --install --force
 autoconf
 autoheader
-automake$am_version -ac
 libtoolize --automake --force
+automake$am_version -ac
 set +x
 echo
 echo "Ready to run './configure'."

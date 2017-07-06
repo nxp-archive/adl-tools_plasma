@@ -1,7 +1,7 @@
 prefix=/usr/local
 exec_prefix=${prefix}
-top_builddir=/home/bkahne/work/plasma.u/gc/libatomic_ops
-top_srcdir=/home/bkahne/work/plasma.u/gc/libatomic_ops
+top_builddir=/proj/ppctools/adl/a3/plasma.u/gc/libatomic_ops
+top_srcdir=/proj/ppctools/adl/a3/plasma.u/gc/libatomic_ops
 
 Name: The atomic_ops library (uninstalled)
 Description: Atomic memory update operations
