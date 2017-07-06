@@ -21,7 +21,7 @@ if [ -z "$am_version" ]; then
 fi
 
 set -x
-aclocal$am_version
+aclocal$am_version -I m4 --install
 autoconf
 autoheader
 automake$am_version -ac

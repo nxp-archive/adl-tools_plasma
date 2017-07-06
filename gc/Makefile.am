@@ -199,3 +199,16 @@ include tests/tests.am
 include doc/doc.am
 # Putting these at the top causes cord to be built first, and not find libgc.a
 # on HP/UX.  There may be a better fix.
+
+MAKELINK = cd $(srcdir) && chmod +w . include && if [ ! -e gc ]; then ln -sf include gc; fi
+
+# This is so that our includes look the same in the workspace
+# and in the install tree.
+all: all-recursive
+	$(MAKELINK)
+
+check: check-recursive
+	$(MAKELINK)
+
+install: install-recursive
+	$(MAKELINK)
