@@ -154,7 +154,7 @@ occ_SOURCES		= MetaclassPreregistration.cc
 # when linking occ we need to add libltdl (Libtool dlopen library)
 # and libgc (Boehm's Garbage Collector)
 #
-occ_LDADD		= libocc.la $(LIBGCC) $(LIBLTDL)
+occ_LDADD		= libocc.la $(LIBGC) $(LIBLTDL)
 
 # Installed library.
 lib_LTLIBRARIES = \

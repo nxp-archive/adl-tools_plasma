@@ -184,7 +184,7 @@ libocc_parser_la_OBJECTS = $(am_libocc_parser_la_OBJECTS)
 PROGRAMS = $(bin_PROGRAMS)
 am_occ_OBJECTS = MetaclassPreregistration.$(OBJEXT)
 occ_OBJECTS = $(am_occ_OBJECTS)
-occ_DEPENDENCIES = libocc.la $(am__DEPENDENCIES_1)
+occ_DEPENDENCIES = libocc.la $(LIBGC) $(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -568,7 +568,7 @@ occ_SOURCES = MetaclassPreregistration.cc
 # when linking occ we need to add libltdl (Libtool dlopen library)
 # and libgc (Boehm's Garbage Collector)
 #
-occ_LDADD = libocc.la $(LIBGCC) $(LIBLTDL)
+occ_LDADD = libocc.la $(LIBGC) $(LIBLTDL)
 
 # Installed library.
 lib_LTLIBRARIES = \
@@ -695,9 +695,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu opencxx/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign opencxx/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu opencxx/Makefile
+	  $(AUTOMAKE) --foreign opencxx/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
