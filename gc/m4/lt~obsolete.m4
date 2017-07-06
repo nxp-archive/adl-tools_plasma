@@ -1,1 +1,0 @@
-/pkg/autoconf-/2.69/x86_64-linux/share/aclocal/lt~obsolete.m4
