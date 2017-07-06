@@ -57,7 +57,8 @@ fi
 
 if [ x$NORECONF = x ]; then
 	echo "Running autoreconf.  To skip this step, prefix script with NORECONF=1"
-	autoreconf --install --force || exit 1
+	autoreconf --no-recursive --install --force || exit 1
+	(cd gc && ./autogen.sh) || exit 1
 else
 	echo "Skipping autoreconf process."
 fi

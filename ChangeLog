@@ -1,3 +1,13 @@
+2017-07-06  Brian Kahne  <bkahne@lc2322-tx30.am.freescale.net>
+
+	* Porting Plasma to Ubuntu 16.04.  Included gc7.2, as the prior
+	libgc segfaulted on 16.04.  Note that, when porting libgc, rules
+	for creating a symlink have to be added to the end of
+	gc/Makefile.am, so that includes have the same location in the
+	installation directory as the sandbox.  I'm also getting weird
+	behavior on RHEL6 when trying to run autoreconf, so I turned off
+	recursive behavior for now.
+	
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2631-tx30) on 7/12/2016 ==
 
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2075-tx30) on 7/12/2016 ==

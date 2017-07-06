@@ -31,16 +31,14 @@
 int LINES = 0;
 int COLS = 0;
 
-char       szAppName[]     = "DE";
-char       FullAppName[]   = "Demonstration Editor";
+#define szAppName TEXT("DE")
 
 HWND        hwnd;
 
 void de_error(char *s)
 {
-    MessageBox( hwnd, (LPSTR) s,
-                (LPSTR) FullAppName,
-                MB_ICONINFORMATION | MB_OK );
+    (void)MessageBoxA(hwnd, s, "Demonstration Editor",
+                      MB_ICONINFORMATION | MB_OK);
     InvalidateRect(hwnd, NULL, TRUE);
 }
 
@@ -50,6 +48,8 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
    MSG         msg;
    WNDCLASS    wndclass;
    HANDLE      hAccel;
+
+   GC_INIT();
 
    if (!hPrevInstance)
    {
@@ -61,7 +61,7 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
       wndclass.hIcon          = LoadIcon (hInstance, szAppName);
       wndclass.hCursor        = LoadCursor (NULL, IDC_ARROW);
       wndclass.hbrBackground  = GetStockObject(WHITE_BRUSH);
-      wndclass.lpszMenuName   = "DE";
+      wndclass.lpszMenuName   = TEXT("DE");
       wndclass.lpszClassName  = szAppName;
 
       if (RegisterClass (&wndclass) == 0) {
@@ -86,13 +86,14 @@ int APIENTRY WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
    } else {
         char *p = command_line;
         
-        while (*p != 0 && !isspace(*p)) p++;
+        while (*p != 0 && !isspace(*(unsigned char *)p))
+            p++;
    	arg_file_name = CORD_to_char_star(
    			    CORD_substr(command_line, 0, p - command_line));
    }
 
    hwnd = CreateWindow (szAppName,
-   			FullAppName,
+                       TEXT("Demonstration Editor"),
    			WS_OVERLAPPEDWINDOW | WS_CAPTION, /* Window style */
    			CW_USEDEFAULT, 0, /* default pos. */
    			CW_USEDEFAULT, 0, /* default width, height */
@@ -127,9 +128,10 @@ char * plain_chars(char * text, size_t len)
 {
     char * result = GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
-    
+
+    if (NULL == result) return NULL;
     for (i = 0; i < len; i++) {
-       if (iscntrl(text[i])) {
+       if (iscntrl(((unsigned char *)text)[i])) {
            result[i] = ' ';
        } else {
            result[i] = text[i];
@@ -145,9 +147,10 @@ char * control_chars(char * text, size_t len)
 {
     char * result = GC_MALLOC_ATOMIC(len + 1);
     register size_t i;
-    
+
+    if (NULL == result) return NULL;
     for (i = 0; i < len; i++) {
-       if (iscntrl(text[i])) {
+       if (iscntrl(((unsigned char *)text)[i])) {
            result[i] = text[i] + 0x40;
        } else {
            result[i] = ' ';
@@ -174,10 +177,35 @@ int screen_was_painted = 0;/* Screen has been painted at least once.	*/
 
 void update_cursor(void);
 
+INT_PTR CALLBACK AboutBoxCallback( HWND hDlg, UINT message,
+                           WPARAM wParam, LPARAM lParam )
+{
+   switch( message )
+   {
+      case WM_INITDIALOG:
+           SetFocus( GetDlgItem( hDlg, IDOK ) );
+           break;
+
+      case WM_COMMAND:
+           switch( wParam )
+           {
+              case IDOK:
+                   EndDialog( hDlg, TRUE );
+                   break;
+           }
+           break;
+
+      case WM_CLOSE:
+           EndDialog( hDlg, TRUE );
+           return TRUE;
+
+   }
+   return FALSE;
+}
+
 LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
                           WPARAM wParam, LPARAM lParam)
 {
-   static FARPROC lpfnAboutBox;
    static HANDLE  hInstance;
    HDC dc;
    PAINTSTRUCT ps;
@@ -192,7 +220,6 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
    {
       case WM_CREATE:
            hInstance = ( (LPCREATESTRUCT) lParam)->hInstance;
-           lpfnAboutBox = MakeProcInstance( (FARPROC) AboutBox, hInstance );
            dc = GetDC(hwnd);
            SelectObject(dc, GetStockObject(SYSTEM_FIXED_FONT));
            GetTextMetrics(dc, &tm);
@@ -209,7 +236,7 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
       	   if (wParam == QUIT) {
       	       SendMessage( hwnd, WM_CLOSE, 0, 0L );
       	   } else {
-      	       do_command(wParam);
+      	       do_command((int)wParam);
       	   }
       	   return(0);
       
@@ -248,8 +275,8 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
                   return( 0 );
 
                case IDM_HELPABOUT:
-                  if( DialogBox( hInstance, "ABOUTBOX",
-                                 hwnd, lpfnAboutBox ) )
+                  if( DialogBox( hInstance, TEXT("ABOUTBOX"),
+                                 hwnd, AboutBoxCallback ) )
                      InvalidateRect( hwnd, NULL, TRUE );
                   return( 0 );
 	       case IDM_HELPCONTENTS:
@@ -293,14 +320,17 @@ LRESULT CALLBACK WndProc (HWND hwnd, UINT message,
       	           SetBkMode(dc, OPAQUE);
       	           SetTextColor(dc, GetSysColor(COLOR_WINDOWTEXT));
       	           
-      	           TextOut(dc, this_line.left, this_line.top,
-      	           	   plain, len);
-      	           TextOut(dc, this_line.left + len * char_width, this_line.top,
-      	           	   blanks, COLS - len);
+                   if (plain != NULL)
+                     TextOutA(dc, this_line.left, this_line.top,
+      	           	   plain, (int)len);
+      	           TextOutA(dc, this_line.left + (int)len * char_width,
+		   	   this_line.top,
+      	           	   blanks, (int)(COLS - len));
       	           SetBkMode(dc, TRANSPARENT);
       	           SetTextColor(dc, RED);
-      	           TextOut(dc, this_line.left, this_line.top,
-      	           	   control, strlen(control));
+                   if (control != NULL)
+                     TextOutA(dc, this_line.left, this_line.top,
+      	           	   control, (int)strlen(control));
       	       }
       	   }
       	   EndPaint(hwnd, &ps);
@@ -336,31 +366,5 @@ void invalidate_line(int i)
     	/* major performance problem.					*/
     get_line_rect(i, COLS*char_width, &line);
     InvalidateRect(hwnd, &line, FALSE);
-}
-
-LRESULT CALLBACK AboutBox( HWND hDlg, UINT message,
-                           WPARAM wParam, LPARAM lParam )
-{
-   switch( message )
-   {
-      case WM_INITDIALOG:
-           SetFocus( GetDlgItem( hDlg, IDOK ) );
-           break;
-
-      case WM_COMMAND:
-           switch( wParam )
-           {
-              case IDOK:
-                   EndDialog( hDlg, TRUE );
-                   break;
-           }
-           break;
-
-      case WM_CLOSE:
-           EndDialog( hDlg, TRUE );
-           return TRUE;
-
-   }
-   return FALSE;
 }
 
