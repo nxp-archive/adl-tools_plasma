@@ -68,8 +68,6 @@ pkgdatadir='$datadir'"/$PACKAGE"
 LT_INIT([dlopen win32-dll])
 _LTDL_SETUP
 
-# Silence warning: ar: 'u' modifier ignored since 'D' is the default
-AC_SUBST(AR_FLAGS, [cr])
 
 ## -------- ##
 ## Outputs. ##

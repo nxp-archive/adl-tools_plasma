@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2017-07-07  Brian Kahne  <bkahne@BrianUbuntu>
 
 	* Cleanup of warnings and autoconf changes to remove 'ar' issues.
@@ -11,6 +12,23 @@
 	installation directory as the sandbox.  I'm also getting weird
 	behavior on RHEL6 when trying to run autoreconf, so I turned off
 	recursive behavior for now.
+=======
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2631-tx30) on 7/12/2016 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2075-tx30) on 7/12/2016 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2631-tx30) on 7/12/2016 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2075-tx30) on 7/12/2016 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2320-tx30) on 8/27/2015 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2320-tx30) on 8/27/2015 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2541-tx30) on 8/27/2015 ==
+
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2294-tx30) on 8/27/2015 ==
+>>>>>>> origin/master
 
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.3 (v0_9_3) on Linux (lc2242-tx30) on 4/24/2015 ==
 
