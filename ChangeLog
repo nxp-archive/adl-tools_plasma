@@ -1,3 +1,7 @@
+2017-07-07  Brian Kahne  <bkahne@BrianUbuntu>
+
+	* Cleanup of warnings and autoconf changes to remove 'ar' issues.
+
 2017-07-06  Brian Kahne  <bkahne@lc2322-tx30.am.freescale.net>
 
 	* Porting Plasma to Ubuntu 16.04.  Included gc7.2, as the prior

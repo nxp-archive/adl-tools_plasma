@@ -181,10 +181,10 @@ namespace Opencxx
     if(user_keywords == 0)
       user_keywords = new HashTable;
 
-    if(user_keywords->AddEntry(str, (HashTable::Value)token, &index) >= 0)
+    if(user_keywords->AddEntry(str, (HashTable::Value)(long)token, &index) >= 0)
       return true;
     else
-      return bool(user_keywords->Peek(index) == (HashTable::Value)token);
+      return bool(user_keywords->Peek(index) == (HashTable::Value)(long)token);
   }
 
   bool Lex::Reify(Ptree* t,bool &value)

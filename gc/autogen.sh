@@ -24,7 +24,7 @@ set -x
 aclocal$am_version -I m4 --install --force
 autoconf
 autoheader
-libtoolize --automake --force
+libtoolize --automake --force --copy
 automake$am_version -ac
 set +x
 echo
