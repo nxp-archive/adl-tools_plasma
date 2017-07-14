@@ -1,3 +1,7 @@
+
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "copyright.h"
 #include "qt.h"
 #include "stp.h"
@@ -39,10 +43,6 @@ typedef struct stp_q_t {
 
 
 /* Helper functions. */
-
-extern void *malloc (unsigned size);
-extern void perror (char const *msg);
-extern void free (void *sto);
 
   void *
 xmalloc (unsigned size)

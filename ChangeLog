@@ -1,3 +1,7 @@
+2017-07-07  Brian Kahne  <bkahne@BrianUbuntu>
+
+	* Cleanup of warnings and autoconf changes to remove 'ar' issues.
+
 2017-07-06  Brian Kahne  <bkahne@lc2322-tx30.am.freescale.net>
 
 	* Porting Plasma to Ubuntu 16.04.  Included gc7.2, as the prior
@@ -7,8 +11,8 @@
 	installation directory as the sandbox.  I'm also getting weird
 	behavior on RHEL6 when trying to run autoreconf, so I turned off
 	recursive behavior for now.
-	
-       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2631-tx30) on 7/12/2016 ==
+
+	== file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2631-tx30) on 7/12/2016 ==
 
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.4 (v0_9_4) on Linux (lc2075-tx30) on 7/12/2016 ==
 
@@ -190,7 +194,7 @@
 2009-01-30  Brian Kahne  <bkahne@freescale.com>
 
 	* Got make distcheck to work.
-	
+
 	* Added checking code to configure.ac to modify tar arguments to
 	avoid tarfile corruption due to large UIDs.
 
@@ -295,7 +299,6 @@
 
        == file:///proj/.ppc_43/vc_noec/svn/plasma release 0.8.35 (v0_8_35) on Linux (lb0169) on 5/18/2007 ==
 
-	
 2007-05-18  Brian Kahne  <bkahne@freescale.com>
 
 	* Removed the building of libgccpp.la because it caused link

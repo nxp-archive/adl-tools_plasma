@@ -638,6 +638,7 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+AR_FLAGS
 NEED_ATOMIC_OPS_ASM_FALSE
 NEED_ATOMIC_OPS_ASM_TRUE
 USE_INTERNAL_LIBATOMIC_OPS_FALSE
@@ -16894,6 +16895,10 @@ else
   NEED_ATOMIC_OPS_ASM_TRUE='#'
   NEED_ATOMIC_OPS_ASM_FALSE=
 fi
+
+
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AR_FLAGS=cr
 
 
 

@@ -24,6 +24,7 @@ pkginclude_HEADERS += \
 	include/weakpointer.h \
 	include/new_gc_alloc.h \
 	include/gc_allocator.h \
+	include/gc_cpp.h \
 	include/gc_backptr.h \
 	include/gc_gcj.h \
 	include/leak_detector.h \

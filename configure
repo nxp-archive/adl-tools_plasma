@@ -728,6 +728,7 @@ LEXLIB
 LEX_OUTPUT_ROOT
 LEX
 READLINK
+AR_FLAGS
 GCC_MINOR
 GCC_MAJOR
 GCC_VERSION
@@ -5400,6 +5401,10 @@ $as_echo "okay" >&6; }
 
 
 
+
+
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AR_FLAGS=cr
 
 
 #########################################################################

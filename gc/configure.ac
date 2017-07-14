@@ -802,6 +802,9 @@ AM_CONDITIONAL([USE_INTERNAL_LIBATOMIC_OPS],
 AM_CONDITIONAL([NEED_ATOMIC_OPS_ASM],
     [test x$with_libatomic_ops = xno -a x$need_atomic_ops_asm = xtrue])
 
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AC_SUBST(AR_FLAGS, [cr])
+
 dnl Produce the Files
 dnl -----------------
 

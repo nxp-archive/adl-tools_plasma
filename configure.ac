@@ -17,6 +17,9 @@ AM_PROG_AS
 
 AM_CPP_SETUP(3,4)
 
+# Silence warning: ar: 'u' modifier ignored since 'D' is the default
+AC_SUBST(AR_FLAGS, [cr])
+
 #########################################################################
 #  Configure arguments 
 #########################################################################

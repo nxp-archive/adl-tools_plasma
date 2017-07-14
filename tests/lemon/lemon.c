@@ -11,6 +11,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #define SUFFIX ".cc"
 
@@ -2307,7 +2308,7 @@ to follow the previous rule.");
 ** macros.  This routine looks for "%ifdef" and "%ifndef" and "%endif" and
 ** comments them out.  Text in between is also commented out as appropriate.
 */
-static preprocess_input(char *z){
+static int preprocess_input(char *z){
   int i, j, k, n;
   int exclude = 0;
   int start;

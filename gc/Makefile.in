@@ -703,6 +703,7 @@ AM_CPPFLAGS = \
 
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
+AR_FLAGS = @AR_FLAGS@
 ATOMIC_OPS_CFLAGS = @ATOMIC_OPS_CFLAGS@
 ATOMIC_OPS_LIBS = @ATOMIC_OPS_LIBS@
 AUTOCONF = @AUTOCONF@
@@ -902,7 +903,7 @@ include_HEADERS = $(am__append_6) include/extra/gc.h
 #
 pkginclude_HEADERS = $(am__append_5) include/gc.h include/gc_typed.h \
 	include/gc_inline.h include/gc_mark.h include/weakpointer.h \
-	include/new_gc_alloc.h include/gc_allocator.h \
+	include/new_gc_alloc.h include/gc_allocator.h include/gc_cpp.h \
 	include/gc_backptr.h include/gc_gcj.h include/leak_detector.h \
 	include/gc_amiga_redirects.h include/gc_pthread_redirects.h \
 	include/gc_config_macros.h include/gc_tiny_fl.h \
