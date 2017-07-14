@@ -1,5 +1,7 @@
        == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.5 (v0_9_5) on Linux (lc2289-tx30) on 7/14/2017 ==
 
+       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.5 (v0_9_5) on Linux (lc2289-tx30) on 7/14/2017 ==
+
 2017-07-07  Brian Kahne  <bkahne@BrianUbuntu>
 
 	* Cleanup of warnings and autoconf changes to remove 'ar' issues.
