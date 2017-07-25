@@ -445,15 +445,15 @@ libqt_la_SOURCES = \
 libstp_la_SOURCES = \
 	stp.c
 
-meas_SOURCES = \
-	meas.c \
-	qtmdb.S \
-	qtmdb_c.c
 
-meas_LDADD = \
-	libstp.la \
-	libqt.la
+# meas_SOURCES = \
+# 	meas.c \
+# 	qtmdb.S \
+# 	qtmdb_c.c
 
+# meas_LDADD = \
+# 	libstp.la \
+# 	libqt.la
 noinst_HEADERS = \
 	qt.h \
 	qtmd.h \
@@ -483,9 +483,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__confi
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign qt/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu qt/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign qt/Makefile
+	  $(AUTOMAKE) --gnu qt/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \

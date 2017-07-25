@@ -1,12 +1,6 @@
-       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.6 (v0_9_6) on Linux (lc2322-tx30) on 7/25/2017 ==
-
-       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.6 (v0_9_6) on Linux (lc2322-tx30) on 7/25/2017 ==
-
-       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.6 (v0_9_6) on Linux (lc2243-tx30) on 7/25/2017 ==
-
-       == file:///proj/.ppc_43/vc_noec/git/plasma release 0.9.6 (v0_9_6) on Linux (lc2242-tx30) on 7/25/2017 ==
-
 2017-07-25  Brian Kahne  <bkahne@lc2322-tx30.am.freescale.net>
+
+	* Miscellaneous automake/autoconf cleanup.
 
 	* Moved to automake 1.15 to make working on Ubuntu 16.04 easier.
 

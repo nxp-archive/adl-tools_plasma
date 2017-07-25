@@ -915,7 +915,7 @@ qsort2_SOURCES = qsort2.pa
 qsort2_DEPENDENCIES = $(DEPENDENCIES)
 chan1_SOURCES = chan1.C
 chan1_DEPENDENCIES = $(DEPENDENCIES)
-chan1_LDADD = $(CXX_LDADD)
+chan1_LDADD = $(CXXLDADD)
 chan2_SOURCES = chan2.pa
 chan2_DEPENDENCIES = $(DEPENDENCIES)
 chan3_SOURCES = chan3.pa
@@ -966,7 +966,7 @@ chan25_SOURCES = chan25.pa
 chan25_DEPENDENCIES = $(DEPENDENCIES)
 spawn1_SOURCES = spawn1.C
 spawn1_DEPENDENCIES = $(DEPENDENCIES)
-spawn1_LDADD = $(CXX_LDADD)
+spawn1_LDADD = $(CXXLDADD)
 spawn2_SOURCES = spawn2.pa
 spawn2_DEPENDENCIES = $(DEPENDENCIES)
 spawn3_SOURCES = spawn3.pa
@@ -993,7 +993,7 @@ pri8_SOURCES = pri8.pa
 pri8_DEPENDENCIES = $(DEPENDENCIES)
 proc1_SOURCES = proc1.C
 proc1_DEPENDENCIES = $(DEPENDENCIES)
-proc1_LDADD = $(CXX_LDADD)
+proc1_LDADD = $(CXXLDADD)
 proc2_SOURCES = proc2.pa
 proc2_DEPENDENCIES = $(DEPENDENCIES)
 proc3_SOURCES = proc3.pa
@@ -1024,10 +1024,10 @@ time5_SOURCES = time5.pa
 time5_DEPENDENCIES = $(DEPENDENCIES)
 rand1_SOURCES = rand1.C
 rand1_DEPENDENCIES = $(DEPENDENCIES)
-rand1_LDADD = $(CXX_LDADD)
+rand1_LDADD = $(CXXLDADD)
 rand2_SOURCES = rand2.C
 rand2_DEPENDENCIES = $(DEPENDENCIES)
-rand2_LDADD = $(CXX_LDADD)
+rand2_LDADD = $(CXXLDADD)
 clock1_SOURCES = clock1.pa
 clock1_DEPENDENCIES = $(DEPENDENCIES)
 clock2_SOURCES = clock2.pa
@@ -1071,8 +1071,9 @@ AM_LDFLAGS = $(EXTRA_LDFLAGS) -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/
 	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
 	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
 
+
 # This must be added to each C++ file's LDADD variable.
-CXX_LDADD = -lplasma -lqt -lgc $(SYS_LIBS)
+CXXLDADD = -lplasma -lqt -lgc $(SYS_LIBS)
 CXXLD = $(CXX)
 LINK = $(PLASMA) -o $@
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -1090,9 +1091,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tests/basic/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/basic/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign tests/basic/Makefile
+	  $(AUTOMAKE) --gnu tests/basic/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \

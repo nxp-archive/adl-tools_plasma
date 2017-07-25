@@ -1,4 +1,6 @@
 
+AUTOMAKE_OPTIONS = foreign subdir-objects no-exeext
+
 SUBDIRS = tests
 
 TESTS = regress
@@ -78,7 +80,7 @@ endif
 
 EXTRA_DIST = compile_check.pm.in regress
 
-INCLUDES = $(LEX_CFLAGS)
+AM_CPPFLAGS = $(LEX_CFLAGS)
 
 # We use the lemon parser generator, but we assign it to YACC
 # so that automake won't bitch about seeing a .yy file and not

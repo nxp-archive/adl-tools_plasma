@@ -6,8 +6,9 @@ PLASMA = $(top_builddir)/scripts/plasma --devel-src=$(top_srcdir) --devel-build=
 AM_LDFLAGS = $(EXTRA_LDFLAGS) -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/src/.libs \
 	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
 	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
+
 # This must be added to each C++ file's LDADD variable.
-CXX_LDADD =  -lplasma -lqt -lgc $(SYS_LIBS)
+CXXLDADD =  -lplasma -lqt -lgc $(SYS_LIBS)
 
 CXXLD = $(CXX)
 LINK = $(PLASMA) -o $@

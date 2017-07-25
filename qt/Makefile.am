@@ -14,14 +14,14 @@ libqt_la_SOURCES = \
 libstp_la_SOURCES = \
 	stp.c
 
-meas_SOURCES = \
-	meas.c \
-	qtmdb.S \
-	qtmdb_c.c
+# meas_SOURCES = \
+# 	meas.c \
+# 	qtmdb.S \
+# 	qtmdb_c.c
 
-meas_LDADD = \
-	libstp.la \
-	libqt.la
+# meas_LDADD = \
+# 	libstp.la \
+# 	libqt.la
 
 noinst_HEADERS = \
 	qt.h \

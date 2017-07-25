@@ -573,8 +573,9 @@ AM_LDFLAGS = $(EXTRA_LDFLAGS) -L$(top_builddir)/src/.libs -Wl,-R$(top_builddir)/
 	-L$(top_builddir)/qt/.libs -Wl,-R$(top_builddir)/qt/.libs \
 	-L$(top_builddir)/gc/.libs -Wl,-R$(top_builddir)/gc/.libs
 
+
 # This must be added to each C++ file's LDADD variable.
-CXX_LDADD = -lplasma -lqt -lgc $(SYS_LIBS)
+CXXLDADD = -lplasma -lqt -lgc $(SYS_LIBS)
 CXXLD = $(CXX)
 LINK = $(PLASMA) -o $@
 CXXLINK = $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
@@ -592,9 +593,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign tests/ecu/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu tests/ecu/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --foreign tests/ecu/Makefile
+	  $(AUTOMAKE) --gnu tests/ecu/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
