@@ -5,7 +5,7 @@ Plasma:  Parallel LAnguage for System Modelling and Analysis
 Plasma is a superset of C++, adding parallel extensions similar to that provided
 by the language Occam.
 
-Plasma is released under the Artistic License, a copy of which may be found in
+Plasma is released under the 3-clause BSD License, a copy of which may be found in
 the file COPYING.
 
 Plasma contains two other open-source packages: OpenC++ the the
